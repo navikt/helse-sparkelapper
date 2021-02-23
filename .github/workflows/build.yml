@@ -15,10 +15,10 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - id: set-matrix
-        shell: bash
         run: |
-          PROJECTS="$(./gradlew listProjects --console=plain -q)"
-          echo "::set-output name=matrix::[$PROJECTS]"
+          MATRIX=[$(./gradlew listProjects --console=plain -q)]
+          echo Setting matrix to $MATRIX
+          echo "::set-output name=matrix::$MATRIX"
 
   build:
     name: build docker image
@@ -55,12 +55,12 @@ jobs:
         run: ./gradlew ${{ matrix.project }}::test ${{ matrix.project }}::build
       - name: build docker image
         if: steps.app_jar.outputs.files_exists == 'true'
-        run: docker build ${{ matrix.project }} --pull -t $IMAGE -f Dockerfile
+        run: docker build ${{ matrix.project }} --pull -t ${{ env.IMAGE }} -f Dockerfile
       - name: push docker image
         if: steps.app_jar.outputs.files_exists == 'true'
         run: |
           docker login --username "$GITHUB_REPOSITORY" -p ${{ secrets.GITHUB_TOKEN }} https://docker.pkg.github.com
-          docker push $IMAGE
+          docker push ${{ env.IMAGE }}
 
   snyk:
     name: check vulnerabilities
@@ -71,8 +71,6 @@ jobs:
         uses: snyk/actions/gradle-jdk12@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          ORG_GRADLE_PROJECT_githubUser: x-access-token
-          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: --all-sub-projects --org=$SNYK_ORG --fail-on=all
+          args: --all-sub-projects --org=${{ env.SNYK_ORG }} --fail-on=all
           command: monitor
