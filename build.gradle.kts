@@ -10,7 +10,7 @@ val ktorVersion = "1.5.0" // should be set to same value as rapids and rivers
 
 tasks.create("buildMatrix") {
     doLast {
-        println(""" { "project": ${subprojects.joinToString(prefix = "[", postfix = "]") { it.name }} } """)
+        println(""" { "project": ${subprojects.joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }} } """)
     }
 }
 
