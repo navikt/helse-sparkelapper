@@ -27,7 +27,7 @@ jobs:
 
   build:
     needs: generate_build_matrix
-    name: build docker image
+    name: build
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{ fromJSON(needs.generate_build_matrix.outputs.matrix) }}
