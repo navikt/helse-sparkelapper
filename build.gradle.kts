@@ -8,9 +8,11 @@ val junitJupiterVersion = "5.7.1"
 val rapidsAndRiversVersion = "1.5e3ca6a"
 val ktorVersion = "1.5.0" // should be set to same value as rapids and rivers
 
-tasks.create("listProjects") {
+tasks.create("buildMatrix") {
     doLast {
-        println(subprojects.joinToString { "\"${it.name}\"" })
+        println(subprojects.joinToString(prefix = "[", postfix = "]") {
+            """{ "project": "${it.name}" }"""
+        })
     }
 }
 

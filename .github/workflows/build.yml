@@ -14,9 +14,14 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v1
+      - name: cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
       - id: set-matrix
         run: |
-          MATRIX=[$(./gradlew -q listProjects --console=plain)]
+          MATRIX=$(./gradlew -q buildMatrix --console=plain)
           echo Setting matrix to $MATRIX
           echo "::set-output name=matrix::$MATRIX"
 
@@ -24,8 +29,7 @@ jobs:
     name: build docker image
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        project: ${{ fromJSON(needs.generate_build_matrix.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.generate_build_matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v1
       - name: Check app.jar existence
