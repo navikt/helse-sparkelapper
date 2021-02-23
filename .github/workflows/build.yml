@@ -26,6 +26,7 @@ jobs:
           echo "::set-output name=matrix::$MATRIX"
 
   build:
+    needs: generate_build_matrix
     name: build docker image
     runs-on: ubuntu-latest
     strategy:
