@@ -15,7 +15,8 @@ tasks.create("buildMatrix") {
 }
 tasks.create("deployMatrix") {
     doLast {
-        println(""" { "cluster": ["dev-fss", "prod-fss"], "project": ${subprojects.joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }} } """)
+        val projects = subprojects.filterNot { it.erFellesmodul() }.joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }
+        println(""" { "cluster": ["dev-fss", "prod-fss"], "project": $projects } """)
     }
 }
 
