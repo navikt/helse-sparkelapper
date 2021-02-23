@@ -4,17 +4,31 @@ on:
     types: [ published ] # event payload: https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads#package
 
 env:
-  APP: ${{ github.event.registry_package.name }}
   IMAGE: docker.pkg.github.com/${{ github.repository }}/${{ github.event.registry_package.name }}:${{ github.event.registry_package.package_version.version }}
+  IMAGE_PREFIX: sparkelapp-
   RESOURCE: config/nais.yml
-  VAR: team=tbd,app=${{ github.event.registry_package.name }}
+  TEAM: tbd
 
 jobs:
+  generate_app_name:
+    runs-on: ubuntu-latest
+    if: github.event.registry_package.package_type == 'docker'
+    outputs:
+      appname: ${{ steps.set-appname.outputs.name }}
+      team: ${{ steps.set-appname.outputs.team }}
+    steps:
+      - id: set-appname
+        env:
+          PACKAGE_NAME: ${{ github.event.registry_package.name }}
+        run: |
+          echo "::set-output name=name::${PACKAGE_NAME#"$IMAGE_PREFIX"}"
+          echo "::set-output name=team::$TEAM"
   dev-fss:
+    needs: generate_app_name
     name: dev-fss
     if: github.event.registry_package.package_type == 'docker'
     env:
-      VARS: config/${{ github.event.registry_package.name }}/${{ github.job }}.yml
+      VARS: config/${{ needs.generate_app_name.outputs.appname }}/${{ github.job }}.yml
     runs-on: ubuntu-latest
     steps:
       - name: Fetch sources
@@ -30,12 +44,14 @@ jobs:
         env:
           CLUSTER: ${{ github.job }}
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          VAR: team=${{ needs.generate_app_name.outputs.team }},app=${{ needs.generate_app_name.outputs.appname }}
 
   prod-fss:
+    needs: generate_app_name
     name: prod-fss
     if: github.event.registry_package.package_type == 'docker'
     env:
-      VARS: config/${{ github.event.registry_package.name }}/${{ github.job }}.yml
+      VARS: config/${{ needs.generate_app_name.outputs.appname }}/${{ github.job }}.yml
     runs-on: ubuntu-latest
     steps:
       - name: Fetch sources
@@ -51,3 +67,4 @@ jobs:
         env:
           CLUSTER: ${{ github.job }}
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          VAR: team=${{ needs.generate_app_name.outputs.team }},app=${{ needs.generate_app_name.outputs.appname }}

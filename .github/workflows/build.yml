@@ -4,7 +4,7 @@ on:
     branches:
       - main
 env:
-  DOCKER_IMAGE_PREFIX: docker.pkg.github.com/${{ github.repository }}
+  DOCKER_IMAGE_PREFIX: docker.pkg.github.com/${{ github.repository }}/sparkelapp-
   SNYK_ORG: tbd-ty7
 
 jobs:
@@ -57,7 +57,7 @@ jobs:
         if: steps.app_jar.outputs.files_exists == 'true'
         run: |
           TAG=$(echo ${{ github.sha }} | cut -c1-7)
-          echo "IMAGE=$DOCKER_IMAGE_PREFIX/${{ matrix.project }}:$TAG" >> $GITHUB_ENV
+          echo "IMAGE=$DOCKER_IMAGE_PREFIX${{ matrix.project }}:$TAG" >> $GITHUB_ENV
       - name: build docker image
         if: steps.app_jar.outputs.files_exists == 'true'
         run: docker build ${{ matrix.project }} --pull -t ${{ env.IMAGE }} -f Dockerfile
