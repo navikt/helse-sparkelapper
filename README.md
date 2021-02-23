@@ -10,6 +10,9 @@ Sparkel
 Alle gradlemodulene bygges og releases automatisk. 
 Ved hver pakke som blir lastet opp trigges en deployment workflow for den pakken.
 
+Navnet på appen prefikses med `sparkel-` i nais.yml, slik at navnet på 
+modulen skal være uten.
+
 1. Gjør 'Legge til en ny gradlemodul'. Mappenavnet korresponderer med appnavnet
 2. Lag `config/[app]/[cluster].yml` for de klustrene appen skal deployes til. 
 3. Push endringene
