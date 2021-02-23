@@ -35,7 +35,7 @@ class ArbeidsforholdClient(
                 ArbeidsforholdDto(
                     startdato = it.fomBruksperiode.toLocalDate(),
                     sluttdato = it.tomBruksperiode?.toLocalDate(),
-                    stillingsprosent = it.stillingsprosent.toInt(),
+                    stillingsprosent = it.stillingsprosent?.toInt() ?: 0,
                     stillingstittel = kodeverkClient.getYrke(it.yrke.kodeRef)
                 )
             }
