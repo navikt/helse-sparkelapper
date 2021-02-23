@@ -1,0 +1,77 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+env:
+  DOCKER_IMAGE_PREFIX: docker.pkg.github.com/${{ github.repository }}
+  SNYK_ORG: tbd-ty7
+
+jobs:
+  generate_build_matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        shell: bash
+        run: |
+          PROJECTS="$(./gradlew listProjects --console=plain -q)"
+          echo "::set-output name=matrix::[$PROJECTS]"
+
+  build:
+    name: build docker image
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: ${{ fromJSON(needs.generate_build_matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Check app.jar existence
+        id: app_jar
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "${{ matrix.project }}/build/libs/app.jar"
+      - name: create docker tag
+        if: steps.app_jar.outputs.files_exists == 'true'
+        run: |
+          echo "TAG=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+          echo "IMAGE=$DOCKER_IMAGE_PREFIX/${{ matrix.project }}:$TAG" >> $GITHUB_ENV
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '14.x'
+      - name: cache gradle deps
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/*.gradle', '**/*.gradle.kts', 'gradle.properties') }}
+      - name: cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+      - name: test and build
+        run: ./gradlew ${{ matrix.project }}::test ${{ matrix.project }}::build
+      - name: build docker image
+        if: steps.app_jar.outputs.files_exists == 'true'
+        run: docker build ${{ matrix.project }} --pull -t $IMAGE -f Dockerfile
+      - name: push docker image
+        if: steps.app_jar.outputs.files_exists == 'true'
+        run: |
+          docker login --username "$GITHUB_REPOSITORY" -p ${{ secrets.GITHUB_TOKEN }} https://docker.pkg.github.com
+          docker push $IMAGE
+
+  snyk:
+    name: check vulnerabilities
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Gradle vulnerability check
+        uses: snyk/actions/gradle-jdk12@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          ORG_GRADLE_PROJECT_githubUser: x-access-token
+          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: --all-sub-projects --org=$SNYK_ORG --fail-on=all
+          command: monitor

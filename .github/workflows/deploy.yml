@@ -1,0 +1,53 @@
+name: Deploy
+on:
+  registry_package:
+    types: [ published ] # event payload: https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads#package
+
+env:
+  APP: ${{ github.event.registry_package.name }}
+  IMAGE: docker.pkg.github.com/${{ github.repository }}/${{ github.event.registry_package.name }}:${{ github.event.registry_package.package_version.version }}
+  RESOURCE: config/nais.yml
+  VAR: team=tbd,app=${{ github.event.registry_package.name }}
+
+jobs:
+  dev-fss:
+    name: dev-fss
+    if: github.event.registry_package.package_type == 'docker'
+    env:
+      VARS: config/${{ github.event.registry_package.name }}/${{ github.job }}.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch sources
+        uses: actions/checkout@v2
+      - name: Check for ${{ github.job }}.yml
+        id: vars_file
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "${{ env.VARS }}"
+      - name: deploy
+        if: steps.vars_file.outputs.files_exists == 'true'
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          CLUSTER: ${{ github.job }}
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+
+  prod-fss:
+    name: prod-fss
+    if: github.event.registry_package.package_type == 'docker'
+    env:
+      VARS: config/${{ github.event.registry_package.name }}/${{ github.job }}.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch sources
+        uses: actions/checkout@v2
+      - name: Check for ${{ github.job }}.yml
+        id: vars_file
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "${{ env.VARS }}"
+      - name: deploy
+        if: steps.vars_file.outputs.files_exists == 'true'
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          CLUSTER: ${{ github.job }}
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
