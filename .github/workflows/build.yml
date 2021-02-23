@@ -56,7 +56,7 @@ jobs:
       - name: create docker tag
         if: steps.app_jar.outputs.files_exists == 'true'
         run: |
-          echo "TAG=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+          TAG=$(echo ${{ github.sha }} | cut -c1-7)
           echo "IMAGE=$DOCKER_IMAGE_PREFIX/${{ matrix.project }}:$TAG" >> $GITHUB_ENV
       - name: build docker image
         if: steps.app_jar.outputs.files_exists == 'true'
