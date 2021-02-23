@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v1
       - id: set-matrix
         run: |
-          MATRIX=[$(./gradlew listProjects --console=plain -q)]
+          MATRIX=[$(./gradlew -q listProjects --console=plain)]
           echo Setting matrix to $MATRIX
           echo "::set-output name=matrix::$MATRIX"
 
