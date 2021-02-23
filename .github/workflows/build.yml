@@ -111,7 +111,7 @@ jobs:
     steps:
       - name: create env vars
         run: |
-          VARS_FILE="config/${{ matrix.project }}/${{ github.job }}.yml
+          VARS_FILE="config/${{ matrix.project }}/${{ github.job }}.yml"
           echo "VARS=$VARS_FILE" >> $GITHUB_ENV
           echo "IMAGE=${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_build_matrix.outputs.tag }}" >> $GITHUB_ENV
       - name: Fetch sources
