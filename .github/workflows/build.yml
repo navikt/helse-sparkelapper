@@ -89,7 +89,7 @@ jobs:
           echo "IMAGE=${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_build_matrix.outputs.tag }}" >> $GITHUB_ENV
       - name: Fetch sources
         uses: actions/checkout@v2
-      - name: Check for ${{ github.job }}.yml
+      - name: Check for vars yml
         id: vars_file
         uses: andstor/file-existence-action@v1
         with:
@@ -116,7 +116,7 @@ jobs:
           echo "IMAGE=${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_build_matrix.outputs.tag }}" >> $GITHUB_ENV
       - name: Fetch sources
         uses: actions/checkout@v2
-      - name: Check for ${{ github.job }}.yml
+      - name: Check for vars yaml
         id: vars_file
         uses: andstor/file-existence-action@v1
         with:
