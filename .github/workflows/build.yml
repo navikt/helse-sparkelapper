@@ -33,16 +33,6 @@ jobs:
       matrix: ${{ fromJSON(needs.generate_build_matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v1
-      - name: Check app.jar existence
-        id: app_jar
-        uses: andstor/file-existence-action@v1
-        with:
-          files: "${{ matrix.project }}/build/libs/app.jar"
-      - name: create docker tag
-        if: steps.app_jar.outputs.files_exists == 'true'
-        run: |
-          echo "TAG=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
-          echo "IMAGE=$DOCKER_IMAGE_PREFIX/${{ matrix.project }}:$TAG" >> $GITHUB_ENV
       - uses: actions/setup-java@v1
         with:
           java-version: '14.x'
@@ -58,6 +48,16 @@ jobs:
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
       - name: test and build
         run: ./gradlew ${{ matrix.project }}::test ${{ matrix.project }}::build
+      - name: Check app.jar existence
+        id: app_jar
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "${{ matrix.project }}/build/libs/app.jar"
+      - name: create docker tag
+        if: steps.app_jar.outputs.files_exists == 'true'
+        run: |
+          echo "TAG=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+          echo "IMAGE=$DOCKER_IMAGE_PREFIX/${{ matrix.project }}:$TAG" >> $GITHUB_ENV
       - name: build docker image
         if: steps.app_jar.outputs.files_exists == 'true'
         run: docker build ${{ matrix.project }} --pull -t ${{ env.IMAGE }} -f Dockerfile
