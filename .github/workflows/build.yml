@@ -86,6 +86,7 @@ jobs:
         run: |
           VARS_FILE="config/${{ matrix.project }}/${{ github.job }}.yml"
           echo "VARS=$VARS_FILE" >> $GITHUB_ENV
+          echo "IMAGE=${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_build_matrix.outputs.tag }}" >> $GITHUB_ENV
       - name: Fetch sources
         uses: actions/checkout@v2
       - name: Check for ${{ github.job }}.yml
@@ -112,6 +113,7 @@ jobs:
         run: |
           VARS_FILE="config/${{ matrix.project }}/${{ github.job }}.yml
           echo "VARS=$VARS_FILE" >> $GITHUB_ENV
+          echo "IMAGE=${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_build_matrix.outputs.tag }}" >> $GITHUB_ENV
       - name: Fetch sources
         uses: actions/checkout@v2
       - name: Check for ${{ github.job }}.yml
