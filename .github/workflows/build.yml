@@ -6,12 +6,16 @@ on:
 env:
   DOCKER_IMAGE_PREFIX: docker.pkg.github.com/${{ github.repository }}/sparkelapp-
   SNYK_ORG: tbd-ty7
+  RESOURCE: config/nais.yml
+  TEAM: tbd
 
 jobs:
   generate_build_matrix:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      team: ${{ steps.set-matrix.outputs.team }}
+      tag: ${{ steps.set-matrix.outputs.tag }}
     steps:
       - uses: actions/checkout@v1
       - name: cache gradle wrapper
@@ -21,9 +25,12 @@ jobs:
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
       - id: set-matrix
         run: |
+          TAG=$(echo ${{ github.sha }} | cut -c1-7)
           MATRIX=$(./gradlew -q buildMatrix --console=plain)
           echo Setting matrix to $MATRIX
           echo "::set-output name=matrix::$MATRIX"
+          echo "::set-output name=team::$TEAM"
+          echo "::set-output name=tag::$TAG"
 
   build:
     needs: generate_build_matrix
@@ -56,11 +63,10 @@ jobs:
       - name: create docker tag
         if: steps.app_jar.outputs.files_exists == 'true'
         run: |
-          TAG=$(echo ${{ github.sha }} | cut -c1-7)
-          echo "IMAGE=${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:$TAG" >> $GITHUB_ENV
+          echo "IMAGE=${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_build_matrix.outputs.tag }}" >> $GITHUB_ENV
       - name: build docker image
         if: steps.app_jar.outputs.files_exists == 'true'
-        run: docker build ${{ matrix.project }} --pull -t ${{ env.IMAGE }} -f Dockerfile
+        run: docker build ${{ matrix.project }} --pull -t $IMAGE -f Dockerfile
       - name: push docker image
         if: steps.app_jar.outputs.files_exists == 'true'
         run: |
@@ -68,6 +74,58 @@ jobs:
           docker push $IMAGE
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dev-fss:
+    needs: [generate_build_matrix, build]
+    name: dev-fss
+    strategy:
+      matrix: ${{ fromJSON(needs.generate_build_matrix.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: create env vars
+        run: |
+          VARS_FILE="config/${{ matrix.project }}/${{ github.job }}.yml
+          echo "VARS=$VARS_FILE" >> $GITHUB_ENV
+      - name: Fetch sources
+        uses: actions/checkout@v2
+      - name: Check for ${{ github.job }}.yml
+        id: vars_file
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "${{ env.VARS }}"
+      - name: deploy
+        if: steps.vars_file.outputs.files_exists == 'true'
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          CLUSTER: ${{ github.job }}
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          VAR: team=${{ needs.generate_build_matrix.outputs.team }},app=${{ matrix.project }}
+
+  prod-fss:
+    needs: [generate_build_matrix, build]
+    name: prod-fss
+    strategy:
+      matrix: ${{ fromJSON(needs.generate_build_matrix.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: create env vars
+        run: |
+          VARS_FILE="config/${{ matrix.project }}/${{ github.job }}.yml
+          echo "VARS=$VARS_FILE" >> $GITHUB_ENV
+      - name: Fetch sources
+        uses: actions/checkout@v2
+      - name: Check for ${{ github.job }}.yml
+        id: vars_file
+        uses: andstor/file-existence-action@v1
+        with:
+          files: "${{ env.VARS }}"
+      - name: deploy
+        if: steps.vars_file.outputs.files_exists == 'true'
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          CLUSTER: ${{ github.job }}
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          VAR: team=${{ needs.generate_build_matrix.outputs.team }},app=${{ matrix.project }}
 
   snyk:
     name: check vulnerabilities
