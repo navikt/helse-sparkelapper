@@ -13,6 +13,11 @@ tasks.create("buildMatrix") {
         println(""" { "project": ${subprojects.joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }} } """)
     }
 }
+tasks.create("deployMatrix") {
+    doLast {
+        println(""" { "cluster": ["dev-fss", "prod-fss"], "project": ${subprojects.joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }} } """)
+    }
+}
 
 allprojects {
     group = "no.nav.helse.sparkel"
