@@ -64,8 +64,10 @@ jobs:
       - name: push docker image
         if: steps.app_jar.outputs.files_exists == 'true'
         run: |
-          docker login --username "$GITHUB_REPOSITORY" -p ${{ secrets.GITHUB_TOKEN }} https://docker.pkg.github.com
-          docker push ${{ env.IMAGE }}
+          echo $GITHUB_TOKEN | docker login --username $GITHUB_REPOSITORY --password-stdin https://docker.pkg.github.com
+          docker push $IMAGE
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   snyk:
     name: check vulnerabilities
