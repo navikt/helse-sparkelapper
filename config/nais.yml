@@ -38,6 +38,14 @@ spec:
   kafka:
     pool: {{ kafkaPool }}
   {{/if}}
+  {{#if azure}}
+  azure:
+    application:
+      enabled: {{azure.enabled}}
+      {{#if azure.tenant}}
+      tenant: {{azure.tenant}}
+      {{/if}}
+  {{/if}}
   prometheus:
     enabled: true
     path: /metrics
