@@ -153,7 +153,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Gradle vulnerability check
-        uses: snyk/actions/gradle-jdk12@master
+        uses: snyk/actions/gradle-jdk12@0.3.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
