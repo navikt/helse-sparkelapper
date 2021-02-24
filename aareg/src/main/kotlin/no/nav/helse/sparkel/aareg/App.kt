@@ -35,7 +35,6 @@ fun main() {
     val environment = setUpEnvironment()
     val serviceUser = readServiceUserCredentials()
     val app = createApp(environment, serviceUser)
-    println("Starter opp")
     app.start()
 }
 

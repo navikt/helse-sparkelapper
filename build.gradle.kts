@@ -44,6 +44,13 @@ allprojects {
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
     }
 
+    repositories {
+        maven("https://jitpack.io")
+        maven("https://oss.sonatype.org")
+        mavenCentral()
+        jcenter()
+    }
+
     tasks {
         withType<KotlinCompile> {
             kotlinOptions.jvmTarget = "14"
@@ -55,6 +62,13 @@ allprojects {
 
         withType<Wrapper> {
             gradleVersion = "6.8.3"
+        }
+
+        withType<Test> {
+            useJUnitPlatform()
+            testLogging {
+                events("skipped", "failed")
+            }
         }
 
         if (!erFellesmodul()) {
@@ -80,39 +94,11 @@ allprojects {
     }
 }
 
-repositories {
-    maven("https://jitpack.io")
-    mavenCentral()
-    jcenter()
-}
 
 subprojects {
-    apply(plugin = "org.jetbrains.kotlin.jvm")
-
     ext {
         set("ktorVersion", ktorVersion)
         set("rapidsAndRiversVersion", rapidsAndRiversVersion)
-    }
-
-    repositories {
-        maven("https://jitpack.io")
-        mavenCentral()
-        jcenter()
-    }
-
-    dependencies {
-        testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
-        testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
-    }
-
-    tasks {
-        withType<Test> {
-            useJUnitPlatform()
-            testLogging {
-                events("skipped", "failed")
-            }
-        }
     }
 }
 
