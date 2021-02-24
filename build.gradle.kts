@@ -1,3 +1,4 @@
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -8,6 +9,13 @@ val junitJupiterVersion = "5.7.1"
 val rapidsAndRiversVersion = "1.5e3ca6a"
 val ktorVersion = "1.5.0" // should be set to same value as rapids and rivers
 
+buildscript {
+    repositories { mavenCentral() }
+    dependencies { "classpath"(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "2.12.0") }
+}
+
+val mapper = ObjectMapper()
+
 fun getBuildableProjects(): List<Project> {
     val changedFiles = System.getenv("CHANGED_FILES")?.split(",") ?: emptyList()
     val commonChanges = changedFiles.any {
@@ -17,16 +25,47 @@ fun getBuildableProjects(): List<Project> {
     return subprojects.filter { project -> changedFiles.any { path -> path.contains("${project.name}/") } }
 }
 
-fun getDeployableProjects() = getBuildableProjects().filter { File("config", it.name).isDirectory }
+fun getDeployableProjects() = getBuildableProjects()
+    .filter { project -> File("config", project.name).isDirectory }
 
 tasks.create("buildMatrix") {
     doLast {
-        println(""" ${getBuildableProjects().joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }} """)
+        println(mapper.writeValueAsString(mapOf(
+            "project" to getBuildableProjects().map { it.name }
+        )))
     }
 }
 tasks.create("deployMatrix") {
     doLast {
-        println(""" ${getDeployableProjects().joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }} """)
+        // map of cluster to list of apps
+        val deployableProjects = getDeployableProjects().map { it.name }
+        val environments = deployableProjects
+            .map { project ->
+                project to (File("config", project)
+                    .listFiles()
+                    ?.filter { it.isFile && it.name.endsWith(".yml") }
+                    ?.map { it.name.removeSuffix(".yml") }
+                    ?: emptyList())
+            }.toMap()
+
+        val clusters = environments.flatMap { it.value }.distinct()
+        val exclusions = environments
+            .mapValues { (app, configs) ->
+                clusters.filterNot { it in configs }
+            }
+            .filterValues { it.isNotEmpty() }
+            .flatMap { (app, clusters) ->
+                clusters.map { cluster -> mapOf(
+                    "app" to app,
+                    "cluster" to cluster
+                )}
+            }
+
+        println(mapper.writeValueAsString(mapOf(
+            "cluster" to clusters,
+            "project" to deployableProjects,
+            "exclude" to exclusions
+        )))
     }
 }
 
