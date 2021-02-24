@@ -115,25 +115,6 @@ allprojects {
                 events("skipped", "failed")
             }
         }
-
-        if (!erFellesmodul()) {
-            named<Jar>("jar") {
-                archiveBaseName.set("app")
-
-                manifest {
-                    attributes["Main-Class"] = project.mainClass()
-                    attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(separator = " ") { it.name }
-                }
-
-                doLast {
-                    configurations.runtimeClasspath.get().forEach {
-                        val file = File("$buildDir/libs/${it.name}")
-                        if (!file.exists())
-                            it.copyTo(file)
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -147,6 +128,34 @@ subprojects {
         testImplementation("com.github.tomakehurst:wiremock:$wiremockVersion") {
             exclude(group = "junit")
             exclude("com.github.jknack.handlebars.java")
+        }
+    }
+    tasks {
+        if (!project.erFellesmodul()) {
+            named<Jar>("jar") {
+                archiveBaseName.set("app")
+
+                val mainClass = project.mainClass()
+                val mainClassFound = this.project.sourceSets.findByName("main")?.let {
+                    it.output.classesDirs.asFileTree.any { it.path.contains(mainClass.replace(".", "/")) }
+                } ?: false
+
+                //println("Main class found: $mainClassFound")
+                if (!mainClassFound) throw RuntimeException("Kunne ikke finne main class: $mainClass")
+
+                manifest {
+                    attributes["Main-Class"] = mainClass
+                    attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(separator = " ") { it.name }
+                }
+
+                doLast {
+                    configurations.runtimeClasspath.get().forEach {
+                        val file = File("$buildDir/libs/${it.name}")
+                        if (!file.exists())
+                            it.copyTo(file)
+                    }
+                }
+            }
         }
     }
 }
