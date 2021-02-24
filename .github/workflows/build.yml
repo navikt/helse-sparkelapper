@@ -157,5 +157,5 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --all-sub-projects --org=${{ env.SNYK_ORG }} --fail-on=all --configuration-matching='^(compile|runtime)Classpath'
+          args: --all-sub-projects --org=${{ env.SNYK_ORG }} --fail-on=all --configuration-matching='^runtimeClasspath'
           command: monitor
