@@ -8,15 +8,23 @@ val junitJupiterVersion = "5.7.1"
 val rapidsAndRiversVersion = "1.5e3ca6a"
 val ktorVersion = "1.5.0" // should be set to same value as rapids and rivers
 
+fun getBuildableProjects(): List<Project> {
+    val changedFiles = System.getenv("CHANGED_FILES")?.split(",") ?: emptyList()
+    val commonChanges = changedFiles.any { it.contains("felles/") || it.contains("config/nais.yml") }
+    if (changedFiles.isEmpty() || commonChanges) return subprojects.toList()
+    return subprojects.filter { project -> changedFiles.any { path -> path.contains("${project.name}/") } }
+}
+
+fun getDeployableProjects() = getBuildableProjects().filterNot { it.erFellesmodul() }
+
 tasks.create("buildMatrix") {
     doLast {
-        println(""" ${subprojects.joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }} """)
+        println(""" ${getBuildableProjects().joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }} """)
     }
 }
 tasks.create("deployMatrix") {
     doLast {
-        val projects = subprojects.filterNot { it.erFellesmodul() }.joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }
-        println(""" $projects """)
+        println(""" ${getDeployableProjects().joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }} """)
     }
 }
 

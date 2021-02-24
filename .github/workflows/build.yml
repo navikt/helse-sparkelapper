@@ -15,7 +15,6 @@ jobs:
     outputs:
       team: ${{ steps.set-vars.outputs.team }}
       tag: ${{ steps.set-vars.outputs.tag }}
-      changedFiles: ${{ steps.set-changed-files.outputs.changedFiles }}
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       deployMatrix: ${{ steps.set-matrix.outputs.deployMatrix }}
     steps:
@@ -34,7 +33,7 @@ jobs:
         run: |
           # create a comma-separated list of changed files
           CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | tr '\r\n' ',' | sed -e 's/,$//')
-          echo "::set-output name=changedFiles::$CHANGED_FILES"
+          echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
       - id: set-matrix
         run: |
           MATRIX=$(./gradlew -q buildMatrix --console=plain)
@@ -66,8 +65,6 @@ jobs:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
       - name: test and build
-        # only build if any changed files contains the app name, or 'felles/'
-        if: contains(needs.generate_vars.outputs.changedFiles, matrix.project) || contains(needs.generate_vars.outputs.changedFiles, 'felles/') || contains(needs.generate_vars.outputs.changedFiles, 'nais.yml')
         run: ./gradlew ${{ matrix.project }}::test ${{ matrix.project }}::build
       - name: Check app.jar existence
         id: app_jar
@@ -111,8 +108,7 @@ jobs:
         with:
           files: "${{ env.VARS }}"
       - name: deploy
-        # only build if any changed files contains the app name, or 'felles/'
-        if: steps.vars_file.outputs.files_exists == 'true' && (contains(needs.generate_vars.outputs.changedFiles, matrix.project) || contains(needs.generate_vars.outputs.changedFiles, 'felles/') || contains(needs.generate_vars.outputs.changedFiles, 'nais.yml'))
+        if: steps.vars_file.outputs.files_exists == 'true'
         uses: nais/deploy/actions/deploy@v1
         env:
           CLUSTER: ${{ matrix.cluster }}
