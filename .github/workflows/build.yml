@@ -18,6 +18,8 @@ jobs:
       tag: ${{ steps.set-vars.outputs.tag }}
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       deployMatrix: ${{ steps.set-matrix.outputs.deployMatrix }}
+      emptyMatrix: ${{ steps.set-matrix.outputs.emptyMatrix }}
+      emptyDeployMatrix: ${{ steps.set-matrix.outputs.emptyDeployMatrix }}
     steps:
       - uses: actions/checkout@v1
       - name: cache gradle wrapper
@@ -43,11 +45,24 @@ jobs:
           echo "::set-output name=matrix::$MATRIX"
           echo "::set-output name=deployMatrix::$DEPLOY_MATRIX"
 
+          if [ "$MATRIX" == '[]' ]; then
+            echo "Empty matrix"
+            echo "::set-output name=emptyMatrix::true"
+          else
+            echo "::set-output name=emptyMatrix::false"
+          fi
+          if [ "$DEPLOY_MATRIX" == '[]' ]; then
+            echo "Empty deploy matrix"
+            echo "::set-output name=emptyDeployMatrix::true"
+          else
+            echo "::set-output name=emptyDeployMatrix::false"
+          fi
+
   build:
     needs: generate_vars
     name: build
     runs-on: ubuntu-latest
-    if: needs.generate_vars.outputs.matrix != '[]'
+    if: needs.generate_vars.outputs.emptyMatrix == 'false'
     strategy:
       matrix:
         project: ${{ fromJSON(needs.generate_vars.outputs.matrix) }}
@@ -86,7 +101,7 @@ jobs:
   deploy:
     needs: [generate_vars, build]
     name: deploy
-    if: always() && needs.generate_vars.outputs.deployMatrix != '[]'
+    if: always() && needs.generate_vars.outputs.emptyDeployMatrix == 'false'
     strategy:
       matrix:
         project: ${{ fromJSON(needs.generate_vars.outputs.deployMatrix) }}
@@ -129,7 +144,7 @@ jobs:
     name: check vulnerabilities
     needs: generate_vars
     # only check for vulns if any code has been changed
-    if: needs.generate_vars.outputs.matrix != '[]'
+    if: needs.generate_vars.outputs.emptyMatrix == 'false'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
