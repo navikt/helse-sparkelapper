@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.opptjening
+package no.nav.helse.sparkel.vilkarsproving.opptjening
 
 import io.ktor.client.features.ClientRequestException
 import io.ktor.client.statement.readText

@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.egenansatt
+package no.nav.helse.sparkel.vilkarsproving.egenansatt
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -11,7 +11,6 @@ import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
 import no.nav.tjeneste.pip.egen.ansatt.v1.WSHentErEgenAnsattEllerIFamilieMedEgenAnsattResponse
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance

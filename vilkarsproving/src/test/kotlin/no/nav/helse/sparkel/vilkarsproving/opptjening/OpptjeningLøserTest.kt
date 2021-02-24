@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.opptjening
+package no.nav.helse.sparkel.vilkarsproving.opptjening
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature

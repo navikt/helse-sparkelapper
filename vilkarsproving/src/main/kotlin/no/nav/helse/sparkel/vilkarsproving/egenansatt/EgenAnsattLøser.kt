@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.egenansatt
+package no.nav.helse.sparkel.vilkarsproving.egenansatt
 
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*

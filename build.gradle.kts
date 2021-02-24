@@ -136,13 +136,16 @@ subprojects {
                 archiveBaseName.set("app")
 
                 val mainClass = project.mainClass()
-                val mainClassFound = this.project.sourceSets.findByName("main")?.let {
-                    it.output.classesDirs.asFileTree.any { it.path.contains(mainClass.replace(".", "/")) }
-                } ?: false
 
-                //println("Main class found: $mainClassFound")
-                if (!mainClassFound) throw RuntimeException("Kunne ikke finne main class: $mainClass")
+                doLast {
+                    val mainClassFound = this.project.sourceSets.findByName("main")?.let {
+                        it.output.classesDirs.asFileTree.any { it.path.contains(mainClass.replace(".", "/")) }
+                    } ?: false
 
+                    //println("Main class found: $mainClassFound")
+                    if (!mainClassFound) throw RuntimeException("Kunne ikke finne main class: $mainClass")
+                }
+                
                 manifest {
                     attributes["Main-Class"] = mainClass
                     attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(separator = " ") { it.name }

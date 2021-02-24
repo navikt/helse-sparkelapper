@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.egenansatt
+package no.nav.helse.sparkel.vilkarsproving.egenansatt
 
 import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
 import org.apache.cxf.feature.Feature

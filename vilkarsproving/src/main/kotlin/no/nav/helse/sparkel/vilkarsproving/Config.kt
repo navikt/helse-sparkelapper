@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel
+package no.nav.helse.sparkel.vilkarsproving
 
 import java.nio.file.Files
 import java.nio.file.Path

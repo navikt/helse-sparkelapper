@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.opptjening
+package no.nav.helse.sparkel.vilkarsproving.opptjening
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
@@ -10,7 +10,7 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.readText
 import io.ktor.http.ContentType
-import no.nav.helse.sparkel.objectMapper
+import no.nav.helse.sparkel.vilkarsproving.objectMapper
 import java.time.LocalDate
 import java.util.*
 

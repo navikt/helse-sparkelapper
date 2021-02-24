@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.opptjening
+package no.nav.helse.sparkel.vilkarsproving.opptjening
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.HttpClient
@@ -10,8 +10,8 @@ import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.readText
 import io.ktor.http.ContentType
 import kotlinx.coroutines.runBlocking
-import no.nav.helse.sparkel.ServiceUser
-import no.nav.helse.sparkel.objectMapper
+import no.nav.helse.sparkel.vilkarsproving.ServiceUser
+import no.nav.helse.sparkel.vilkarsproving.objectMapper
 import java.time.LocalDateTime
 
 /**

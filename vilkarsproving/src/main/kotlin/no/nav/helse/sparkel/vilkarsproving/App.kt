@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel
+package no.nav.helse.sparkel.vilkarsproving
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -10,13 +10,13 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.sparkel.egenansatt.EgenAnsattFactory
-import no.nav.helse.sparkel.egenansatt.EgenAnsattLøser
-import no.nav.helse.sparkel.egenansatt.configureFor
-import no.nav.helse.sparkel.egenansatt.stsClient
-import no.nav.helse.sparkel.opptjening.AaregClient
-import no.nav.helse.sparkel.opptjening.OpptjeningLøser
-import no.nav.helse.sparkel.opptjening.StsRestClient
+import no.nav.helse.sparkel.vilkarsproving.egenansatt.EgenAnsattFactory
+import no.nav.helse.sparkel.vilkarsproving.egenansatt.EgenAnsattLøser
+import no.nav.helse.sparkel.vilkarsproving.egenansatt.configureFor
+import no.nav.helse.sparkel.vilkarsproving.egenansatt.stsClient
+import no.nav.helse.sparkel.vilkarsproving.opptjening.AaregClient
+import no.nav.helse.sparkel.vilkarsproving.opptjening.OpptjeningLøser
+import no.nav.helse.sparkel.vilkarsproving.opptjening.StsRestClient
 import org.apache.cxf.ext.logging.LoggingFeature
 
 fun main() {

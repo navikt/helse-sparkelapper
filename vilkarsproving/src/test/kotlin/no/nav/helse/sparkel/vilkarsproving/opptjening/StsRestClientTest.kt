@@ -1,11 +1,11 @@
-package no.nav.helse.sparkel.opptjening
+package no.nav.helse.sparkel.vilkarsproving.opptjening
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.fullPath
 import kotlinx.coroutines.runBlocking
-import no.nav.helse.sparkel.ServiceUser
+import no.nav.helse.sparkel.vilkarsproving.ServiceUser
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
