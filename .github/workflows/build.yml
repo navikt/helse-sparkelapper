@@ -129,7 +129,7 @@ jobs:
         run: |
           VARS_FILE="config/${{ matrix.project }}/${{ matrix.cluster }}.yml"
           echo "VARS=$VARS_FILE" >> $GITHUB_ENV
-          echo "IMAGE=${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}" >> $GITHUB_ENV
+          echo "IMAGE=${DOCKER_REGISTRY}/${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}" >> $GITHUB_ENV
       - name: Fetch sources
         if: steps.docker-exists.outputs.exists == 'true'
         uses: actions/checkout@v2
