@@ -95,6 +95,15 @@ subprojects {
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
     }
+
+    tasks {
+        withType<Test> {
+            useJUnitPlatform()
+            testLogging {
+                events("skipped", "failed")
+            }
+        }
+    }
 }
 
 fun Project.erFellesmodul() = name == "felles"
