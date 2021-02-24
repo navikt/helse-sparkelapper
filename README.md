@@ -1,4 +1,4 @@
-Sparkel
+Sparkel [![Build](https://github.com/navikt/helse-sparkelapper/actions/workflows/build.yml/badge.svg)](https://github.com/navikt/helse-sparkelapper/actions/workflows/build.yml)
 =======
 
 ## Legge til en ny gradlemodul
