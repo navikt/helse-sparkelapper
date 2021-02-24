@@ -10,18 +10,14 @@ env:
   TEAM: tbd
 
 jobs:
-  changed_files:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - run: git diff-tree --no-commit-id --name-only -r $GITHUB_SHA
-  generate_build_matrix:
+  generate_vars:
     runs-on: ubuntu-latest
     outputs:
+      team: ${{ steps.set-vars.outputs.team }}
+      tag: ${{ steps.set-vars.outputs.tag }}
+      changedFiles: ${{ steps.set-changed-files.outputs.changedFiles }}
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       deployMatrix: ${{ steps.set-matrix.outputs.deployMatrix }}
-      team: ${{ steps.set-matrix.outputs.team }}
-      tag: ${{ steps.set-matrix.outputs.tag }}
     steps:
       - uses: actions/checkout@v1
       - name: cache gradle wrapper
@@ -29,24 +25,31 @@ jobs:
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
-      - id: set-matrix
+      - id: set-vars
         run: |
           TAG=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "::set-output name=team::$TEAM"
+          echo "::set-output name=tag::$TAG"
+      - id: set-changed-files
+        run: |
+          # create a comma-separated list of changed files
+          CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | tr '\r\n' ',' | sed -e 's/,$//')
+          echo "::set-output name=changedFiles::$CHANGED_FILES"
+      - id: set-matrix
+        run: |
           MATRIX=$(./gradlew -q buildMatrix --console=plain)
           DEPLOY_MATRIX=$(./gradlew -q deployMatrix --console=plain)
           echo Setting matrix to $MATRIX
           echo "::set-output name=matrix::$MATRIX"
           echo "::set-output name=deployMatrix::$DEPLOY_MATRIX"
-          echo "::set-output name=team::$TEAM"
-          echo "::set-output name=tag::$TAG"
 
   build:
-    needs: generate_build_matrix
+    needs: generate_vars
     name: build
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: ${{ fromJSON(needs.generate_build_matrix.outputs.matrix) }}
+        project: ${{ fromJSON(needs.generate_vars.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-java@v1
@@ -63,6 +66,8 @@ jobs:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
       - name: test and build
+        # only build if any changed files contains the app name, or 'felles/'
+        if: ${{ contains(needs.generate_vars.outputs.changedFiles, matrix.project) || contains(needs.generate_vars.outputs.changedFiles, 'felles/') || contains(needs.generate_vars.outputs.changedFiles, 'nais.yml') }}
         run: ./gradlew ${{ matrix.project }}::test ${{ matrix.project }}::build
       - name: Check app.jar existence
         id: app_jar
@@ -72,7 +77,7 @@ jobs:
       - name: create docker tag
         if: steps.app_jar.outputs.files_exists == 'true'
         run: |
-          echo "IMAGE=${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_build_matrix.outputs.tag }}" >> $GITHUB_ENV
+          echo "IMAGE=${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}" >> $GITHUB_ENV
       - name: build docker image
         if: steps.app_jar.outputs.files_exists == 'true'
         run: docker build ${{ matrix.project }} --pull -t $IMAGE -f Dockerfile
@@ -85,11 +90,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
-    needs: [generate_build_matrix, build]
+    needs: [generate_vars, build]
     name: deploy
     strategy:
       matrix:
-        project: ${{ fromJSON(needs.generate_build_matrix.outputs.deployMatrix) }}
+        project: ${{ fromJSON(needs.generate_vars.outputs.deployMatrix) }}
         cluster: [dev-fss, prod-fss]
     runs-on: ubuntu-latest
     steps:
@@ -97,7 +102,7 @@ jobs:
         run: |
           VARS_FILE="config/${{ matrix.project }}/${{ matrix.cluster }}.yml"
           echo "VARS=$VARS_FILE" >> $GITHUB_ENV
-          echo "IMAGE=${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_build_matrix.outputs.tag }}" >> $GITHUB_ENV
+          echo "IMAGE=${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}" >> $GITHUB_ENV
       - name: Fetch sources
         uses: actions/checkout@v2
       - name: Check for vars yml
@@ -106,12 +111,13 @@ jobs:
         with:
           files: "${{ env.VARS }}"
       - name: deploy
-        if: steps.vars_file.outputs.files_exists == 'true'
+        # only build if any changed files contains the app name, or 'felles/'
+        if: steps.vars_file.outputs.files_exists == 'true' && (contains(needs.generate_vars.outputs.changedFiles, matrix.project) || contains(needs.generate_vars.outputs.changedFiles, 'felles/') || contains(needs.generate_vars.outputs.changedFiles, 'nais.yml')) }}
         uses: nais/deploy/actions/deploy@v1
         env:
           CLUSTER: ${{ matrix.cluster }}
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          VAR: team=${{ needs.generate_build_matrix.outputs.team }},app=${{ matrix.project }}
+          VAR: team=${{ needs.generate_vars.outputs.team }},app=${{ matrix.project }}
 
   snyk:
     name: check vulnerabilities
