@@ -17,7 +17,7 @@ fun getBuildableProjects(): List<Project> {
     return subprojects.filter { project -> changedFiles.any { path -> path.contains("${project.name}/") } }
 }
 
-fun getDeployableProjects() = getBuildableProjects().filterNot { it.erFellesmodul() }
+fun getDeployableProjects() = getBuildableProjects().filter { File("config", it.name).isDirectory }
 
 tasks.create("buildMatrix") {
     doLast {
