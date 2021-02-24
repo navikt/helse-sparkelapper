@@ -1,13 +1,18 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val jvmTarget = "14"
+
 plugins {
     kotlin("jvm") version "1.4.30"
 }
 
+val gradlewVersion = "6.8.3"
 val junitJupiterVersion = "5.7.1"
 val rapidsAndRiversVersion = "1.5e3ca6a"
 val ktorVersion = "1.5.0" // should be set to same value as rapids and rivers
+val mockkVersion = "1.10.0"
+val wiremockVersion = "2.27.1"
 
 buildscript {
     repositories { mavenCentral() }
@@ -92,15 +97,15 @@ allprojects {
 
     tasks {
         withType<KotlinCompile> {
-            kotlinOptions.jvmTarget = "14"
+            kotlinOptions.jvmTarget = jvmTarget
         }
 
         named<KotlinCompile>("compileTestKotlin") {
-            kotlinOptions.jvmTarget = "14"
+            kotlinOptions.jvmTarget = jvmTarget
         }
 
         withType<Wrapper> {
-            gradleVersion = "6.8.3"
+            gradleVersion = gradlewVersion
         }
 
         withType<Test> {
@@ -137,8 +142,8 @@ subprojects {
         set("rapidsAndRiversVersion", rapidsAndRiversVersion)
     }
     dependencies {
-        testImplementation("io.mockk:mockk:1.10.0")
-        testImplementation("com.github.tomakehurst:wiremock:2.27.1") {
+        testImplementation("io.mockk:mockk:$mockkVersion")
+        testImplementation("com.github.tomakehurst:wiremock:$wiremockVersion") {
             exclude(group = "junit")
             exclude("com.github.jknack.handlebars.java")
         }
