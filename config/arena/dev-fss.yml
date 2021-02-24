@@ -1,5 +1,5 @@
 kafkaPool: nav-dev
-mountPath:
+mountPaths:
 - mountPath: /var/run/secrets/nais.io/service_user
   kvPath: /serviceuser/data/dev/srvsparkelarena
 env:
