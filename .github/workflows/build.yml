@@ -41,12 +41,12 @@ jobs:
         run: |
           MATRIX=$(./gradlew -q buildMatrix --console=plain)
           DEPLOY_MATRIX=$(./gradlew -q deployMatrix --console=plain)
-          MATRIX_SIZE=$(echo $MATRIX | jq '.|length')
-          DEPLOY_MATRIX_SIZE=$(echo $DEPLOY_MATRIX | jq '.|length')
+          MATRIX_SIZE=$(echo $MATRIX | jq '.project|length')
+          DEPLOY_MATRIX_SIZE=$(echo $DEPLOY_MATRIX | jq '.project|length')
 
           if [ "$MATRIX_SIZE" == '0' ]; then
             echo "Empty matrix"
-            echo "::set-output name=matrix::["foo"]" # to prevent error because matrix is empty
+            echo "::set-output name=matrix::[]" # to prevent error because matrix is empty
             echo "::set-output name=emptyMatrix::true"
           else
             echo Setting matrix to $MATRIX
@@ -55,7 +55,7 @@ jobs:
           fi
           if [ "$DEPLOY_MATRIX_SIZE" == '0' ]; then
             echo "Empty deploy matrix"
-            echo "::set-output name=deployMatrix::["foo"]" # to prevent error because matrix is empty
+            echo "::set-output name=deployMatrix::[]" # to prevent error because matrix is empty
             echo "::set-output name=emptyDeployMatrix::true"
           else
             echo Setting deploy matrix to $DEPLOY_MATRIX
