@@ -1,5 +1,5 @@
 val ktorVersion: String by project
-val cxfVersion = "3.4.2"
+val cxfVersion: String by project
 
 dependencies {
     implementation("io.ktor:ktor-client-cio:$ktorVersion")

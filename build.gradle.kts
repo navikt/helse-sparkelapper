@@ -9,8 +9,9 @@ plugins {
 
 val gradlewVersion = "6.8.3"
 val junitJupiterVersion = "5.7.1"
-val rapidsAndRiversVersion = "1.5e3ca6a"
+val rapidsAndRiversVersion = "1.a77261b"
 val ktorVersion = "1.5.0" // should be set to same value as rapids and rivers
+val cxfVersion = "3.4.2"
 val mockkVersion = "1.10.0"
 val wiremockVersion = "2.27.1"
 
@@ -122,6 +123,7 @@ subprojects {
     ext {
         set("ktorVersion", ktorVersion)
         set("rapidsAndRiversVersion", rapidsAndRiversVersion)
+        set("cxfVersion", cxfVersion)
     }
     dependencies {
         testImplementation("io.mockk:mockk:$mockkVersion")

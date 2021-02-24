@@ -1,4 +1,4 @@
-val cxfVersion = "3.3.7"
+val cxfVersion: String by project
 val tjenestespesifikasjonerVersion = "1.2019.09.25-00.21-49b69f0625e0"
 
 dependencies {
