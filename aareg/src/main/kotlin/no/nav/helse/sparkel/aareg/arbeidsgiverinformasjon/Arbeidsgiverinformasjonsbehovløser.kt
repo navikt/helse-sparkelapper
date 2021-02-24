@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon
 
+import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -27,7 +28,7 @@ class Arbeidsgiverinformasjonsbehovløser(
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
 
-        val organisasjonsnummer = packet["$behov.organisasjonsnummer"].asText()
+        val organisasjonsnummer = packet["$behov.organisasjonsnummer"]
 
         løsBehov(organisasjonsnummer = organisasjonsnummer).also { packet.setLøsning(behov, it) }
 
@@ -39,14 +40,21 @@ class Arbeidsgiverinformasjonsbehovløser(
         context.publish(packet.toJson())
     }
 
-    private fun løsBehov(organisasjonsnummer: String) =
-        organisasjonClient.finnOrganisasjon(organisasjonsnummer)
-            .let { organisasjon ->
-                LøsningDto(
-                    navn = organisasjon.navn,
-                    bransjer = organisasjon.bransjer,
-                )
-            }
+    private fun løsBehov(organisasjonsnummer: JsonNode): Any =
+        if (organisasjonsnummer.isArray) {
+            organisasjonsnummer.map { løsningFor(it.asText()) }
+        } else {
+            løsningFor(organisasjonsnummer.asText())
+        }
+
+    private fun løsningFor(organisasjonsnummer: String) = organisasjonClient.finnOrganisasjon(organisasjonsnummer)
+        .let { organisasjon ->
+            LøsningDto(
+                orgnummer = organisasjonsnummer,
+                navn = organisasjon.navn,
+                bransjer = organisasjon.bransjer
+            )
+        }
 
     private fun JsonMessage.setLøsning(nøkkel: String, data: Any) {
         this["@løsning"] = mapOf(
@@ -55,6 +63,7 @@ class Arbeidsgiverinformasjonsbehovløser(
     }
 
     data class LøsningDto(
+        val orgnummer: String,
         val navn: String,
         val bransjer: List<String>
     )
