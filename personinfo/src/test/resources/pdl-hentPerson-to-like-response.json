@@ -1,0 +1,20 @@
+{
+  "data": {
+    "hentPerson": {
+        "doedsfall": [
+            {
+                "doedsdato": "1962-07-08",
+                "metadata": {
+                    "master": "Freg"
+                }
+            },
+            {
+                "doedsdato": "1962-07-08",
+                "metadata": {
+                    "master": "pdl"
+                }
+            }
+        ]
+    }
+  }
+}

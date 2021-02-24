@@ -1,0 +1,15 @@
+{
+    "name": "pdl-api",
+    "schemaPath": "pdl-schema.graphql",
+    "extensions": {
+        "endpoints": {
+            "PDL GraphQL Endpoint": {
+                "url": "https://pdl-api.nais.preprod.local/graphql",
+                "headers": {
+                    "user-agent": "srvsparkelpersoninfo"
+                },
+                "introspect": false
+            }
+        }
+    }
+}
