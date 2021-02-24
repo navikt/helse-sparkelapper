@@ -34,8 +34,10 @@ spec:
     min: 1
     max: 6
     cpuThresholdPercentage: 75
+  {{#if kafkaPool}}
   kafka:
     pool: {{ kafkaPool }}
+  {{/if}}
   prometheus:
     enabled: true
     path: /metrics
@@ -44,13 +46,17 @@ spec:
     enabled: true
   vault:
     enabled: true
+    {{#if mountPaths}}
     paths:
     {{# each mountPaths as |item| }}
       - mountPath: {{ item.mountPath }}
         kvPath: {{ item.kvPath }}
     {{/each}}
+    {{/if}}
+  {{#if env}}
   env:
   {{# each env as |item| }}
   - name: {{ item.name }}
     value: "{{ item.value }}"
   {{/each }}
+  {{/if}}
