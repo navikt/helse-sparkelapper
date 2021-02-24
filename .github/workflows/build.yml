@@ -67,7 +67,7 @@ jobs:
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
       - name: test and build
         # only build if any changed files contains the app name, or 'felles/'
-        if: ${{ contains(needs.generate_vars.outputs.changedFiles, matrix.project) || contains(needs.generate_vars.outputs.changedFiles, 'felles/') || contains(needs.generate_vars.outputs.changedFiles, 'nais.yml') }}
+        if: contains(needs.generate_vars.outputs.changedFiles, matrix.project) || contains(needs.generate_vars.outputs.changedFiles, 'felles/') || contains(needs.generate_vars.outputs.changedFiles, 'nais.yml')
         run: ./gradlew ${{ matrix.project }}::test ${{ matrix.project }}::build
       - name: Check app.jar existence
         id: app_jar
@@ -112,7 +112,7 @@ jobs:
           files: "${{ env.VARS }}"
       - name: deploy
         # only build if any changed files contains the app name, or 'felles/'
-        if: steps.vars_file.outputs.files_exists == 'true' && (contains(needs.generate_vars.outputs.changedFiles, matrix.project) || contains(needs.generate_vars.outputs.changedFiles, 'felles/') || contains(needs.generate_vars.outputs.changedFiles, 'nais.yml')) }}
+        if: steps.vars_file.outputs.files_exists == 'true' && (contains(needs.generate_vars.outputs.changedFiles, matrix.project) || contains(needs.generate_vars.outputs.changedFiles, 'felles/') || contains(needs.generate_vars.outputs.changedFiles, 'nais.yml'))
         uses: nais/deploy/actions/deploy@v1
         env:
           CLUSTER: ${{ matrix.cluster }}
