@@ -94,7 +94,6 @@ allprojects {
     }
 }
 
-
 subprojects {
     ext {
         set("ktorVersion", ktorVersion)
