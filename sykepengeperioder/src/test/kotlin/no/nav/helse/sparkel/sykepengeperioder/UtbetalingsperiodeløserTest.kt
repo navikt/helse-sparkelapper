@@ -35,7 +35,7 @@ internal class UtbetalingsperiodeløserTest {
             listeners.forEach { it.onMessage(message, this) }
         }
 
-        override fun publish(message: String) { sendtMelding = objectMapper.readTree(message)}
+        override fun publish(message: String) {  sendtMelding = objectMapper.readTree(message) }
 
         override fun publish(key: String, message: String) {}
 
@@ -161,7 +161,7 @@ internal class UtbetalingsperiodeløserTest {
             "@event_name" : "behov",
             "@behov" : [ "HentEnhet", "HentPersoninfo", "HentInfotrygdutbetalinger" ],
             "@id" : "id",
-            "@opprettet" : "2020-05-18",
+            "@opprettet" : "2020-05-18T18:56:47.339159",
             "spleisBehovId" : "spleisBehovId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "fnr",
@@ -179,7 +179,7 @@ internal class UtbetalingsperiodeløserTest {
             "@event_name" : "behov",
             "@behov" : [ "HentInfotrygdutbetalinger" ],
             "@id" : "id",
-            "@opprettet" : "2020-05-18",
+            "@opprettet" : "2020-05-18T18:56:47.339159",
             "spleisBehovId" : "spleisBehovId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "fnr",

@@ -5,6 +5,8 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.Utbetalingshistorikk
 import org.slf4j.LoggerFactory
+import java.lang.IllegalArgumentException
+import java.time.LocalDateTime
 
 internal class Sykepengehistorikkløser(
     rapidsConnection: RapidsConnection,
@@ -22,10 +24,10 @@ internal class Sykepengehistorikkløser(
             validate { it.demandAll("@behov", listOf(behov)) }
             validate { it.rejectKey("@løsning") }
             validate { it.requireKey("@id") }
+            validate { it.requireKey("@opprettet") }
             validate { it.requireKey("fødselsnummer") }
-            validate { it.requireKey("vedtaksperiodeId") }
-            validate { it.require("historikkFom", JsonNode::asLocalDate) }
-            validate { it.require("historikkTom", JsonNode::asLocalDate) }
+            validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
+            validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
         }.register(this)
     }
 
@@ -35,21 +37,25 @@ internal class Sykepengehistorikkløser(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
+        if (packet["@opprettet"].asLocalDateTime().isBefore(LocalDateTime.now().minusMinutes(30))) {
+            sikkerlogg.info("ignorerer {} fordi det er over 30 minutter gammelt", keyValue("behovId", packet["@id"]))
+            return
+        }
         infotrygdService.løsningForBehov(
             packet["@id"].asText(),
-            packet["vedtaksperiodeId"].asText(),
             packet["fødselsnummer"].asText(),
-            packet["historikkFom"].asLocalDate(),
-            packet["historikkTom"].asLocalDate()
+            packet["$behov.historikkFom"].asLocalDate(),
+            packet["$behov.historikkTom"].asLocalDate()
         )?.let { løsning ->
             packet["@løsning"] = mapOf(
-                behov to løsning.map { Utbetalingshistorikk(it) }
+                behov to løsning
+                        .sortedByDescending { it["sykemeldtFom"].asLocalDate() }
+                        .mapIndexed { index, jsonNode -> Utbetalingshistorikk(jsonNode, index == 0) }
             )
             context.publish(packet.toJson().also { json ->
                 sikkerlogg.info(
-                    "sender svar {} for {}:\n\t{}",
+                    "sender svar {}:\n\t{}",
                     keyValue("id", packet["@id"].asText()),
-                    keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText()),
                     json
                 )
             })
