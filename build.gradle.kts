@@ -10,13 +10,13 @@ val ktorVersion = "1.5.0" // should be set to same value as rapids and rivers
 
 tasks.create("buildMatrix") {
     doLast {
-        println(""" { "project": ${subprojects.joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }} } """)
+        println(""" ${subprojects.joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }} """)
     }
 }
 tasks.create("deployMatrix") {
     doLast {
         val projects = subprojects.filterNot { it.erFellesmodul() }.joinToString(prefix = "[", postfix = "]") { "\"${it.name}\"" }
-        println(""" { "cluster": ["dev-fss", "prod-fss"], "project": $projects } """)
+        println(""" $projects """)
     }
 }
 
