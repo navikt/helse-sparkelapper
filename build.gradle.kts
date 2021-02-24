@@ -99,6 +99,13 @@ subprojects {
         set("ktorVersion", ktorVersion)
         set("rapidsAndRiversVersion", rapidsAndRiversVersion)
     }
+    dependencies {
+        testImplementation("io.mockk:mockk:1.10.0")
+        testImplementation("com.github.tomakehurst:wiremock:2.27.1") {
+            exclude(group = "junit")
+            exclude("com.github.jknack.handlebars.java")
+        }
+    }
 }
 
 fun Project.erFellesmodul() = name == "felles"
