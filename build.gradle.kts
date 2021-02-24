@@ -56,7 +56,7 @@ tasks.create("deployMatrix") {
             .filterValues { it.isNotEmpty() }
             .flatMap { (app, clusters) ->
                 clusters.map { cluster -> mapOf(
-                    "app" to app,
+                    "project" to app,
                     "cluster" to cluster
                 )}
             }
