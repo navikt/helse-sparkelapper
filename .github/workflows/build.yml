@@ -114,6 +114,9 @@ jobs:
 
   snyk:
     name: check vulnerabilities
+    needs: generate_vars
+    # only check for vulns if any code has been changed
+    if: needs.generate_vars.outputs.matrix != '[]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
