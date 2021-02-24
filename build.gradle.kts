@@ -50,7 +50,7 @@ tasks.create("deployMatrix") {
 
         val clusters = environments.flatMap { it.value }.distinct()
         val exclusions = environments
-            .mapValues { (app, configs) ->
+            .mapValues { (_, configs) ->
                 clusters.filterNot { it in configs }
             }
             .filterValues { it.isNotEmpty() }
@@ -115,10 +115,8 @@ allprojects {
                 archiveBaseName.set("app")
 
                 manifest {
-                    attributes["Main-Class"] = "${this@allprojects.group}.${this@allprojects.name}.AppKt"
-                    attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(separator = " ") {
-                        it.name
-                    }
+                    attributes["Main-Class"] = project.mainClass()
+                    attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(separator = " ") { it.name }
                 }
 
                 doLast {
@@ -146,5 +144,8 @@ subprojects {
         }
     }
 }
+
+fun Project.mainClass() =
+    "$group.${name.replace("-", "")}.AppKt"
 
 fun Project.erFellesmodul() = name == "felles"
