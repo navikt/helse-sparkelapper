@@ -69,6 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.generate_vars.outputs.emptyMatrix == 'false'
     strategy:
+      fail-fast: false
       matrix:
         project: ${{ fromJSON(needs.generate_vars.outputs.matrix) }}
     steps:
@@ -108,6 +109,7 @@ jobs:
     name: deploy
     if: always() && needs.generate_vars.outputs.emptyDeployMatrix == 'false'
     strategy:
+      fail-fast: false
       matrix:
         project: ${{ fromJSON(needs.generate_vars.outputs.deployMatrix) }}
         cluster: [dev-fss, prod-fss]
