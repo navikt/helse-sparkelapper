@@ -46,6 +46,7 @@ jobs:
     needs: generate_vars
     name: build
     runs-on: ubuntu-latest
+    if: needs.generate_vars.outputs.matrix != '[]'
     strategy:
       matrix:
         project: ${{ fromJSON(needs.generate_vars.outputs.matrix) }}
@@ -89,6 +90,7 @@ jobs:
   deploy:
     needs: [generate_vars, build]
     name: deploy
+    if: needs.generate_vars.outputs.deployMatrix != '[]'
     strategy:
       matrix:
         project: ${{ fromJSON(needs.generate_vars.outputs.deployMatrix) }}
