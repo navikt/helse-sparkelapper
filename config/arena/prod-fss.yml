@@ -1,0 +1,19 @@
+kafkaPool: nav-prod
+mountPath:
+- mountPath: /var/run/secrets/nais.io/service_user
+  kvPath: /serviceuser/data/prod/srvsparkelarena
+env:
+- name: KAFKA_PREFER_ON_PREM
+  value: "true"
+- name: KAFKA_BOOTSTRAP_SERVERS
+  value: a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443
+- name: KAFKA_CONSUMER_GROUP_ID
+  value: sparkel-arena-v1
+- name: KAFKA_RAPID_TOPIC
+  value: helse-rapid-v1
+- name: STS_URL
+  value: https://sts.adeo.no/SecurityTokenServiceProvider/
+- name: YTELSESKONTRAKT_BASE_URL
+  value: https://arena.adeo.no/ail_ws/Ytelseskontrakt_v3
+- name: MELDEKORT_UTBETALINGSGRUNNLAG_ENDPOINTURL
+  value: https://arena.adeo.no/ail_ws/MeldekortUtbetalingsgrunnlag_v1
