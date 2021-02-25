@@ -1,4 +1,4 @@
-val cxfVersion = "3.3.7"
+val cxfVersion: String by project
 val ktorVersion: String by project
 
 dependencies {
