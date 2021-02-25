@@ -1,6 +1,8 @@
 Sparkel [![Build](https://github.com/navikt/helse-sparkelapper/actions/workflows/build.yml/badge.svg)](https://github.com/navikt/helse-sparkelapper/actions/workflows/build.yml)
 =======
 
+Mikrotjenester som svarer ut behov ved å hente data fra ulike registre.
+
 ## Legge til en ny gradlemodul
 
 1. Lag en mappe og sørg for at det finnes en `build.gradle.kts` der
