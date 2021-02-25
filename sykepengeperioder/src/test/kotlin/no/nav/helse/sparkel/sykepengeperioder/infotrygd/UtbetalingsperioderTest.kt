@@ -54,6 +54,7 @@ internal class UtbetalingsperioderTest {
         assertEquals(765.0, enIkkeTomUtbetalingsperiode.dagsats)
         assertEquals("ArbRef", enIkkeTomUtbetalingsperiode.typetekst)
         assertEquals("88888888", enIkkeTomUtbetalingsperiode.organisasjonsnummer)
+        assertEquals("01", enIkkeTomUtbetalingsperiode.arbeidsKategoriKode)
     }
 
     private val objectMapper = jacksonObjectMapper()
