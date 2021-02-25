@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode
 import java.time.LocalDate
 
 class Utbetalingsperioder(jsonNode: JsonNode) {
-    val perioder = jsonNode["utbetalingList"].map { Utbetalingsperiode(it) }
+    val arbeidsKategoriKode = jsonNode["arbeidsKategoriKode"].asText()
+    val perioder = jsonNode["utbetalingList"].map { Utbetalingsperiode(it, arbeidsKategoriKode) }
 }
 
-data class Utbetalingsperiode(private val jsonNode: JsonNode) {
+data class Utbetalingsperiode(private val jsonNode: JsonNode, val arbeidsKategoriKode: String) {
     val fom: LocalDate? = jsonNode["fom"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) }
     val tom: LocalDate? = jsonNode["tom"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) }
     val dagsats: Double = jsonNode["dagsats"].doubleValue()

@@ -113,7 +113,29 @@ internal class UtbetalingsperiodeløserTest {
             grad = "100",
             dagsats = 870.0,
             typetekst = "ArbRef",
-            organisasjonsnummer = orgnummer
+            organisasjonsnummer = orgnummer,
+            arbeidsKategoriKode = "01"
+        )
+    }
+
+    @Test
+    fun `mapper også ut arbeidsKategoriKode`() {
+        testBehov(enkeltBehov())
+
+        val løsninger = sendtMelding.løsning()
+        assertEquals(1, løsninger.size)
+
+        val periode = løsninger.first()
+
+        assertInfotrygdperiode(
+            periode = periode,
+            fom = 19.januar,
+            tom = 23.januar,
+            grad = "100",
+            dagsats = 870.0,
+            typetekst = "ArbRef",
+            organisasjonsnummer = orgnummer,
+            arbeidsKategoriKode = "01"
         )
     }
 
@@ -128,6 +150,7 @@ internal class UtbetalingsperiodeløserTest {
         val dagsats = json["dagsats"].asDouble()
         val typetekst = json["typetekst"].asText()
         val organisasjonsnummer = json["organisasjonsnummer"].asText()
+        val arbeidsKategoriKode = json["arbeidsKategoriKode"].asText()
 
         private companion object {
             fun JsonNode.asLocalDate() = LocalDate.parse(this.asText())
@@ -145,7 +168,8 @@ internal class UtbetalingsperiodeløserTest {
         tom: LocalDate, grad: String,
         dagsats: Double,
         typetekst: String,
-        organisasjonsnummer: String
+        organisasjonsnummer: String,
+        arbeidsKategoriKode: String,
     ) {
         assertEquals(fom, periode.fom)
         assertEquals(tom, periode.tom)
@@ -153,6 +177,7 @@ internal class UtbetalingsperiodeløserTest {
         assertEquals(dagsats, periode.dagsats)
         assertEquals(typetekst, periode.typetekst)
         assertEquals(organisasjonsnummer, periode.organisasjonsnummer)
+        assertEquals(arbeidsKategoriKode, periode.arbeidsKategoriKode)
     }
 
     private fun behovMedFlereBehovsnøkler() =
