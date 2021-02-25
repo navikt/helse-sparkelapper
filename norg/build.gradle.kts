@@ -19,4 +19,6 @@ dependencies {
     implementation("com.sun.xml.ws:jaxws-tools:2.3.3") {
         exclude(group = "com.sun.xml.ws", module = "policy")
     }
+
+    testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
 }
