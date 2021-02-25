@@ -131,6 +131,7 @@ subprojects {
             exclude(group = "junit")
             exclude("com.github.jknack.handlebars.java")
         }
+        testImplementation("io.ktor:ktor-client-mock-jvm:$ktorVersion")
     }
     tasks {
         if (!project.erFellesmodul()) {

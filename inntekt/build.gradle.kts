@@ -9,5 +9,4 @@ dependencies {
         exclude("com.fasterxml.jackson.module")
     }
     implementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
-    testImplementation("io.ktor:ktor-client-mock-jvm:$ktorVersion")
 }

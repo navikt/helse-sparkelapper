@@ -13,8 +13,4 @@ dependencies {
     implementation("javax.activation:activation:1.1.1")
 
     implementation("no.nav.tjenestespesifikasjoner:egenansatt-v1-tjenestespesifikasjon:1.2019.09.25-00.21-49b69f0625e0")
-
-    testImplementation("no.nav:kafka-embedded-env:2.4.0")
-    testImplementation("org.awaitility:awaitility:4.0.3")
-    testImplementation("io.ktor:ktor-client-mock-jvm:$ktorVersion")
 }
