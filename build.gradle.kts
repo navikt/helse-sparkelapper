@@ -141,7 +141,7 @@ subprojects {
 
                 doLast {
                     val mainClassFound = this.project.sourceSets.findByName("main")?.let {
-                        it.output.classesDirs.asFileTree.any { it.path.contains(mainClass.replace(".", "/")) }
+                        it.output.classesDirs.asFileTree.any { it.path.contains(mainClass.replace(".", File.separator)) }
                     } ?: false
 
                     if (!mainClassFound) throw RuntimeException("Kunne ikke finne main class: $mainClass")
