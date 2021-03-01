@@ -1,15 +1,13 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
-import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -24,37 +22,17 @@ internal class SykepengehistorikkløserTest {
     }
 
     private val wireMockServer: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
-    private val objectMapper = jacksonObjectMapper()
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        .registerModule(JavaTimeModule())
+    private lateinit var infotrygdService: InfotrygdService
+    private val rapid = TestRapid()
 
-    private val sendtMelding get() = meldinger.last()
-    private lateinit var service: InfotrygdService
-    private val meldinger =  mutableListOf<JsonNode>()
-
-    private val rapid = object : RapidsConnection() {
-
-        fun sendTestMessage(message: String) {
-            listeners.forEach { it.onMessage(message, this) }
-        }
-
-        override fun publish(message: String) {
-            meldinger.add(objectMapper.readTree(message))
-        }
-
-        override fun publish(key: String, message: String) {}
-
-        override fun start() {}
-
-        override fun stop() {}
-    }
+    private val sisteSendtMelding get() = rapid.inspektør.message(rapid.inspektør.size.minus(1))
 
     @BeforeAll
     fun setup() {
         wireMockServer.start()
         configureFor(create().port(wireMockServer.port()).build())
         stubAuthEndepunkt()
-        service = InfotrygdService(
+        infotrygdService = InfotrygdService(
             InfotrygdClient(
                 baseUrl = wireMockServer.baseUrl(),
                 accesstokenScope = "a_scope",
@@ -65,11 +43,15 @@ internal class SykepengehistorikkløserTest {
                 )
             )
         )
+        rapid.apply {
+            Sykepengehistorikkløser(this, infotrygdService)
+        }
     }
 
     @BeforeEach
-    fun reset() {
-        meldinger.clear()
+    fun beforeEach() {
+        stubSvarFraInfotrygd()
+        rapid.reset()
     }
 
     @AfterAll
@@ -79,61 +61,36 @@ internal class SykepengehistorikkløserTest {
 
     @Test
     fun `løser behov`() {
-        stubSvarFraInfotrygd()
-
-        val behov =
-            """{"@id": "behovsid", "@opprettet":"${
-                LocalDateTime.now().minusMinutes(1)
-            }", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01"}, "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
-
-        testBehov(behov)
-
-        val perioder = sendtMelding.løsning()
+        rapid.sendTestMessage(behov())
+        val perioder = sisteSendtMelding.løsning()
 
         assertEquals(2, perioder.size)
     }
 
     @Test
     fun `ignorerer behov som er mer enn 30 min gamle`() {
-        stubSvarFraInfotrygd()
-
-        val behov =
-            """{"@id": "behovsid", "@opprettet":"${
-                LocalDateTime.now().minusMinutes(35)
-            }", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01"}, "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
-
-        testBehov(behov)
-
-        assertTrue(meldinger.isEmpty())
+        rapid.sendTestMessage(behov(opprettet = LocalDateTime.now().minusMinutes(35)))
+        assertEquals(0, rapid.inspektør.size)
     }
 
     @Test
     fun `løser behov uten vedtaksperiodeId`() {
-        stubSvarFraInfotrygd()
-
         val behov =
             """{"@id": "behovsid", "@opprettet":"${
                 LocalDateTime.now().minusMinutes(1)
             }", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01"}, "fødselsnummer": "fnr" }"""
 
-        testBehov(behov)
+        rapid.sendTestMessage(behov)
 
-        val perioder = sendtMelding.løsning()
+        val perioder = sisteSendtMelding.løsning()
         assertEquals(2, perioder.size)
     }
 
     @Test
     internal fun `mapper også ut inntekt og dagsats`() {
-        stubSvarFraInfotrygd()
+        rapid.sendTestMessage(behov())
 
-        val behov =
-            """{"@id": "behovsid", "@opprettet":"${
-                LocalDateTime.now().minusMinutes(1)
-            }", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01" }, "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
-
-        testBehov(behov)
-
-        val perioder = sendtMelding.løsning()
+        val perioder = sisteSendtMelding.løsning()
 
         assertEquals(2, perioder.size)
 
@@ -162,14 +119,8 @@ internal class SykepengehistorikkløserTest {
 
     @Test
     fun `setter ikke statslønn hvis tidligere periode har statslønn`() {
-        stubSvarFraInfotrygd()
-        val behov =
-            """{"@id": "behovsid", "@opprettet":"${
-                LocalDateTime.now().minusMinutes(1)
-            }", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01"}, "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
-
-        testBehov(behov)
-        sendtMelding.løsning().let { utenStatslønn ->
+        rapid.sendTestMessage(behov())
+        sisteSendtMelding.løsning().let { utenStatslønn ->
             utenStatslønn.forEach { periode ->
                 assertFalse(periode.statslønn)
             }
@@ -179,21 +130,36 @@ internal class SykepengehistorikkløserTest {
     @Test
     fun `setter statslønn hvis nyeste periode har statslønn`() {
         stubSvarFraInfotrygdMedAktivStatslønn()
-        val behov =
-            """{"@id": "behovsid", "@opprettet":"${
-                LocalDateTime.now().minusMinutes(1)
-            }", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01" }, "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+        rapid.sendTestMessage(behov())
 
-        testBehov(behov)
-        sendtMelding.løsning().let { medStatlønn ->
+        sisteSendtMelding.løsning().let { medStatlønn ->
             assertTrue(medStatlønn[0].statslønn)
             assertFalse(medStatlønn[1].statslønn)
         }
     }
 
-    private fun JsonNode.løsning() = this.path("@løsning").path(Sykepengehistorikkløser.behov).map {
-        Utbetalingshistorikk(it)
+    @Test
+    fun `setter arbeidsKategoriKode`() {
+        rapid.sendTestMessage(behov())
+        sisteSendtMelding.løsning().let { løsning ->
+            assertEquals("01", løsning.first().arbeidsKategoriKode)
+        }
     }
+
+    @Test
+    fun `forskjellig  arbeidsKategoriKode`() {
+        stubSvarFraInfotrygdMedForskjelligarbeidsKategoriKode()
+        rapid.sendTestMessage(behov())
+        sisteSendtMelding.løsning().let { løsning ->
+            assertEquals("01", løsning.first().arbeidsKategoriKode)
+            assertEquals("02", løsning.last().arbeidsKategoriKode)
+        }
+    }
+
+    private fun JsonNode.løsning() =
+        this.path("@løsning").path(Sykepengehistorikkløser.behov).map {
+            Utbetalingshistorikk(it)
+        }
 
     private class Utbetalingshistorikk(json: JsonNode) {
 
@@ -204,6 +170,7 @@ internal class SykepengehistorikkløserTest {
             Inntektsopplysning(it)
         }
         val statslønn = json["statslønn"].asBoolean()
+        val arbeidsKategoriKode = json["arbeidsKategoriKode"].asText()
 
         class UtbetalteSykeperiode(json: JsonNode) {
             val fom = json["fom"].asLocalDate()
@@ -222,11 +189,6 @@ internal class SykepengehistorikkløserTest {
         private companion object {
             fun JsonNode.asLocalDate() = LocalDate.parse(this.asText())
         }
-    }
-
-    private fun testBehov(behov: String) {
-        Sykepengehistorikkløser(rapid, service)
-        rapid.sendTestMessage(behov)
     }
 
     private fun assertSykeperiode(
@@ -288,6 +250,21 @@ internal class SykepengehistorikkløserTest {
         )
     }
 
+    private fun stubSvarFraInfotrygdMedForskjelligarbeidsKategoriKode() {
+        stubFor(
+            get(urlPathEqualTo("/v1/hentSykepengerListe"))
+                .withHeader("Accept", equalTo("application/json"))
+                .willReturn(
+                    aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(
+                            getContents("infotrygdResponseForskjelligArbeidsKategoriKode.json")
+                        )
+                )
+        )
+    }
+
     private fun stubSvarFraInfotrygd() {
         stubFor(
             get(urlPathEqualTo("/v1/hentSykepengerListe"))
@@ -300,6 +277,23 @@ internal class SykepengehistorikkløserTest {
                 )
         )
     }
+
+    @Language("Json")
+    private fun behov(opprettet: LocalDateTime = LocalDateTime.now().minusMinutes(5)) =
+        """
+            {
+            "@id": "behovsid", 
+            "@opprettet":"$opprettet",
+            "@behov":[
+                "${Sykepengehistorikkløser.behov}"], 
+                "${Sykepengehistorikkløser.behov}": { 
+                    "historikkFom": "2016-01-01", 
+                    "historikkTom": "2020-01-01"
+                }, 
+                "fødselsnummer": "fnr", 
+                "vedtaksperiodeId": "id"
+            }
+        """
 
     private fun getContents(filename: String) = this::class.java.getResource("/$filename").readText()
 }

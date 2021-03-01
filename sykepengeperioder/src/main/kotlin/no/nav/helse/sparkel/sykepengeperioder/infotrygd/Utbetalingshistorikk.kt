@@ -40,6 +40,7 @@ class Utbetalingshistorikk(jsonNode: JsonNode, sjekkStatslønn: Boolean = false)
     val utbetalteSykeperioder = jsonNode["utbetalingList"].map { Utbetaling(it) } + listOfNotNull(ferie1, ferie2)
     val maksDato: LocalDate? = jsonNode["slutt"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) }
     val statslønn: Boolean = sjekkStatslønn && !jsonNode.path("statslonnList").isEmpty
+    val arbeidsKategoriKode: String = jsonNode["arbeidsKategoriKode"].asText()
 }
 
 data class Utbetaling(
