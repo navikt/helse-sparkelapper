@@ -3,10 +3,6 @@ mountPaths:
 - mountPath: /var/run/secrets/nais.io/service_user
   kvPath: /serviceuser/data/dev/srvsputnik
 env:
-- name: KAFKA_CONSUMER_GROUP_ID
-  value: tbd-sparkel-sputnik-v1
-- name: KAFKA_RAPID_TOPIC
-  value: tbd.rapid.v1
 - name: FPSAK_BASE_URL
   value: http://fpsak.teamforeldrepenger.svc.nais.local
 - name: STS_BASE_URL

@@ -1,8 +1,1 @@
 kafkaPool: nav-dev
-mountPaths: []
-env:
-- name: KAFKA_CONSUMER_GROUP_ID
-  value: tbd-sparkel-sykepengeperioder-mock-v1
-- name: KAFKA_RAPID_TOPIC
-  value: tbd.rapid.v1
-
