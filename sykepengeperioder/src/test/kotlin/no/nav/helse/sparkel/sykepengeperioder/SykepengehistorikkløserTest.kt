@@ -68,7 +68,7 @@ internal class SykepengehistorikkløserTest {
     }
 
     @Test
-    fun `ignorerer behov som er mer enn 30 min gamle`() {
+    fun `ignorerer behov som er mer enn 30 minutter gamle`() {
         rapid.sendTestMessage(behov(opprettet = LocalDateTime.now().minusMinutes(35)))
         assertEquals(0, rapid.inspektør.size)
     }
