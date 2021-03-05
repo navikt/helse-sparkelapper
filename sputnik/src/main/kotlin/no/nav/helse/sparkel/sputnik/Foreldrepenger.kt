@@ -51,12 +51,12 @@ class Foreldrepenger(
 
             context.publish(packet.toJson())
         } catch (err: Exception) {
-            log.error(
+            log.warn(
                 "feil ved henting av foreldrepenger-data: ${err.message} for {}",
                 keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText()),
                 err
             )
-            sikkerlogg.error(
+            sikkerlogg.warn(
                 "feil ved henting av foreldrepenger-data: ${err.message} for {}",
                 keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText()),
                 err
