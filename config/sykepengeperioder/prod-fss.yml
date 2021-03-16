@@ -1,11 +1,7 @@
 kafkaPool: nav-prod
 mountPaths:
-- mountPath: /var/run/secrets/nais.io/vault
-  kvPath: /kv/prod/fss/sparkel-sykepengeperioder/tbd
 - mountPath: /var/run/secrets/nais.io/azure
   kvPath: /azuread/data/prod/creds/sparkel-sykepengeperioder
-- mountPath: /var/run/secrets/nais.io/service_user
-  kvPath: /serviceuser/data/prod/srvsparkelsykepeng
 env:
 - name: AZURE_TENANT_ID
   value: 62366534-1ec3-4962-8869-9b5535279d0b
