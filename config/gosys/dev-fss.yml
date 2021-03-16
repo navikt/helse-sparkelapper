@@ -2,6 +2,8 @@ kafkaPool: nav-dev
 mountPaths:
 - mountPath: /var/run/secrets/nais.io/service_user
   kvPath: /serviceuser/data/dev/srvsparkelgosys
+envFrom:
+  - spre-gosys
 env:
 - name: STS_BASE_URL
   value: http://security-token-service.default.svc.nais.local

@@ -61,6 +61,11 @@ spec:
         kvPath: {{ item.kvPath }}
     {{/each}}
     {{/if}}
+  {{#if envFrom}}
+  envFrom:
+  {{# each envFrom as |item| }}
+  - secret: {{item}}
+  {{/each}}{{/if}}
   env:
   - name: KAFKA_CONSUMER_GROUP_ID
     value: {{#if kafkaConsumerGroup }}{{ kafkaConsumerGroup }}{{else}}{{team}}-sparkel-{{app}}-v1{{/if}}
