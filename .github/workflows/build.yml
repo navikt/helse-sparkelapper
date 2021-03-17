@@ -27,6 +27,13 @@ jobs:
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+      - name: cache gradle caches
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/build.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-caches-
       - id: set-vars
         run: |
           TAG=$(echo ${{ github.sha }} | cut -c1-7)
@@ -81,6 +88,13 @@ jobs:
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+      - name: cache gradle caches
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/build.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-caches-
       - name: test and build
         run: ./gradlew ${{ matrix.project }}::test ${{ matrix.project }}::build
       - name: Check app.jar existence
@@ -152,6 +166,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - name: cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: /home/runner/work/_temp/_github_home/.gradle/wrapper
+          key: ${{ runner.os }}-snyk-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+      - name: cache gradle caches
+        uses: actions/cache@v2
+        with:
+          path: /home/runner/work/_temp/_github_home/.gradle/caches
+          key: ${{ runner.os }}-snyk-gradle-caches-${{ hashFiles('**/build.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-snyk-gradle-caches-
       - name: Gradle vulnerability check
         uses: snyk/actions/gradle-jdk12@0.3.0
         env:
