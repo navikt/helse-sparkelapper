@@ -2,9 +2,6 @@ kafkaPool: nav-dev
 azure:
   enabled: true
   tenant: trygdeetaten.no
-mountPaths:
-- mountPath: /var/run/secrets/nais.io/service_user
-  kvPath: /serviceuser/data/dev/srvsparkelpleiepenge
 env:
 - name: INFOTRYGD_SCOPE
   value: api://32551525-c4dd-44ae-b906-2f8d8a00bb03/.default
