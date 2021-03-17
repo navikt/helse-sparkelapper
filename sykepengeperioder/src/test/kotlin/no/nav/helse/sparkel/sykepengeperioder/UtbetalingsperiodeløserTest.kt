@@ -54,7 +54,7 @@ internal class UtbetalingsperiodeløserTest {
                 baseUrl = wireMockServer.baseUrl(),
                 accesstokenScope = "a_scope",
                 azureClient = AzureClient(
-                    tenantUrl = "${wireMockServer.baseUrl()}/AZURE_TENANT_ID",
+                    tokenEndpoint = "${wireMockServer.baseUrl()}/token",
                     clientId = "client_id",
                     clientSecret = "client_secret"
                 )
@@ -218,7 +218,7 @@ internal class UtbetalingsperiodeløserTest {
 
     private fun stubEksterneEndepunkt() {
         WireMock.stubFor(
-            WireMock.post(WireMock.urlMatching("/AZURE_TENANT_ID/oauth2/v2.0/token"))
+            WireMock.post(WireMock.urlMatching("/token"))
                 .willReturn(
                     WireMock.aResponse()
                         .withStatus(200)

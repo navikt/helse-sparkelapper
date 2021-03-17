@@ -1,12 +1,10 @@
 kafkaPool: nav-prod
+azure:
+  enabled: true
 mountPaths:
 - mountPath: /var/run/secrets/nais.io/azure
   kvPath: /azuread/data/prod/creds/sparkel-sykepengeperioder
 env:
-- name: AZURE_TENANT_ID
-  value: 62366534-1ec3-4962-8869-9b5535279d0b
-- name: AZURE_TENANT_BASEURL
-  value: https://login.microsoftonline.com
 - name: INFOTRYGD_SCOPE
   value: api://847deffa-0b46-4b8f-ae79-c7773ee3dfb3/.default
 - name: INFOTRYGD_URL

@@ -29,11 +29,7 @@ internal class AzureClientTest {
         }
     }
 
-    private val azureClient: AzureClient
-
-    init {
-        azureClient = AzureClient(server.baseUrl(), "clientId", "clientSecret")
-    }
+    private val azureClient: AzureClient = AzureClient(server.baseUrl() + "/token", "clientId", "clientSecret")
 
     @BeforeEach
     fun configure() {
@@ -43,13 +39,13 @@ internal class AzureClientTest {
     @Test
     fun `henter bare et token ved to kall`() {
 
-        WireMock.stubFor(WireMock.post("/oauth2/v2.0/token").willReturn(WireMock.okJson(tokenResponse)))
+        WireMock.stubFor(WireMock.post("/token").willReturn(WireMock.okJson(tokenResponse)))
 
         val token1 = azureClient.getToken("scope")
         val token2 = azureClient.getToken("scope")
 
         assertEquals(token1, token2)
-        WireMock.verify(1, postRequestedFor(urlEqualTo("/oauth2/v2.0/token")))
+        WireMock.verify(1, postRequestedFor(urlEqualTo("/token")))
     }
 
     private val tokenResponse = """
