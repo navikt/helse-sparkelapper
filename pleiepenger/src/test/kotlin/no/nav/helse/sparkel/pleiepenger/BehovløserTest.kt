@@ -53,7 +53,7 @@ internal class BehovløserTest {
                 baseUrl = wireMockServer.baseUrl(),
                 accesstokenScope = "a_scope",
                 azureClient = AzureClient(
-                    tenantUrl = "${wireMockServer.baseUrl()}/AZURE_TENANT_ID",
+                    tokenEndpoint = "${wireMockServer.baseUrl()}/token",
                     clientId = "client_id",
                     clientSecret = "client_secret"
                 )
@@ -244,7 +244,7 @@ internal class BehovløserTest {
 
     private fun stubEksterneEndepunkt() {
         stubFor(
-            post(urlMatching("/AZURE_TENANT_ID/oauth2/v2.0/token"))
+            post(urlMatching("/token"))
                 .willReturn(
                     aResponse()
                         .withStatus(200)

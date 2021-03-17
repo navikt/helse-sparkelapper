@@ -12,7 +12,7 @@ fun main() {
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
     val azureClient = AzureClient(
-        tenantUrl = "${env.getValue("AZURE_TENANT_BASEURL")}/${env.getValue("AZURE_TENANT_ID")}",
+        tokenEndpoint = env.getValue("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
         clientId = env.getValue("AZURE_APP_CLIENT_ID"),
         clientSecret = env.getValue("AZURE_APP_CLIENT_SECRET")
     )

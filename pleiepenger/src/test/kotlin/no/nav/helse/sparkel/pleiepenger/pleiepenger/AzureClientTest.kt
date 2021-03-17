@@ -29,11 +29,8 @@ internal class AzureClientTest {
         }
     }
 
-    private val azureClient: AzureClient
-
-    init {
-        azureClient = AzureClient(server.baseUrl(), "clientId", "clientSecret")
-    }
+    private val tokenEndpointPath = "/oauth2/v2.0/token"
+    private val azureClient = AzureClient(server.baseUrl() + tokenEndpointPath, "clientId", "clientSecret")
 
     @BeforeEach
     fun configure() {
@@ -43,13 +40,13 @@ internal class AzureClientTest {
     @Test
     fun `henter bare et token ved to kall`() {
 
-        WireMock.stubFor(WireMock.post("/oauth2/v2.0/token").willReturn(WireMock.okJson(tokenResponse)))
+        WireMock.stubFor(WireMock.post(tokenEndpointPath).willReturn(WireMock.okJson(tokenResponse)))
 
         val token1 = azureClient.getToken("scope")
         val token2 = azureClient.getToken("scope")
 
         assertEquals(token1, token2)
-        WireMock.verify(1, postRequestedFor(urlEqualTo("/oauth2/v2.0/token")))
+        WireMock.verify(1, postRequestedFor(urlEqualTo(tokenEndpointPath)))
     }
 
     private val tokenResponse = """
@@ -57,6 +54,5 @@ internal class AzureClientTest {
     "token_type": "Bearer",
     "expires_in": 3599,
     "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ik1uQ19WWmNBVGZNNXBP..."
-}
-                """
+}"""
 }
