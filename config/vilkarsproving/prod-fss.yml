@@ -1,12 +1,8 @@
 kafkaPool: nav-prod
 mountPaths:
-- mountPath: /var/run/secrets/nais.io/azure
-  kvPath: /azuread/data/prod/creds/sparkel-vilkarsproving
 - mountPath: /var/run/secrets/nais.io/service_user
   kvPath: /serviceuser/data/prod/srvsparkelvilkar
 env:
-- name: AZURE_TENANT_ID
-  value: 62366534-1ec3-4962-8869-9b5535279d0b
 - name: STS_URL
   value: https://sts.adeo.no/SecurityTokenServiceProvider/
 - name: EGENANSATT_URL
