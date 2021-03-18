@@ -7,7 +7,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.time.Instant
 
-class AzureClient(private val tenantUrl: String, private val clientId: String, private val clientSecret: String) {
+class AzureClient(private val tokenEndpoint: String, private val clientId: String, private val clientSecret: String) {
 
     companion object {
         private val log = LoggerFactory.getLogger(AzureClient::class.java)
@@ -27,7 +27,7 @@ class AzureClient(private val tenantUrl: String, private val clientId: String, p
 
 
     private fun fetchToken(scope: String): Token {
-        val (responseCode, responseBody) = with(URL("$tenantUrl/oauth2/v2.0/token").openConnection() as HttpURLConnection) {
+        val (responseCode, responseBody) = with(URL("$tokenEndpoint").openConnection() as HttpURLConnection) {
             requestMethod = "POST"
 
             doOutput = true
