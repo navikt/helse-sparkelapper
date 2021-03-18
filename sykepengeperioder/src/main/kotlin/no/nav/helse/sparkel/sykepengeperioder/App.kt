@@ -4,8 +4,6 @@ import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
-import java.io.File
-import java.io.FileNotFoundException
 
 fun main() {
     val app = createApp(System.getenv())
@@ -15,8 +13,8 @@ fun main() {
 internal fun createApp(env: Map<String, String>): RapidsConnection {
     val azureClient = AzureClient(
         tokenEndpoint = env.getValue("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
-        clientId = "/var/run/secrets/nais.io/azure/client_id".readFile() ?: env.getValue("AZURE_APP_CLIENT_ID"),
-        clientSecret = "/var/run/secrets/nais.io/azure/client_secret".readFile() ?: env.getValue("AZURE_APP_CLIENT_SECRET")
+        clientId = env.getValue("AZURE_APP_CLIENT_ID"),
+        clientSecret = env.getValue("AZURE_APP_CLIENT_SECRET")
     )
     val infotrygdClient = InfotrygdClient(
         baseUrl = env.getValue("INFOTRYGD_URL"),
@@ -31,9 +29,3 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     }
 }
 
-private fun String.readFile() =
-    try {
-        File(this).readText(Charsets.UTF_8)
-    } catch (err: FileNotFoundException) {
-        null
-    }

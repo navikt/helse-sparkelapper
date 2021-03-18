@@ -1,9 +1,6 @@
 kafkaPool: nav-prod
 azure:
   enabled: true
-mountPaths:
-- mountPath: /var/run/secrets/nais.io/azure
-  kvPath: /azuread/data/prod/creds/sparkel-sykepengeperioder
 env:
 - name: INFOTRYGD_SCOPE
   value: api://847deffa-0b46-4b8f-ae79-c7773ee3dfb3/.default
