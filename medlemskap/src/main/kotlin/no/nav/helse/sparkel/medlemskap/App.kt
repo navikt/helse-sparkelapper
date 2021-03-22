@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.medlemskap
 
 import no.nav.helse.rapids_rivers.RapidApplication
 import java.nio.file.Files
+import java.nio.file.NoSuchFileException
 import java.nio.file.Paths
 
 fun main() {
