@@ -2,9 +2,6 @@ kafkaPool: nav-dev
 azure:
   enabled: true
   tenant: trygdeetaten.no
-mountPaths:
-- mountPath: /var/run/secrets/nais.io/azuread
-  kvPath: /azuread/data/dev/creds/sparkel-medlemskap
 env:
 - name: MEDLEMSKAP_SCOPE
   value: api://496b0ded-cfdb-4430-b7b6-b568504de005/.default
