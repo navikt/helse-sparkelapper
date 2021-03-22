@@ -16,5 +16,9 @@ fun main() {
     }.start()
 }
 
-private fun String.readFile() = Files.readString(Paths.get(this))
+private fun String.readFile() = try {
+    Files.readString(Paths.get(this))
+} catch (err: NoSuchFileException) {
+    null
+}
 
