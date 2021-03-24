@@ -1,9 +1,6 @@
 kafkaPool: nav-prod
 azure:
   enabled: true
-mountPaths:
-- mountPath: /var/run/secrets/nais.io/azuread
-  kvPath: /azuread/data/prod/creds/sparkel-medlemskap
 env:
 - name: MEDLEMSKAP_SCOPE
   value: api://3a3be6ae-421a-40ff-8c8b-32df13d179bd/.default
