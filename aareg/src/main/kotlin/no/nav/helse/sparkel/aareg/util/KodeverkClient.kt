@@ -20,31 +20,22 @@ class KodeverkClient(
     private val kodeverkBaseUrl: String,
     private val appName: String
 ) {
-    private var cachedNæringResponse: String? = null
-    private var cachedYrkerResponse: String? = null
+    private val næringer: JsonNode by lazy {
+        objectMapper.readTree(hentFraKodeverk("/api/v1/kodeverk/Næringskoder/koder/betydninger"))
+    }
+    private val yrker: JsonNode by lazy {
+        objectMapper.readTree(hentFraKodeverk("/api/v1/kodeverk/Yrker/koder/betydninger"))
+    }
 
-    fun getNæring(kode: String): String = requireNotNull(objectMapper.readTree(runBlocking {
-        if (cachedNæringResponse === null) {
-            cachedNæringResponse =
-                httpClient.get<HttpStatement>("$kodeverkBaseUrl/api/v1/kodeverk/Næringskoder/koder/betydninger") {
-                    setup(UUID.randomUUID().toString())
-                }
-                    .receive<String>()
-        }
-        cachedNæringResponse
-    }).hentTekst(kode))
+    fun getNæring(kode: String): String = requireNotNull(næringer.hentTekst(kode))
 
-    fun getYrke(kode: String) = requireNotNull(objectMapper.readTree(runBlocking {
-        if (cachedYrkerResponse === null) {
-            cachedYrkerResponse =
-                httpClient.get<HttpStatement>("$kodeverkBaseUrl/api/v1/kodeverk/Yrker/koder/betydninger") {
-                    setup(UUID.randomUUID().toString())
-                }
-                    .receive<String>()
-        }
-        cachedYrkerResponse
-    }).hentTekst(kode))
+    fun getYrke(kode: String) = requireNotNull(yrker.hentTekst(kode))
 
+    private fun hentFraKodeverk(path: String): String = runBlocking {
+        httpClient.get<HttpStatement>("$kodeverkBaseUrl$path") {
+            setup(UUID.randomUUID().toString())
+        }.receive()
+    }
 
     private fun HttpRequestBuilder.setup(callId: String) {
         header("Nav-Call-Id", callId)
