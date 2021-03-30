@@ -15,9 +15,10 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @TestInstance(Lifecycle.PER_CLASS)
-internal class SykepengehistorikkløserTest {
+internal class SykepengehistorikkløserTest : H2Database() {
 
     private companion object {
+        private val fnr = Fnr("14123456789")
         private const val orgnummer = "80000000"
     }
 
@@ -41,7 +42,8 @@ internal class SykepengehistorikkløserTest {
                     clientId = "client_id",
                     clientSecret = "client_secret"
                 )
-            )
+            ),
+            dataSource
         )
         rapid.apply {
             Sykepengehistorikkløser(this, infotrygdService)
@@ -78,7 +80,7 @@ internal class SykepengehistorikkløserTest {
         val behov =
             """{"@id": "behovsid", "@opprettet":"${
                 LocalDateTime.now().minusMinutes(1)
-            }", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01"}, "fødselsnummer": "fnr" }"""
+            }", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01"}, "fødselsnummer": "$fnr" }"""
 
         rapid.sendTestMessage(behov)
 
@@ -87,7 +89,7 @@ internal class SykepengehistorikkløserTest {
     }
 
     @Test
-    internal fun `mapper også ut inntekt og dagsats`() {
+    fun `mapper også ut inntekt og dagsats`() {
         rapid.sendTestMessage(behov())
 
         val perioder = sisteSendtMelding.løsning()
@@ -290,7 +292,7 @@ internal class SykepengehistorikkløserTest {
                     "historikkFom": "2016-01-01", 
                     "historikkTom": "2020-01-01"
                 }, 
-                "fødselsnummer": "fnr", 
+                "fødselsnummer": "$fnr", 
                 "vedtaksperiodeId": "id"
             }
         """

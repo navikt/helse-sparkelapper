@@ -3,6 +3,9 @@ package no.nav.helse.sparkel.sykepengeperioder.infotrygd
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.helse.sparkel.sykepengeperioder.Sykepenger
+import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -12,7 +15,7 @@ internal class UtbetalingshistorikkTest {
     @Test
     fun utbetalingshistorikk() {
         val json = readJson("infotrygdResponse.json")
-        val utbetalingshistorikk = Utbetalingshistorikk(json["sykmeldingsperioder"][1])
+        val utbetalingshistorikk = Utbetalingshistorikk.tilPerioder(json)[1]
 
         assertNotNull(utbetalingshistorikk.inntektsopplysninger)
         assertNotNull(utbetalingshistorikk.utbetalteSykeperioder)
@@ -25,7 +28,7 @@ internal class UtbetalingshistorikkTest {
     @Test
     fun `utbetalingshistorikk med manglende fom og tom i utbetalingslisten`() {
         val json = readJson("infotrygdResponseMissingFomAndTom.json")
-        val utbetalingshistorikk = Utbetalingshistorikk(json["sykmeldingsperioder"][1])
+        val utbetalingshistorikk = Utbetalingshistorikk.tilPerioder(json)[1]
 
         assertNotNull(utbetalingshistorikk.inntektsopplysninger)
         assertNotNull(utbetalingshistorikk.utbetalteSykeperioder)
@@ -39,7 +42,7 @@ internal class UtbetalingshistorikkTest {
     @Test
     fun `utbetalingshistorikk med ferie1Fom og ferie1Tom har med ferieperioden`() {
         val json = readJson("infotrygdResponseMedFerie1FomOgTom.json")
-        val utbetalingshistorikk = Utbetalingshistorikk(json["sykmeldingsperioder"][0])
+        val utbetalingshistorikk = Utbetalingshistorikk.tilPerioder(json)[0]
 
         assertNotNull(utbetalingshistorikk.inntektsopplysninger)
         assertNotNull(utbetalingshistorikk.utbetalteSykeperioder)
@@ -47,7 +50,7 @@ internal class UtbetalingshistorikkTest {
         assertEquals("9", utbetalingshistorikk.utbetalteSykeperioder[2].typeKode)
         assertEquals("Ferie", utbetalingshistorikk.utbetalteSykeperioder[2].typeTekst)
 
-        val utbetalingshistorikk2 = Utbetalingshistorikk(json["sykmeldingsperioder"][1])
+        val utbetalingshistorikk2 = Utbetalingshistorikk.tilPerioder(json)[1]
         assertNotNull(utbetalingshistorikk2.inntektsopplysninger)
         assertNotNull(utbetalingshistorikk2.utbetalteSykeperioder)
         assertEquals(2, utbetalingshistorikk2.utbetalteSykeperioder.size)
@@ -60,7 +63,7 @@ internal class UtbetalingshistorikkTest {
     @Test
     fun `parser hele lista med utbetalingshistorikk`() {
         val json = readJson("infotrygdResponse.json")
-        val utbetalingshistorikkListe = json["sykmeldingsperioder"].map { Utbetalingshistorikk(it) }
+        val utbetalingshistorikkListe = Utbetalingshistorikk.tilPerioder(json)
         assertEquals(20, utbetalingshistorikkListe.size)
         assertEquals(13, utbetalingshistorikkListe.flatMap { it.inntektsopplysninger }.size)
     }
@@ -69,5 +72,5 @@ internal class UtbetalingshistorikkTest {
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .registerModule(JavaTimeModule())
 
-    fun readJson(fileName: String) = objectMapper.readTree(this::class.java.getResource("/$fileName").readText())
+    fun readJson(fileName: String) = objectMapper.readValue<Sykepenger>(this::class.java.getResource("/$fileName").readText())
 }

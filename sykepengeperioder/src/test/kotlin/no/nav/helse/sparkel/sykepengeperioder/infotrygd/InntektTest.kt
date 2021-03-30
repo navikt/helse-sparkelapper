@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.sykepengeperioder.infotrygd
 
-import no.nav.helse.sparkel.sykepengeperioder.infotrygd.Inntektsopplysninger.PeriodeKode.*
+import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode
+import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -24,10 +25,10 @@ class InntektTest {
 
     @Test
     fun `kaster feil ved andre periodetyper`() {
-        assertThrows<IllegalArgumentException> { Inntektsopplysninger.PeriodeKode.verdiFraKode("I") }
+        assertThrows<IllegalArgumentException> { PeriodeKode.verdiFraKode("I") }
     }
 
-    private fun assertInntekt(expected: Double, lønn: Double, kode: Inntektsopplysninger.PeriodeKode) {
+    private fun assertInntekt(expected: Double, lønn: Double, kode: PeriodeKode) {
         assertEquals(expected, (kode.omregn(lønn) * 100).roundToInt() / 100.0)
     }
 }

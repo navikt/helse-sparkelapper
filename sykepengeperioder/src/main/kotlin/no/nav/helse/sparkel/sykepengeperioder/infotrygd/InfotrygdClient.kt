@@ -1,9 +1,13 @@
 package no.nav.helse.sparkel.sykepengeperioder.infotrygd
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.helse.sparkel.sykepengeperioder.Fnr
+import no.nav.helse.sparkel.sykepengeperioder.Sykepenger
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import java.io.InputStream
@@ -19,20 +23,25 @@ class InfotrygdClient(
 ) {
 
     companion object {
-        private val objectMapper = ObjectMapper()
+        private val objectMapper = jacksonObjectMapper()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .registerModule(JavaTimeModule())
         private val tjenestekallLog = LoggerFactory.getLogger("tjenestekall")
     }
 
     internal fun hentHistorikk(
         behovId: String,
-        fnr: String,
+        fnr: Fnr,
         fom: LocalDate,
         tom: LocalDate
-    ): ArrayNode {
+    ): Sykepenger {
         val url =
-            "${baseUrl}/v1/hentSykepengerListe?fnr=$fnr&fraDato=${fom.format(DateTimeFormatter.ISO_DATE)}&tilDato=${tom.format(
-                DateTimeFormatter.ISO_DATE
-            )}"
+            "${baseUrl}/v1/hentSykepengerListe?fnr=$fnr&fraDato=${fom.format(DateTimeFormatter.ISO_DATE)}&tilDato=${
+                tom.format(
+                    DateTimeFormatter.ISO_DATE
+                )
+            }"
         val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
             requestMethod = "GET"
             connectTimeout = 10000
@@ -53,11 +62,11 @@ class InfotrygdClient(
             throw RuntimeException("unknown error (responseCode=$responseCode) from Infotrygd")
         }
 
-        val jsonNode = objectMapper.readTree(responseBody)
+        val jsonNode = objectMapper.readValue<Sykepenger>(responseBody)
 
         try {
             MDC.put("id", behovId)
-            return jsonNode["sykmeldingsperioder"] as ArrayNode
+            return jsonNode
         } finally {
             MDC.remove("id")
         }

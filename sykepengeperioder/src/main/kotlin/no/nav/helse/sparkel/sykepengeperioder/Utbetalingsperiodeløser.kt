@@ -1,17 +1,9 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
-import no.nav.helse.sparkel.sykepengeperioder.infotrygd.Utbetalingsperioder
 import org.slf4j.LoggerFactory
-
-private val objectMapper = jacksonObjectMapper()
-    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    .registerModule(JavaTimeModule())
 
 internal class Utbetalingsperiodeløser(
     rapidsConnection: RapidsConnection,
@@ -42,23 +34,25 @@ internal class Utbetalingsperiodeløser(
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         val historikkFom = packet["$behov.historikkFom"].asLocalDate()
         val historikkTom = packet["$behov.historikkTom"].asLocalDate()
-        infotrygdService.løsningForBehov(
+        infotrygdService.løsningForHentInfotrygdutbetalingerbehov(
             packet["@id"].asText(),
-            packet["fødselsnummer"].asText(),
+            Fnr(packet["fødselsnummer"].asText()),
             historikkFom,
             historikkTom
-        )?.let { løsning ->
-            packet["@løsning"] = mapOf(
-                behov to løsning.flatMap { Utbetalingsperioder(it).perioder }
-            )
-            context.publish(packet.toJson().also { json ->
-                sikkerlogg.info(
-                    "sender svar {} for {}:\n\t{}",
-                    keyValue("id", packet["@id"].asText()),
-                    json
+        )
+            .takeIf { it.isNotEmpty() }
+            ?.let { løsning ->
+                packet["@løsning"] = mapOf(
+                    behov to løsning
                 )
-            })
-        }
+                context.publish(packet.toJson().also { json ->
+                    sikkerlogg.info(
+                        "sender svar {} for {}:\n\t{}",
+                        keyValue("id", packet["@id"].asText()),
+                        json
+                    )
+                })
+            }
     }
 }
 

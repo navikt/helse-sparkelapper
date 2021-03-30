@@ -11,13 +11,15 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import java.time.LocalDate
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class UtbetalingsperiodeløserTest {
+internal class UtbetalingsperiodeløserTest : H2Database() {
 
     private companion object {
+        private val fnr = Fnr("14123456789")
         private const val orgnummer = "80000000"
     }
 
@@ -35,7 +37,9 @@ internal class UtbetalingsperiodeløserTest {
             listeners.forEach { it.onMessage(message, this) }
         }
 
-        override fun publish(message: String) {  sendtMelding = objectMapper.readTree(message) }
+        override fun publish(message: String) {
+            sendtMelding = objectMapper.readTree(message)
+        }
 
         override fun publish(key: String, message: String) {}
 
@@ -58,7 +62,8 @@ internal class UtbetalingsperiodeløserTest {
                     clientId = "client_id",
                     clientSecret = "client_secret"
                 )
-            )
+            ),
+            dataSource
         )
     }
 
@@ -189,7 +194,7 @@ internal class UtbetalingsperiodeløserTest {
             "@opprettet" : "2020-05-18T18:56:47.339159",
             "spleisBehovId" : "spleisBehovId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
-            "fødselsnummer" : "fnr",
+            "fødselsnummer" : "$fnr",
             "orgnummer" : "orgnr",
             "HentInfotrygdutbetalinger": {
                 "historikkFom" : "2017-05-18",
@@ -207,7 +212,7 @@ internal class UtbetalingsperiodeløserTest {
             "@opprettet" : "2020-05-18T18:56:47.339159",
             "spleisBehovId" : "spleisBehovId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
-            "fødselsnummer" : "fnr",
+            "fødselsnummer" : "$fnr",
             "orgnummer" : "orgnr",
             "HentInfotrygdutbetalinger": {
                 "historikkFom" : "2017-05-18",
@@ -275,6 +280,7 @@ internal class UtbetalingsperiodeløserTest {
                                               "arbOrgnr": $orgnummer
                                             }
                                           ],
+                                          "statslonnList": [],
                                           "inntektList": [
                                             {
                                               "orgNr": "80000000",

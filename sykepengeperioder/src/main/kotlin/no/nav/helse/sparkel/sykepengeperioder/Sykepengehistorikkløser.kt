@@ -3,9 +3,7 @@ package no.nav.helse.sparkel.sykepengeperioder
 import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
-import no.nav.helse.sparkel.sykepengeperioder.infotrygd.Utbetalingshistorikk
 import org.slf4j.LoggerFactory
-import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
 
 internal class Sykepengehistorikkløser(
@@ -41,24 +39,24 @@ internal class Sykepengehistorikkløser(
             sikkerlogg.info("ignorerer {} fordi det er over 30 minutter gammelt", keyValue("behovId", packet["@id"]))
             return
         }
-        infotrygdService.løsningForBehov(
+        infotrygdService.løsningForSykepengehistorikkbehov(
             packet["@id"].asText(),
-            packet["fødselsnummer"].asText(),
+            Fnr(packet["fødselsnummer"].asText()),
             packet["$behov.historikkFom"].asLocalDate(),
             packet["$behov.historikkTom"].asLocalDate()
-        )?.let { løsning ->
-            packet["@løsning"] = mapOf(
-                behov to løsning
-                        .sortedByDescending { it["sykemeldtFom"].asLocalDate() }
-                        .mapIndexed { index, jsonNode -> Utbetalingshistorikk(jsonNode, index == 0) }
-            )
-            context.publish(packet.toJson().also { json ->
-                sikkerlogg.info(
-                    "sender svar {}:\n\t{}",
-                    keyValue("id", packet["@id"].asText()),
-                    json
+        )
+            .takeIf { it.isNotEmpty() }
+            ?.let { løsning ->
+                packet["@løsning"] = mapOf(
+                    behov to løsning
                 )
-            })
-        }
+                context.publish(packet.toJson().also { json ->
+                    sikkerlogg.info(
+                        "sender svar {}:\n\t{}",
+                        keyValue("id", packet["@id"].asText()),
+                        json
+                    )
+                })
+            }
     }
 }

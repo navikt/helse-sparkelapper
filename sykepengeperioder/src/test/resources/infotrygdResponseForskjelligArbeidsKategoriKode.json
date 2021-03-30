@@ -22,7 +22,11 @@
       "utbetalingList": [],
       "statslonnList": [
         {
-          "statLonn": 100
+          "statLonn": 100,
+          "natural": 100.0,
+          "utbet_natural": "J",
+          "reduksjon_beloep": 10.0,
+          "reduksjon_type": "1"
         }
       ],
       "inntektList": [],
