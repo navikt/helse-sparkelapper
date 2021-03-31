@@ -6,3 +6,5 @@ env:
   value: api://847deffa-0b46-4b8f-ae79-c7773ee3dfb3/.default
 - name: INFOTRYGD_URL
   value: http://infotrygd-sykepenger.default.svc.nais.local
+- name: INFOTRYGDSP_URL
+  value: jdbc:oracle:thin:@a01dbfl037.adeo.no:1521/cdc

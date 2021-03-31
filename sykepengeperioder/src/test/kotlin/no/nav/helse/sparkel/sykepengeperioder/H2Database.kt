@@ -1,16 +1,17 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway
-import org.h2.jdbcx.JdbcDataSource
 import javax.sql.DataSource
 
 abstract class H2Database {
-    protected val dataSource: DataSource = JdbcDataSource().apply {
-        setUrl("jdbc:h2:mem:test1;MODE=Oracle;DB_CLOSE_DELAY=-1")
-        user = "sa"
+    private val hikariConfig = HikariConfig().apply {
+        jdbcUrl = "jdbc:h2:mem:test1;MODE=Oracle;DB_CLOSE_DELAY=-1"
+        username = "sa"
         password = "sa"
-//        Server.createTcpServer("-tcp", "-tcpAllowOthers", "-tcpPort", "9090").start()
-
+    }
+    protected val dataSource: DataSource = HikariDataSource(hikariConfig).apply {
         flyway()
     }
 
