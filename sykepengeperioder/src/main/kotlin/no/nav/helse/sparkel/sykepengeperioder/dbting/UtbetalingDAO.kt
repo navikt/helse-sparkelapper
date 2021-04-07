@@ -33,14 +33,14 @@ class UtbetalingDAO(
             session.run(
                 queryOf(statement, fnr.formatAsITFnr(), seq).map { rs ->
                     UtbetalingDTO(
-                        rs.intToLocalDate("is15_utbetfom"),
-                        rs.intToLocalDate("is15_utbettom"),
-                        rs.string("is15_grad").trim(),
-                        rs.string("is15_op").trim(),
-                        rs.intToLocalDate("is15_utbetdato"),
-                        rs.double("is15_dsats"),
-                        rs.string("is15_type").trim(),
-                        rs.string("is15_arbgivnr")
+                        fom = rs.intOrNullToLocalDate("is15_utbetfom"),
+                        tom = rs.intOrNullToLocalDate("is15_utbettom"),
+                        grad = rs.string("is15_grad").trim(),
+                        oppgjorType = rs.string("is15_op").trim(),
+                        utbetalt = rs.intOrNullToLocalDate("is15_utbetdato"),
+                        dagsats = rs.double("is15_dsats"),
+                        periodeType = rs.string("is15_type").trim(),
+                        arbOrgnr = rs.string("is15_arbgivnr")
                     )
                 }.asList
             )
@@ -48,11 +48,11 @@ class UtbetalingDAO(
     }
 
     internal data class UtbetalingDTO(
-        val fom: LocalDate,
-        val tom: LocalDate,
+        val fom: LocalDate?,
+        val tom: LocalDate?,
         val grad: String,
         val oppgjorType: String,
-        val utbetalt: LocalDate,
+        val utbetalt: LocalDate?,
         val dagsats: Double,
         val periodeType: String,
         val arbOrgnr: String
