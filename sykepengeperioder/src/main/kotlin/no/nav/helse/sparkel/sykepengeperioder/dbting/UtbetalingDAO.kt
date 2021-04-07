@@ -36,7 +36,7 @@ class UtbetalingDAO(
                         fom = rs.intOrNullToLocalDate("is15_utbetfom"),
                         tom = rs.intOrNullToLocalDate("is15_utbettom"),
                         grad = rs.string("is15_grad").trim(),
-                        oppgjorType = rs.string("is15_op").trim(),
+                        oppgjorType = rs.string("is15_op").trim { it <= '\u0020' },
                         utbetalt = rs.intOrNullToLocalDate("is15_utbetdato"),
                         dagsats = rs.double("is15_dsats"),
                         periodeType = rs.string("is15_type").trim(),
