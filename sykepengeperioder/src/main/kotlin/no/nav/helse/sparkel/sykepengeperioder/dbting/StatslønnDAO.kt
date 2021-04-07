@@ -13,16 +13,16 @@ class StatslønnDAO(
         return sessionOf(dataSource).use { session ->
             @Language("Oracle")
             val statement = """
-                select 
-                    count(*) > 0 as harStatslonn
+                select
+                        count(*) harStatslonn
                 from is_diverse_11
                 where f_nr = ?
-                    and is10_arbufoer_seq = ?
+                  and is10_arbufoer_seq = ?
                 """
             requireNotNull(
                 session.run(
                     queryOf(statement, fnr.formatAsITFnr(), seq).map { rs ->
-                        rs.boolean("harStatslonn")
+                        rs.int("harStatslonn") > 0
                     }.asSingle
                 )
             )
