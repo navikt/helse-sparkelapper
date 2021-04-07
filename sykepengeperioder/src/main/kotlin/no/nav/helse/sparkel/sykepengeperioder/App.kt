@@ -1,7 +1,5 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
@@ -18,13 +16,14 @@ fun main() {
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
     val dataSource: DataSource? = try {
-        val hikariConfig = HikariConfig().apply {
-            jdbcUrl = env.getValue("INFOTRYGDSP_URL")
-            username = env.getValue("INFOTRYGDSP_USERNAME")
-            password = env.getValue("INFOTRYGDSP_PASSWORD")
-            schema = env.getValue("INFOTRYGDSP_SCHEMA")
-        }
-        HikariDataSource(hikariConfig)
+//        val hikariConfig = HikariConfig().apply {
+//            jdbcUrl = env.getValue("INFOTRYGDSP_URL")
+//            username = env.getValue("INFOTRYGDSP_USERNAME")
+//            password = env.getValue("INFOTRYGDSP_PASSWORD")
+//            schema = env.getValue("INFOTRYGDSP_SCHEMA")
+//        }
+//        HikariDataSource(hikariConfig)
+        null
     } catch (e: Throwable) {
         sikkerlogg.warn("Feil ved opprettelse av dataSource", e)
         null
