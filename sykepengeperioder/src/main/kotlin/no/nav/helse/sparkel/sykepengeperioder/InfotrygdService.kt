@@ -68,7 +68,7 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient, pr
                         }
                     sjekkLikhet(historikk, dbHistorikk)
                 } catch (e: Throwable) {
-                    sikkerlogg.error("Error ved henting av Utbetalingshistorikk", e)
+                    sikkerlogg.warn("Error ved henting av Utbetalingshistorikk", e)
                 }
             }
             log.info(
@@ -124,7 +124,7 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient, pr
                     }
                     sjekkLikhet(historikk, dbHistorikk)
                 } catch (e: Throwable) {
-                    sikkerlogg.error("Error ved henting av Utbetalingsperioder", e)
+                    sikkerlogg.warn("Error ved henting av Utbetalingsperioder", e)
                 }
             }
             log.info(

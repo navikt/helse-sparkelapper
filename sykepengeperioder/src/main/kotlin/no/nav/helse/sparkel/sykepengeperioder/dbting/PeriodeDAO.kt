@@ -62,7 +62,7 @@ internal class PeriodeDAO(
          from is_periode_10
          where f_nr = ?            -- 1
          and is10_stoenads_type = '  ' -- dvs. sykepenger
-         and is10_frisk != 'H'
+         and (is10_frisk is null or is10_frisk != 'H')
          and is10_arbufoer >= ?    -- 2
          and is10_arbufoer <= ?    -- 3
          order by is10_arbufoer desc
@@ -87,18 +87,18 @@ internal class PeriodeDAO(
                         ferie1Tom = rs.intOrNullToLocalDate("is10_ferie_tom"),
                         ferie2Fom = rs.intOrNullToLocalDate("is10_ferie_fom2"),
                         ferie2Tom = rs.intOrNullToLocalDate("is10_ferie_tom2"),
-                        stansAarsak = rs.string("is10_stans").trim(),
-                        unntakAktivitet = rs.string("is10_unntak_aktivitet").trim(),
+                        stansAarsak = rs.stringOrNull("is10_stans")?.trim(),
+                        unntakAktivitet = rs.stringOrNull("is10_unntak_aktivitet")?.trim(),
                         arbeidsKategori = rs.string("is10_arbkat").trim(),
-                        arbeidsKategori99 = rs.string("is10_arbkat_99").trim(),
+                        arbeidsKategori99 = rs.stringOrNull("is10_arbkat_99")?.trim(),
                         sanksjonFom = rs.intOrNullToLocalDate("is10_sanksjon_fom"),
                         sanksjonTom = rs.intOrNullToLocalDate("is10_sanksjon_tom"),
-                        erSanksjonBekreftet = rs.string("is10_sanksjon_bekreftet").trim(),
+                        erSanksjonBekreftet = rs.stringOrNull("is10_sanksjon_bekreftet")?.trim(),
                         sanksjonsDager = rs.int("is10_sanksjonsdager"),
                         opphoerFom = rs.intOrNullToLocalDate("is10_stoppdato"),
                         sykemelder = rs.string("is10_legenavn").trim(),
                         behandlet = rs.intToLocalDate("is10_behdato"),
-                        yrkesskadeArt = rs.string("is10_skadeart").trim(),
+                        yrkesskadeArt = rs.stringOrNull("is10_skadeart")?.trim(),
                         skadet = rs.intOrNullToLocalDate("is10_skdato"),
                         vedtatt = rs.intOrNullToLocalDate("is10_skm_mott")
                     )
@@ -120,18 +120,18 @@ internal class PeriodeDAO(
         val ferie1Tom: LocalDate?,
         val ferie2Fom: LocalDate?,
         val ferie2Tom: LocalDate?,
-        val stansAarsak: String,
-        val unntakAktivitet: String,
+        val stansAarsak: String?,
+        val unntakAktivitet: String?,
         val arbeidsKategori: String,
-        val arbeidsKategori99: String,
+        val arbeidsKategori99: String?,
         val sanksjonFom: LocalDate?,
         val sanksjonTom: LocalDate?,
-        val erSanksjonBekreftet: String,
+        val erSanksjonBekreftet: String?,
         val sanksjonsDager: Int,
         val opphoerFom: LocalDate?,
         val sykemelder: String,
         val behandlet: LocalDate,
-        val yrkesskadeArt: String,
+        val yrkesskadeArt: String?,
         val skadet: LocalDate?,
         val vedtatt: LocalDate?
     ) {

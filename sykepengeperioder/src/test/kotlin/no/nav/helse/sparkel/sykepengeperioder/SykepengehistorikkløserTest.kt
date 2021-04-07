@@ -289,8 +289,8 @@ internal class SykepengehistorikkløserTest : H2Database() {
             "@behov":[
                 "${Sykepengehistorikkløser.behov}"], 
                 "${Sykepengehistorikkløser.behov}": { 
-                    "historikkFom": "2016-01-01", 
-                    "historikkTom": "2020-01-01"
+                    "historikkFom": "2017-01-01", 
+                    "historikkTom": "2021-01-01"
                 }, 
                 "fødselsnummer": "$fnr", 
                 "vedtaksperiodeId": "id"

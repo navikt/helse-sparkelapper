@@ -36,12 +36,12 @@ internal class InntektDAO(
             session.run(
                 queryOf(statement, fnr.formatAsITFnr(), seq).map { rs ->
                     InntektDTO(
-                        rs.string("is13_arbgivnr"),
-                        rs.intToLocalDate("is13_spfom"),
-                        rs.intOrNullToLocalDate("is13_ref_tom"),
-                        rs.string("is13_ref"),
-                        rs.string("is13_periode"),
-                        rs.double("is13_loenn")
+                        orgNr = rs.string("is13_arbgivnr"),
+                        sykepengerFom = rs.intToLocalDate("is13_spfom"),
+                        refusjonTom = rs.intOrNullToLocalDate("is13_ref_tom"),
+                        refusjonsType = rs.string("is13_ref"),
+                        periode = rs.string("is13_periode"),
+                        loenn = rs.double("is13_loenn")
                     )
                 }.asList
             )
