@@ -10,4 +10,4 @@ env:
 - name: INFOTRYGDSP_URL
   value: jdbc:oracle:thin:@a01dbfl033.adeo.no:1521/cdcq
 - name: INFOTRYGDSP_SCHEMA
-  value: INFOTRYGD_Q1
+  value: REST_READ_Q1

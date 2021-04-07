@@ -154,7 +154,9 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient, pr
     private fun sjekkLikhet(restVersjon: Any, dbVersjon: Any) {
         val restJson = objectMapper.convertValue<JsonNode>(restVersjon)
         val dbJson = objectMapper.convertValue<JsonNode>(dbVersjon)
-        if (restJson != dbJson) {
+        if (restJson == dbJson) {
+            sikkerlogg.info("restVersjon og dbVersjon er like")
+        } else {
             sikkerlogg.warn("restVersjon og dbVersjon er ulike\nrestVersjon:\n${restJson.toPrettyString()}\ndbVersjon:\n${dbJson.toPrettyString()}")
         }
     }
