@@ -10,7 +10,7 @@ internal class Fnr(private val fnr: String) {
     private val year: String = fnr.substring(4, 6)
     private val id: String = fnr.substring(6)
 
-    internal fun formatAsITFnr() = "$year$month$date$id".toLong()
+    internal fun formatAsITFnr() = "$year$month$date$id"
 
     override fun toString() = fnr
 }

@@ -8,7 +8,7 @@ val flywayVersion = "7.7.1"
 
 dependencies{
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")
-    implementation("com.oracle.database.jdbc:ojdbc8:$ojdbcVersion")
+    implementation("com.oracle.database.jdbc:ojdbc11:$ojdbcVersion")
     implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
     testImplementation("com.h2database:h2:$h2Version")
