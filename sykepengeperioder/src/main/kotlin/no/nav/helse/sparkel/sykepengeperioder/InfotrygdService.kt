@@ -1,7 +1,8 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -151,13 +152,20 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient, pr
         }
     }
 
-    private fun sjekkLikhet(restVersjon: Any, dbVersjon: Any) {
-        val restJson = objectMapper.convertValue<JsonNode>(restVersjon)
-        val dbJson = objectMapper.convertValue<JsonNode>(dbVersjon)
-        if (restJson == dbJson) {
-            sikkerlogg.info("restVersjon og dbVersjon er like")
-        } else {
-            sikkerlogg.warn("restVersjon og dbVersjon er ulike\nrestVersjon:\n${restJson.toPrettyString()}\ndbVersjon:\n${dbJson.toPrettyString()}")
+    private fun sjekkLikhet(restVersjon: List<*>, dbVersjon: List<*>) {
+        val restJson = objectMapper.convertValue<ArrayNode>(restVersjon)
+        val dbJson = objectMapper.convertValue<ArrayNode>(dbVersjon)
+        when {
+            restJson == dbJson -> sikkerlogg.info("restVersjon og dbVersjon er like")
+            restJson.sort() == dbJson.sort() -> sikkerlogg.info("restVersjon og dbVersjon er like etter sortering")
+            else -> sikkerlogg.warn("restVersjon og dbVersjon er ulike\nrestVersjon:\n${restJson.toPrettyString()}\ndbVersjon:\n${dbJson.toPrettyString()}")
         }
     }
+
+    private fun ArrayNode.sort() =
+        onEach { node ->
+            node as ObjectNode
+            val utbetalteSykeperioder = node.withArray("utbetalteSykeperioder").sortedBy { it["fom"].asText() }
+            node.putArray("utbetalteSykeperioder").addAll(utbetalteSykeperioder)
+        }
 }
