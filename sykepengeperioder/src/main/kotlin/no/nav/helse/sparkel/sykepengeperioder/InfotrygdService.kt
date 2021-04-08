@@ -180,9 +180,13 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient, pr
         .reduce { acc, comparator -> acc.then(comparator) }
 
     private fun ArrayNode.sort() =
-        onEach { node ->
-            node as ObjectNode
-            val utbetalteSykeperioder = node.withArray("utbetalteSykeperioder").sortedWith(comparator)
-            node.putArray("utbetalteSykeperioder").addAll(utbetalteSykeperioder)
+        if (first().get("utbetalteSykeperioder") != null) {
+            onEach { node ->
+                node as ObjectNode
+                val utbetalteSykeperioder = node.withArray("utbetalteSykeperioder").sortedWith(comparator)
+                node.putArray("utbetalteSykeperioder").addAll(utbetalteSykeperioder)
+            }
+        } else {
+            arrayNode().addAll(sortedWith(comparator))
         }
 }
