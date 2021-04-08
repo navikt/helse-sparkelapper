@@ -164,15 +164,19 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient, pr
     }
 
     private val comparator = listOf(
+        "arbeidsKategoriKode",
         "fom",
         "tom",
         "utbetalingsGrad",
+        "grad",
         "oppgjorsType",
         "utbetalt",
         "dagsats",
         "typeKode",
         "typeTekst",
-        "orgnummer"
+        "typetekst",
+        "orgnummer",
+        "organisasjonsnummer"
     )
         .map { prop ->
             Comparator.comparing<JsonNode, String> { node -> node[prop]?.takeUnless(JsonNode::isNull)?.asText() ?: "" }
