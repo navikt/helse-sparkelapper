@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -162,10 +163,26 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient, pr
         }
     }
 
+    private val comparator = listOf(
+        "fom",
+        "tom",
+        "utbetalingsGrad",
+        "oppgjorsType",
+        "utbetalt",
+        "dagsats",
+        "typeKode",
+        "typeTekst",
+        "orgnummer"
+    )
+        .map { prop ->
+            Comparator.comparing<JsonNode, String> { node -> node[prop]?.takeUnless(JsonNode::isNull)?.asText() ?: "" }
+        }
+        .reduce { acc, comparator -> acc.then(comparator) }
+
     private fun ArrayNode.sort() =
         onEach { node ->
             node as ObjectNode
-            val utbetalteSykeperioder = node.withArray("utbetalteSykeperioder").sortedBy { it["fom"].asText() }
+            val utbetalteSykeperioder = node.withArray("utbetalteSykeperioder").sortedWith(comparator)
             node.putArray("utbetalteSykeperioder").addAll(utbetalteSykeperioder)
         }
 }
