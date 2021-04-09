@@ -4,26 +4,22 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
-import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
-import org.junit.jupiter.api.*
+import no.nav.helse.sparkel.sykepengeperioder.dbting.InntektDAO
+import no.nav.helse.sparkel.sykepengeperioder.dbting.PeriodeDAO
+import no.nav.helse.sparkel.sykepengeperioder.dbting.StatslønnDAO
+import no.nav.helse.sparkel.sykepengeperioder.dbting.UtbetalingDAO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import java.time.LocalDate
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class UtbetalingsperiodeløserTest : H2Database() {
 
-    private companion object {
-        private val fnr = Fnr("14123456789")
-        private const val orgnummer = "80000000"
-    }
-
-    private val wireMockServer: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
     private val objectMapper = jacksonObjectMapper()
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .registerModule(JavaTimeModule())
@@ -50,37 +46,26 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
 
     @BeforeAll
     fun setup() {
-        wireMockServer.start()
-        WireMock.configureFor(WireMock.create().port(wireMockServer.port()).build())
-        stubEksterneEndepunkt()
         service = InfotrygdService(
-            InfotrygdClient(
-                baseUrl = wireMockServer.baseUrl(),
-                accesstokenScope = "a_scope",
-                azureClient = AzureClient(
-                    tokenEndpoint = "${wireMockServer.baseUrl()}/token",
-                    clientId = "client_id",
-                    clientSecret = "client_secret"
-                )
-            ),
-            dataSource
+            PeriodeDAO(dataSource),
+            UtbetalingDAO(dataSource),
+            InntektDAO(dataSource),
+            StatslønnDAO(dataSource)
         )
-    }
-
-    @AfterAll
-    internal fun teardown() {
-        wireMockServer.stop()
     }
 
     @BeforeEach
     internal fun beforeEach() {
+        clear()
         sendtMelding = objectMapper.createObjectNode()
     }
 
     @Test
     fun `løser enkelt behov`() {
+        opprettPeriode(utbetalinger = listOf(Utbetaling(1.januar(2020), 31.januar(2020))))
         testBehov(enkeltBehov())
 
+        assertFalse(sendtMelding.isEmpty)
         val perioder = sendtMelding.løsning()
 
         assertEquals(1, perioder.size)
@@ -88,22 +73,18 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
 
     @Test
     fun `løser behov med flere behov-nøkler`() {
+        opprettPeriode(utbetalinger = listOf(Utbetaling(1.januar(2020), 31.januar(2020))))
         testBehov(behovMedFlereBehovsnøkler())
 
+        assertFalse(sendtMelding.isEmpty)
         val perioder = sendtMelding.løsning()
-        println(sendtMelding.toPrettyString())
 
         assertEquals(1, perioder.size)
     }
 
     @Test
-    fun `River svarer på behov`() {
-        testBehov(behovMedFlereBehovsnøkler())
-        assertFalse(sendtMelding.isEmpty)
-    }
-
-    @Test
     fun `mapper også ut perioder`() {
+        opprettPeriode(utbetalinger = listOf(Utbetaling(1.januar(2020), 31.januar(2020))))
         testBehov(enkeltBehov())
 
         val løsninger = sendtMelding.løsning()
@@ -113,31 +94,10 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
 
         assertInfotrygdperiode(
             periode = periode,
-            fom = 19.januar,
-            tom = 23.januar,
+            fom = 1.januar(2020),
+            tom = 31.januar(2020),
             grad = "100",
-            dagsats = 870.0,
-            typetekst = "ArbRef",
-            organisasjonsnummer = orgnummer,
-            arbeidsKategoriKode = "01"
-        )
-    }
-
-    @Test
-    fun `mapper også ut arbeidsKategoriKode`() {
-        testBehov(enkeltBehov())
-
-        val løsninger = sendtMelding.løsning()
-        assertEquals(1, løsninger.size)
-
-        val periode = løsninger.first()
-
-        assertInfotrygdperiode(
-            periode = periode,
-            fom = 19.januar,
-            tom = 23.januar,
-            grad = "100",
-            dagsats = 870.0,
+            dagsats = 1000.0,
             typetekst = "ArbRef",
             organisasjonsnummer = orgnummer,
             arbeidsKategoriKode = "01"
@@ -195,7 +155,7 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
             "spleisBehovId" : "spleisBehovId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "$fnr",
-            "orgnummer" : "orgnr",
+            "orgnummer" : "$orgnummer",
             "HentInfotrygdutbetalinger": {
                 "historikkFom" : "2017-05-18",
                 "historikkTom" : "2020-05-18"
@@ -213,98 +173,11 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
             "spleisBehovId" : "spleisBehovId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "$fnr",
-            "orgnummer" : "orgnr",
+            "orgnummer" : "$orgnummer",
             "HentInfotrygdutbetalinger": {
                 "historikkFom" : "2017-05-18",
                 "historikkTom" : "2020-05-18"
             }
         }
         """.trimIndent()
-
-    private fun stubEksterneEndepunkt() {
-        WireMock.stubFor(
-            WireMock.post(WireMock.urlMatching("/token"))
-                .willReturn(
-                    WireMock.aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(
-                            """{
-                        "token_type": "Bearer",
-                        "expires_in": 3599,
-                        "access_token": "1234abc"
-                    }"""
-                        )
-                )
-        )
-        WireMock.stubFor(
-            WireMock.get(WireMock.urlPathEqualTo("/v1/hentSykepengerListe"))
-                .withHeader("Accept", WireMock.equalTo("application/json"))
-                .willReturn(
-                    WireMock.aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(
-                            """{
-                                      "sykmeldingsperioder": [
-                                        {
-                                          "ident": 1000,
-                                          "tknr": "0220",
-                                          "seq": 79999596,
-                                          "sykemeldtFom": "2018-01-03",
-                                          "sykemeldtTom": "2018-01-23",
-                                          "grad": "100",
-                                          "slutt": "2019-03-30",
-                                          "erArbeidsgiverPeriode": true,
-                                          "stansAarsakKode": "AF",
-                                          "stansAarsak": "AvsluttetFrisk",
-                                          "unntakAktivitet": "",
-                                          "arbeidsKategoriKode": "01",
-                                          "arbeidsKategori": "Arbeidstaker",
-                                          "arbeidsKategori99": "",
-                                          "erSanksjonBekreftet": "",
-                                          "sanksjonsDager": 0,
-                                          "sykemelder": "NØDNUMMER",
-                                          "behandlet": "2018-01-05",
-                                          "yrkesskadeArt": "",
-                                          "utbetalingList": [
-                                            {
-                                              "fom": "2018-01-19",
-                                              "tom": "2018-01-23",
-                                              "utbetalingsGrad": "100",
-                                              "oppgjorsType": "50",
-                                              "utbetalt": "2018-02-16",
-                                              "dagsats": 870.0,
-                                              "typeKode": "5",
-                                              "typeTekst": "ArbRef",
-                                              "arbOrgnr": $orgnummer
-                                            }
-                                          ],
-                                          "statslonnList": [],
-                                          "inntektList": [
-                                            {
-                                              "orgNr": "80000000",
-                                              "sykepengerFom": "2018-01-19",
-                                              "refusjonTom": "2018-01-30",
-                                              "refusjonsType": "H",
-                                              "periodeKode": "U",
-                                              "periode": "Ukentlig",
-                                              "loenn": 4350.5
-                                            }
-                                          ],
-                                          "graderingList": [
-                                            {
-                                              "gradertFom": "2018-01-03",
-                                              "gradertTom": "2018-01-23",
-                                              "grad": "100"
-                                            }
-                                          ],
-                                          "forsikring": []
-                                        }
-                                      ]
-                                    }"""
-                        )
-                )
-        )
-    }
 }

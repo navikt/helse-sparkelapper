@@ -1,15 +1,17 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.*
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.helse.sparkel.sykepengeperioder.infotrygd.AzureClient
-import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
+import no.nav.helse.sparkel.sykepengeperioder.dbting.InntektDAO
+import no.nav.helse.sparkel.sykepengeperioder.dbting.PeriodeDAO
+import no.nav.helse.sparkel.sykepengeperioder.dbting.StatslønnDAO
+import no.nav.helse.sparkel.sykepengeperioder.dbting.UtbetalingDAO
 import org.intellij.lang.annotations.Language
-import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -17,12 +19,6 @@ import java.time.LocalDateTime
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SykepengehistorikkløserTest : H2Database() {
 
-    private companion object {
-        private val fnr = Fnr("14123456789")
-        private const val orgnummer = "80000000"
-    }
-
-    private val wireMockServer: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
     private lateinit var infotrygdService: InfotrygdService
     private val rapid = TestRapid()
 
@@ -30,20 +26,11 @@ internal class SykepengehistorikkløserTest : H2Database() {
 
     @BeforeAll
     fun setup() {
-        wireMockServer.start()
-        configureFor(create().port(wireMockServer.port()).build())
-        stubAuthEndepunkt()
         infotrygdService = InfotrygdService(
-            InfotrygdClient(
-                baseUrl = wireMockServer.baseUrl(),
-                accesstokenScope = "a_scope",
-                azureClient = AzureClient(
-                    tokenEndpoint = "${wireMockServer.baseUrl()}/token",
-                    clientId = "client_id",
-                    clientSecret = "client_secret"
-                )
-            ),
-            dataSource
+            PeriodeDAO(dataSource),
+            UtbetalingDAO(dataSource),
+            InntektDAO(dataSource),
+            StatslønnDAO(dataSource)
         )
         rapid.apply {
             Sykepengehistorikkløser(this, infotrygdService)
@@ -52,17 +39,14 @@ internal class SykepengehistorikkløserTest : H2Database() {
 
     @BeforeEach
     fun beforeEach() {
-        stubSvarFraInfotrygd()
         rapid.reset()
-    }
-
-    @AfterAll
-    internal fun teardown() {
-        wireMockServer.stop()
+        clear()
     }
 
     @Test
     fun `løser behov`() {
+        opprettPeriode(seq = 1)
+        opprettPeriode(seq = 2)
         rapid.sendTestMessage(behov())
         val perioder = sisteSendtMelding.løsning()
 
@@ -77,10 +61,12 @@ internal class SykepengehistorikkløserTest : H2Database() {
 
     @Test
     fun `løser behov uten vedtaksperiodeId`() {
+        opprettPeriode(seq = 1)
+        opprettPeriode(seq = 2)
         val behov =
             """{"@id": "behovsid", "@opprettet":"${
                 LocalDateTime.now().minusMinutes(1)
-            }", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2016-01-01", "historikkTom": "2020-01-01"}, "fødselsnummer": "$fnr" }"""
+            }", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2017-01-01", "historikkTom": "2021-01-01"}, "fødselsnummer": "$fnr" }"""
 
         rapid.sendTestMessage(behov)
 
@@ -90,11 +76,35 @@ internal class SykepengehistorikkløserTest : H2Database() {
 
     @Test
     fun `mapper også ut inntekt og dagsats`() {
+        opprettPeriode(
+            seq = 1,
+            utbetalinger = listOf(
+                Utbetaling(5.september(2020), 25.september(2020), dagsats = 2176.0),
+                Utbetaling(4.september(2020), 4.september(2020))
+            ),
+            inntekter = listOf(Inntekt(4.september(2020), lønn = 565700.0))
+        )
+        opprettPeriode(
+            seq = 2,
+            utbetalinger = listOf(
+                Utbetaling(2.juni(2019), 20.juni(2019)),
+                Utbetaling(17.mai(2019), 1.juni(2019)),
+                Utbetaling(1.mai(2019), 16.mai(2019)),
+                Utbetaling(15.april(2019), 30.april(2019)),
+                Utbetaling(30.mars(2019), 14.april(2019)),
+                Utbetaling(4.februar(2019), 29.mars(2019))
+            ),
+            inntekter = listOf(Inntekt(4.februar(2019), lønn = 507680.0))
+        )
         rapid.sendTestMessage(behov())
 
         val perioder = sisteSendtMelding.løsning()
 
         assertEquals(2, perioder.size)
+        assertEquals(2, perioder[0].utbetalteSykeperioder.size)
+        assertEquals(6, perioder[1].utbetalteSykeperioder.size)
+        assertEquals(1, perioder[0].inntektsopplysninger.size)
+        assertEquals(1, perioder[1].inntektsopplysninger.size)
 
         assertSykeperiode(
             sykeperiode = perioder[0].utbetalteSykeperioder[0],
@@ -121,6 +131,8 @@ internal class SykepengehistorikkløserTest : H2Database() {
 
     @Test
     fun `setter ikke statslønn hvis tidligere periode har statslønn`() {
+        opprettPeriode(seq = 1, sykmeldtFom = 1.januar(2020), statslønn = 1000.0)
+        opprettPeriode(seq = 2, sykmeldtFom = 1.februar(2020), statslønn = null)
         rapid.sendTestMessage(behov())
         sisteSendtMelding.løsning().let { utenStatslønn ->
             utenStatslønn.forEach { periode ->
@@ -131,7 +143,8 @@ internal class SykepengehistorikkløserTest : H2Database() {
 
     @Test
     fun `setter statslønn hvis nyeste periode har statslønn`() {
-        stubSvarFraInfotrygdMedAktivStatslønn()
+        opprettPeriode(seq = 1, sykmeldtFom = 1.januar(2020), statslønn = null)
+        opprettPeriode(seq = 2, sykmeldtFom = 1.februar(2020), statslønn = 1000.0)
         rapid.sendTestMessage(behov())
 
         sisteSendtMelding.løsning().let { medStatlønn ->
@@ -142,6 +155,7 @@ internal class SykepengehistorikkløserTest : H2Database() {
 
     @Test
     fun `setter arbeidsKategoriKode`() {
+        opprettPeriode(arbeidskategori = "01")
         rapid.sendTestMessage(behov())
         sisteSendtMelding.løsning().let { løsning ->
             assertEquals("01", løsning.first().arbeidsKategoriKode)
@@ -150,7 +164,8 @@ internal class SykepengehistorikkløserTest : H2Database() {
 
     @Test
     fun `forskjellig  arbeidsKategoriKode`() {
-        stubSvarFraInfotrygdMedForskjelligarbeidsKategoriKode()
+        opprettPeriode(seq = 1, arbeidskategori = "01")
+        opprettPeriode(seq = 2, arbeidskategori = "02")
         rapid.sendTestMessage(behov())
         sisteSendtMelding.løsning().let { løsning ->
             assertEquals("01", løsning.first().arbeidsKategoriKode)
@@ -219,67 +234,6 @@ internal class SykepengehistorikkløserTest : H2Database() {
         assertEquals(orgnummer, inntektsopplysninger[0].orgnummer)
     }
 
-    private fun stubAuthEndepunkt() {
-        stubFor(
-            post(urlMatching("/token"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(
-                            """{
-                        "token_type": "Bearer",
-                        "expires_in": 3599,
-                        "access_token": "1234abc"
-                    }"""
-                        )
-                )
-        )
-    }
-
-    private fun stubSvarFraInfotrygdMedAktivStatslønn() {
-        stubFor(
-            get(urlPathEqualTo("/v1/hentSykepengerListe"))
-                .withHeader("Accept", equalTo("application/json"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(
-                            getContents("statslønnAktivResponse.json")
-                        )
-                )
-        )
-    }
-
-    private fun stubSvarFraInfotrygdMedForskjelligarbeidsKategoriKode() {
-        stubFor(
-            get(urlPathEqualTo("/v1/hentSykepengerListe"))
-                .withHeader("Accept", equalTo("application/json"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(
-                            getContents("infotrygdResponseForskjelligArbeidsKategoriKode.json")
-                        )
-                )
-        )
-    }
-
-    private fun stubSvarFraInfotrygd() {
-        stubFor(
-            get(urlPathEqualTo("/v1/hentSykepengerListe"))
-                .withHeader("Accept", equalTo("application/json"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(getContents("statslønnTidligereResponse.json"))
-                )
-        )
-    }
-
     @Language("Json")
     private fun behov(opprettet: LocalDateTime = LocalDateTime.now().minusMinutes(5)) =
         """
@@ -296,6 +250,4 @@ internal class SykepengehistorikkløserTest : H2Database() {
                 "vedtaksperiodeId": "id"
             }
         """
-
-    private fun getContents(filename: String) = this::class.java.getResource("/$filename").readText()
 }

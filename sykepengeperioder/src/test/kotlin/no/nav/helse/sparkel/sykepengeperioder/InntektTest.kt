@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.sykepengeperioder.infotrygd
+package no.nav.helse.sparkel.sykepengeperioder
 
 import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode
 import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode.*

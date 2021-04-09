@@ -1,12 +1,5 @@
 kafkaPool: nav-dev
-azure:
-  enabled: true
-  tenant: trygdeetaten.no
 env:
-- name: INFOTRYGD_SCOPE
-  value: api://df41895c-b7f3-4b8c-b333-8801710093ad/.default
-- name: INFOTRYGD_URL
-  value: http://infotrygd-sykepenger.default.svc.nais.local
 - name: INFOTRYGDSP_URL
   value: jdbc:oracle:thin:@a01dbfl033.adeo.no:1521/cdcq
 - name: INFOTRYGDSP_SCHEMA

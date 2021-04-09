@@ -10,24 +10,4 @@ internal class Utbetalingsperiode(
     val grad: String,
     val typetekst: String?,
     val organisasjonsnummer: String?
-) {
-
-    internal companion object {
-        internal fun tilPerioder(sykepenger: Sykepenger): List<Utbetalingsperiode> = sykepenger
-            .sykmeldingsperioder
-            .flatMap {
-                val arbeidsKategoriKode = it.arbeidsKategoriKode
-                it.utbetalingList.map { utbetaling ->
-                    Utbetalingsperiode(
-                        arbeidsKategoriKode,
-                        fom = utbetaling.fom,
-                        tom = utbetaling.tom,
-                        dagsats = utbetaling.dagsats,
-                        grad = utbetaling.utbetalingsGrad,
-                        typetekst = utbetaling.typeTekst,
-                        organisasjonsnummer = utbetaling.arbOrgnr
-                    )
-                }
-            }
-    }
-}
+)

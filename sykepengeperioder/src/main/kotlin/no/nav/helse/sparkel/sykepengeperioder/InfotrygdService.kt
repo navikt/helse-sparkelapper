@@ -1,30 +1,23 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.convertValue
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.sykepengeperioder.dbting.InntektDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.PeriodeDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.StatslønnDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.UtbetalingDAO
-import no.nav.helse.sparkel.sykepengeperioder.infotrygd.InfotrygdClient
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
-import javax.sql.DataSource
 
-internal class InfotrygdService(private val infotrygdClient: InfotrygdClient, private val dataSource: DataSource?) {
+internal class InfotrygdService(
+    private val periodeDAO: PeriodeDAO,
+    private val utbetalingDAO: UtbetalingDAO,
+    private val inntektDAO: InntektDAO,
+    private val statslønnDAO: StatslønnDAO
+) {
 
     private companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private val log = LoggerFactory.getLogger(this::class.java)
-        private val objectMapper = jacksonObjectMapper()
-            .registerModule(JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     }
 
     fun løsningForSykepengehistorikkbehov(
@@ -34,45 +27,30 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient, pr
         tom: LocalDate
     ): List<Utbetalingshistorikk> {
         try {
-            val historikk = Utbetalingshistorikk.tilPerioder(
-                infotrygdClient.hentHistorikk(
-                    behovId = behovId,
-                    fnr = fødselsnummer,
-                    fom = fom,
-                    tom = tom
-                )
+            val perioder = periodeDAO.perioder(
+                fødselsnummer,
+                fom,
+                tom
             )
-            if (dataSource != null) {
-                try {
-                    val perioder = PeriodeDAO(dataSource).perioder(
-                        fødselsnummer,
-                        fom,
-                        tom
-                    )
-                    val dbHistorikk: List<Utbetalingshistorikk> = perioder
-                        .sortedByDescending { it.sykemeldtFom }
-                        .mapIndexed { index, periode ->
-                            periode.tilUtbetalingshistorikk(
-                                UtbetalingDAO.UtbetalingDTO.tilHistorikkutbetaling(
-                                    UtbetalingDAO(dataSource).utbetalinger(
-                                        fødselsnummer,
-                                        periode.seq
-                                    )
-                                ),
-                                InntektDAO.InntektDTO.tilInntektsopplysninger(
-                                    InntektDAO(dataSource).inntekter(
-                                        fødselsnummer,
-                                        periode.seq
-                                    )
-                                ),
-                                index == 0 && StatslønnDAO(dataSource).harStatslønn(fødselsnummer, periode.seq)
+            val historikk: List<Utbetalingshistorikk> = perioder
+                .sortedByDescending { it.sykemeldtFom }
+                .mapIndexed { index, periode ->
+                    periode.tilUtbetalingshistorikk(
+                        UtbetalingDAO.UtbetalingDTO.tilHistorikkutbetaling(
+                            utbetalingDAO.utbetalinger(
+                                fødselsnummer,
+                                periode.seq
                             )
-                        }
-                    sjekkLikhet(historikk, dbHistorikk)
-                } catch (e: Throwable) {
-                    sikkerlogg.warn("Error ved henting av Utbetalingshistorikk", e)
+                        ),
+                        InntektDAO.InntektDTO.tilInntektsopplysninger(
+                            inntektDAO.inntekter(
+                                fødselsnummer,
+                                periode.seq
+                            )
+                        ),
+                        index == 0 && statslønnDAO.harStatslønn(fødselsnummer, periode.seq)
+                    )
                 }
-            }
             log.info(
                 "løser behov: {}",
                 keyValue("id", behovId)
@@ -104,30 +82,15 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient, pr
         tom: LocalDate
     ): List<Utbetalingsperiode> {
         try {
-            val historikk = Utbetalingsperiode.tilPerioder(
-                infotrygdClient.hentHistorikk(
-                    behovId = behovId,
-                    fnr = fødselsnummer,
-                    fom = fom,
-                    tom = tom
-                )
+            val perioder = periodeDAO.perioder(
+                fødselsnummer,
+                fom,
+                tom
             )
-            if (dataSource != null) {
-                try {
-                    val perioder = PeriodeDAO(dataSource).perioder(
-                        fødselsnummer,
-                        fom,
-                        tom
-                    )
-                    val dbHistorikk: List<Utbetalingsperiode> = perioder.flatMap { periode ->
-                        periode.tilUtbetalingsperiode(
-                            UtbetalingDAO(dataSource).utbetalinger(fødselsnummer, periode.seq)
-                        )
-                    }
-                    sjekkLikhet(historikk, dbHistorikk)
-                } catch (e: Throwable) {
-                    sikkerlogg.warn("Error ved henting av Utbetalingsperioder", e)
-                }
+            val historikk: List<Utbetalingsperiode> = perioder.flatMap { periode ->
+                periode.tilUtbetalingsperiode(
+                    utbetalingDAO.utbetalinger(fødselsnummer, periode.seq)
+                )
             }
             log.info(
                 "løser behov: {}",
@@ -152,45 +115,4 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient, pr
             return emptyList()
         }
     }
-
-    private fun sjekkLikhet(restVersjon: List<*>, dbVersjon: List<*>) {
-        val restJson = objectMapper.convertValue<ArrayNode>(restVersjon)
-        val dbJson = objectMapper.convertValue<ArrayNode>(dbVersjon)
-        when {
-            restJson == dbJson -> sikkerlogg.info("restVersjon og dbVersjon er like")
-            restJson.sort() == dbJson.sort() -> sikkerlogg.info("restVersjon og dbVersjon er like etter sortering")
-            else -> sikkerlogg.warn("restVersjon og dbVersjon er ulike\nrestVersjon:\n${restJson.toPrettyString()}\ndbVersjon:\n${dbJson.toPrettyString()}")
-        }
-    }
-
-    private val comparator = listOf(
-        "arbeidsKategoriKode",
-        "fom",
-        "tom",
-        "utbetalingsGrad",
-        "grad",
-        "oppgjorsType",
-        "utbetalt",
-        "dagsats",
-        "typeKode",
-        "typeTekst",
-        "typetekst",
-        "orgnummer",
-        "organisasjonsnummer"
-    )
-        .map { prop ->
-            Comparator.comparing<JsonNode, String> { node -> node[prop]?.takeUnless(JsonNode::isNull)?.asText() ?: "" }
-        }
-        .reduce { acc, comparator -> acc.then(comparator) }
-
-    private fun ArrayNode.sort() =
-        if (first().get("utbetalteSykeperioder") != null) {
-            onEach { node ->
-                node as ObjectNode
-                val utbetalteSykeperioder = node.withArray("utbetalteSykeperioder").sortedWith(comparator)
-                node.putArray("utbetalteSykeperioder").addAll(utbetalteSykeperioder)
-            }
-        } else {
-            arrayNode().addAll(sortedWith(comparator))
-        }
 }

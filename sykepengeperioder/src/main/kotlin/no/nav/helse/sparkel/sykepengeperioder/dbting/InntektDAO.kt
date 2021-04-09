@@ -60,7 +60,7 @@ internal class InntektDAO(
             internal fun tilInntektsopplysninger(inntekter: List<InntektDTO>) = inntekter
                 .filter {
                     when (val periodeKode = it.periode) {
-                        in Inntektsopplysninger.gyldigePeriodeKoder -> true
+                        in Inntektsopplysninger.PeriodeKode.gyldigePeriodeKoder -> true
                         else -> {
                             log.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
                             tjenestekallLog.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
@@ -79,17 +79,5 @@ internal class InntektDAO(
                     )
                 }
         }
-
-        private fun String.toPeriode() =
-            when (this) {
-                "D" -> "Daglig"
-                "U" -> "Ukentlig"
-                "F" -> "Hver 14. dag"
-                "M" -> "Månedlig"
-                "Å" -> "Årlig"
-                "X" -> "Inntekt fastsatt etter 25% avvik"
-                "Y" -> "Premiegrunnlag oppdragstaker (gjelder 2 først ukene)"
-                else -> "Ukjent.."
-            }
     }
 }
