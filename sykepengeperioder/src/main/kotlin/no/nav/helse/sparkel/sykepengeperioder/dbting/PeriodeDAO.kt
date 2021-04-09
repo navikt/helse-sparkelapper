@@ -10,7 +10,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 
-internal fun Row.stringToBoolean(label: String) = string(label).trim().equals("j", ignoreCase = true)
 internal fun Row.intOrNullToLocalDate(label: String) = intOrNull(label)?.takeIf { it >= 10101 }?.toLocalDate()
 internal fun Row.intToLocalDate(label: String) = int(label).toLocalDate()
 internal fun Int.toLocalDate() =
@@ -78,11 +77,11 @@ internal class PeriodeDAO(
                         ident = rs.long("is01_personkey"),
                         tknr = rs.string("tk_nr").trim(),
                         seq = rs.int("is10_arbufoer_seq"),
-                        sykemeldtFom = rs.intToLocalDate("is10_arbufoer"),
-                        sykemeldtTom = rs.intToLocalDate("is10_arbufoer_tom"),
-                        grad = rs.string("is10_ufoeregrad").trim(),
+                        sykemeldtFom = rs.intOrNullToLocalDate("is10_arbufoer"),
+                        sykemeldtTom = rs.intOrNullToLocalDate("is10_arbufoer_tom"),
+                        grad = rs.stringOrNull("is10_ufoeregrad")?.trim(),
                         slutt = rs.intOrNullToLocalDate("is10_max"),
-                        erArbeidsgiverPeriode = rs.stringToBoolean("is10_arbper"),
+                        erArbeidsgiverPeriode = rs.stringOrNull("is10_arbper")?.trim().equals("j", ignoreCase = true),
                         ferie1Fom = rs.intOrNullToLocalDate("is10_ferie_fom"),
                         ferie1Tom = rs.intOrNullToLocalDate("is10_ferie_tom"),
                         ferie2Fom = rs.intOrNullToLocalDate("is10_ferie_fom2"),
@@ -96,7 +95,7 @@ internal class PeriodeDAO(
                         erSanksjonBekreftet = rs.stringOrNull("is10_sanksjon_bekreftet")?.trim(),
                         sanksjonsDager = rs.int("is10_sanksjonsdager"),
                         opphoerFom = rs.intOrNullToLocalDate("is10_stoppdato"),
-                        sykemelder = rs.string("is10_legenavn").trim(),
+                        sykemelder = rs.stringOrNull("is10_legenavn")?.trim(),
                         behandlet = rs.intToLocalDate("is10_behdato"),
                         yrkesskadeArt = rs.stringOrNull("is10_skadeart")?.trim(),
                         skadet = rs.intOrNullToLocalDate("is10_skdato"),
@@ -111,9 +110,9 @@ internal class PeriodeDAO(
         val ident: Long,
         val tknr: String,
         val seq: Int,
-        val sykemeldtFom: LocalDate,
-        val sykemeldtTom: LocalDate,
-        val grad: String,
+        val sykemeldtFom: LocalDate?,
+        val sykemeldtTom: LocalDate?,
+        val grad: String?,
         val slutt: LocalDate?,
         val erArbeidsgiverPeriode: Boolean,
         val ferie1Fom: LocalDate?,
@@ -129,7 +128,7 @@ internal class PeriodeDAO(
         val erSanksjonBekreftet: String?,
         val sanksjonsDager: Int,
         val opphoerFom: LocalDate?,
-        val sykemelder: String,
+        val sykemelder: String?,
         val behandlet: LocalDate,
         val yrkesskadeArt: String?,
         val skadet: LocalDate?,
