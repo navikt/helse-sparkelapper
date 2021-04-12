@@ -39,7 +39,12 @@ internal abstract class H2Database {
                 DELETE FROM IS_PERIODE_10;    
                 DELETE FROM IS_UTBETALING_15;    
                 DELETE FROM IS_INNTEKT_13;    
-                DELETE FROM IS_DIVERSE_11;    
+                DELETE FROM IS_DIVERSE_11;
+                DELETE FROM T_LOPENR_FNR;
+                DELETE FROM T_STONAD;
+                DELETE FROM T_VEDTAK;
+                DELETE FROM T_DELYTELSE;
+                DELETE FROM T_DELYTELSE_SP_FA_BS;
             """
                 ).asExecute
             )
@@ -356,6 +361,141 @@ VALUES (:fnr, :seq, :id, :statslonn,
                 ).asUpdate
             )
         }
+    }
+
+    private fun insertFødselsnummerLøpenummer(fnr: Fnr, løpenummer: Double) {
+        sessionOf(dataSource).use { session ->
+            @Language("Oracle")
+            val query = """INSERT INTO T_LOPENR_FNR(PERSONNR, PERSON_LOPENR) VALUES (:fnr, :fnr_lopenr)"""
+            session.run(queryOf(query, mapOf("fnr" to fnr.formatAsITFnr(), "fnr_lopenr" to løpenummer)).asUpdate)
+        }
+    }
+
+    private fun insertStønad(løpenummer: Double, datoStart: LocalDate, stønadId: Double) {
+        sessionOf(dataSource).use { session ->
+            @Language("Oracle")
+            val query = """INSERT INTO T_STONAD(STONAD_ID, PERSON_LOPENR, KODE_RUTINE, DATO_START) 
+                VALUES (:stonad_id, :lopenr, 'FY', :datoStart)
+            """
+            session.run(
+                queryOf(
+                    query, mapOf("lopenr" to løpenummer, "datoStart" to datoStart, "stonad_id" to stønadId)
+                ).asUpdate
+            )
+        }
+    }
+
+    private fun insertVedtak(løpenummer: Double, stønadId: Double, vedtakId: Double, fom: LocalDate, tom: LocalDate) {
+        sessionOf(dataSource).use { session ->
+            @Language("Oracle")
+            val query = """INSERT INTO T_VEDTAK( 
+                VEDTAK_ID,
+                PERSON_LOPENR,
+                DATO_INNV_FOM,
+                DATO_INNV_TOM,
+                STONAD_ID,
+-- Andre påkrevde
+                KODE_RUTINE,
+                DATO_START,
+                TKNR,
+                SAKSBLOKK,
+                SAKSNR,
+                TYPE_SAK,
+                KODE_RESULTAT,
+                DATO_MOTTATT_SAK,
+                KODE_VEDTAKSNIVAA,
+                TYPE_BEREGNING,
+                TKNR_BEH,
+                BRUKERID
+                ) 
+                VALUES (:vedtak_id, :lopenr, :fom, :tom, :stonad_id,
+                    -- Andre påkrevde
+                    'FY', '2021-05-01', '4514', 'X', 1234, 'XX', 'XX', '2021-05-01', '999', '999', '0000', '12345678'
+                )
+            """
+            session.run(
+                queryOf(
+                    query,
+                    mapOf("fom" to fom,
+                        "tom" to tom,
+                        "lopenr" to løpenummer,
+                        "vedtak_id" to vedtakId,
+                        "stonad_id" to stønadId
+                    )
+                ).asUpdate
+            )
+        }
+    }
+
+    private fun insertDelytelse(vedtakId: Double, fom: LocalDate, tom: LocalDate, beløp: Double, orgnummer: String) {
+        sessionOf(dataSource).use { session ->
+            @Language("Oracle")
+            val query1 = """INSERT INTO T_DELYTELSE(
+                VEDTAK_ID, 
+                TYPE_DELYTELSE, 
+                FOM, 
+                TOM, 
+                BELOP, 
+                TYPE_SATS,
+-- Andre påkrevde
+                BRUKERID,
+                TYPE_UTBETALING
+                ) 
+                VALUES (:vedtak_id, 'FY', :fom, :tom, :belop, 'E',
+                    -- Andre påkrevde
+                    '12345678', 'E'
+                )
+            """
+            session.run(
+                queryOf(query1, mapOf("fom" to fom, "tom" to tom, "belop" to beløp, "vedtak_id" to vedtakId)).asUpdate,
+            )
+
+            @Language("Oracle")
+            val query2 = """INSERT INTO T_DELYTELSE_SP_FA_BS(
+                VEDTAK_ID, 
+                ORGNR,
+-- Andre påkrevde
+                TYPE_DELYTELSE,
+                TYPE_INNTEKT,
+                TYPE_TILTAK,
+                TYPE_FORSIKRING,
+                PERIODE_KARENS,
+                PROSENT_INNT_GRL,
+                REFUSJON,
+                GRAD,
+                KODE_KLASSE,
+                SATSENDRING,
+                SJOMANN,
+                TYPE_SATS,
+                SATS_DAGER,
+                BRUKERID
+                ) 
+                VALUES (:vedtak_id, :orgnr,
+                    -- Andre påkrevde
+                    'FY', 'XX', 'XX', 'X', 'X', 1, 'X', 100, 'KULKLASSE', 'X', 'X', 'XXXX', 1234, '12345678'      
+                )
+            """
+            session.run(
+                queryOf(query2, mapOf("vedtak_id" to vedtakId, "orgnr" to orgnummer)).asUpdate,
+            )
+
+        }
+    }
+
+    protected fun opprettFeriepenger(
+        fnr: Fnr = Companion.fnr,
+        orgnummer: String = Companion.orgnummer,
+        beløp: Double = 1000.0,
+        fom: LocalDate = 1.mai(2020),
+        tom: LocalDate = 31.mai(2020)
+    ) {
+        val løpenummer = (10000..99999).random().toDouble()
+        val stønadId = (10000..99999).random().toDouble()
+        val vedtakId = (10000..99999).random().toDouble()
+        insertFødselsnummerLøpenummer(fnr, løpenummer)
+        insertStønad(løpenummer, fom, stønadId)
+        insertVedtak(løpenummer, stønadId, vedtakId, fom, tom)
+        insertDelytelse(vedtakId, fom, tom, beløp, orgnummer)
     }
 }
 

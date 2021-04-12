@@ -4,10 +4,10 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.sparkel.sykepengeperioder.dbting.*
+import no.nav.helse.sparkel.sykepengeperioder.dbting.FeriepengeDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.InntektDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.PeriodeDAO
-import no.nav.helse.sparkel.sykepengeperioder.dbting.StatslønnDAO
-import no.nav.helse.sparkel.sykepengeperioder.dbting.UtbetalingDAO
 
 fun main() {
     val app = createApp(System.getenv())
@@ -26,7 +26,8 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         PeriodeDAO(dataSource),
         UtbetalingDAO(dataSource),
         InntektDAO(dataSource),
-        StatslønnDAO(dataSource)
+        StatslønnDAO(dataSource),
+        FeriepengeDAO(dataSource)
     )
 
     return RapidApplication.create(env).apply {

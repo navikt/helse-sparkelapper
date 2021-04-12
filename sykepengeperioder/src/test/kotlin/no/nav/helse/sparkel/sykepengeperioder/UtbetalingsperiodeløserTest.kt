@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.sparkel.sykepengeperioder.dbting.InntektDAO
-import no.nav.helse.sparkel.sykepengeperioder.dbting.PeriodeDAO
-import no.nav.helse.sparkel.sykepengeperioder.dbting.StatslønnDAO
-import no.nav.helse.sparkel.sykepengeperioder.dbting.UtbetalingDAO
+import no.nav.helse.sparkel.sykepengeperioder.dbting.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -49,7 +46,8 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
             PeriodeDAO(dataSource),
             UtbetalingDAO(dataSource),
             InntektDAO(dataSource),
-            StatslønnDAO(dataSource)
+            StatslønnDAO(dataSource),
+            FeriepengeDAO(dataSource)
         )
     }
 

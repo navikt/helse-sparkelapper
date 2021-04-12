@@ -2,7 +2,7 @@ create table T_DELYTELSE
 (
     VEDTAK_ID       NUMBER           not null,
     TYPE_DELYTELSE  VARCHAR2(2 char) not null,
-    TIDSPUNKT_REG   TIMESTAMP(6)     not null,
+    TIDSPUNKT_REG   TIMESTAMP(6) default current_timestamp not null,
     FOM             DATE             not null,
     TOM             DATE,
     BELOP           NUMBER(11, 2)    not null,
@@ -25,7 +25,7 @@ create table T_DELYTELSE_SP_FA_BS
 (
     VEDTAK_ID        NUMBER            not null,
     TYPE_DELYTELSE   VARCHAR2(2 char)  not null,
-    TIDSPUNKT_REG    TIMESTAMP(6)      not null,
+    TIDSPUNKT_REG    TIMESTAMP(6) default current_timestamp not null,
     TYPE_INNTEKT     VARCHAR2(2 char)  not null,
     TYPE_TILTAK      VARCHAR2(2 char)  not null,
     TYPE_FORSIKRING  CHAR(1 char)      not null,
@@ -194,7 +194,7 @@ create table T_VEDTAK
     KODE_VEDTAKSNIVAA   VARCHAR2(3 char) not null,
     TYPE_BEREGNING      VARCHAR2(3 char) not null,
     TKNR_BEH            VARCHAR2(4 char) not null,
-    TIDSPUNKT_REG       TIMESTAMP(6)     not null,
+    TIDSPUNKT_REG       TIMESTAMP(6) default current_timestamp not null,
     BRUKERID            VARCHAR2(8 char) not null,
     NOKKEL_DL1          VARCHAR2(30 char),
     ALTERNATIV_MOTTAKER NUMBER(11),
