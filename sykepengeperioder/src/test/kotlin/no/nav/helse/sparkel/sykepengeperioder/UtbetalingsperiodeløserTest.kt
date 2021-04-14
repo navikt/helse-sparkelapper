@@ -9,8 +9,7 @@ import no.nav.helse.sparkel.sykepengeperioder.dbting.InntektDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.PeriodeDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.StatslønnDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.UtbetalingDAO
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -102,6 +101,16 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
             organisasjonsnummer = orgnummer,
             arbeidsKategoriKode = "01"
         )
+    }
+
+    @Test
+    fun `Svarer på behov selv om det ikke finnes historikk`() {
+        testBehov(enkeltBehov())
+
+        assertTrue(sendtMelding.has("@løsning"))
+        assertTrue(sendtMelding.path("@løsning").has(Utbetalingsperiodeløser.behov))
+        val løsninger = sendtMelding.løsning()
+        assertTrue(løsninger.isEmpty())
     }
 
     private fun JsonNode.løsning() = this.path("@løsning").path(Utbetalingsperiodeløser.behov).map {

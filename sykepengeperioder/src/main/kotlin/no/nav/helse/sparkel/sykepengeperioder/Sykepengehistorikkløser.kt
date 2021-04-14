@@ -45,7 +45,6 @@ internal class Sykepengehistorikkløser(
             packet["$behov.historikkFom"].asLocalDate(),
             packet["$behov.historikkTom"].asLocalDate()
         )
-            .takeIf { it.isNotEmpty() }
             ?.let { løsning ->
                 packet["@løsning"] = mapOf(
                     behov to løsning

@@ -173,6 +173,16 @@ internal class SykepengehistorikkløserTest : H2Database() {
         }
     }
 
+    @Test
+    fun `Svarer på behov selv om det ikke finnes historikk`() {
+        rapid.sendTestMessage(behov())
+
+        assertTrue(sisteSendtMelding.has("@løsning"))
+        assertTrue(sisteSendtMelding.path("@løsning").has(Sykepengehistorikkløser.behov))
+        val løsninger = sisteSendtMelding.løsning()
+        assertTrue(løsninger.isEmpty())
+    }
+
     private fun JsonNode.løsning() =
         this.path("@løsning").path(Sykepengehistorikkløser.behov).map {
             Utbetalingshistorikk(it)

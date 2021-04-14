@@ -40,7 +40,6 @@ internal class Utbetalingsperiodeløser(
             historikkFom,
             historikkTom
         )
-            .takeIf { it.isNotEmpty() }
             ?.let { løsning ->
                 packet["@løsning"] = mapOf(
                     behov to løsning

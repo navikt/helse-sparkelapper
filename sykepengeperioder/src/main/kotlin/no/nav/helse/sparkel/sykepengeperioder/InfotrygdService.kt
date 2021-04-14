@@ -25,7 +25,7 @@ internal class InfotrygdService(
         fødselsnummer: Fnr,
         fom: LocalDate,
         tom: LocalDate
-    ): List<Utbetalingshistorikk> {
+    ): List<Utbetalingshistorikk>? {
         try {
             val perioder = periodeDAO.perioder(
                 fødselsnummer,
@@ -71,7 +71,7 @@ internal class InfotrygdService(
                 keyValue("id", behovId),
                 err
             )
-            return emptyList()
+            return null
         }
     }
 
@@ -80,7 +80,7 @@ internal class InfotrygdService(
         fødselsnummer: Fnr,
         fom: LocalDate,
         tom: LocalDate
-    ): List<Utbetalingsperiode> {
+    ): List<Utbetalingsperiode>? {
         try {
             val perioder = periodeDAO.perioder(
                 fødselsnummer,
@@ -112,7 +112,7 @@ internal class InfotrygdService(
                 keyValue("id", behovId),
                 err
             )
-            return emptyList()
+            return null
         }
     }
 }
