@@ -2,7 +2,7 @@ package no.nav.helse.sparkel.sykepengeperioder
 
 import java.time.LocalDate
 
-internal class SuperNovaHistorikk(
+internal class Sykepengehistorikk(
     val utbetalinger: List<Utbetalingshistorikk.Utbetaling>,
     val feriepengehistorikk: List<Utbetalingshistorikk.Feriepenger>,
     val inntektshistorikk: List<Utbetalingshistorikk.Inntektsopplysninger>,

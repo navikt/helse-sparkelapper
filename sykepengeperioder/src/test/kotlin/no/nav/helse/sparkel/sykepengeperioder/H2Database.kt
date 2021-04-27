@@ -52,8 +52,8 @@ internal abstract class H2Database {
     }
 
     protected class Utbetaling(
-        val fom: LocalDate,
-        val tom: LocalDate,
+        val fom: LocalDate? = null,
+        val tom: LocalDate? = null,
         val grad: String = "100",
         val dagsats: Double = 1000.0,
         val orgnummer: String = Companion.orgnummer
@@ -70,8 +70,8 @@ internal abstract class H2Database {
         seq: Int = 1,
         maksdato: LocalDate? = null,
         utbetalinger: List<Utbetaling> = emptyList(),
-        sykmeldtFom: LocalDate = utbetalinger.minOfOrNull { it.fom } ?: 1.januar(2020),
-        sykmeldtTom: LocalDate = utbetalinger.maxOfOrNull { it.tom } ?: 31.januar(2020),
+        sykmeldtFom: LocalDate = utbetalinger.mapNotNull {it.fom}.minOrNull() ?: 1.januar(2020),
+        sykmeldtTom: LocalDate = utbetalinger.mapNotNull {it.tom}.maxOrNull() ?: 31.januar(2020),
         inntekter: List<Inntekt> = emptyList(),
         statslønn: Double? = null,
         arbeidskategori: String = "01"
@@ -203,10 +203,10 @@ VALUES (111111111145680, 1111, :seq, :fom, :tom, 100, :slutt, 'j', :ferie1Fom, :
     private fun insertUtbetaling(
         fnr: Fnr,
         seq: Int,
-        fom: LocalDate,
-        tom: LocalDate,
+        fom: LocalDate?,
+        tom: LocalDate?,
         grad: String,
-        utbetalt: LocalDate,
+        utbetalt: LocalDate?,
         dagsats: Double,
         periodetype: String,
         arbOrgnr: String,
@@ -499,4 +499,4 @@ VALUES (:fnr, :seq, :id, :statslonn,
     }
 }
 
-private fun LocalDate.format() = format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt()
+private fun LocalDate?.format() = this?.let { format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt() }?: 0

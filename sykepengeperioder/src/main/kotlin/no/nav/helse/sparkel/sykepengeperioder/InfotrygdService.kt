@@ -68,7 +68,7 @@ internal class InfotrygdService(
         fødselsnummer: Fnr,
         fom: LocalDate,
         tom: LocalDate
-    ): SuperNovaHistorikk? {
+    ): Sykepengehistorikk? {
         try {
             val perioder = periodeDAO.perioder(
                 fødselsnummer,
@@ -102,9 +102,9 @@ internal class InfotrygdService(
             val harStatslønn = utbetalingshistorikk.any { it.statslønn }
 
             val arbeidskategorikoder: Map<String, LocalDate> = utbetalingshistorikk.fold(emptyMap()) { acc, periode ->
-                val filter = periode.utbetalteSykeperioder.filter { it.tom != null }
-                if (periode.arbeidsKategoriKode !in acc && filter.isNotEmpty()) {
-                    acc + mapOf(periode.arbeidsKategoriKode to filter.maxOf { it.tom!! })
+                val sisteUtbetalingsdagIPerioden = periode.utbetalteSykeperioder.mapNotNull { it.tom }.maxOrNull()
+                if (periode.arbeidsKategoriKode !in acc && sisteUtbetalingsdagIPerioden != null) {
+                    acc + mapOf(periode.arbeidsKategoriKode to sisteUtbetalingsdagIPerioden)
                 } else acc
             }
 
@@ -113,7 +113,7 @@ internal class InfotrygdService(
                 keyValue("id", behovId)
             )
 
-            return SuperNovaHistorikk(
+            return Sykepengehistorikk(
                 utbetalinger = utbetalinger,
                 inntektshistorikk = inntektshistorikk,
                 feriepengehistorikk = feriepengehistorikk,

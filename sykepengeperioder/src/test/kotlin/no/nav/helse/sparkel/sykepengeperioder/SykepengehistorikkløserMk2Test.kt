@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.sykepengeperioder
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*
 import org.intellij.lang.annotations.Language
@@ -47,13 +48,13 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         opprettPeriode(seq = 1)
         opprettPeriode(seq = 2)
         rapid.sendTestMessage(behov())
-        val supernova = sisteSendtMelding.løsning()
+        val sykepengehistorikk = sisteSendtMelding.løsning()
 
-        assertEquals(0, supernova.utbetalinger.size)
-        assertTrue(supernova.arbeidskategorikoder.isEmpty)
-        assertEquals(0, supernova.feriepengehistorikk.size)
-        assertEquals(0, supernova.inntektshistorikk.size)
-        assertFalse(supernova.harStatslønn)
+        assertEquals(0, sykepengehistorikk.utbetalinger.size)
+        assertTrue(sykepengehistorikk.arbeidskategorikoder.isEmpty)
+        assertEquals(0, sykepengehistorikk.feriepengehistorikk.size)
+        assertEquals(0, sykepengehistorikk.inntektshistorikk.size)
+        assertFalse(sykepengehistorikk.harStatslønn)
     }
 
     @Test
@@ -70,7 +71,8 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
                 Utbetaling(5.september(2020), 25.september(2020), dagsats = 2176.0),
                 Utbetaling(4.september(2020), 4.september(2020))
             ),
-            inntekter = listOf(Inntekt(4.september(2020), lønn = 565700.0))
+            inntekter = listOf(Inntekt(4.september(2020), lønn = 565700.0)),
+            statslønn = null
         )
         opprettPeriode(
             seq = 2,
@@ -82,7 +84,8 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
                 Utbetaling(30.mars(2019), 14.april(2019)),
                 Utbetaling(4.februar(2019), 29.mars(2019))
             ),
-            inntekter = listOf(Inntekt(4.februar(2019), lønn = 507680.0))
+            inntekter = listOf(Inntekt(4.februar(2019), lønn = 507680.0)),
+            statslønn = null
         )
         opprettFeriepenger()
 
@@ -93,7 +96,7 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         assertEquals(8, løsning.utbetalinger.size)
         assertEquals(2, løsning.inntektshistorikk.size)
         assertEquals(1, løsning.arbeidskategorikoder.count())
-        assertFalse( løsning.harStatslønn)
+        assertFalse(løsning.harStatslønn)
         assertEquals(1, løsning.feriepengehistorikk.size)
 
         assertSykeperiode(
@@ -120,6 +123,26 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
     }
 
     @Test
+    fun `har statslønn i nyeste periode, men ikke eldste`() {
+        opprettPeriode(seq = 1, statslønn = 1000.0)
+        opprettPeriode(seq = 2, statslønn = null)
+
+        rapid.sendTestMessage(behov())
+        val løsning = sisteSendtMelding.løsning()
+        assertTrue(løsning.harStatslønn)
+    }
+
+    @Test
+    fun `har statslønn i gammel periode, men ikke nyeste`() {
+        opprettPeriode(seq = 1, statslønn = null)
+        opprettPeriode(seq = 2, statslønn = 1000.0)
+
+        rapid.sendTestMessage(behov())
+        val løsning = sisteSendtMelding.løsning()
+        assertFalse(løsning.harStatslønn)
+    }
+
+    @Test
     fun `arbeidskategori`() {
         opprettPeriode(
             seq = 1,
@@ -128,7 +151,7 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
                 Utbetaling(4.september(2020), 4.september(2020))
             ),
             inntekter = listOf(Inntekt(4.september(2020), lønn = 565700.0)),
-            arbeidskategori = "01" // ikke fisker
+            arbeidskategori = "01"
         )
         opprettPeriode(
             seq = 2,
@@ -141,7 +164,7 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
                 Utbetaling(4.februar(2019), 29.mars(2019))
             ),
             inntekter = listOf(Inntekt(4.februar(2019), lønn = 507680.0)),
-            arbeidskategori = "00" // fisker
+            arbeidskategori = "00"
         )
 
         rapid.sendTestMessage(behov())
@@ -150,10 +173,32 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         assertEquals(2, løsning.arbeidskategorikoder.count())
         assertEquals("2019-06-20", løsning.arbeidskategorikoder["00"].textValue())
         assertEquals("2020-09-25", løsning.arbeidskategorikoder["01"].textValue())
-    } //TODO NULLSJEKK DA
+    }
 
     @Test
-    fun `feriepenger`() {
+    fun `nullverdier for fom og tom`() {
+        opprettPeriode(
+            seq = 1,
+            utbetalinger = listOf(Utbetaling()),
+            inntekter = listOf(Inntekt(4.september(2020), lønn = 565700.0)),
+            arbeidskategori = "01"
+        )
+        opprettPeriode(
+            seq = 2,
+            utbetalinger = listOf(Utbetaling()),
+            inntekter = listOf(Inntekt(4.februar(2019), lønn = 507680.0)),
+            arbeidskategori = "00"
+        )
+
+        rapid.sendTestMessage(behov())
+        val løsning = sisteSendtMelding.løsning()
+        assertEquals(0, løsning.arbeidskategorikoder.count())
+        assertEquals(2, løsning.utbetalinger.size)
+        assertEquals(2, løsning.inntektshistorikk.size)
+    }
+
+    @Test
+    fun `henter feriepengehistorikk`() {
         opprettPeriode()
         opprettFeriepenger()
         rapid.sendTestMessage(behov())
@@ -166,12 +211,20 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         }
     }
 
+    @Test
+    fun `Svarer på behov selv om det ikke finnes historikk`() {
+        rapid.sendTestMessage(behov())
+
+        assertTrue(sisteSendtMelding.has("@løsning"))
+        assertTrue(sisteSendtMelding.path("@løsning").has(SykepengehistorikkløserMK2.behov))
+    }
+
     private fun JsonNode.løsning() =
         this.path("@løsning").path(SykepengehistorikkløserMK2.behov).let {
-            SupernovaSUPERNOVA(it)
+            Sykepengehistorikk(it)
         }
 
-    private class SupernovaSUPERNOVA(json: JsonNode) {
+    private class Sykepengehistorikk(json: JsonNode) {
         val utbetalinger = json["utbetalinger"].map { UtbetalteSykeperiode(it) }
         val inntektshistorikk = json["inntektshistorikk"].map { Inntektsopplysning(it) }
         val feriepengehistorikk = json["feriepengehistorikk"].map { Feriepenger(it) }
@@ -179,8 +232,8 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         val arbeidskategorikoder = json["arbeidskategorikoder"] as ObjectNode
 
         class UtbetalteSykeperiode(json: JsonNode) {
-            val fom = json["fom"].asLocalDate()
-            val tom = json["tom"].asLocalDate()
+            val fom = json["fom"].asOptionalLocalDate()
+            val tom = json["tom"].asOptionalLocalDate()
             val utbetalingsGrad = json["utbetalingsGrad"].asText()
             val orgnummer = json["orgnummer"].asText()
             val dagsats = json["dagsats"].asDouble()
@@ -201,11 +254,12 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
 
         private companion object {
             fun JsonNode.asLocalDate() = LocalDate.parse(this.asText())
+            fun JsonNode.asOptionalLocalDate() = takeUnless { this.isMissingOrNull() }?.asLocalDate()
         }
     }
 
     private fun assertSykeperiode(
-        sykeperiode: SupernovaSUPERNOVA.UtbetalteSykeperiode,
+        sykeperiode: Sykepengehistorikk.UtbetalteSykeperiode,
         fom: LocalDate,
         tom: LocalDate,
         grad: String,
@@ -220,7 +274,7 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
     }
 
     private fun assertInntektsopplysninger(
-        inntektsopplysning: SupernovaSUPERNOVA.Inntektsopplysning,
+        inntektsopplysning: Sykepengehistorikk.Inntektsopplysning,
         dato: LocalDate,
         inntektPerMåned: Int,
         orgnummer: String

@@ -39,7 +39,7 @@ internal class FeriepengeDAO(
             session.run(
                 queryOf(statement, fnr.formatAsITFnr(), fom, tom).map { rs ->
                     FeriepengeDTO(
-                        orgNr = rs.string("ORGNR"),
+                        orgnummer = rs.string("ORGNR"),
                         beløp = rs.double("BELOP"),
                         fom = rs.localDate("FOM"),
                         tom = rs.localDate("TOM")
@@ -50,7 +50,7 @@ internal class FeriepengeDAO(
     }
 
     internal data class FeriepengeDTO(
-        var orgNr: String,
+        var orgnummer: String,
         var beløp: Double,
         var fom: LocalDate,
         var tom: LocalDate
@@ -61,7 +61,7 @@ internal class FeriepengeDAO(
         }
 
         private fun tilFeriepenger() = Utbetalingshistorikk.Feriepenger(
-            orgnummer = orgNr,
+            orgnummer = orgnummer,
             beløp = beløp,
             fom = fom,
             tom = tom
