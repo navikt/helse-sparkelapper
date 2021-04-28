@@ -32,7 +32,7 @@ class UtbetalingDAO(
         and is15_korr <> 'KORR'
                 """
             session.run(
-                queryOf(statement, fnr.formatAsITFnr(), session.connection.underlying.createArrayOf("NUMBER", seq.toTypedArray())).map { rs ->
+                queryOf(statement, fnr.formatAsITFnr(), session.createNumberArray(seq.toTypedArray())).map { rs ->
                     UtbetalingDTO(
                         fom = rs.intOrNullToLocalDate("is15_utbetfom"),
                         tom = rs.intOrNullToLocalDate("is15_utbettom"),

@@ -1,10 +1,12 @@
 package no.nav.helse.sparkel.sykepengeperioder.dbting
 
 import kotliquery.Row
+import kotliquery.Session
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.helse.sparkel.sykepengeperioder.Fnr
 import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk
+import oracle.jdbc.OracleConnection
 import org.intellij.lang.annotations.Language
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -14,6 +16,10 @@ internal fun Row.intOrNullToLocalDate(label: String) = intOrNull(label)?.takeIf 
 internal fun Row.intToLocalDate(label: String) = int(label).toLocalDate()
 internal fun Int.toLocalDate() =
     LocalDate.parse(this.toString().padStart(8, '0'), DateTimeFormatter.ofPattern("yyyyMMdd"))
+internal fun Session.createNumberArray(numbers: Array<Int>) = when(val connection = connection.underlying) {
+        is OracleConnection -> connection.createARRAY("NUMBER", numbers)
+        else -> this.createArrayOf("NUMBER", numbers.toList())
+    }
 
 internal class PeriodeDAO(
     private val dataSource: DataSource
