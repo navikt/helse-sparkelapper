@@ -13,7 +13,10 @@ class UtbetalingDAO(
     private val dataSource: DataSource
 ) {
     internal fun utbetalinger(fnr: Fnr, vararg seq: Int): List<UtbetalingDTO> {
+        if (seq.isEmpty()) return emptyList()
         return sessionOf(dataSource).use { session ->
+            val antallSpørsmålstegn = seq.joinToString(",") { "?" }
+
             @Language("Oracle")
             val statement = """
                     select
@@ -28,11 +31,11 @@ class UtbetalingDAO(
         , is10_arbufoer_seq
         from is_utbetaling_15
         where f_nr = ?               -- 1
-        and is10_arbufoer_seq = any(?)  -- 2
+        and is10_arbufoer_seq in ($antallSpørsmålstegn)  -- 2
         and is15_korr <> 'KORR'
                 """
             session.run(
-                queryOf(statement, fnr.formatAsITFnr(), session.createNumberArray(seq.toTypedArray())).map { rs ->
+                queryOf(statement, fnr.formatAsITFnr(), *seq.toTypedArray()).map { rs ->
                     UtbetalingDTO(
                         fom = rs.intOrNullToLocalDate("is15_utbetfom"),
                         tom = rs.intOrNullToLocalDate("is15_utbettom"),

@@ -19,7 +19,10 @@ internal class InntektDAO(
     }
 
     internal fun inntekter(fnr: Fnr, vararg seq: Int): List<InntektDTO> {
+        if (seq.isEmpty()) return emptyList()
         return sessionOf(dataSource).use { session ->
+            val antallSpørsmålstegn = seq.joinToString(",") { "?" }
+
             @Language("Oracle")
             val statement = """
                     select
@@ -31,10 +34,10 @@ internal class InntektDAO(
          , is13_loenn
          from is_inntekt_13
          where f_nr = ?               -- 1
-         and is10_arbufoer_seq = any(?)    -- 2
+         and is10_arbufoer_seq in ($antallSpørsmålstegn)    -- 2
                 """
             session.run(
-                queryOf(statement, fnr.formatAsITFnr(), session.createNumberArray(seq.toTypedArray())).map { rs ->
+                queryOf(statement, fnr.formatAsITFnr(), *seq.toTypedArray()).map { rs ->
                     InntektDTO(
                         orgNr = rs.string("is13_arbgivnr"),
                         sykepengerFom = rs.intToLocalDate("is13_spfom"),
