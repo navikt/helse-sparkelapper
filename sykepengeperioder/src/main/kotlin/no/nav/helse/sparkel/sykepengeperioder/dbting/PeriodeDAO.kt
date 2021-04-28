@@ -1,12 +1,10 @@
 package no.nav.helse.sparkel.sykepengeperioder.dbting
 
 import kotliquery.Row
-import kotliquery.Session
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.helse.sparkel.sykepengeperioder.Fnr
 import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk
-import oracle.jdbc.OracleConnection
 import org.intellij.lang.annotations.Language
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -16,10 +14,6 @@ internal fun Row.intOrNullToLocalDate(label: String) = intOrNull(label)?.takeIf 
 internal fun Row.intToLocalDate(label: String) = int(label).toLocalDate()
 internal fun Int.toLocalDate() =
     LocalDate.parse(this.toString().padStart(8, '0'), DateTimeFormatter.ofPattern("yyyyMMdd"))
-internal fun Session.createNumberArray(numbers: Array<Int>) = when(val connection = connection.underlying) {
-        is OracleConnection -> connection.createARRAY("NUMBER", numbers)
-        else -> this.createArrayOf("NUMBER", numbers.toList())
-    }
 
 internal class PeriodeDAO(
     private val dataSource: DataSource
@@ -102,7 +96,7 @@ internal class PeriodeDAO(
                         sanksjonsDager = rs.int("is10_sanksjonsdager"),
                         opphoerFom = rs.intOrNullToLocalDate("is10_stoppdato"),
                         sykemelder = rs.stringOrNull("is10_legenavn")?.trim(),
-                        behandlet = rs.intToLocalDate("is10_behdato"),
+                        behandlet = rs.intOrNullToLocalDate("is10_behdato"),
                         yrkesskadeArt = rs.stringOrNull("is10_skadeart")?.trim(),
                         skadet = rs.intOrNullToLocalDate("is10_skdato"),
                         vedtatt = rs.intOrNullToLocalDate("is10_skm_mott")
@@ -135,7 +129,7 @@ internal class PeriodeDAO(
         val sanksjonsDager: Int,
         val opphoerFom: LocalDate?,
         val sykemelder: String?,
-        val behandlet: LocalDate,
+        val behandlet: LocalDate?,
         val yrkesskadeArt: String?,
         val skadet: LocalDate?,
         val vedtatt: LocalDate?
