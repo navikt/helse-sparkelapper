@@ -18,7 +18,7 @@ internal class InntektDAO(
         private val tjenestekallLog = LoggerFactory.getLogger("tjenestekall")
     }
 
-    internal fun inntekter(fnr: Fnr, seq: Int): List<InntektDTO> {
+    internal fun inntekter(fnr: Fnr, vararg seq: Int): List<InntektDTO> {
         return sessionOf(dataSource).use { session ->
             @Language("Oracle")
             val statement = """
@@ -31,10 +31,10 @@ internal class InntektDAO(
          , is13_loenn
          from is_inntekt_13
          where f_nr = ?               -- 1
-         and is10_arbufoer_seq = ?    -- 2
+         and is10_arbufoer_seq = any(?)    -- 2
                 """
             session.run(
-                queryOf(statement, fnr.formatAsITFnr(), seq).map { rs ->
+                queryOf(statement, fnr.formatAsITFnr(), session.createArrayOf("NUMBER", seq.toList())).map { rs ->
                     InntektDTO(
                         orgNr = rs.string("is13_arbgivnr"),
                         sykepengerFom = rs.intToLocalDate("is13_spfom"),

@@ -134,6 +134,10 @@ internal class PeriodeDAO(
         val skadet: LocalDate?,
         val vedtatt: LocalDate?
     ) {
+        internal companion object {
+            internal fun List<PeriodeDTO>.ekstraFerieperioder() = flatMap { it.ferie() }
+        }
+
         internal fun tilUtbetalingshistorikk(
             utbetalingList: List<Utbetalingshistorikk.Utbetaling>,
             inntektList: List<Utbetalingshistorikk.Inntektsopplysninger>,

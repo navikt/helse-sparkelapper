@@ -12,7 +12,7 @@ import javax.sql.DataSource
 class UtbetalingDAO(
     private val dataSource: DataSource
 ) {
-    internal fun utbetalinger(fnr: Fnr, seq: Int): List<UtbetalingDTO> {
+    internal fun utbetalinger(fnr: Fnr, vararg seq: Int): List<UtbetalingDTO> {
         return sessionOf(dataSource).use { session ->
             @Language("Oracle")
             val statement = """
@@ -25,13 +25,14 @@ class UtbetalingDAO(
         , is15_dsats
         , is15_type
         , is15_arbgivnr
+        , is10_arbufoer_seq
         from is_utbetaling_15
         where f_nr = ?               -- 1
-        and is10_arbufoer_seq = ?  -- 2
+        and is10_arbufoer_seq = any(?)  -- 2
         and is15_korr <> 'KORR'
                 """
             session.run(
-                queryOf(statement, fnr.formatAsITFnr(), seq).map { rs ->
+                queryOf(statement, fnr.formatAsITFnr(), session.createArrayOf("NUMBER", seq.toList())).map { rs ->
                     UtbetalingDTO(
                         fom = rs.intOrNullToLocalDate("is15_utbetfom"),
                         tom = rs.intOrNullToLocalDate("is15_utbettom"),
@@ -40,7 +41,8 @@ class UtbetalingDAO(
                         utbetalt = rs.intOrNullToLocalDate("is15_utbetdato"),
                         dagsats = rs.double("is15_dsats"),
                         periodeType = rs.string("is15_type").trim(),
-                        arbOrgnr = rs.string("is15_arbgivnr")
+                        arbOrgnr = rs.string("is15_arbgivnr"),
+                        sekvensId = rs.int("is10_arbufoer_seq")
                     )
                 }.asList
             )
@@ -55,7 +57,8 @@ class UtbetalingDAO(
         val utbetalt: LocalDate?,
         val dagsats: Double,
         val periodeType: String,
-        val arbOrgnr: String
+        val arbOrgnr: String,
+        val sekvensId: Int
     ) {
         internal companion object {
             internal fun tilHistorikkutbetaling(utbetalinger: List<UtbetalingDTO>) =

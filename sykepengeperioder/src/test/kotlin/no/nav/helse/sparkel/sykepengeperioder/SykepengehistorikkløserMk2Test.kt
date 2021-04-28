@@ -176,6 +176,38 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
     }
 
     @Test
+    fun `arbeidskategori ved tidligere periode med samme kode`() {
+        opprettPeriode(
+            seq = 1,
+            utbetalinger = listOf(
+                Utbetaling(5.september(2020), 25.september(2020), dagsats = 2176.0),
+                Utbetaling(4.september(2020), 4.september(2020))
+            ),
+            inntekter = listOf(Inntekt(4.september(2020), lønn = 565700.0)),
+            arbeidskategori = "01"
+        )
+        opprettPeriode(
+            seq = 2,
+            utbetalinger = listOf(
+                Utbetaling(2.juni(2019), 20.juni(2019)),
+                Utbetaling(17.mai(2019), 1.juni(2019)),
+                Utbetaling(1.mai(2019), 16.mai(2019)),
+                Utbetaling(15.april(2019), 30.april(2019)),
+                Utbetaling(30.mars(2019), 14.april(2019)),
+                Utbetaling(4.februar(2019), 29.mars(2019))
+            ),
+            inntekter = listOf(Inntekt(4.februar(2019), lønn = 507680.0)),
+            arbeidskategori = "01"
+        )
+
+        rapid.sendTestMessage(behov())
+        val løsning = sisteSendtMelding.løsning()
+
+        assertEquals(1, løsning.arbeidskategorikoder.count())
+        assertEquals("2020-09-25", løsning.arbeidskategorikoder["01"].textValue())
+    }
+
+    @Test
     fun `nullverdier for fom og tom`() {
         opprettPeriode(
             seq = 1,

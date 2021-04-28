@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.sykepengeperioder
 
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*
+import no.nav.helse.sparkel.sykepengeperioder.dbting.PeriodeDAO.PeriodeDTO.Companion.ekstraFerieperioder
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 
@@ -70,43 +71,36 @@ internal class InfotrygdService(
         tom: LocalDate
     ): Sykepengehistorikk? {
         try {
-            val perioder = periodeDAO.perioder(
-                fødselsnummer,
-                fom,
-                tom
-            )
-            val utbetalingshistorikk = perioder
-                .sortedByDescending { it.sykemeldtFom }
-                .mapIndexed { index, periode ->
-                    periode.tilUtbetalingshistorikk(
-                        UtbetalingDAO.UtbetalingDTO.tilHistorikkutbetaling(
-                            utbetalingDAO.utbetalinger(
-                                fødselsnummer,
-                                periode.seq
-                            )
-                        ),
-                        InntektDAO.InntektDTO.tilInntektsopplysninger(
-                            inntektDAO.inntekter(
-                                fødselsnummer,
-                                periode.seq
-                            )
-                        ),
-                        index == 0 && statslønnDAO.harStatslønn(fødselsnummer, periode.seq),
-                    )
-                }
-            val feriepengehistorikk = FeriepengeDAO.FeriepengeDTO.tilFeriepenger(
-                feriepengeDAO.feriepenger(fødselsnummer, fom, tom)
-            )
-            val utbetalinger = utbetalingshistorikk.flatMap { it.utbetalteSykeperioder }
-            val inntektshistorikk = utbetalingshistorikk.flatMap { it.inntektsopplysninger }
-            val harStatslønn = utbetalingshistorikk.any { it.statslønn }
+            val perioder = periodeDAO.perioder(fødselsnummer, fom, tom).sortedByDescending { it.sykemeldtFom }
+            val sekvensIdeer = perioder.map { it.seq }.toIntArray()
 
-            val arbeidskategorikoder: Map<String, LocalDate> = utbetalingshistorikk.fold(emptyMap()) { acc, periode ->
-                val sisteUtbetalingsdagIPerioden = periode.utbetalteSykeperioder.mapNotNull { it.tom }.maxOrNull()
-                if (periode.arbeidsKategoriKode !in acc && sisteUtbetalingsdagIPerioden != null) {
-                    acc + mapOf(periode.arbeidsKategoriKode to sisteUtbetalingsdagIPerioden)
-                } else acc
-            }
+            val feriepengehistorikk =
+                FeriepengeDAO.FeriepengeDTO.tilFeriepenger(feriepengeDAO.feriepenger(fødselsnummer, fom, tom))
+
+            val utbetalingDAOer = utbetalingDAO.utbetalinger(
+                fødselsnummer,
+                *sekvensIdeer
+            )
+
+            val utbetalinger =
+                UtbetalingDAO.UtbetalingDTO.tilHistorikkutbetaling(utbetalingDAOer) + perioder.ekstraFerieperioder()
+
+            val inntektshistorikk =
+                InntektDAO.InntektDTO.tilInntektsopplysninger(inntektDAO.inntekter(fødselsnummer, *sekvensIdeer))
+
+            val harStatslønn = perioder.firstOrNull()?.let { statslønnDAO.harStatslønn(fødselsnummer, it.seq) } ?: false
+
+            val arbeidskategorikoder = perioder
+                .mapNotNull { periode ->
+                    utbetalingDAOer
+                        .filter { it.sekvensId == periode.seq }
+                        .mapNotNull { it.tom }
+                        .maxOrNull()
+                        ?.let { periode.arbeidsKategori to it }
+                }
+                .sortedByDescending { (_, tom) -> tom }
+                .distinctBy { (arbkatkode, _) -> arbkatkode }
+                .toMap()
 
             sikkerlogg.info(
                 "løser behov: {}",
