@@ -34,7 +34,7 @@ internal class InntektDAO(
          and is10_arbufoer_seq = any(?)    -- 2
                 """
             session.run(
-                queryOf(statement, fnr.formatAsITFnr(), session.createArrayOf("NUMBER", seq.toList())).map { rs ->
+                queryOf(statement, fnr.formatAsITFnr(), session.connection.underlying.createArrayOf("NUMBER", seq.toTypedArray())).map { rs ->
                     InntektDTO(
                         orgNr = rs.string("is13_arbgivnr"),
                         sykepengerFom = rs.intToLocalDate("is13_spfom"),
