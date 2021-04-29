@@ -18,13 +18,17 @@ class UtbetalingDAO(
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     }
 
-    internal fun utbetalinger(fnr: Fnr, vararg seq: Int) =
+    internal fun utbetalinger(fnr: Fnr, vararg seq: Int): List<UtbetalingDTO> {
         try {
-            utbetalingerSomErUsikker(fnr, *seq)
+            val usikre = utbetalingerSomErUsikker(fnr, *seq)
+            sikkerlogg.info("Fant ${usikre.size} utbetalinger med usikker metode")
         } catch (e: Throwable) {
             sikkerlogg.info("Feilet ved bruk av den usikre array-opprettelsen. Bruker den som funker", e)
-            utbetalingerSomFunker(fnr, *seq)
         }
+        return utbetalingerSomFunker(fnr, *seq).apply {
+            sikkerlogg.info("Fant $size utbetalinger med sikker metode")
+        }
+    }
 
     private fun utbetalingerSomErUsikker(fnr: Fnr, vararg seq: Int): List<UtbetalingDTO> {
         if (seq.isEmpty()) return emptyList()
@@ -50,11 +54,11 @@ class UtbetalingDAO(
                 if (session.connection.underlying.isWrapperFor(OracleConnection::class.java)) {
                     val oracleConnection: OracleConnection =
                         session.connection.underlying.unwrap(OracleConnection::class.java)
-                    val array = oracleConnection.createOracleArray("INTEGER", seq.toTypedArray())
+                    val array = oracleConnection.createOracleArray("VARRAY", seq.toTypedArray())
                     queryOf(statement, fnr.formatAsITFnr(), array)
                 } else {
                     sikkerlogg.info("Underlying connection wrapper ikke OracleConnection")
-                    queryOf(statement, fnr.formatAsITFnr(), session.createArrayOf("INTEGER", seq.toList()))
+                    queryOf(statement, fnr.formatAsITFnr(), session.createArrayOf("VARRAY", seq.toList()))
                 }.map { rs ->
                     UtbetalingDTO(
                         fom = rs.intOrNullToLocalDate("is15_utbetfom"),
