@@ -50,11 +50,11 @@ class UtbetalingDAO(
                 if (session.connection.underlying.isWrapperFor(OracleConnection::class.java)) {
                     val oracleConnection: OracleConnection =
                         session.connection.underlying.unwrap(OracleConnection::class.java)
-                    val array = oracleConnection.createOracleArray("NUMBER", seq.toTypedArray())
+                    val array = oracleConnection.createOracleArray("INTEGER", seq.toTypedArray())
                     queryOf(statement, fnr.formatAsITFnr(), array)
                 } else {
                     sikkerlogg.info("Underlying connection wrapper ikke OracleConnection")
-                    queryOf(statement, fnr.formatAsITFnr(), session.createArrayOf("NUMBER", seq.toList()))
+                    queryOf(statement, fnr.formatAsITFnr(), session.createArrayOf("INTEGER", seq.toList()))
                 }.map { rs ->
                     UtbetalingDTO(
                         fom = rs.intOrNullToLocalDate("is15_utbetfom"),
