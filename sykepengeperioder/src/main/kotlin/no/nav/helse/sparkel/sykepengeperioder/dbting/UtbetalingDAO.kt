@@ -19,15 +19,7 @@ class UtbetalingDAO(
     }
 
     internal fun utbetalinger(fnr: Fnr, vararg seq: Int): List<UtbetalingDTO> {
-        try {
-            val usikre = utbetalingerSomErUsikker(fnr, *seq)
-            sikkerlogg.info("Fant ${usikre.size} utbetalinger med usikker metode")
-        } catch (e: Throwable) {
-            sikkerlogg.info("Feilet ved bruk av den usikre array-opprettelsen. Bruker den som funker", e)
-        }
-        return utbetalingerSomFunker(fnr, *seq).apply {
-            sikkerlogg.info("Fant $size utbetalinger med sikker metode")
-        }
+        return utbetalingerSomFunker(fnr, *seq)
     }
 
     private fun utbetalingerSomErUsikker(fnr: Fnr, vararg seq: Int): List<UtbetalingDTO> {
