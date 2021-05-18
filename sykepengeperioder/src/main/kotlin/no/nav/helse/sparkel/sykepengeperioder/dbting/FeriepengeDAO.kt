@@ -37,7 +37,7 @@ internal class FeriepengeDAO(
                     ;
             """
             session.run(
-                queryOf(statement, fnr.formatAsITFnr(), fom, tom).map { rs ->
+                queryOf(statement, fnr.formatAsITFnr(), fom.plusYears(1), tom.plusYears(1)).map { rs ->
                     FeriepengeDTO(
                         orgnummer = rs.string("ORGNR"),
                         beløp = rs.double("BELOP"),
