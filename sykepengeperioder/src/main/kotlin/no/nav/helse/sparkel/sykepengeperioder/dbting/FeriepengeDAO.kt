@@ -62,8 +62,8 @@ internal class FeriepengeDAO(
                 queryOf(
                     statement,
                     fnr.formatAsITFnr(),
-                    fom.plusYears(1).format(),
-                    tom.plusYears(1).format()
+                    fom.plusYears(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt(),
+                    tom.plusYears(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt()
                 ).map { rs -> rs.int("count") > 0 }.asSingle
             )?: false
         }
@@ -90,5 +90,3 @@ internal class FeriepengeDAO(
 
 
 }
-
-private fun LocalDate?.format() = this?.let { format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt() } ?: 0

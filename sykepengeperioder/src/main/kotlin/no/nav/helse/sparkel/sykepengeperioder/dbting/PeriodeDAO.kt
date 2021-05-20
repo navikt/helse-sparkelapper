@@ -59,19 +59,21 @@ internal class PeriodeDAO(
          , is10_skm_mott           -- vedtatt
 
          from is_periode_10
-         where f_nr = ?            -- 1
+         where f_nr = :fnr
          and is10_stoenads_type = '  ' -- dvs. sykepenger
          and (is10_frisk is null or is10_frisk != 'H')
-         and is10_arbufoer >= ?    -- 2
-         and is10_arbufoer <= ?    -- 3
+         and :fom <= is10_arbufoer_tom
+         and :tom >= is10_arbufoer
          order by is10_arbufoer desc
                 """
             session.run(
                 queryOf(
                     statement,
-                    fnr.formatAsITFnr(),
-                    fom.format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt(),
-                    tom.format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt()
+                    mapOf(
+                        "fnr" to fnr.formatAsITFnr(),
+                        "fom" to fom.format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt(),
+                        "tom" to tom.format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt()
+                    )
                 ).map { rs ->
                     PeriodeDTO(
                         ident = rs.long("is01_personkey"),

@@ -327,6 +327,128 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         assertTrue(sisteSendtMelding.path("@løsning").has(SykepengehistorikkløserMK2.behov))
     }
 
+    @Test
+    fun `inkluderer periode med sykmeldtfom og sykmeldtTom innenfor fom og tom`() {
+        opprettPeriode(
+            sykmeldtFom = 1.mai(2020),
+            sykmeldtTom = 31.mai(2020),
+            utbetalinger = listOf(Utbetaling(1.mai(2020), 31.mai(2020)))
+        )
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
+    }
+
+    @Test
+    fun `inkluderer periode med sykmeldtFom før fom`() {
+        opprettPeriode(
+            sykmeldtFom = 1.desember(2019),
+            sykmeldtTom = 31.januar(2020),
+            utbetalinger = listOf(Utbetaling(1.desember(2019), 31.januar(2020)))
+        )
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        val løsning = sisteSendtMelding.løsning()
+        assertEquals(1, løsning.utbetalinger.size)
+    }
+
+    @Test
+    fun `inkluderer periode med sykmeldtTom etter Tom`() {
+        opprettPeriode(
+            sykmeldtFom = 31.desember(2020),
+            sykmeldtTom = 31.januar(2021),
+            utbetalinger = listOf(Utbetaling(31.desember(2020), 31.januar(2021)))
+        )
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
+    }
+
+    @Test
+    fun `inkluderer periode som strekker seg fra før fom til etter tom`() {
+        opprettPeriode(
+            sykmeldtFom = 31.desember(2019),
+            sykmeldtTom = 31.januar(2021),
+            utbetalinger = listOf(Utbetaling(31.desember(2019), 31.januar(2021)))
+        )
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
+    }
+
+    @Test
+    fun `inkluderer ikke periode som er før vår til etter tom`() {
+        opprettPeriode(
+            sykmeldtFom = 1.november(2019),
+            sykmeldtTom = 1.desember(2019),
+            utbetalinger = listOf(Utbetaling(1.november(2019), 1.desember(2019)))
+        )
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        assertEquals(0, sisteSendtMelding.løsning().utbetalinger.size)
+    }
+
+    @Test
+    fun `inkluderer ikke periode som er akkurat før vår til etter tom`() {
+        opprettPeriode(
+            sykmeldtFom = 1.desember(2019),
+            sykmeldtTom = 31.desember(2019),
+            utbetalinger = listOf(Utbetaling(1.desember(2019), 31.desember(2019)))
+        )
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        assertEquals(0, sisteSendtMelding.løsning().utbetalinger.size)
+    }
+
+    @Test
+    fun `inkluderer ikke periode som er etter vår til etter tom`() {
+        opprettPeriode(
+            sykmeldtFom = 1.februar(2021),
+            sykmeldtTom = 28.februar(2021),
+            utbetalinger = listOf(Utbetaling(1.februar(2021), 28.februar(2021)))
+        )
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        assertEquals(0, sisteSendtMelding.løsning().utbetalinger.size)
+    }
+
+    @Test
+    fun `inkluderer ikke periode som er akkurat etter vår til etter tom`() {
+        opprettPeriode(
+            sykmeldtFom = 1.januar(2021),
+            sykmeldtTom = 31.januar(2021),
+            utbetalinger = listOf(Utbetaling(1.januar(2021), 31.januar(2021)))
+        )
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        assertEquals(0, sisteSendtMelding.løsning().utbetalinger.size)
+    }
+
+    @Test
+    fun `inkluderer periode som er akkurat lik vår fom og tom`() {
+        opprettPeriode(
+            sykmeldtFom = 1.januar(2020),
+            sykmeldtTom = 31.desember(2020),
+            utbetalinger = listOf(Utbetaling(1.januar(2020), 31.desember(2020)))
+        )
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
+    }
+
+    @Test
+    fun `inkluderer periode som slutter på vår fom`() {
+        opprettPeriode(
+            sykmeldtFom = 1.desember(2019),
+            sykmeldtTom = 1.januar(2020),
+            utbetalinger = listOf(Utbetaling(1.desember(2019), 1.januar(2020)))
+        )
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
+    }
+
+    @Test
+    fun `inkluderer periode som starer på vår tom`() {
+        opprettPeriode(
+            sykmeldtFom = 31.desember(2020),
+            sykmeldtTom = 31.januar(2021),
+            utbetalinger = listOf(Utbetaling(31.desember(2020), 31.januar(2021)))
+        )
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
+    }
+
     private fun JsonNode.løsning() =
         this.path("@løsning").path(SykepengehistorikkløserMK2.behov).let {
             Sykepengehistorikk(it)
