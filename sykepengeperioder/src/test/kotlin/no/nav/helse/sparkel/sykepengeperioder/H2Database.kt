@@ -45,6 +45,7 @@ internal abstract class H2Database {
                 DELETE FROM T_VEDTAK;
                 DELETE FROM T_DELYTELSE;
                 DELETE FROM T_DELYTELSE_SP_FA_BS;
+                DELETE FROM IP_MERKNAD_20
             """
                 ).asExecute
             )
@@ -70,8 +71,8 @@ internal abstract class H2Database {
         seq: Int = 1,
         maksdato: LocalDate? = null,
         utbetalinger: List<Utbetaling> = emptyList(),
-        sykmeldtFom: LocalDate = utbetalinger.mapNotNull {it.fom}.minOrNull() ?: 1.januar(2020),
-        sykmeldtTom: LocalDate = utbetalinger.mapNotNull {it.tom}.maxOrNull() ?: 31.januar(2020),
+        sykmeldtFom: LocalDate = utbetalinger.mapNotNull { it.fom }.minOrNull() ?: 1.januar(2020),
+        sykmeldtTom: LocalDate = utbetalinger.mapNotNull { it.tom }.maxOrNull() ?: 31.januar(2020),
         inntekter: List<Inntekt> = emptyList(),
         statslønn: Double? = null,
         arbeidskategori: String = "01"
@@ -416,7 +417,8 @@ VALUES (:fnr, :seq, :id, :statslonn,
             session.run(
                 queryOf(
                     query,
-                    mapOf("fom" to fom,
+                    mapOf(
+                        "fom" to fom,
                         "tom" to tom,
                         "lopenr" to løpenummer,
                         "vedtak_id" to vedtakId,
@@ -482,6 +484,44 @@ VALUES (:fnr, :seq, :id, :statslonn,
         }
     }
 
+    protected fun opprettManuellFeriepengeberegningMerknad(
+        fnr: Fnr = Companion.fnr,
+        kode: String = "242",
+        merknadsdato: LocalDate = 31.desember(2021),
+        id: Int = 1
+    ) {
+        sessionOf(dataSource).use { session ->
+            @Language("Oracle")
+            val query = """INSERT INTO IP_MERKNAD_20(
+                          F_NR,
+                          IP20_MERKNADS_KODE,
+                          IP20_MERKNAD_DATO1,
+                          IP01_PERSNKEY,
+                          IP01_PERSONKEY,
+                          IP20_MERKNAD_DATO2,
+                          IP20_MERKNAD_BELOP,
+                          IP20_BRUKERIDENT,
+                          IP20_REG_DATO,
+                          TK_NR,
+                          ID_MERKN
+                          )
+                          VALUES (:fnr, :merknad_kode, :merknad_dato,
+                                -- Andre påkrevde
+                                1111111, 111111111145680, :merknad_dato, 1000.00, 'X', 'X', 'X', :id
+                          )  
+            """
+            session.run(
+                queryOf(query, mapOf(
+                    "fnr" to fnr.formatAsITFnr(),
+                    "merknad_kode" to kode,
+                    "merknad_dato" to merknadsdato.format(),
+                    "id" to id
+                )).asUpdate
+            )
+        }
+    }
+
+
     protected fun opprettFeriepenger(
         fnr: Fnr = Companion.fnr,
         orgnummer: String = Companion.orgnummer,
@@ -499,4 +539,4 @@ VALUES (:fnr, :seq, :id, :statslonn,
     }
 }
 
-private fun LocalDate?.format() = this?.let { format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt() }?: 0
+private fun LocalDate?.format() = this?.let { format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt() } ?: 0

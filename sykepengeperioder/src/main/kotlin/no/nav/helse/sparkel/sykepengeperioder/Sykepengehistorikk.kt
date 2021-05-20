@@ -7,7 +7,8 @@ internal class Sykepengehistorikk(
     val feriepengehistorikk: List<Utbetalingshistorikk.Feriepenger>,
     val inntektshistorikk: List<Utbetalingshistorikk.Inntektsopplysninger>,
     val harStatslønn: Boolean,
-    val arbeidskategorikoder: Map<String, LocalDate>
+    val arbeidskategorikoder: Map<String, LocalDate>,
+    val feriepengerSkalBeregnesManuelt: Boolean
 ) {
 
 }

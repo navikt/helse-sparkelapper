@@ -1395,3 +1395,26 @@ create table IP_PERSONKORT_90
     DB_SPLITT            CHAR(2 char)      default '99'
 )
 ;
+
+create table IP_MERKNAD_20
+(
+    IP01_PERSNKEY       RAW(7)                                          not null,
+    IP01_PERSONKEY      NUMBER(15)                                      not null,
+    IP20_MERKNADS_KODE  NUMBER(3)                                       not null,
+    IP20_MERKNAD_DATO1  NUMBER(8)                                       not null,
+    IP20_MERKNAD_DATO2  NUMBER(8)                                       not null,
+    IP20_MERKNAD_BELOP  NUMBER(9,2)                                     not null,
+    IP20_BRUKERIDENT    VARCHAR2(7 char)                                not null,
+    IP20_REG_DATO       VARCHAR2(8 char)                                not null,
+    TK_NR               VARCHAR2(4)                                     not null,
+    F_NR                VARCHAR2(11)                                    not null,
+    OPPRETTET           TIMESTAMP(6)        default current_timestamp   not null,
+    ENDRET_I_KILDE      TIMESTAMP(6)        default current_timestamp   not null,
+    KILDE_IS            VARCHAR2(12 char)   default ' '                 not null,
+    REGION              CHAR(1 char)        default ' '                 not null,
+    ID_MERKN            NUMBER
+        constraint PK_IP_MERKNAD
+            primary key,
+    OPPDATERT           TIMESTAMP(6)        default current_timestamp,
+    DB_SPLITT           CHAR(2 char)        default '99'
+)

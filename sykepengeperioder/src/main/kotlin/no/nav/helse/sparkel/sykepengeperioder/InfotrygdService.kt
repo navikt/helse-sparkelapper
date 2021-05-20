@@ -77,6 +77,8 @@ internal class InfotrygdService(
             val feriepengehistorikk =
                 FeriepengeDAO.FeriepengeDTO.tilFeriepenger(feriepengeDAO.feriepenger(fødselsnummer, fom, tom))
 
+            val feriepengerSkalBeregnesManuelt = feriepengeDAO.feriepengerSkalBeregnesManuelt(fødselsnummer, fom, tom)
+
             val utbetalingDAOer = utbetalingDAO.utbetalinger(
                 fødselsnummer,
                 *sekvensIdeer
@@ -112,7 +114,8 @@ internal class InfotrygdService(
                 inntektshistorikk = inntektshistorikk,
                 feriepengehistorikk = feriepengehistorikk,
                 harStatslønn = harStatslønn,
-                arbeidskategorikoder = arbeidskategorikoder
+                arbeidskategorikoder = arbeidskategorikoder,
+                feriepengerSkalBeregnesManuelt = feriepengerSkalBeregnesManuelt
             )
         } catch (err: Exception) {
             sikkerlogg.warn(

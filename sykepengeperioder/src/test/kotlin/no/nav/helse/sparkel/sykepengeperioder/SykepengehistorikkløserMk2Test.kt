@@ -55,6 +55,7 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         assertEquals(0, sykepengehistorikk.feriepengehistorikk.size)
         assertEquals(0, sykepengehistorikk.inntektshistorikk.size)
         assertFalse(sykepengehistorikk.harStatslønn)
+        assertFalse(sykepengehistorikk.feriepengerSkalBeregnesManuelt)
     }
 
     @Test
@@ -97,6 +98,7 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         assertEquals(2, løsning.inntektshistorikk.size)
         assertEquals(1, løsning.arbeidskategorikoder.count())
         assertFalse(løsning.harStatslønn)
+        assertFalse(løsning.feriepengerSkalBeregnesManuelt)
         assertEquals(1, løsning.feriepengehistorikk.size)
 
         assertSykeperiode(
@@ -234,13 +236,87 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         opprettPeriode()
         opprettFeriepenger()
         rapid.sendTestMessage(behov())
-        sisteSendtMelding.løsning().let { løsning ->
-            assertEquals(1, løsning.feriepengehistorikk.size)
-            assertEquals(orgnummer, løsning.feriepengehistorikk.first().orgnummer)
-            assertEquals(1.mai(2020), løsning.feriepengehistorikk.first().fom)
-            assertEquals(31.mai(2020), løsning.feriepengehistorikk.first().tom)
-            assertEquals(1000.0, løsning.feriepengehistorikk.first().beløp)
-        }
+        val løsning = sisteSendtMelding.løsning()
+
+        assertEquals(1, løsning.feriepengehistorikk.size)
+        assertEquals(orgnummer, løsning.feriepengehistorikk.first().orgnummer)
+        assertEquals(1.mai(2020), løsning.feriepengehistorikk.first().fom)
+        assertEquals(31.mai(2020), løsning.feriepengehistorikk.first().tom)
+        assertEquals(1000.0, løsning.feriepengehistorikk.first().beløp)
+        assertFalse(løsning.feriepengerSkalBeregnesManuelt)
+    }
+
+    @Test
+    fun `feriepenger skal behandles manuelt`() {
+        opprettPeriode()
+        opprettFeriepenger(fom = 1.mai(2021), tom = 31.mai(2021))
+        opprettManuellFeriepengeberegningMerknad()
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        val løsning = sisteSendtMelding.løsning()
+
+        assertEquals(1, løsning.feriepengehistorikk.size)
+        assertEquals(orgnummer, løsning.feriepengehistorikk.first().orgnummer)
+        assertEquals(1.mai(2021), løsning.feriepengehistorikk.first().fom)
+        assertEquals(31.mai(2021), løsning.feriepengehistorikk.first().tom)
+        assertEquals(1000.0, løsning.feriepengehistorikk.first().beløp)
+        assertTrue(løsning.feriepengerSkalBeregnesManuelt)
+    }
+
+    @Test
+    fun `feriepenger skal ikke behandles manuelt ved merknadsdato innenfor tidligere år`() {
+        opprettPeriode()
+        opprettFeriepenger(fom = 1.mai(2021), tom = 31.mai(2021))
+        opprettManuellFeriepengeberegningMerknad(merknadsdato = 31.desember(2020))
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        val løsning = sisteSendtMelding.løsning()
+
+        assertFalse(løsning.feriepengerSkalBeregnesManuelt)
+    }
+
+    @Test
+    fun `feriepenger skal behandles manuelt ved merknadsdato innenfor tidligere år (første januar)`() {
+        opprettPeriode()
+        opprettFeriepenger(fom = 1.mai(2021), tom = 31.mai(2021))
+        opprettManuellFeriepengeberegningMerknad(merknadsdato = 1.januar(2021))
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        val løsning = sisteSendtMelding.løsning()
+
+        assertTrue(løsning.feriepengerSkalBeregnesManuelt)
+    }
+
+    @Test
+    fun `feriepenger skal behandles manuelt, merknader for flere år med riktig merknad`() {
+        opprettPeriode()
+        opprettFeriepenger(fom = 1.mai(2021), tom = 31.mai(2021))
+        opprettManuellFeriepengeberegningMerknad(merknadsdato = 31.desember(2020), id = 1)
+        opprettManuellFeriepengeberegningMerknad(merknadsdato = 31.desember(2021), id = 2)
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        val løsning = sisteSendtMelding.løsning()
+
+        assertTrue(løsning.feriepengerSkalBeregnesManuelt)
+    }
+
+    @Test
+    fun `feriepenger skal ikke behandles manuelt, merknader for flere år med feil merknad for gjeldende år`() {
+        opprettPeriode()
+        opprettFeriepenger(fom = 1.mai(2021), tom = 31.mai(2021))
+        opprettManuellFeriepengeberegningMerknad(merknadsdato = 31.desember(2020), kode = "242", id = 1)
+        opprettManuellFeriepengeberegningMerknad(merknadsdato = 31.desember(2021), kode = "512", id = 2)
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        val løsning = sisteSendtMelding.løsning()
+
+        assertFalse(løsning.feriepengerSkalBeregnesManuelt)
+    }
+
+    @Test
+    fun `feriepenger skal ikke behandles manuelt ved annen merknadskode`() {
+        opprettPeriode()
+        opprettFeriepenger(fom = 1.mai(2021), tom = 31.mai(2021))
+        opprettManuellFeriepengeberegningMerknad(kode = "512")
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        val løsning = sisteSendtMelding.løsning()
+
+        assertFalse(løsning.feriepengerSkalBeregnesManuelt)
     }
 
     @Test
@@ -261,6 +337,7 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         val inntektshistorikk = json["inntektshistorikk"].map { Inntektsopplysning(it) }
         val feriepengehistorikk = json["feriepengehistorikk"].map { Feriepenger(it) }
         val harStatslønn = json["harStatslønn"].asBoolean()
+        val feriepengerSkalBeregnesManuelt = json["feriepengerSkalBeregnesManuelt"].asBoolean()
         val arbeidskategorikoder = json["arbeidskategorikoder"] as ObjectNode
 
         class UtbetalteSykeperiode(json: JsonNode) {
@@ -316,8 +393,12 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         assertEquals(orgnummer, inntektsopplysning.orgnummer)
     }
 
-    @Language("Json")
-    private fun behov(opprettet: LocalDateTime = LocalDateTime.now().minusMinutes(5)) =
+    @Language("JSON")
+    private fun behov(
+        opprettet: LocalDateTime = LocalDateTime.now().minusMinutes(5),
+        fom: LocalDate = 1.januar(2018),
+        tom: LocalDate = 1.januar(2022)
+    ) =
         """
             {
             "@id": "behovsid", 
@@ -325,8 +406,8 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
             "@behov":[
                 "${SykepengehistorikkløserMK2.behov}"], 
                 "${SykepengehistorikkløserMK2.behov}": { 
-                    "historikkFom": "2018-01-01", 
-                    "historikkTom": "2022-01-01"
+                    "historikkFom": "$fom", 
+                    "historikkTom": "$tom"
                 }, 
                 "fødselsnummer": "$fnr", 
                 "vedtaksperiodeId": "id"

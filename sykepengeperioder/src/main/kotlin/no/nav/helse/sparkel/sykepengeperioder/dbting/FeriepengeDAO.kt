@@ -7,6 +7,7 @@ import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 
 internal class FeriepengeDAO(
@@ -49,6 +50,25 @@ internal class FeriepengeDAO(
         }
     }
 
+    internal fun feriepengerSkalBeregnesManuelt(fnr: Fnr, fom: LocalDate, tom: LocalDate): Boolean {
+        return sessionOf(dataSource).use { session ->
+            @Language("Oracle")
+            val statement = """
+                SELECT count(*) as count
+                FROM IP_MERKNAD_20 
+                WHERE F_NR = ? AND IP20_MERKNADS_KODE = '242' AND IP20_MERKNAD_DATO1 >= ? AND IP20_MERKNAD_DATO1 <= ?;
+            """
+            session.run(
+                queryOf(
+                    statement,
+                    fnr.formatAsITFnr(),
+                    fom.plusYears(1).format(),
+                    tom.plusYears(1).format()
+                ).map { rs -> rs.int("count") > 0 }.asSingle
+            )?: false
+        }
+    }
+
     internal data class FeriepengeDTO(
         var orgnummer: String,
         var beløp: Double,
@@ -70,3 +90,5 @@ internal class FeriepengeDAO(
 
 
 }
+
+private fun LocalDate?.format() = this?.let { format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt() } ?: 0
