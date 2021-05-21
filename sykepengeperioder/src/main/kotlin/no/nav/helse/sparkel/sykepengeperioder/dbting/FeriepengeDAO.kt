@@ -35,7 +35,6 @@ internal class FeriepengeDAO(
                     AND dy.TYPE_DELYTELSE = 'FY'
                     AND dy.TYPE_SATS = 'E'
                     AND dy.FOM between ? and ?
-                    ;
             """
             session.run(
                 queryOf(statement, fnr.formatAsITFnr(), fom.plusYears(1), tom.plusYears(1)).map { rs ->
@@ -56,7 +55,7 @@ internal class FeriepengeDAO(
             val statement = """
                 SELECT count(*) as count
                 FROM IP_MERKNAD_20 
-                WHERE F_NR = ? AND IP20_MERKNADS_KODE = '242' AND IP20_MERKNAD_DATO1 >= ? AND IP20_MERKNAD_DATO1 <= ?;
+                WHERE F_NR = ? AND IP20_MERKNADS_KODE = '242' AND IP20_MERKNAD_DATO1 >= ? AND IP20_MERKNAD_DATO1 <= ?
             """
             session.run(
                 queryOf(
