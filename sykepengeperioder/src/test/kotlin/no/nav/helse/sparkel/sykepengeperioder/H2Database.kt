@@ -368,7 +368,7 @@ VALUES (:fnr, :seq, :id, :statslonn,
         sessionOf(dataSource).use { session ->
             @Language("Oracle")
             val query = """INSERT INTO T_LOPENR_FNR(PERSONNR, PERSON_LOPENR) VALUES (:fnr, :fnr_lopenr)"""
-            session.run(queryOf(query, mapOf("fnr" to fnr.formatAsITFnr(), "fnr_lopenr" to løpenummer)).asUpdate)
+            session.run(queryOf(query, mapOf("fnr" to fnr.toString(), "fnr_lopenr" to løpenummer)).asUpdate)
         }
     }
 
