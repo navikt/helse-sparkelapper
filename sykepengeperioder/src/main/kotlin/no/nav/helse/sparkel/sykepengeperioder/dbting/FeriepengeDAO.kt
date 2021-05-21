@@ -31,7 +31,7 @@ internal class FeriepengeDAO(
                     INNER JOIN T_VEDTAK v ON v.STONAD_ID = st.STONAD_ID
                     INNER JOIN T_DELYTELSE dy ON dy.VEDTAK_ID = v.VEDTAK_ID
                 WHERE fnr.PERSONNR = ? 
-                    AND st.KODE_RUTINE = 'FY'
+                    AND st.KODE_RUTINE = 'SR'
                     AND dy.TYPE_DELYTELSE = 'FY'
                     AND dy.TYPE_SATS = 'E'
                     AND dy.FOM between ? and ?

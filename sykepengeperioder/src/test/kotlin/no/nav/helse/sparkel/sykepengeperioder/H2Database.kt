@@ -376,7 +376,7 @@ VALUES (:fnr, :seq, :id, :statslonn,
         sessionOf(dataSource).use { session ->
             @Language("Oracle")
             val query = """INSERT INTO T_STONAD(STONAD_ID, PERSON_LOPENR, KODE_RUTINE, DATO_START) 
-                VALUES (:stonad_id, :lopenr, 'FY', :datoStart)
+                VALUES (:stonad_id, :lopenr, 'SR', :datoStart)
             """
             session.run(
                 queryOf(
