@@ -247,6 +247,35 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
     }
 
     @Test
+    fun `henter feriepengehistorikk med flere arbeidsgivere`() {
+        opprettPeriode()
+        opprettFeriepenger(
+            beløp = listOf(1000.0, 2000.0),
+            orgnumre = listOf("987654321", "654321987"))
+        rapid.sendTestMessage(behov())
+        val løsning = sisteSendtMelding.løsning()
+
+        assertEquals(4, løsning.feriepengehistorikk.size)
+        assertEquals("987654321", løsning.feriepengehistorikk[0].orgnummer)
+        assertEquals(1.mai(2020), løsning.feriepengehistorikk[0].fom)
+        assertEquals(31.mai(2020), løsning.feriepengehistorikk[0].tom)
+        assertEquals(1000.0, løsning.feriepengehistorikk[0].beløp)
+        assertEquals("987654321", løsning.feriepengehistorikk[1].orgnummer)
+        assertEquals(1.mai(2020), løsning.feriepengehistorikk[1].fom)
+        assertEquals(31.mai(2020), løsning.feriepengehistorikk[1].tom)
+        assertEquals(2000.0, løsning.feriepengehistorikk[1].beløp)
+        assertEquals("654321987", løsning.feriepengehistorikk[2].orgnummer)
+        assertEquals(1.mai(2020), løsning.feriepengehistorikk[2].fom)
+        assertEquals(31.mai(2020), løsning.feriepengehistorikk[2].tom)
+        assertEquals(1000.0, løsning.feriepengehistorikk[2].beløp)
+        assertEquals("654321987", løsning.feriepengehistorikk[3].orgnummer)
+        assertEquals(1.mai(2020), løsning.feriepengehistorikk[3].fom)
+        assertEquals(31.mai(2020), løsning.feriepengehistorikk[3].tom)
+        assertEquals(2000.0, løsning.feriepengehistorikk[3].beløp)
+        assertFalse(løsning.feriepengerSkalBeregnesManuelt)
+    }
+
+    @Test
     fun `feriepenger skal behandles manuelt`() {
         opprettPeriode()
         opprettFeriepenger(fom = 1.mai(2021), tom = 31.mai(2021))

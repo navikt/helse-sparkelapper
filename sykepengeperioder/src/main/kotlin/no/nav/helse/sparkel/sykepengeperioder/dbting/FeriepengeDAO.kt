@@ -25,13 +25,14 @@ internal class FeriepengeDAO(
                 SELECT dy.BELOP,
                     dy.FOM,
                     dy.TOM,
-                    (SELECT DISTINCT ORGNR FROM T_DELYTELSE_SP_FA_BS WHERE VEDTAK_ID = dy.VEDTAK_ID) AS ORGNR
+                    dysp.ORGNR
                 FROM T_LOPENR_FNR fnr
                     INNER JOIN T_STONAD st ON st.PERSON_LOPENR = fnr.PERSON_LOPENR
                     INNER JOIN T_VEDTAK v ON v.STONAD_ID = st.STONAD_ID
                     INNER JOIN T_DELYTELSE dy ON dy.VEDTAK_ID = v.VEDTAK_ID
+                    INNER JOIN T_DELYTELSE_SP_FA_BS dysp ON dysp.VEDTAK_ID = v.VEDTAK_ID
                 WHERE fnr.PERSONNR = ? 
-                    -- AND st.KODE_RUTINE = 'SR'
+                    AND st.KODE_RUTINE IN ('FY', 'SR')
                     AND dy.TYPE_DELYTELSE = 'FY'
                     AND dy.TYPE_SATS = 'E'
                     AND dy.FOM between ? and ?

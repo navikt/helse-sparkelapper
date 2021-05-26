@@ -429,10 +429,17 @@ VALUES (:fnr, :seq, :id, :statslonn,
         }
     }
 
-    private fun insertDelytelse(vedtakId: Double, fom: LocalDate, tom: LocalDate, beløp: Double, orgnummer: String) {
+    private fun insertDelytelse(
+        vedtakId: Double,
+        fom: LocalDate,
+        tom: LocalDate,
+        beløp: List<Double>,
+        orgnumre: List<String>
+    ) {
         sessionOf(dataSource).use { session ->
-            @Language("Oracle")
-            val query1 = """INSERT INTO T_DELYTELSE(
+            beløp.forEach { sum ->
+                @Language("Oracle")
+                val query1 = """INSERT INTO T_DELYTELSE(
                 VEDTAK_ID, 
                 TYPE_DELYTELSE, 
                 FOM, 
@@ -448,12 +455,17 @@ VALUES (:fnr, :seq, :id, :statslonn,
                     '12345678', 'E'
                 )
             """
-            session.run(
-                queryOf(query1, mapOf("fom" to fom, "tom" to tom, "belop" to beløp, "vedtak_id" to vedtakId)).asUpdate,
-            )
+                session.run(
+                    queryOf(
+                        query1,
+                        mapOf("fom" to fom, "tom" to tom, "belop" to sum, "vedtak_id" to vedtakId)
+                    ).asUpdate,
+                )
+            }
 
-            @Language("Oracle")
-            val query2 = """INSERT INTO T_DELYTELSE_SP_FA_BS(
+            orgnumre.forEach { orgnr ->
+                @Language("Oracle")
+                val query2 = """INSERT INTO T_DELYTELSE_SP_FA_BS(
                 VEDTAK_ID, 
                 ORGNR,
 -- Andre påkrevde
@@ -477,10 +489,10 @@ VALUES (:fnr, :seq, :id, :statslonn,
                     'FY', 'XX', 'XX', 'X', 'X', 1, 'X', 100, 'KULKLASSE', 'X', 'X', 'XXXX', 1234, '12345678'      
                 )
             """
-            session.run(
-                queryOf(query2, mapOf("vedtak_id" to vedtakId, "orgnr" to orgnummer)).asUpdate,
-            )
-
+                session.run(
+                    queryOf(query2, mapOf("vedtak_id" to vedtakId, "orgnr" to orgnr)).asUpdate,
+                )
+            }
         }
     }
 
@@ -511,12 +523,14 @@ VALUES (:fnr, :seq, :id, :statslonn,
                           )  
             """
             session.run(
-                queryOf(query, mapOf(
-                    "fnr" to fnr.formatAsITFnr(),
-                    "merknad_kode" to kode,
-                    "merknad_dato" to merknadsdato.format(),
-                    "id" to id
-                )).asUpdate
+                queryOf(
+                    query, mapOf(
+                        "fnr" to fnr.formatAsITFnr(),
+                        "merknad_kode" to kode,
+                        "merknad_dato" to merknadsdato.format(),
+                        "id" to id
+                    )
+                ).asUpdate
             )
         }
     }
@@ -524,10 +538,10 @@ VALUES (:fnr, :seq, :id, :statslonn,
 
     protected fun opprettFeriepenger(
         fnr: Fnr = Companion.fnr,
-        orgnummer: String = Companion.orgnummer,
-        beløp: Double = 1000.0,
         fom: LocalDate = 1.mai(2020),
-        tom: LocalDate = 31.mai(2020)
+        tom: LocalDate = 31.mai(2020),
+        beløp: List<Double> = listOf(1000.0),
+        orgnumre: List<String> = listOf(Companion.orgnummer)
     ) {
         val løpenummer = (10000..99999).random().toDouble()
         val stønadId = (10000..99999).random().toDouble()
@@ -535,7 +549,7 @@ VALUES (:fnr, :seq, :id, :statslonn,
         insertFødselsnummerLøpenummer(fnr, løpenummer)
         insertStønad(løpenummer, fom, stønadId)
         insertVedtak(løpenummer, stønadId, vedtakId, fom, tom)
-        insertDelytelse(vedtakId, fom, tom, beløp, orgnummer)
+        insertDelytelse(vedtakId, fom, tom, beløp, orgnumre)
     }
 }
 
