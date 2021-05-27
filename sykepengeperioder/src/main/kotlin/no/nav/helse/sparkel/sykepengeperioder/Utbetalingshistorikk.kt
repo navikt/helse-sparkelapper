@@ -51,11 +51,4 @@ internal class Utbetalingshistorikk(
         val typeTekst: String,
         val orgnummer: String
     )
-
-    internal class Feriepenger(
-        val orgnummer: String,
-        val beløp: Double,
-        val fom: LocalDate,
-        val tom: LocalDate
-    )
 }

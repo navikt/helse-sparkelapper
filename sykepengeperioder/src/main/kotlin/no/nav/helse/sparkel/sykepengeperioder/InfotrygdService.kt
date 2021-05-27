@@ -94,15 +94,23 @@ internal class InfotrygdService(
 
             val arbeidskategorikoder = perioder
                 .mapNotNull { periode ->
-                    utbetalingDAOer
+                    val fom = utbetalingDAOer
+                        .filter { it.sekvensId == periode.seq }
+                        .mapNotNull { it.fom }
+                        .minOrNull()
+                    val tom = utbetalingDAOer
                         .filter { it.sekvensId == periode.seq }
                         .mapNotNull { it.tom }
                         .maxOrNull()
-                        ?.let { periode.arbeidsKategori to it }
+                    if (fom != null && tom != null) {
+                        Sykepengehistorikk.Arbeidskategori(
+                            kode = periode.arbeidsKategori,
+                            fom = fom,
+                            tom = tom
+                        )
+                    } else null
                 }
-                .sortedByDescending { (_, tom) -> tom }
-                .distinctBy { (arbkatkode, _) -> arbkatkode }
-                .toMap()
+                .sortedBy { it.fom }
 
             sikkerlogg.info(
                 "løser behov: {}",

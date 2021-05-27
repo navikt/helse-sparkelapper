@@ -1,7 +1,6 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*
@@ -51,7 +50,7 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         val sykepengehistorikk = sisteSendtMelding.løsning()
 
         assertEquals(0, sykepengehistorikk.utbetalinger.size)
-        assertTrue(sykepengehistorikk.arbeidskategorikoder.isEmpty)
+        assertEquals(0, sykepengehistorikk.arbeidskategorikoder.size)
         assertEquals(0, sykepengehistorikk.feriepengehistorikk.size)
         assertEquals(0, sykepengehistorikk.inntektshistorikk.size)
         assertFalse(sykepengehistorikk.harStatslønn)
@@ -96,7 +95,7 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
 
         assertEquals(8, løsning.utbetalinger.size)
         assertEquals(2, løsning.inntektshistorikk.size)
-        assertEquals(1, løsning.arbeidskategorikoder.count())
+        assertEquals(2, løsning.arbeidskategorikoder.count())
         assertFalse(løsning.harStatslønn)
         assertFalse(løsning.feriepengerSkalBeregnesManuelt)
         assertEquals(1, løsning.feriepengehistorikk.size)
@@ -173,40 +172,8 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         val løsning = sisteSendtMelding.løsning()
 
         assertEquals(2, løsning.arbeidskategorikoder.count())
-        assertEquals("2019-06-20", løsning.arbeidskategorikoder["00"].textValue())
-        assertEquals("2020-09-25", løsning.arbeidskategorikoder["01"].textValue())
-    }
-
-    @Test
-    fun `arbeidskategori ved tidligere periode med samme kode`() {
-        opprettPeriode(
-            seq = 1,
-            utbetalinger = listOf(
-                Utbetaling(5.september(2020), 25.september(2020), dagsats = 2176.0),
-                Utbetaling(4.september(2020), 4.september(2020))
-            ),
-            inntekter = listOf(Inntekt(4.september(2020), lønn = 565700.0)),
-            arbeidskategori = "01"
-        )
-        opprettPeriode(
-            seq = 2,
-            utbetalinger = listOf(
-                Utbetaling(2.juni(2019), 20.juni(2019)),
-                Utbetaling(17.mai(2019), 1.juni(2019)),
-                Utbetaling(1.mai(2019), 16.mai(2019)),
-                Utbetaling(15.april(2019), 30.april(2019)),
-                Utbetaling(30.mars(2019), 14.april(2019)),
-                Utbetaling(4.februar(2019), 29.mars(2019))
-            ),
-            inntekter = listOf(Inntekt(4.februar(2019), lønn = 507680.0)),
-            arbeidskategori = "01"
-        )
-
-        rapid.sendTestMessage(behov())
-        val løsning = sisteSendtMelding.løsning()
-
-        assertEquals(1, løsning.arbeidskategorikoder.count())
-        assertEquals("2020-09-25", løsning.arbeidskategorikoder["01"].textValue())
+        assertEquals(20.juni(2019), løsning.arbeidskategorikoder.find { it.kode == "00" }?.tom)
+        assertEquals(25.september(2020), løsning.arbeidskategorikoder.find { it.kode == "01" }?.tom)
     }
 
     @Test
@@ -251,7 +218,8 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         opprettPeriode()
         opprettFeriepenger(
             beløp = listOf(1000.0, 2000.0),
-            orgnumre = listOf("987654321", "654321987"))
+            orgnumre = listOf("987654321", "654321987")
+        )
         rapid.sendTestMessage(behov())
         val løsning = sisteSendtMelding.løsning()
 
@@ -484,12 +452,12 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         }
 
     private class Sykepengehistorikk(json: JsonNode) {
-        val utbetalinger = json["utbetalinger"].map { UtbetalteSykeperiode(it) }
-        val inntektshistorikk = json["inntektshistorikk"].map { Inntektsopplysning(it) }
-        val feriepengehistorikk = json["feriepengehistorikk"].map { Feriepenger(it) }
+        val utbetalinger = json["utbetalinger"].map(::UtbetalteSykeperiode)
+        val inntektshistorikk = json["inntektshistorikk"].map(::Inntektsopplysning)
+        val feriepengehistorikk = json["feriepengehistorikk"].map(::Feriepenger)
         val harStatslønn = json["harStatslønn"].asBoolean()
         val feriepengerSkalBeregnesManuelt = json["feriepengerSkalBeregnesManuelt"].asBoolean()
-        val arbeidskategorikoder = json["arbeidskategorikoder"] as ObjectNode
+        val arbeidskategorikoder = json["arbeidskategorikoder"].map(::Arbeidskategori)
 
         class UtbetalteSykeperiode(json: JsonNode) {
             val fom = json["fom"].asOptionalLocalDate()
@@ -508,6 +476,12 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         class Feriepenger(json: JsonNode) {
             val orgnummer = json["orgnummer"].asText()
             val beløp = json["beløp"].asDouble()
+            val fom = json["fom"].asLocalDate()
+            val tom = json["tom"].asLocalDate()
+        }
+
+        class Arbeidskategori(json: JsonNode) {
+            val kode = json["kode"].asText()
             val fom = json["fom"].asLocalDate()
             val tom = json["tom"].asLocalDate()
         }
