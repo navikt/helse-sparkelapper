@@ -57,7 +57,8 @@ internal abstract class H2Database {
         val tom: LocalDate? = null,
         val grad: String = "100",
         val dagsats: Double = 1000.0,
-        val orgnummer: String = Companion.orgnummer
+        val orgnummer: String = Companion.orgnummer,
+        val periodetype: String = "5"
     )
 
     protected class Inntekt(
@@ -94,7 +95,7 @@ internal abstract class H2Database {
                 grad = utbetaling.grad,
                 utbetalt = utbetaling.tom,
                 dagsats = utbetaling.dagsats,
-                periodetype = "5",
+                periodetype = utbetaling.periodetype,
                 arbOrgnr = utbetaling.orgnummer
             )
         }

@@ -446,6 +446,47 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
     }
 
+    @Test
+    fun `Mapper ikke arbeidskategorikoder på tilbakeførte perioder`() {
+        opprettPeriode(
+            arbeidskategori = "01",
+            utbetalinger = listOf(Utbetaling(31.desember(2020), 31.januar(2021), periodetype="7"))
+        )
+
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
+        assertEquals(0, sisteSendtMelding.løsning().arbeidskategorikoder.size)
+    }
+
+    @Test
+    fun `Mapper ikke arbeidskategorikoder på tilbakeførte perioder - person med flere perioder`() {
+        opprettPeriode(
+            seq = 1,
+            arbeidskategori = "01",
+            utbetalinger = listOf(
+                Utbetaling(1.desember(2020), 11.desember(2020), periodetype="5"),
+                Utbetaling(30.desember(2020), 15.januar(2021), periodetype="7")
+            )
+        )
+        opprettPeriode(
+            seq = 2,
+            arbeidskategori = "01",
+            utbetalinger = listOf(
+                Utbetaling(31.desember(2020), 31.januar(2021), periodetype="5")
+            )
+        )
+
+        rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
+        assertEquals(3, sisteSendtMelding.løsning().utbetalinger.size)
+        assertEquals(2, sisteSendtMelding.løsning().arbeidskategorikoder.size)
+
+        assertEquals(1.desember(2020), sisteSendtMelding.løsning().arbeidskategorikoder.first().fom)
+        assertEquals(11.desember(2020), sisteSendtMelding.løsning().arbeidskategorikoder.first().tom)
+
+        assertEquals(31.desember(2020), sisteSendtMelding.løsning().arbeidskategorikoder.last().fom)
+        assertEquals(31.januar(2021), sisteSendtMelding.løsning().arbeidskategorikoder.last().tom)
+    }
+
     private fun JsonNode.løsning() =
         this.path("@løsning").path(SykepengehistorikkløserMK2.behov).let {
             Sykepengehistorikk(it)

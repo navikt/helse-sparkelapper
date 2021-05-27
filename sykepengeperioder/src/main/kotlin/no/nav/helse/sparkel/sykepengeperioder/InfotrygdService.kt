@@ -96,10 +96,12 @@ internal class InfotrygdService(
                 .mapNotNull { periode ->
                     val fom = utbetalingDAOer
                         .filter { it.sekvensId == periode.seq }
+                        .filterNot { it.periodeType == "7" }
                         .mapNotNull { it.fom }
                         .minOrNull()
                     val tom = utbetalingDAOer
                         .filter { it.sekvensId == periode.seq }
+                        .filterNot { it.periodeType == "7" }
                         .mapNotNull { it.tom }
                         .maxOrNull()
                     if (fom != null && tom != null) {
