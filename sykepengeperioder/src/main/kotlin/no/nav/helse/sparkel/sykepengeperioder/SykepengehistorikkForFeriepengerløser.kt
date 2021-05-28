@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
 
 internal class SykepengehistorikkForFeriepengerløser(
     rapidsConnection: RapidsConnection,
@@ -35,13 +34,6 @@ internal class SykepengehistorikkForFeriepengerløser(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
-        if (packet["@opprettet"].asLocalDateTime().isBefore(LocalDateTime.now().minusMinutes(30))) {
-            sikkerlogg.info(
-                "ignorerer {} fordi det er over 30 minutter gammelt",
-                keyValue("behovId", packet["@id"])
-            )
-            return
-        }
         infotrygdService.løsningForSykepengehistorikkMk2behov(
             packet["@id"].asText(),
             Fnr(packet["fødselsnummer"].asText()),
