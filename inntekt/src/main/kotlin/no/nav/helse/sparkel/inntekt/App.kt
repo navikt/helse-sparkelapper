@@ -4,12 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.ktor.client.HttpClient
-import io.ktor.client.features.HttpTimeout
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.logging.LogLevel
-import io.ktor.client.features.logging.Logging
+import io.ktor.client.*
+import io.ktor.client.features.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.logging.*
 import no.nav.helse.rapids_rivers.RapidApplication
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
@@ -19,8 +17,6 @@ import java.util.*
 val objectMapper: ObjectMapper = jacksonObjectMapper()
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     .registerModule(JavaTimeModule())
-
-const val Inntektsberegningbehov = "Inntektsberegning"
 
 fun main() {
     val env = System.getenv()
@@ -38,7 +34,6 @@ fun main() {
     )
 
     RapidApplication.create(System.getenv()).apply {
-        Inntektsberegning(this, inntektRestClient)
         Inntekter(this, inntektRestClient)
     }.start()
 }
