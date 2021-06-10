@@ -107,7 +107,7 @@ internal class Arena(
             }
 
     private infix fun XMLGregorianCalendar.isOneDayBefore(other: XMLGregorianCalendar) =
-        asLocalDate().until(other.asLocalDate()) == Period.ofDays(-1)
+        asLocalDate().until(other.asLocalDate()) == Period.ofDays(1)
 
     private fun hentMeldekortUtbetalingsgrunnlag(fødselsnummer: String, søkevindu: Pair<LocalDate, LocalDate>, tema: Tema) =
         meldekortUtbetalingsgrunnlagV1.finnMeldekortUtbetalingsgrunnlagListe(FinnMeldekortUtbetalingsgrunnlagListeRequest().apply {
