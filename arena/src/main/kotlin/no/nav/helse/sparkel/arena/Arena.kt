@@ -3,7 +3,6 @@ package no.nav.helse.sparkel.arena
 import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
-import no.nav.helse.sparkel.arena.asLocalDate
 import no.nav.tjeneste.virksomhet.meldekortutbetalingsgrunnlag.v1.binding.MeldekortUtbetalingsgrunnlagV1
 import no.nav.tjeneste.virksomhet.meldekortutbetalingsgrunnlag.v1.informasjon.Bruker
 import no.nav.tjeneste.virksomhet.meldekortutbetalingsgrunnlag.v1.informasjon.Periode
@@ -15,6 +14,8 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskont
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import java.time.LocalDate
+import java.time.Period
+import javax.xml.datatype.XMLGregorianCalendar
 
 internal class Arena(
     rapidsConnection: RapidsConnection,
@@ -98,11 +99,15 @@ internal class Arena(
                 it.ihtVedtak
                     .filter { it.periodetypeForYtelse != "Stans" }
                     .filter { it.vedtaksperiode.fom != null }
+                    .filterNot { it.vedtaksperiode.tom isOneDayBefore it.vedtaksperiode.fom }
                     .map { mapOf(
                         "fom" to it.vedtaksperiode.fom.asLocalDate(),
                         "tom" to (it.vedtaksperiode.tom?.asLocalDate() ?: LocalDate.now())
                     ) }
             }
+
+    private infix fun XMLGregorianCalendar.isOneDayBefore(other: XMLGregorianCalendar) =
+        asLocalDate().until(other.asLocalDate()) == Period.ofDays(-1)
 
     private fun hentMeldekortUtbetalingsgrunnlag(fødselsnummer: String, søkevindu: Pair<LocalDate, LocalDate>, tema: Tema) =
         meldekortUtbetalingsgrunnlagV1.finnMeldekortUtbetalingsgrunnlagListe(FinnMeldekortUtbetalingsgrunnlagListeRequest().apply {
