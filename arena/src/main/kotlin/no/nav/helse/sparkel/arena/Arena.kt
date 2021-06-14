@@ -99,7 +99,7 @@ internal class Arena(
                 it.ihtVedtak
                     .filter { it.periodetypeForYtelse != "Stans" }
                     .filter { it.vedtaksperiode.fom != null }
-                    .filterNot { it.vedtaksperiode.tom isOneDayBefore it.vedtaksperiode.fom }
+                    .filterNot { it.vedtaksperiode.tom != null && it.vedtaksperiode.tom isOneDayBefore it.vedtaksperiode.fom }
                     .map { mapOf(
                         "fom" to it.vedtaksperiode.fom.asLocalDate(),
                         "tom" to (it.vedtaksperiode.tom?.asLocalDate() ?: LocalDate.now())
