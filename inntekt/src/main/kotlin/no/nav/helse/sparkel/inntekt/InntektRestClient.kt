@@ -2,17 +2,13 @@ package no.nav.helse.sparkel.inntekt
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.client.HttpClient
-import io.ktor.client.request.accept
-import io.ktor.client.request.header
-import io.ktor.client.request.request
-import io.ktor.client.statement.HttpStatement
-import io.ktor.client.statement.readText
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.contentType
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import io.prometheus.client.Summary
 import kotlinx.coroutines.runBlocking
+import org.slf4j.LoggerFactory
 import java.time.YearMonth
 
 private const val INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME = "inntektskomponent_client_seconds"
@@ -29,6 +25,9 @@ class InntektRestClient(
     private val httpClient: HttpClient,
     private val stsRestClient: StsRestClient
 ) {
+
+    private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+
     fun hentInntektsliste(
         fnr: String,
         fom: YearMonth,
@@ -54,7 +53,11 @@ class InntektRestClient(
                     "maanedFom" to fom,
                     "maanedTom" to tom
                 )
-            }.execute { toMånedListe(objectMapper.readValue(it.readText())) }
+            }.execute {
+                val response = it.readText()
+                sikkerlogg.info("Henter inntektsvurdering for sykepengegrunnlag: $response")
+                toMånedListe(objectMapper.readValue(response))
+            }
         }
     }
 }
