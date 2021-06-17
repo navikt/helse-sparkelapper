@@ -8,7 +8,6 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.prometheus.client.Summary
 import kotlinx.coroutines.runBlocking
-import org.slf4j.LoggerFactory
 import java.time.YearMonth
 
 private const val INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME = "inntektskomponent_client_seconds"
@@ -25,9 +24,6 @@ class InntektRestClient(
     private val httpClient: HttpClient,
     private val stsRestClient: StsRestClient
 ) {
-
-    private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-
     fun hentInntektsliste(
         fnr: String,
         fom: YearMonth,
@@ -53,11 +49,7 @@ class InntektRestClient(
                     "maanedFom" to fom,
                     "maanedTom" to tom
                 )
-            }.execute {
-                val response = it.readText()
-                sikkerlogg.info("Henter inntektsvurdering for sykepengegrunnlag: $response")
-                toMånedListe(objectMapper.readValue(response))
-            }
+            }.execute { toMånedListe(objectMapper.readValue(it.readText())) }
         }
     }
 }
