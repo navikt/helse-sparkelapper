@@ -29,7 +29,7 @@ internal class BehovløserTest {
     private val rapid = object : RapidsConnection() {
 
         fun sendTestMessage(message: String) {
-            listeners.forEach { it.onMessage(message, this) }
+            notifyMessage(message, this)
         }
 
         override fun publish(message: String) {

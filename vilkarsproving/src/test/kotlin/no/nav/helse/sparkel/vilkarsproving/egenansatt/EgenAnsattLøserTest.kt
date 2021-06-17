@@ -30,9 +30,11 @@ internal class EgenAnsattLøserTest {
     private val sendtMelding get() = meldinger.last()
 
     private val rapid = object : RapidsConnection() {
-        fun sendTestMessage(message: String) = listeners.forEach { it.onMessage(message, this) }
+        fun sendTestMessage(message: String) = notifyMessage(message, this)
 
-        override fun publish(message: String) { meldinger.add(objectMapper.readTree(message)) }
+        override fun publish(message: String) {
+            meldinger.add(objectMapper.readTree(message))
+        }
 
         override fun publish(key: String, message: String) {}
 
