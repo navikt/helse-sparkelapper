@@ -11,3 +11,7 @@ env:
   value: https://modapp-q1.adeo.no/aareg-services/ArbeidsforholdService/v3
 - name: ORGANISASJON_BASE_URL
   value: https://modapp-q1.adeo.no/ereg/ws/OrganisasjonService/v5
+- name: STS_URL
+  value: https://sts-q1.preprod.local/SecurityTokenServiceProvider/
+- name: AAREG_BASE_URL
+  value: https://modapp-q1.adeo.no/aareg-services/api

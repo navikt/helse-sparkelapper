@@ -4,13 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.ktor.client.HttpClient
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.*
+import io.ktor.client.features.json.*
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.aareg.arbeidsforhold.ArbeidsforholdClient
 import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdbehovløser
+import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
+import no.nav.helse.sparkel.aareg.arbeidsforholdV2.ArbeidsforholdLøserV2
+import no.nav.helse.sparkel.aareg.arbeidsforholdV2.StsRestClient
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.Arbeidsgiverinformasjonsbehovløser
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.OrganisasjonClient
 import no.nav.helse.sparkel.aareg.util.CallIdInterceptor
@@ -22,7 +24,7 @@ import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.cxf.ws.security.trust.STSClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.UUID
+import java.util.*
 import javax.xml.namespace.QName
 
 val sikkerlogg: Logger = LoggerFactory.getLogger("tjenestekall")
@@ -47,6 +49,8 @@ internal fun createApp(environment: Environment, serviceUser: ServiceUser): Rapi
     val httpClient = HttpClient {
         install(JsonFeature) { serializer = JacksonSerializer() }
     }
+    val stsRestClient = StsRestClient(environment.stsBaseUrl, serviceUser, httpClient)
+
     val kodeverkClient = KodeverkClient(
         httpClient = httpClient,
         kodeverkBaseUrl = environment.kodeverkBaseUrl,
@@ -55,10 +59,12 @@ internal fun createApp(environment: Environment, serviceUser: ServiceUser): Rapi
 
     val arbeidsforholdClient = ArbeidsforholdClient(arbeidsforholdV3, kodeverkClient)
     val organisasjonClient = OrganisasjonClient(organisasjonV5, kodeverkClient)
+    val aaregClient = AaregClient(environment.aaregBaseUrl, stsRestClient)
 
     val rapidsConnection = RapidApplication.create(environment.raw)
     Arbeidsgiverinformasjonsbehovløser(rapidsConnection, organisasjonClient)
     Arbeidsforholdbehovløser(rapidsConnection, arbeidsforholdClient)
+    ArbeidsforholdLøserV2(rapidsConnection, aaregClient)
 
     return rapidsConnection
 }
