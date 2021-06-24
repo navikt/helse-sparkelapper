@@ -39,7 +39,7 @@ class Inntekter(
                 validate { it.requireKey("@id", "fødselsnummer", "vedtaksperiodeId") }
                 validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
                 validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
-                validate { it.forbid("@løsning") }
+                validate { it.rejectKey("@løsning") }
             }.register(this)
         }
 
@@ -61,7 +61,7 @@ class Inntekter(
                 validate { it.requireKey("@id", "fødselsnummer", "vedtaksperiodeId") }
                 validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
                 validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
-                validate { it.forbid("@løsning") }
+                validate { it.rejectKey("@løsning") }
             }.register(this)
         }
 
