@@ -8,7 +8,6 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import no.nav.helse.sparkel.aareg.objectMapper
-import no.nav.helse.sparkel.aareg.sikkerlogg
 import java.time.LocalDate
 import java.util.*
 
@@ -28,10 +27,7 @@ class AaregClient(
             header("Nav-Personident", fnr)
         }
             .execute { objectMapper.readValue<ArrayNode>(it.readText()) }
-            .map {
-                sikkerlogg.info("Midlertidig log av arbeidsforhold: $it")
-                it.toArbeidsforhold()
-            }
+            .map { it.toArbeidsforhold() }
 
     private fun JsonNode.toArbeidsforhold() = Arbeidsforhold(
         ansattSiden = this.path("ansettelsesperiode").path("periode").path("fom").asLocalDate(),
