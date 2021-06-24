@@ -59,7 +59,7 @@ internal fun createApp(environment: Environment, serviceUser: ServiceUser): Rapi
 
     val arbeidsforholdClient = ArbeidsforholdClient(arbeidsforholdV3, kodeverkClient)
     val organisasjonClient = OrganisasjonClient(organisasjonV5, kodeverkClient)
-    val aaregClient = AaregClient(environment.aaregBaseUrl, stsRestClient)
+    val aaregClient = AaregClient(environment.aaregBaseUrlRest, stsRestClient)
 
     val rapidsConnection = RapidApplication.create(environment.raw)
     Arbeidsgiverinformasjonsbehovløser(rapidsConnection, organisasjonClient)
