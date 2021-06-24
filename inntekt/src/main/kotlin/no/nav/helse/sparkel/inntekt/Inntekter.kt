@@ -5,13 +5,9 @@ import io.ktor.client.features.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.helse.rapids_rivers.*
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSammenligningsgrunnlag
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlag
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
-import no.nav.helse.rapids_rivers.asYearMonth
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import java.time.YearMonth
@@ -39,16 +35,20 @@ class Inntekter(
 
         init {
             River(rapidsConnection).apply {
-                validate { it.requireContains("@behov", InntekterForSykepengegrunnlag.name) }
+                validate { it.demandAll("@behov", listOf(InntekterForSykepengegrunnlag.name)) }
                 validate { it.requireKey("@id", "fødselsnummer", "vedtaksperiodeId") }
-                validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningsperiodeStart", JsonNode::asYearMonth) }
-                validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningsperiodeSlutt", JsonNode::asYearMonth) }
+                validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
+                validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
                 validate { it.forbid("@løsning") }
             }.register(this)
         }
 
         override fun onPacket(packet: JsonMessage, context: MessageContext) {
             this@Inntekter.onSykepengegrunnlagPacket(packet, context)
+        }
+
+        override fun onError(problems: MessageProblems, context: MessageContext) {
+            log.error(problems.toString())
         }
     }
 
@@ -57,7 +57,7 @@ class Inntekter(
 
         init {
             River(rapidsConnection).apply {
-                validate { it.requireContains("@behov", InntekterForSammenligningsgrunnlag.name) }
+                validate { it.demandAll("@behov", listOf(InntekterForSammenligningsgrunnlag.name)) }
                 validate { it.requireKey("@id", "fødselsnummer", "vedtaksperiodeId") }
                 validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
                 validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
@@ -67,6 +67,10 @@ class Inntekter(
 
         override fun onPacket(packet: JsonMessage, context: MessageContext) {
             this@Inntekter.onSammenligningsgrunnlagPacket(packet, context)
+        }
+
+        override fun onError(problems: MessageProblems, context: MessageContext) {
+            log.error(problems.toString())
         }
     }
 
@@ -97,8 +101,8 @@ class Inntekter(
                 "vedtaksperiodeId" to packet["vedtaksperiodeId"].asText()
             )
         ) {
-            val beregningStart = packet["${InntekterForSykepengegrunnlag.name}.beregningsperiodeStart"].asYearMonth()
-            val beregningSlutt = packet["${InntekterForSykepengegrunnlag.name}.beregningsperiodeSlutt"].asYearMonth()
+            val beregningStart = packet["${InntekterForSykepengegrunnlag.name}.beregningStart"].asYearMonth()
+            val beregningSlutt = packet["${InntekterForSykepengegrunnlag.name}.beregningSlutt"].asYearMonth()
 
             hentInntekter(packet, InntekterForSykepengegrunnlag, beregningStart, beregningSlutt, context)
         }

@@ -120,8 +120,6 @@ internal class InntekterTest {
         type.name to mapOf(
             "beregningStart" to "$start",
             "beregningSlutt" to "$slutt",
-            "beregningsperiodeStart" to "$start",
-            "beregningsperiodeSlutt" to "$slutt"
         )
     )
 
