@@ -19,7 +19,6 @@ import no.nav.helse.sparkel.aareg.util.CallIdInterceptor
 import no.nav.helse.sparkel.aareg.util.KodeverkClient
 import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.binding.ArbeidsforholdV3
 import no.nav.tjeneste.virksomhet.organisasjon.v5.binding.OrganisasjonV5
-import org.apache.cxf.ext.logging.LoggingFeature
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
 import org.apache.cxf.ws.addressing.WSAddressingFeature
 import org.apache.cxf.ws.security.trust.STSClient
@@ -92,6 +91,6 @@ fun setupArbeidsforholdV3(arbeidsforholdBaseUrl: String, stsClientWs: STSClient)
         serviceName = QName("http://nav.no/tjeneste/virksomhet/arbeidsforhold/v3/Binding", "Arbeidsforhold_v3")
         endpointName = QName("http://nav.no/tjeneste/virksomhet/arbeidsforhold/v3/Binding", "Arbeidsforhold_v3Port")
         serviceClass = ArbeidsforholdV3::class.java
-        this.features.addAll(listOf(WSAddressingFeature(), LoggingFeature()))
+        this.features.addAll(listOf(WSAddressingFeature()))
         this.outInterceptors.addAll(listOf(CallIdInterceptor(callIdGenerator::get)))
     }.create(ArbeidsforholdV3::class.java).apply { stsClientWs.configureFor(this) }
