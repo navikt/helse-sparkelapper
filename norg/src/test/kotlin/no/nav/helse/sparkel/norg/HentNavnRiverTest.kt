@@ -4,11 +4,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.Foedselsdato
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.Kjoenn
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.Kjoennstyper
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.Person
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.Personnavn
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.*
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -54,7 +50,7 @@ val behov = """{
   ],
   "@id": "2dad52b1-f58e-4c26-bb24-970705cdea67",
   "@opprettet": "2020-05-05T11:16:12.678539",
-  "spleisBehovId": "c2d3ce2e-abeb-4c27-a7d3-e45f23ef26f7",
+  "hendelseId": "c2d3ce2e-abeb-4c27-a7d3-e45f23ef26f7",
   "fødselsnummer": "12345",
   "orgnummer": "89123"
 }

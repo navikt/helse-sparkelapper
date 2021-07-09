@@ -2,11 +2,7 @@ package no.nav.helse.sparkel.norg
 
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -23,7 +19,7 @@ class BehandlendeEnhetRiver(
                 it.demandAll("@behov", listOf("HentEnhet"))
                 it.requireKey("@id")
                 it.rejectKey("@løsning")
-                it.requireKey("fødselsnummer", "spleisBehovId")
+                it.requireKey("fødselsnummer", "hendelseId")
             }
         }.register(this)
     }
@@ -31,7 +27,7 @@ class BehandlendeEnhetRiver(
     override fun onPacket(packet: JsonMessage, context: MessageContext) = runBlocking {
         log.info(
             "Henter behandlende enhet for {}, {}",
-            keyValue("spleisBehovId", packet["spleisBehovId"].asText()),
+            keyValue("hendelseId", packet["hendelseId"].asText()),
             keyValue("@id", packet["@id"].asText())
         )
         try {
@@ -42,7 +38,7 @@ class BehandlendeEnhetRiver(
             context.publish(packet.toJson())
         } catch (err: Exception) {
             log.error("feil ved håntering av behov {} for {}: ${err.message}",
-                keyValue("spleisBehovId", packet["spleisBehovId"].asText()),
+                keyValue("hendelseId", packet["hendelseId"].asText()),
                 keyValue("@id", packet["@id"].asText()),
                 err)
         }

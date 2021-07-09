@@ -9,7 +9,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.TestInstance.Lifecycle
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -124,7 +125,6 @@ internal class DkifløserTest {
             "@behov" : [ "DigitalKontaktinformasjon" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
             "fødselsnummer" : "fnr"
         }
         """
@@ -136,7 +136,6 @@ internal class DkifløserTest {
             "@behov" : [ "DigitalKontaktinformasjon" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
             "fødselsnummer" : "ikkeTilgang"
         }
         """
@@ -148,7 +147,6 @@ internal class DkifløserTest {
             "@behov" : [ "DigitalKontaktinformasjon" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
             "fødselsnummer" : "feil"
         }
         """
@@ -160,7 +158,6 @@ internal class DkifløserTest {
             "@behov" : [ "DigitalKontaktinformasjon" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
             "fødselsnummer" : "reservert"
         }
         """
@@ -172,7 +169,6 @@ internal class DkifløserTest {
             "@behov" : [ "DigitalKontaktinformasjon" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
             "fødselsnummer" : "kanIkkeVarsles"
         }
         """
@@ -184,7 +180,6 @@ internal class DkifløserTest {
             "@behov" : [ "DigitalKontaktinformasjon" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
             "fødselsnummer" : "erReservertOgKanIkkeVarsles"
         }
         """

@@ -103,7 +103,6 @@ internal class InstitusjonsoppholdløserTest {
             "@behov" : [ "Institusjonsopphold" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "fnr",
             "Institusjonsopphold": {
@@ -120,7 +119,6 @@ internal class InstitusjonsoppholdløserTest {
             "@behov" : [ "Institusjonsopphold" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "ikkeTilgang",
             "Institusjonsopphold": {

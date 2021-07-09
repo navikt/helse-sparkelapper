@@ -98,7 +98,6 @@ internal class OppgaveløserTest {
             "@behov" : [ "ÅpneOppgaver" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
             "ÅpneOppgaver": {
                 "aktørId" : "aktørId"
             }
@@ -112,7 +111,6 @@ internal class OppgaveløserTest {
             "@behov" : [ "ÅpneOppgaver" ],
             "@id" : "id2",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
             "ÅpneOppgaver": {
                 "aktørId" : "aktørId"
             }

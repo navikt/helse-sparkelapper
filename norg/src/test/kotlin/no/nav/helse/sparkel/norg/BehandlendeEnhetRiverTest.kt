@@ -8,7 +8,9 @@ import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.*
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.Kommune
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.Land
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.Person
 import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningResponse
 import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentPersonResponse
 import org.intellij.lang.annotations.Language
@@ -61,7 +63,7 @@ class BehandlendeEnhetRiverTest {
           ],
           "@id": "2dad52b1-f58e-4c26-bb24-970705cdea67",
           "@opprettet": "2020-05-05T11:16:12.678539",
-          "spleisBehovId": "c2d3ce2e-abeb-4c27-a7d3-e45f23ef26f7",
+          "hendelseId": "c2d3ce2e-abeb-4c27-a7d3-e45f23ef26f7",
           "fødselsnummer": "12345",
           "orgnummer": "89123"
         }
