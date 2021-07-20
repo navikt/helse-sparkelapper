@@ -39,14 +39,9 @@ fun createApp(env: Environment): RapidsConnection {
         serviceUser = serviceUser
     )
 
-    val egenAnsattService = EgenAnsattFactory.create(
-        env.egenAnsattBaseUrl,
-        listOf(LoggingFeature().apply {
-            addSensitiveElementNames(setOf("wsse:Password"))
-        })
-    ).apply {
-        stsClientWs.configureFor(this)
-    }
+    val egenAnsattService = EgenAnsattFactory.create(env.egenAnsattBaseUrl, listOf())
+    stsClientWs.configureFor(egenAnsattService)
+
 
     val aregClient = AaregClient(
         baseUrl = env.aaregBaseUrl,
