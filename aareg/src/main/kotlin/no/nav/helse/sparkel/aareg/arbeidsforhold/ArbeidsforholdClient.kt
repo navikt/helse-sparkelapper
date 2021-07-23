@@ -1,5 +1,7 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
+import no.nav.helse.sparkel.aareg.objectMapper
+import no.nav.helse.sparkel.aareg.sikkerlogg
 import no.nav.helse.sparkel.aareg.util.KodeverkClient
 import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.binding.ArbeidsforholdV3
 import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.informasjon.arbeidsforhold.NorskIdent
@@ -26,7 +28,19 @@ class ArbeidsforholdClient(
     ): List<ArbeidsforholdDto> =
         arbeidsforholdV3.finnArbeidsforholdPrArbeidstaker(
             hentArbeidsforholdRequest(aktørId, fom, tom)
-        )
+        ).also {
+            if (aktørId == "1000019194012") {
+                sikkerlogg.info("Svar fra Aa-reg:\n${objectMapper.writeValueAsString(it)}")
+                val requestForFørAOrdningen = hentArbeidsforholdRequest(aktørId, fom, tom).apply {
+                    rapportertSomRegelverk = this.rapportertSomRegelverk.apply {
+                        value = "FOER_A_ORDNINGEN"
+                        kodeRef = "FOER_A_ORDNINGEN"
+                    }
+                }
+                val respons = arbeidsforholdV3.finnArbeidsforholdPrArbeidstaker(requestForFørAOrdningen)
+                sikkerlogg.info("Svar fra Aa-reg før A-ordningen:\n${objectMapper.writeValueAsString(respons)}")
+            }
+        }
             .arbeidsforhold
             .toList()
             .filter { it.arbeidsgiver is Organisasjon && (it.arbeidsgiver as Organisasjon).orgnummer == organisasjonsnummer }
