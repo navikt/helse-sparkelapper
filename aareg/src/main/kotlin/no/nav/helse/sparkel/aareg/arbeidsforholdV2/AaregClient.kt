@@ -38,7 +38,7 @@ data class Arbeidsforhold(
 )
 
 internal fun JsonNode.asOptionalLocalDate() =
-    takeIf(JsonNode::isTextual)?.asText()?.takeIf(String::isNotEmpty)?.let { LocalDate.parse(it) }
+    takeIf(JsonNode::isTextual)?.asText()?.takeIf(String::isNotEmpty)?.let { LocalDate.parse(it.substring(0, 10)) }
 
 internal fun JsonNode.asLocalDate() =
     asText().substring(0, 10).let { LocalDate.parse(it) }

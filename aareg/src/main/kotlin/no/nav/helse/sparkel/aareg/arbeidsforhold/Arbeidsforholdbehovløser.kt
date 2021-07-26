@@ -12,6 +12,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.asLocalDate
+import no.nav.helse.sparkel.aareg.arbeidsforholdV2.asOptionalLocalDate
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import no.nav.helse.sparkel.aareg.util.KodeverkClient
 import org.slf4j.LoggerFactory
@@ -132,7 +133,7 @@ class Arbeidsforholdbehovløser(
         arbeidsforhold.path("arbeidsavtaler").map {
             LøsningDto(
                 startdato = it.path("bruksperiode").path("fom").asLocalDate(),
-                sluttdato = it.path("bruksperiode").path("tom")?.asLocalDate(),
+                sluttdato = it.path("bruksperiode").path("tom")?.asOptionalLocalDate(),
                 stillingsprosent = it.path("stillingsprosent")?.asInt() ?: 0,
                 stillingstittel = kodeverkClient.getYrke(it.path("yrke").asText())
             )
