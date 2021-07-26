@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.aareg.arbeidsforholdV2
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.client.features.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
@@ -29,32 +30,35 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         sikkerlogg.info("Mottok melding: ${packet.toJson()}")
         val arbeidsforhold = try {
+            log.info("løser behov={}", keyValue("id", packet["@id"].asText()))
             runBlocking {
-                aaregClient.hentArbeidsforhold(packet["fødselsnummer"].asText(), UUID.fromString(packet["@id"].asText()))
-            }.also {
-                log.info(
-                    "løser behov={}",
-                    keyValue("id", packet["@id"].asText())
-                )
+                aaregClient
+                    .hentFraAareg(packet["fødselsnummer"].asText(), UUID.fromString(packet["@id"].asText()))
+                    .map { it.toArbeidsforhold() }
             }
         } catch (err: ClientRequestException) {
-            emptyList<Arbeidsforhold>().also {
-                log.warn(
-                    "Feilmelding for behov={} ved oppslag i AAreg. Svarer med tom liste",
-                    keyValue("id", packet["@id"].asText())
-                )
-                sikkerlogg.warn(
-                    "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Svarer med tom liste. Response: {}",
-                    keyValue("id", packet["@id"].asText()),
-                    runBlocking { err.response.readText() },
-                    err
-                )
-            }
+            log.warn(
+                "Feilmelding for behov={} ved oppslag i AAreg. Svarer med tom liste",
+                keyValue("id", packet["@id"].asText())
+            )
+            sikkerlogg.warn(
+                "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Svarer med tom liste. Response: {}",
+                keyValue("id", packet["@id"].asText()),
+                runBlocking { err.response.readText() },
+                err
+            )
+            emptyList()
         }
 
         packet.setLøsning(behov, arbeidsforhold)
         context.publish(packet.toJson())
     }
+
+    private fun JsonNode.toArbeidsforhold() = Arbeidsforhold(
+        ansattSiden = this.path("ansettelsesperiode").path("periode").path("fom").asLocalDate(),
+        ansattTil = this.path("ansettelsesperiode").path("periode").path("tom").asOptionalLocalDate(),
+        orgnummer = this["arbeidsgiver"].path("organisasjonsnummer").asText()
+    )
 
     override fun onError(problems: MessageProblems, context: MessageContext) {}
 

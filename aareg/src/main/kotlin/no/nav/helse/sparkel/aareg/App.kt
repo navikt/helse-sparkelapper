@@ -63,7 +63,7 @@ internal fun createApp(environment: Environment, serviceUser: ServiceUser): Rapi
 
     val rapidsConnection = RapidApplication.create(environment.raw)
     Arbeidsgiverinformasjonsbehovløser(rapidsConnection, organisasjonClient)
-    Arbeidsforholdbehovløser(rapidsConnection, arbeidsforholdClient)
+    Arbeidsforholdbehovløser(rapidsConnection, arbeidsforholdClient, aaregClient, kodeverkClient)
     ArbeidsforholdLøserV2(rapidsConnection, aaregClient)
 
     return rapidsConnection

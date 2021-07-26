@@ -3,9 +3,11 @@ package no.nav.helse.sparkel.aareg.arbeidsforhold
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.OrganisasjonClient
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.OrganisasjonDto
 import no.nav.helse.sparkel.aareg.objectMapper
+import no.nav.helse.sparkel.aareg.util.KodeverkClient
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -15,9 +17,11 @@ internal class ArbeidsforholdbehovløserTest {
     private val testRapid = TestRapid()
     private val arbeidsforholdClient = mockk<ArbeidsforholdClient>()
     private val organisasjonClient = mockk<OrganisasjonClient>()
+    private val aaregClient = mockk<AaregClient>()
+    private val kodeverkClient = mockk<KodeverkClient>()
 
     init {
-        Arbeidsforholdbehovløser(testRapid, arbeidsforholdClient)
+        Arbeidsforholdbehovløser(testRapid, arbeidsforholdClient, aaregClient, kodeverkClient)
         every { organisasjonClient.finnOrganisasjon("organisasjonsnummer") } returns OrganisasjonDto(
             "BEDRIFT",
             listOf("BRANSJE")
@@ -44,6 +48,7 @@ internal class ArbeidsforholdbehovløserTest {
             "@behov" to listOf("Arbeidsforhold"),
             "@id" to UUID.randomUUID(),
             "Arbeidsforhold" to mapOf(
+                "fødselsnummer" to "fødselsnummer",
                 "organisasjonsnummer" to "organisasjonsnummer",
                 "aktørId" to "aktørId",
                 "fom" to "2020-01-01",
