@@ -6,6 +6,7 @@ import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.sparkel.aareg.ServiceUser
+import org.intellij.lang.annotations.Language
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -44,6 +45,7 @@ interface ResponseGenerator {
     fun arbeidsforholdV2() = arbeidsforholdV2Response()
 }
 
+@Language("JSON")
 private fun arbeidsforholdV2Response() = """
     [
   {

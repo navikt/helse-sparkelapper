@@ -82,7 +82,7 @@ class Arbeidsforholdbehovløser(
             log.info("løser behov={}", keyValue("id", id))
             runBlocking {
                 aaregClient.hentFraAareg(fnr, id).filterNot { arbeidsforhold ->
-                    arbeidsforhold["organisasjonsnummer"].asText() == organisasjonsnummer
+                    arbeidsforhold["arbeidsgiver"].path("organisasjonsnummer").asText() == organisasjonsnummer
                 }.toLøsningDto()
             }
         } catch (err: ClientRequestException) {
