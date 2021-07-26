@@ -1,7 +1,6 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ArrayNode
 import io.ktor.client.features.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
@@ -77,11 +76,14 @@ class Arbeidsforholdbehovløser(
     private fun løsBehovRest(packet: JsonMessage): List<LøsningDto> {
         val fnr = packet["$behov.fødselsnummer"].asText()
         val id = UUID.fromString(packet["@id"].asText())
+        val organisasjonsnummer = packet["$behov.organisasjonsnummer"].asText()
 
         return try {
             log.info("løser behov={}", keyValue("id", id))
             runBlocking {
-                aaregClient.hentFraAareg(fnr, id).toLøsningDto()
+                aaregClient.hentFraAareg(fnr, id).filterNot { arbeidsforhold ->
+                    arbeidsforhold["organisasjonsnummer"].asText() == organisasjonsnummer
+                }.toLøsningDto()
             }
         } catch (err: ClientRequestException) {
             log.warn(
@@ -129,7 +131,7 @@ class Arbeidsforholdbehovløser(
             )
         }
 
-    private fun ArrayNode.toLøsningDto(): List<LøsningDto> = this.flatMap { arbeidsforhold ->
+    private fun List<JsonNode>.toLøsningDto(): List<LøsningDto> = this.flatMap { arbeidsforhold ->
         arbeidsforhold.path("arbeidsavtaler").map {
             LøsningDto(
                 startdato = it.path("bruksperiode").path("fom").asLocalDate(),
