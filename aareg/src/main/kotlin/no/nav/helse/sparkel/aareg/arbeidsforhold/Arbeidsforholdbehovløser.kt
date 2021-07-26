@@ -105,8 +105,8 @@ class Arbeidsforholdbehovløser(
         val sortertRestListe = restListe.sortedBy { it.startdato }
         val sortertSoapListe = soapListe.sortedBy { it.startdato }
 
-        if (sortertRestListe == sortertSoapListe) log.debug("Dæm va lik")
-        else log.debug("Her er det ikke helt likt, REST vs SOAP: \n{} \n{}", sortertRestListe, sortertSoapListe)
+        if (sortertRestListe == sortertSoapListe) sikkerlogg.debug("Dæm va lik")
+        else sikkerlogg.debug("Her er det ikke helt likt, REST vs SOAP: \n{} \n{}", sortertRestListe, sortertSoapListe)
     }
 
     private fun løsBehovSoap(
