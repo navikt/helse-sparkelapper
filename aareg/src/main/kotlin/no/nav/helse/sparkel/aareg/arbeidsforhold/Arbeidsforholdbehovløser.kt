@@ -81,10 +81,15 @@ class Arbeidsforholdbehovløser(
                 aaregClient.hentFraAareg(fnr, id)
                     .filter { arbeidsforhold -> arbeidsforhold["arbeidsgiver"].path("organisasjonsnummer").asText() == organisasjonsnummer }
                     .also {
-                        if(it.any { arbeidsforhold -> !arbeidsforhold.path("arbeidsavtale").path("gyldighetsperiode").path("tom").isMissingOrNull() }) {
+                        if (it.any { arbeidsforhold ->
+                                !arbeidsforhold.path("arbeidsavtaler").any { arbeidsavtale ->
+                                    arbeidsavtale.path("gyldighetsperiode").path("tom")
+                                        .isMissingOrNull()
+                                }
+                            }) {
                             sikkerlogg.info("RESTen av svaret {}", it)
                         }
-                     }
+                    }
                     .toLøsningDto()
             }
         } catch (err: ClientRequestException) {
