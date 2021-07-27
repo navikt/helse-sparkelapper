@@ -19,6 +19,7 @@ import no.nav.helse.sparkel.aareg.util.CallIdInterceptor
 import no.nav.helse.sparkel.aareg.util.KodeverkClient
 import no.nav.helse.sparkel.aareg.util.configureFor
 import no.nav.helse.sparkel.aareg.util.stsClient
+import no.nav.helse.sparkel.ereg.EregClient
 import no.nav.tjeneste.virksomhet.organisasjon.v5.binding.OrganisasjonV5
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
 import org.apache.cxf.ws.addressing.WSAddressingFeature
@@ -44,7 +45,7 @@ fun main() {
 internal fun createApp(environment: Environment, serviceUser: ServiceUser): RapidsConnection {
     val stsClientWs = stsClient(environment.stsSoapBaseUrl, serviceUser)
 
-    val organisasjonV5 = setupOrganisasjonV5(environment.organisasjonBaseUrl, stsClientWs)
+    val organisasjonV5 = setupOrganisasjonV5(environment.soapOrganisasjonBaseUrl, stsClientWs)
 
     val httpClient = HttpClient {
         install(JsonFeature) { serializer = JacksonSerializer() }
@@ -58,10 +59,12 @@ internal fun createApp(environment: Environment, serviceUser: ServiceUser): Rapi
     )
 
     val organisasjonClient = OrganisasjonClient(organisasjonV5, kodeverkClient)
+    val eregClient =
+        EregClient(environment.organisasjonBaseUrl, environment.appName, httpClient, stsRestClient)
     val aaregClient = AaregClient(environment.aaregBaseUrlRest, stsRestClient)
 
     val rapidsConnection = RapidApplication.create(environment.raw)
-    Arbeidsgiverinformasjonsbehovløser(rapidsConnection, organisasjonClient)
+    Arbeidsgiverinformasjonsbehovløser(rapidsConnection, organisasjonClient, kodeverkClient, eregClient)
     Arbeidsforholdbehovløser(rapidsConnection, aaregClient, kodeverkClient)
     ArbeidsforholdLøserV2(rapidsConnection, aaregClient)
 

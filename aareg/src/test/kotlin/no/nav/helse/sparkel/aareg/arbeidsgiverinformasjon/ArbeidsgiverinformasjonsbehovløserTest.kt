@@ -1,10 +1,14 @@
 package no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.aareg.objectMapper
+import no.nav.helse.sparkel.aareg.util.KodeverkClient
+import no.nav.helse.sparkel.ereg.EregClient
+import no.nav.helse.sparkel.ereg.EregResponse
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -12,9 +16,11 @@ import java.util.*
 internal class ArbeidsgiverinformasjonsbehovløserTest {
     private val testRapid = TestRapid()
     private val organisasjonClient = mockk<OrganisasjonClient>()
+    private val eregClient = mockk<EregClient>()
+    private val kodeverkClient = mockk<KodeverkClient>()
 
     init {
-        Arbeidsgiverinformasjonsbehovløser(testRapid, organisasjonClient)
+        Arbeidsgiverinformasjonsbehovløser(testRapid, organisasjonClient, kodeverkClient, eregClient)
         every { organisasjonClient.finnOrganisasjon("organisasjonsnummer") } returns OrganisasjonDto(
             "BEDRIFT",
             listOf("BRANSJE")
@@ -27,6 +33,17 @@ internal class ArbeidsgiverinformasjonsbehovløserTest {
             "Grisesmugling",
             listOf("Baggasje", "Subtilitet")
         )
+        coEvery { eregClient.hentOrganisasjon(any(), any()) } returns EregResponse("Plantasjen Gaming",
+            listOf("123", "345", "567"))
+        coEvery { eregClient.hentOrganisasjon("6966669", any()) } returns EregResponse("Grisesmugling",
+            listOf("789", "890"))
+        kodeverkClient.run {
+            every { getNæring("123") } returns "Gartneri"
+            every { getNæring("345") } returns "Elektronikk"
+            every { getNæring("567") } returns "E-sport"
+            every { getNæring("789") } returns "Bagasje"
+            every { getNæring("890") } returns "Subtilitet"
+        }
     }
 
     @Test
