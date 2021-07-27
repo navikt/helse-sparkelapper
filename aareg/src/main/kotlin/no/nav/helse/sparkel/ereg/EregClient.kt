@@ -6,6 +6,7 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.StsRestClient
 import no.nav.helse.sparkel.aareg.objectMapper
 import java.util.*
@@ -43,9 +44,10 @@ class EregClient(
 
     private fun trekkUtNavn(organisasjon: JsonNode) =
         organisasjon["navn"].let { navn ->
-            (1..5).map { index ->
-                navn["navnelinje$index"].asText()
-            }.filterNot(String::isBlank)
+            (1..5).mapNotNull { index -> navn["navnelinje$index"] }
+                .filterNot(JsonNode::isMissingOrNull)
+                .map(JsonNode::asText)
+                .filterNot(String::isBlank)
         }.joinToString()
 
 }

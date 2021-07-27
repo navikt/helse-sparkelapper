@@ -5,10 +5,7 @@ import io.ktor.client.engine.mock.*
 import io.ktor.http.*
 import io.mockk.every
 import io.mockk.mockk
-import no.nav.helse.sparkel.aareg.util.ServiceUser
 import org.intellij.lang.annotations.Language
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 
 val mockGenerator = mockk<ResponseGenerator>(relaxed = true).apply {
@@ -27,19 +24,6 @@ fun aregMockClient(mockResponseGenerator: ResponseGenerator) = HttpClient(MockEn
         }
     }
 }
-
-private val tokenExpirationTime get() = LocalDateTime.now().plusDays(1).toEpochSecond(ZoneOffset.UTC)
-
-internal val mockStsRestClient = StsRestClient(
-    baseUrl = "",
-    serviceUser = ServiceUser("yes", "yes"),
-    httpClient = HttpClient(MockEngine) {
-        engine {
-            addHandler {
-                respond("""{"access_token":"token", "expires_in":$tokenExpirationTime, "token_type":"yes"}""")
-            }
-        }
-    })
 
 interface ResponseGenerator {
     fun arbeidsforholdV2() = arbeidsforholdV2Response()
