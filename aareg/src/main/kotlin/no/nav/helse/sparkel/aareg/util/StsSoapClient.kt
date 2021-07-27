@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.aareg
+package no.nav.helse.sparkel.aareg.util
 
 import org.apache.cxf.Bus
 import org.apache.cxf.BusFactory

@@ -7,8 +7,8 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
-import no.nav.helse.sparkel.aareg.ServiceUser
 import no.nav.helse.sparkel.aareg.objectMapper
+import no.nav.helse.sparkel.aareg.util.ServiceUser
 import java.time.LocalDateTime
 
 /**

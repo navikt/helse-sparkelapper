@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.aareg
+package no.nav.helse.sparkel.aareg.util
 
 import java.nio.file.Files
 import java.nio.file.Path

@@ -14,8 +14,11 @@ import no.nav.helse.sparkel.aareg.arbeidsforholdV2.ArbeidsforholdLøserV2
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.StsRestClient
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.Arbeidsgiverinformasjonsbehovløser
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.OrganisasjonClient
+import no.nav.helse.sparkel.aareg.util.*
 import no.nav.helse.sparkel.aareg.util.CallIdInterceptor
 import no.nav.helse.sparkel.aareg.util.KodeverkClient
+import no.nav.helse.sparkel.aareg.util.configureFor
+import no.nav.helse.sparkel.aareg.util.stsClient
 import no.nav.tjeneste.virksomhet.organisasjon.v5.binding.OrganisasjonV5
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
 import org.apache.cxf.ws.addressing.WSAddressingFeature
