@@ -1,13 +1,18 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
+import com.fasterxml.jackson.module.kotlin.readValue
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
+import no.nav.helse.sparkel.aareg.arbeidsforholdV2.arbeidsforholdV2Response
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.OrganisasjonClient
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.OrganisasjonDto
 import no.nav.helse.sparkel.aareg.objectMapper
 import no.nav.helse.sparkel.aareg.util.KodeverkClient
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -15,31 +20,20 @@ import java.util.UUID
 
 internal class ArbeidsforholdbehovløserTest {
     private val testRapid = TestRapid()
-    private val arbeidsforholdClient = mockk<ArbeidsforholdClient>()
     private val organisasjonClient = mockk<OrganisasjonClient>()
     private val aaregClient = mockk<AaregClient>()
     private val kodeverkClient = mockk<KodeverkClient>()
 
     init {
-        Arbeidsforholdbehovløser(testRapid, arbeidsforholdClient, aaregClient, kodeverkClient)
+        Arbeidsforholdbehovløser(testRapid, aaregClient, kodeverkClient)
         every { organisasjonClient.finnOrganisasjon("organisasjonsnummer") } returns OrganisasjonDto(
             "BEDRIFT",
             listOf("BRANSJE")
         )
-        every {
-            arbeidsforholdClient.finnArbeidsforhold(
-                organisasjonsnummer = "organisasjonsnummer",
-                aktørId = "aktørId",
-                fom = LocalDate.of(2020, 1, 1),
-                tom = LocalDate.of(2020, 2, 1)
-            )
-        } returns listOf(
-            ArbeidsforholdDto(
-                stillingstittel = "STILLING",
-                stillingsprosent = 100,
-                startdato = LocalDate.of(2000, 1, 1)
-            )
-        )
+        coEvery {
+            aaregClient.hentFraAareg(any(), any())
+        } returns objectMapper.readValue(arbeidsforholdV2Response())
+        every { kodeverkClient.getYrke(any() )} returns "SAUETELLER"
     }
 
     @Test
@@ -59,6 +53,6 @@ internal class ArbeidsforholdbehovløserTest {
 
         val løsning = testRapid.inspektør.message(testRapid.inspektør.size - 1).path("@løsning")
 
-        assertTrue(løsning.hasNonNull("Arbeidsforhold")) { "Skal ha løsning for Arbeidsforhold" }
+        assertFalse(løsning.path("Arbeidsforhold").isEmpty) { "Skal ha løsning for Arbeidsforhold" }
     }
 }

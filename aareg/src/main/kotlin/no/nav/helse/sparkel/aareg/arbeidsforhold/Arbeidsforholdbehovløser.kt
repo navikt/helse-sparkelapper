@@ -17,7 +17,6 @@ import java.util.*
 
 class Arbeidsforholdbehovløser(
     rapidsConnection: RapidsConnection,
-    private val arbeidsforholdClient: ArbeidsforholdClient,
     private val aaregClient: AaregClient,
     private val kodeverkClient: KodeverkClient,
 ) : River.PacketListener {
@@ -33,33 +32,14 @@ class Arbeidsforholdbehovløser(
             validate { it.forbid("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("$behov.fødselsnummer") }
-            validate { it.requireKey("$behov.aktørId") }
             validate { it.requireKey("$behov.organisasjonsnummer") }
-            validate { it.require("$behov.fom", JsonNode::asLocalDate) }
-            validate { it.require("$behov.tom", JsonNode::asLocalDate) }
         }.register(this)
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
 
-        val organisasjonsnummer = packet["$behov.organisasjonsnummer"].asText()
-        val aktørId = packet["$behov.aktørId"].asText()
-        val fom = packet["$behov.fom"].asLocalDate()
-        val tom = packet["$behov.tom"].asLocalDate()
-
-        val arbeidsforholdSoap = løsBehovSoap(
-            aktørId = aktørId,
-            fom = fom,
-            tom = tom,
-            organisasjonsnummer = organisasjonsnummer
-        ).also {
-            packet.setLøsning(behov, it)
-        }
-
-        val arbeidsforholdRest = løsBehovRest(packet)
-
-        sammenlignLister(arbeidsforholdSoap, arbeidsforholdRest)
+        packet.setLøsning(behov, løsBehov(packet))
 
         sikkerlogg.info(
             "løser behov {}, {}",
@@ -70,7 +50,7 @@ class Arbeidsforholdbehovløser(
         context.publish(packet.toJson())
     }
 
-    private fun løsBehovRest(packet: JsonMessage): List<LøsningDto> {
+    private fun løsBehov(packet: JsonMessage): List<LøsningDto> {
         val fnr = packet["$behov.fødselsnummer"].asText()
         val id = UUID.fromString(packet["@id"].asText())
         val organisasjonsnummer = packet["$behov.organisasjonsnummer"].asText()
@@ -79,7 +59,10 @@ class Arbeidsforholdbehovløser(
             log.info("løser behov={}", keyValue("id", id))
             runBlocking {
                 aaregClient.hentFraAareg(fnr, id)
-                    .filter { arbeidsforhold -> arbeidsforhold["arbeidsgiver"].path("organisasjonsnummer").asText() == organisasjonsnummer }
+                    .filter { arbeidsforhold ->
+                        arbeidsforhold["arbeidsgiver"].path("organisasjonsnummer").asText() == organisasjonsnummer
+                    }
+                    .filter { it.path("innrapportertEtterAOrdningen").asBoolean() }
                     .also {
                         if (it.any { arbeidsforhold ->
                                 !arbeidsforhold.path("arbeidsavtaler").any { arbeidsavtale ->
@@ -95,48 +78,20 @@ class Arbeidsforholdbehovløser(
         } catch (err: ClientRequestException) {
             log.warn(
                 "Feilmelding for behov={} ved oppslag i AAreg. Svarer med tom liste",
-                keyValue("id", packet["@id"].asText())
+                keyValue("id", id)
             )
             sikkerlogg.warn(
                 "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Svarer med tom liste. Response: {}",
-                keyValue("id", packet["@id"].asText()),
+                keyValue("id", id),
                 runBlocking { err.response.readText() },
                 err
             )
             emptyList()
         } catch (err: Exception) {
-            sikkerlogg.debug("What now? \n${packet.toJson()} \n{}", err)
+            sikkerlogg.info("What now? \n${packet.toJson()} \n{}", err)
             emptyList()
         }
     }
-
-    private fun sammenlignLister(soapListe: List<LøsningDto>, restListe: List<LøsningDto>) {
-        val sortertRestListe = restListe.sortedBy { it.startdato }
-        val sortertSoapListe = soapListe.sortedBy { it.startdato }
-
-        if (sortertRestListe == sortertSoapListe) sikkerlogg.debug("Dæm va lik")
-        else sikkerlogg.debug("Her er det ikke helt likt, REST vs SOAP: \n{} \n{}", sortertRestListe, sortertSoapListe)
-    }
-
-    private fun løsBehovSoap(
-        aktørId: String,
-        fom: LocalDate,
-        tom: LocalDate,
-        organisasjonsnummer: String
-    ): List<LøsningDto> =
-        arbeidsforholdClient.finnArbeidsforhold(
-            organisasjonsnummer = organisasjonsnummer,
-            aktørId = aktørId,
-            fom = fom,
-            tom = tom
-        ).map { arbeidsforhold ->
-            LøsningDto(
-                stillingstittel = arbeidsforhold.stillingstittel,
-                stillingsprosent = arbeidsforhold.stillingsprosent,
-                startdato = arbeidsforhold.startdato,
-                sluttdato = arbeidsforhold.sluttdato
-            )
-        }
 
     private fun List<JsonNode>.toLøsningDto(): List<LøsningDto> = this.flatMap { arbeidsforhold ->
         arbeidsforhold.path("arbeidsavtaler").map {

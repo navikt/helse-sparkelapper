@@ -21,8 +21,6 @@ fun setUpEnvironment() =
             ?: error("Mangler env var ORGANISASJON_BASE_URL"),
         kodeverkBaseUrl = System.getenv("KODEVERK_BASE_URL")
             ?: error("Mangler env var KODEVERK_BASE_URL"),
-        aaregBaseUrl = System.getenv("AAREG_BASE_URL")
-            ?: error("Mangler env var FPSAK_BASE_URL"),
         aaregBaseUrlRest = System.getenv("AAREG_BASE_URL_REST")
             ?: error("Mangler env var AAREG_BASE_URL_REST"),
         appName = System.getenv("NAIS_APP_NAME") ?: "sparkel-aareg"
@@ -34,7 +32,6 @@ data class Environment(
     val stsSoapBaseUrl: String,
     val organisasjonBaseUrl: String,
     val kodeverkBaseUrl: String,
-    val aaregBaseUrl: String,
     val aaregBaseUrlRest: String,
     val appName: String
 )

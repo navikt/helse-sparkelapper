@@ -8,7 +8,6 @@ import io.ktor.client.*
 import io.ktor.client.features.json.*
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.sparkel.aareg.arbeidsforhold.ArbeidsforholdClient
 import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdbehovløser
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.ArbeidsforholdLøserV2
@@ -17,7 +16,6 @@ import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.Arbeidsgiverinformasjo
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.OrganisasjonClient
 import no.nav.helse.sparkel.aareg.util.CallIdInterceptor
 import no.nav.helse.sparkel.aareg.util.KodeverkClient
-import no.nav.tjeneste.virksomhet.arbeidsforhold.v3.binding.ArbeidsforholdV3
 import no.nav.tjeneste.virksomhet.organisasjon.v5.binding.OrganisasjonV5
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
 import org.apache.cxf.ws.addressing.WSAddressingFeature
@@ -44,7 +42,6 @@ internal fun createApp(environment: Environment, serviceUser: ServiceUser): Rapi
     val stsClientWs = stsClient(environment.stsSoapBaseUrl, serviceUser)
 
     val organisasjonV5 = setupOrganisasjonV5(environment.organisasjonBaseUrl, stsClientWs)
-    val arbeidsforholdV3 = setupArbeidsforholdV3(environment.aaregBaseUrl, stsClientWs)
 
     val httpClient = HttpClient {
         install(JsonFeature) { serializer = JacksonSerializer() }
@@ -57,13 +54,12 @@ internal fun createApp(environment: Environment, serviceUser: ServiceUser): Rapi
         appName = environment.appName
     )
 
-    val arbeidsforholdClient = ArbeidsforholdClient(arbeidsforholdV3, kodeverkClient)
     val organisasjonClient = OrganisasjonClient(organisasjonV5, kodeverkClient)
     val aaregClient = AaregClient(environment.aaregBaseUrlRest, stsRestClient)
 
     val rapidsConnection = RapidApplication.create(environment.raw)
     Arbeidsgiverinformasjonsbehovløser(rapidsConnection, organisasjonClient)
-    Arbeidsforholdbehovløser(rapidsConnection, arbeidsforholdClient, aaregClient, kodeverkClient)
+    Arbeidsforholdbehovløser(rapidsConnection, aaregClient, kodeverkClient)
     ArbeidsforholdLøserV2(rapidsConnection, aaregClient)
 
     return rapidsConnection
@@ -83,14 +79,3 @@ fun setupOrganisasjonV5(organisasjonBaseUrl: String, stsClientWs: STSClient): Or
         this.features.addAll(listOf(WSAddressingFeature()))
         this.outInterceptors.addAll(listOf(CallIdInterceptor(callIdGenerator::get)))
     }.create(OrganisasjonV5::class.java).apply { stsClientWs.configureFor(this) }
-
-fun setupArbeidsforholdV3(arbeidsforholdBaseUrl: String, stsClientWs: STSClient): ArbeidsforholdV3 =
-    JaxWsProxyFactoryBean().apply {
-        address = arbeidsforholdBaseUrl
-        wsdlURL = "wsdl/no/nav/tjeneste/virksomhet/arbeidsforhold/v3/Binding.wsdl"
-        serviceName = QName("http://nav.no/tjeneste/virksomhet/arbeidsforhold/v3/Binding", "Arbeidsforhold_v3")
-        endpointName = QName("http://nav.no/tjeneste/virksomhet/arbeidsforhold/v3/Binding", "Arbeidsforhold_v3Port")
-        serviceClass = ArbeidsforholdV3::class.java
-        this.features.addAll(listOf(WSAddressingFeature()))
-        this.outInterceptors.addAll(listOf(CallIdInterceptor(callIdGenerator::get)))
-    }.create(ArbeidsforholdV3::class.java).apply { stsClientWs.configureFor(this) }

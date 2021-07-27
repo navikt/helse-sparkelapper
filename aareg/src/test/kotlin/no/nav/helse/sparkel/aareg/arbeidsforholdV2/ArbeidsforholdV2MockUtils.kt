@@ -46,7 +46,7 @@ interface ResponseGenerator {
 }
 
 @Language("JSON")
-private fun arbeidsforholdV2Response() = """
+fun arbeidsforholdV2Response() = """
     [
   {
     "ansettelsesperiode": {
@@ -121,7 +121,8 @@ private fun arbeidsforholdV2Response() = """
     ],
     "arbeidsforholdId": "abc-321",
     "arbeidsgiver": {
-      "type": "Organisasjon"
+      "type": "Organisasjon",
+      "organisasjonsnummer": "organisasjonsnummer"
     },
     "arbeidstaker": {
       "type": "Person",
@@ -131,7 +132,8 @@ private fun arbeidsforholdV2Response() = """
     "innrapportertEtterAOrdningen": true,
     "navArbeidsforholdId": 123456,
     "opplysningspliktig": {
-      "type": "Organisasjon"
+      "type": "Organisasjon",
+      "organisasjonsnummer": "organisasjonsnummer"
     },
     "permisjonPermitteringer": [
       {
