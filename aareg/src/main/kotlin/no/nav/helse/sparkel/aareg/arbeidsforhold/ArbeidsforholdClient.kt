@@ -29,17 +29,7 @@ class ArbeidsforholdClient(
         arbeidsforholdV3.finnArbeidsforholdPrArbeidstaker(
             hentArbeidsforholdRequest(aktørId, fom, tom)
         ).also {
-            if (aktørId == "1000019194012") {
-                sikkerlogg.info("Svar fra Aa-reg:\n${objectMapper.writeValueAsString(it)}")
-                val requestForFørAOrdningen = hentArbeidsforholdRequest(aktørId, fom, tom).apply {
-                    rapportertSomRegelverk = this.rapportertSomRegelverk.apply {
-                        value = "FOER_A_ORDNINGEN"
-                        kodeRef = "FOER_A_ORDNINGEN"
-                    }
-                }
-                val respons = arbeidsforholdV3.finnArbeidsforholdPrArbeidstaker(requestForFørAOrdningen)
-                sikkerlogg.info("Svar fra Aa-reg før A-ordningen:\n${objectMapper.writeValueAsString(respons)}")
-            }
+            sikkerlogg.info("Svar fra Aa-reg:\n${objectMapper.writeValueAsString(it)}")
         }
             .arbeidsforhold
             .toList()
@@ -47,8 +37,8 @@ class ArbeidsforholdClient(
             .flatMap { it.arbeidsavtale }
             .map {
                 ArbeidsforholdDto(
-                    startdato = it.fomBruksperiode.toLocalDate(),
-                    sluttdato = it.tomBruksperiode?.toLocalDate(),
+                    startdato = it.fomGyldighetsperiode.toLocalDate(),
+                    sluttdato = it.tomGyldighetsperiode?.toLocalDate(),
                     stillingsprosent = it.stillingsprosent?.toInt() ?: 0,
                     stillingstittel = kodeverkClient.getYrke(it.yrke.kodeRef)
                 )

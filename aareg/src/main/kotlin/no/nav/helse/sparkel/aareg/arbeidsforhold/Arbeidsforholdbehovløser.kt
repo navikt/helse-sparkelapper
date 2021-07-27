@@ -134,8 +134,8 @@ class Arbeidsforholdbehovløser(
     private fun List<JsonNode>.toLøsningDto(): List<LøsningDto> = this.flatMap { arbeidsforhold ->
         arbeidsforhold.path("arbeidsavtaler").map {
             LøsningDto(
-                startdato = it.path("bruksperiode").path("fom").asLocalDate(),
-                sluttdato = it.path("bruksperiode").path("tom")?.asOptionalLocalDate(),
+                startdato = it.path("gyldighetsperiode").path("fom").asLocalDate(),
+                sluttdato = it.path("gyldighetsperiode").path("tom")?.asOptionalLocalDate(),
                 stillingsprosent = it.path("stillingsprosent")?.asInt() ?: 0,
                 stillingstittel = kodeverkClient.getYrke(it.path("yrke").asText())
             )
