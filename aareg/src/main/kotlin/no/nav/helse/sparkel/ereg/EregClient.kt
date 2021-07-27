@@ -32,12 +32,15 @@ class EregClient(
             header("Nav-Call-Id", callId)
             accept(ContentType.Application.Json)
         }
-            .execute { objectMapper.readValue<JsonNode>(it.readText()) }.let { strekkUtNavn(it) }
+            .execute { it.readText() }
+            .let<String, JsonNode>(objectMapper::readValue)
+            .let { response ->
+                EregResponse(
+                    navn = trekkUtNavn(response),
+                    næringer = response["organisasjonDetaljer"]["naeringer"].map { it["naeringskode"].asText() }
+                )
+            }
 
-    private fun strekkUtNavn(response: JsonNode) = EregResponse(
-        navn = trekkUtNavn(response),
-        næringer = response["organisasjonDetaljer"]["naeringer"].map { it["naeringskode"].asText() }
-    )
     private fun trekkUtNavn(organisasjon: JsonNode) =
         organisasjon["navn"].let { navn ->
             (1..5).map { index ->
