@@ -5,10 +5,7 @@ import io.ktor.client.features.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.*
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.asLocalDate
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.asOptionalLocalDate
@@ -83,7 +80,11 @@ class Arbeidsforholdbehovløser(
             runBlocking {
                 aaregClient.hentFraAareg(fnr, id)
                     .filter { arbeidsforhold -> arbeidsforhold["arbeidsgiver"].path("organisasjonsnummer").asText() == organisasjonsnummer }
-                    .also { sikkerlogg.debug("RESTen av svaret {}", it) }
+                    .also {
+                        if(it.any { arbeidsforhold -> !arbeidsforhold.path("arbeidsavtale").path("gyldighetsperiode").path("tom").isMissingOrNull() }) {
+                            sikkerlogg.info("RESTen av svaret {}", it)
+                        }
+                     }
                     .toLøsningDto()
             }
         } catch (err: ClientRequestException) {
