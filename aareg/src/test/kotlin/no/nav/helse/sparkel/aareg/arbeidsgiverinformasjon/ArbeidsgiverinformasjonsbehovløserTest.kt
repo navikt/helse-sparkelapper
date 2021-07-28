@@ -4,35 +4,25 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import java.util.*
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.aareg.objectMapper
 import no.nav.helse.sparkel.aareg.util.KodeverkClient
 import no.nav.helse.sparkel.ereg.EregClient
 import no.nav.helse.sparkel.ereg.EregResponse
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.util.*
 
 internal class ArbeidsgiverinformasjonsbehovløserTest {
     private val testRapid = TestRapid()
-    private val organisasjonClient = mockk<OrganisasjonClient>()
     private val eregClient = mockk<EregClient>()
     private val kodeverkClient = mockk<KodeverkClient>()
 
     init {
-        Arbeidsgiverinformasjonsbehovløser(testRapid, organisasjonClient, kodeverkClient, eregClient)
-        every { organisasjonClient.finnOrganisasjon("organisasjonsnummer") } returns OrganisasjonDto(
-            "BEDRIFT",
-            listOf("BRANSJE")
-        )
-        every { organisasjonClient.finnOrganisasjon("04201337") } returns OrganisasjonDto(
-            "Plantasjen Gaming",
-            listOf("Gartneri", "Elektronikk", "E-sport")
-        )
-        every { organisasjonClient.finnOrganisasjon("6966669") } returns OrganisasjonDto(
-            "Grisesmugling",
-            listOf("Baggasje", "Subtilitet")
-        )
+        Arbeidsgiverinformasjonsbehovløser(testRapid, kodeverkClient, eregClient)
+
         coEvery { eregClient.hentOrganisasjon(any(), any()) } returns EregResponse("Plantasjen Gaming",
             listOf("123", "345", "567"))
         coEvery { eregClient.hentOrganisasjon("6966669", any()) } returns EregResponse("Grisesmugling",
@@ -63,8 +53,8 @@ internal class ArbeidsgiverinformasjonsbehovløserTest {
         assertTrue(løsning.hasNonNull("Arbeidsgiverinformasjon")) { "Skal ha løsning for Arbeidsgiverinformasjon" }
         assertFalse(løsning["Arbeidsgiverinformasjon"].isArray)
         assertEquals("organisasjonsnummer", løsning["Arbeidsgiverinformasjon"]["orgnummer"].asText())
-        assertEquals("BEDRIFT", løsning["Arbeidsgiverinformasjon"]["navn"].asText())
-        assertEquals(listOf("BRANSJE"), løsning["Arbeidsgiverinformasjon"]["bransjer"].map(JsonNode::asText))
+        assertEquals("Plantasjen Gaming", løsning["Arbeidsgiverinformasjon"]["navn"].asText())
+        assertEquals(listOf("Gartneri", "Elektronikk", "E-sport"), løsning["Arbeidsgiverinformasjon"]["bransjer"].map(JsonNode::asText))
     }
 
     @Test

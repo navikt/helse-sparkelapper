@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.ktor.client.*
-import io.ktor.client.features.json.*
+import io.ktor.client.HttpClient
+import io.ktor.client.features.json.JacksonSerializer
+import io.ktor.client.features.json.JsonFeature
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdbehovløser
@@ -13,21 +14,14 @@ import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.ArbeidsforholdLøserV2
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.StsRestClient
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.Arbeidsgiverinformasjonsbehovløser
-import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.OrganisasjonClient
-import no.nav.helse.sparkel.aareg.util.*
-import no.nav.helse.sparkel.aareg.util.CallIdInterceptor
+import no.nav.helse.sparkel.aareg.util.Environment
 import no.nav.helse.sparkel.aareg.util.KodeverkClient
-import no.nav.helse.sparkel.aareg.util.configureFor
-import no.nav.helse.sparkel.aareg.util.stsClient
+import no.nav.helse.sparkel.aareg.util.ServiceUser
+import no.nav.helse.sparkel.aareg.util.readServiceUserCredentials
+import no.nav.helse.sparkel.aareg.util.setUpEnvironment
 import no.nav.helse.sparkel.ereg.EregClient
-import no.nav.tjeneste.virksomhet.organisasjon.v5.binding.OrganisasjonV5
-import org.apache.cxf.jaxws.JaxWsProxyFactoryBean
-import org.apache.cxf.ws.addressing.WSAddressingFeature
-import org.apache.cxf.ws.security.trust.STSClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
-import javax.xml.namespace.QName
 
 val sikkerlogg: Logger = LoggerFactory.getLogger("tjenestekall")
 
@@ -43,10 +37,6 @@ fun main() {
 }
 
 internal fun createApp(environment: Environment, serviceUser: ServiceUser): RapidsConnection {
-    val stsClientWs = stsClient(environment.stsSoapBaseUrl, serviceUser)
-
-    val organisasjonV5 = setupOrganisasjonV5(environment.soapOrganisasjonBaseUrl, stsClientWs)
-
     val httpClient = HttpClient {
         install(JsonFeature) { serializer = JacksonSerializer() }
     }
@@ -58,30 +48,13 @@ internal fun createApp(environment: Environment, serviceUser: ServiceUser): Rapi
         appName = environment.appName
     )
 
-    val organisasjonClient = OrganisasjonClient(organisasjonV5, kodeverkClient)
-    val eregClient =
-        EregClient(environment.organisasjonBaseUrl, environment.appName, httpClient, stsRestClient)
+    val eregClient = EregClient(environment.organisasjonBaseUrl, environment.appName, httpClient, stsRestClient)
     val aaregClient = AaregClient(environment.aaregBaseUrlRest, stsRestClient)
 
     val rapidsConnection = RapidApplication.create(environment.raw)
-    Arbeidsgiverinformasjonsbehovløser(rapidsConnection, organisasjonClient, kodeverkClient, eregClient)
+    Arbeidsgiverinformasjonsbehovløser(rapidsConnection, kodeverkClient, eregClient)
     Arbeidsforholdbehovløser(rapidsConnection, aaregClient, kodeverkClient)
     ArbeidsforholdLøserV2(rapidsConnection, aaregClient)
 
     return rapidsConnection
 }
-
-private val callIdGenerator: ThreadLocal<String> = ThreadLocal.withInitial {
-    UUID.randomUUID().toString()
-}
-
-fun setupOrganisasjonV5(organisasjonBaseUrl: String, stsClientWs: STSClient): OrganisasjonV5 =
-    JaxWsProxyFactoryBean().apply {
-        address = organisasjonBaseUrl
-        wsdlURL = "wsdl/no/nav/tjeneste/virksomhet/organisasjon/v5/Binding.wsdl"
-        serviceName = QName("http://nav.no/tjeneste/virksomhet/organisasjon/v5/Binding", "Organisasjon_v5")
-        endpointName = QName("http://nav.no/tjeneste/virksomhet/organisasjon/v5/Binding", "Organisasjon_v5Port")
-        serviceClass = OrganisasjonV5::class.java
-        this.features.addAll(listOf(WSAddressingFeature()))
-        this.outInterceptors.addAll(listOf(CallIdInterceptor(callIdGenerator::get)))
-    }.create(OrganisasjonV5::class.java).apply { stsClientWs.configureFor(this) }

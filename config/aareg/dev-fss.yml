@@ -3,13 +3,9 @@ mountPaths:
 - mountPath: /var/run/secrets/nais.io/service_user
   kvPath: /serviceuser/data/dev/srvsparkelaareg
 env:
-- name: STS_BASE_SOAP_URL
-  value: https://sts-q1.preprod.local/SecurityTokenServiceProvider/
 - name: KODEVERK_BASE_URL
   value: http://kodeverk.default.svc.nais.local
 - name: ORGANISASJON_BASE_URL
   value: https://modapp-q1.adeo.no/ereg/api
-- name: SOAP_ORGANISASJON_BASE_URL
-  value: https://modapp-q1.adeo.no/ereg/ws/OrganisasjonService/v5
 - name: AAREG_BASE_URL_REST
   value: https://modapp-q1.adeo.no/aareg-services/api

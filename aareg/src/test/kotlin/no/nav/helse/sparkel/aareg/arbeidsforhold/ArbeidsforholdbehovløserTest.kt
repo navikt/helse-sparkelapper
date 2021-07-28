@@ -4,32 +4,22 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
+import java.util.*
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.arbeidsforholdV2Response
-import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.OrganisasjonClient
-import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.OrganisasjonDto
 import no.nav.helse.sparkel.aareg.objectMapper
 import no.nav.helse.sparkel.aareg.util.KodeverkClient
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
-import java.util.UUID
 
 internal class ArbeidsforholdbehovløserTest {
     private val testRapid = TestRapid()
-    private val organisasjonClient = mockk<OrganisasjonClient>()
     private val aaregClient = mockk<AaregClient>()
     private val kodeverkClient = mockk<KodeverkClient>()
 
     init {
         Arbeidsforholdbehovløser(testRapid, aaregClient, kodeverkClient)
-        every { organisasjonClient.finnOrganisasjon("organisasjonsnummer") } returns OrganisasjonDto(
-            "BEDRIFT",
-            listOf("BRANSJE")
-        )
         coEvery {
             aaregClient.hentFraAareg(any(), any())
         } returns objectMapper.readValue(arbeidsforholdV2Response())
