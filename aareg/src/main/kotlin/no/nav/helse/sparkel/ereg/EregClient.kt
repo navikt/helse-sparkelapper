@@ -38,7 +38,8 @@ class EregClient(
             .let { response ->
                 EregResponse(
                     navn = trekkUtNavn(response),
-                    næringer = response["organisasjonDetaljer"]["naeringer"].map { it["naeringskode"].asText() }
+                    næringer = response.path("organisasjonDetaljer").path("naeringer").takeIf { !it.isMissingNode }
+                        ?.map { it["naeringskode"].asText() } ?: emptyList()
                 )
             }
 
