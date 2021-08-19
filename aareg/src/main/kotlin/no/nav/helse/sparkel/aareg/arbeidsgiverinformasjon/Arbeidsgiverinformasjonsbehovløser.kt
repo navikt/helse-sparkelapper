@@ -27,7 +27,10 @@ class Arbeidsgiverinformasjonsbehovløser(
             }
         }
         private fun valider(node: JsonNode) {
-            if (!node.asText().matches("\\d{9}".toRegex())) throw RuntimeException("${node.asText()} er ikke et gyldig organisasjonsnummer.")
+            if (!node.asText().matches("\\d{9}".toRegex())) {
+                sikkerlogg.error("Kunne ikke gjenkjenne melding; organisasjonsnummer er ugyldig: ${node.asText()}")
+                throw RuntimeException("${node.asText()} er ikke et gyldig organisasjonsnummer.")
+            }
         }
     }
 
