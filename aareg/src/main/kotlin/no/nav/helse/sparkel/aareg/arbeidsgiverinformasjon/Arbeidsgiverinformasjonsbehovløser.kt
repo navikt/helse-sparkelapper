@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ArrayNode
 import java.util.*
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
@@ -19,6 +20,15 @@ class Arbeidsgiverinformasjonsbehovløser(
 ) : River.PacketListener {
     companion object {
         internal const val behov = "Arbeidsgiverinformasjon"
+        fun validateOrganisasjonsnummer(node:JsonNode) {
+            when(node) {
+                is ArrayNode -> node.forEach { n -> valider(n) }
+                else -> valider(node)
+            }
+        }
+        private fun valider(node: JsonNode) {
+            if (!node.asText().matches("\\d{9}".toRegex())) throw RuntimeException("${node.asText()} er ikke et gyldig organisasjonsnummer.")
+        }
     }
 
     init {
@@ -27,6 +37,7 @@ class Arbeidsgiverinformasjonsbehovløser(
             validate { it.forbid("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("$behov.organisasjonsnummer") }
+            validate { it.require("$behov.organisasjonsnummer") { validateOrganisasjonsnummer(it) } }
         }.register(this)
     }
 
