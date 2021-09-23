@@ -5,6 +5,7 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.sparkel.pleiepenger.pleiepenger.Stønadsperiode
 import org.slf4j.LoggerFactory
+import java.lang.Exception
 
 internal class Pleiepengerløser(
     rapidsConnection: RapidsConnection,
@@ -35,6 +36,12 @@ internal class Pleiepengerløser(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
+        try {
+            if (packet["vedtaksperiodeId"].asText() == "76db02de-8a5b-4030-8513-9481a0797244") return
+        } catch (e: Exception) {
+            //ignore
+        }
+
         infotrygdService.løsningForBehov(
             Stønadsperiode.Stønadstype.PLEIEPENGER,
             packet["@id"].asText(),
