@@ -35,6 +35,8 @@ internal class Opplæringspengerløser(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
+        if (packet["vedtaksperiodeId"].asText() == "76db02de-8a5b-4030-8513-9481a0797244") return
+
         infotrygdService.løsningForBehov(
             Stønadsperiode.Stønadstype.OPPLAERINGSPENGER,
             packet["@id"].asText(),

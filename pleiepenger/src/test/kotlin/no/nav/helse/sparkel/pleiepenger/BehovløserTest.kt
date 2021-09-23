@@ -84,7 +84,7 @@ internal class BehovløserTest {
 
     @Test
     fun `ignorerer et spesifikt behov`() {
-        testBehov(enkeltPleiepengerBehov(vedtaksperiodeId = "76db02de-8a5b-4030-8513-9481a0797244"))
+        testBehov(alleBehov(vedtaksperiodeId = "76db02de-8a5b-4030-8513-9481a0797244"))
         assertEquals(0, sendteMeldinger.size)
     }
 
@@ -121,7 +121,7 @@ internal class BehovløserTest {
         rapid.sendTestMessage(behov)
     }
 
-    private fun alleBehov() =
+    private fun alleBehov(vedtaksperiodeId: String = "vedtaksperiodeId") =
         """
         {
             "@event_name" : "behov",
@@ -129,7 +129,7 @@ internal class BehovløserTest {
             "@id" : "id",
             "@opprettet" : "2020-05-18",
             "spleisBehovId" : "spleisBehovId",
-            "vedtaksperiodeId" : "vedtaksperiodeId",
+            "vedtaksperiodeId" : "$vedtaksperiodeId",
             "fødselsnummer" : "fnr",
             "Pleiepenger" : {
                 "pleiepengerFom" : "2017-05-18",
