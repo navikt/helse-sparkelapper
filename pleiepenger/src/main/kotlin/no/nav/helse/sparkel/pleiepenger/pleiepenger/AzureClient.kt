@@ -43,8 +43,6 @@ class AzureClient(private val tokenEndpoint: String, private val clientId: Strin
             responseCode to stream?.bufferedReader()?.readText()
         }
 
-        tjenestekallLog.info("svar fra azure ad: responseCode=$responseCode responseBody=$responseBody")
-
         if (responseBody == null) {
             throw RuntimeException("ukjent feil fra azure ad (responseCode=$responseCode), responseBody er null")
         }
