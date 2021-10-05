@@ -20,21 +20,23 @@ internal class DkifService(private val dkifClient: DkifClient) {
                 behovId = behovId
             ).path("kontaktinfo").path(fødselsnummer)
             log.info(
-                "løser behov: {} for {}",
+                "løser behov: {}",
                 keyValue("id", behovId)
             )
             sikkerlogg.info(
-                "løser behov: {} for {}",
+                "løser behov: {}",
                 keyValue("id", behovId)
             )
             kontaktinformasjon
         } catch (err: Exception) {
             log.warn(
                 "feil ved henting av dkif-data: ${err.message} for {}",
+                keyValue("behovId", behovId),
                 err
             )
             sikkerlogg.warn(
                 "feil ved henting av dkif-data: ${err.message} for {}",
+                keyValue("behovId", behovId),
                 err
             )
             null
