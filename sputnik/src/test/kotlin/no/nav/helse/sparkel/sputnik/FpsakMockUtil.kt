@@ -1,9 +1,8 @@
 package no.nav.helse.sparkel.sputnik
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.respond
-import io.ktor.http.fullPath
+import io.ktor.client.*
+import io.ktor.client.engine.mock.*
+import io.ktor.http.*
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -23,14 +22,13 @@ fun fpsakMockClient(mockResponseGenerator: ResponseGenerator) = HttpClient(MockE
     }
 }
 
-private val tokenExpirationTime get() = LocalDateTime.now().plusDays(1).toEpochSecond(ZoneOffset.UTC)
-
 internal val mockStsRestClient = StsRestClient(
     baseUrl = "",
     serviceUser = ServiceUser("yes", "yes"),
     httpClient = HttpClient(MockEngine) {
         engine {
             addHandler {
+                val tokenExpirationTime = LocalDateTime.now().plusDays(1).toEpochSecond(ZoneOffset.UTC)
                 respond("""{"access_token":"token", "expires_in":$tokenExpirationTime, "token_type":"yes"}""")
             }
         }

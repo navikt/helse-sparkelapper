@@ -1,19 +1,12 @@
 package no.nav.helse.sparkel.inntekt
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.mock.MockEngine
-import io.ktor.client.engine.mock.respond
-import io.ktor.client.engine.mock.respondError
-import io.ktor.client.engine.mock.toByteArray
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.fullPath
+import io.ktor.client.*
+import io.ktor.client.engine.mock.*
+import io.ktor.client.features.json.*
+import io.ktor.http.*
 import no.nav.helse.rapids_rivers.asYearMonth
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -76,8 +69,10 @@ internal class InntekterTest {
         val start = YearMonth.of(2020, 2)
         val slutt = YearMonth.of(2021, 1)
         testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForSammenligningsgrunnlag))
-        val inntekt0 = testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSammenligningsgrunnlag.name)[0]
-        val inntekt1 = testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSammenligningsgrunnlag.name)[1]
+        val inntekt0 = testRapid.inspektør.message(0).path("@løsning")
+            .path(Inntekter.Type.InntekterForSammenligningsgrunnlag.name)[0]
+        val inntekt1 = testRapid.inspektør.message(0).path("@løsning")
+            .path(Inntekter.Type.InntekterForSammenligningsgrunnlag.name)[1]
         assertEquals(0, inntekt0["inntektsliste"].size())
         assertEquals(1, inntekt1["inntektsliste"].size())
         inntekt1["inntektsliste"].forEach {
@@ -91,8 +86,10 @@ internal class InntekterTest {
         val start = YearMonth.of(2020, 2)
         val slutt = YearMonth.of(2021, 1)
         testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForSykepengegrunnlag))
-        val inntekt0 = testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[0]
-        val inntekt1 = testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[1]
+        val inntekt0 =
+            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[0]
+        val inntekt1 =
+            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[1]
         assertEquals(0, inntekt0["inntektsliste"].size())
         assertEquals(1, inntekt1["inntektsliste"].size())
         inntekt1["inntektsliste"].forEach {

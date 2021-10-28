@@ -17,7 +17,7 @@ import java.time.LocalDateTime
 class StsRestClient(
     private val baseUrl: String,
     private val serviceUser: ServiceUser,
-    private val httpClient: HttpClient = HttpClient() {
+    private val httpClient: HttpClient = HttpClient {
         install(HttpTimeout) {
             socketTimeoutMillis = 10000
             requestTimeoutMillis = 10000
@@ -37,7 +37,7 @@ class StsRestClient(
     ) {
         header("Authorization", serviceUser.basicAuth)
         accept(ContentType.Application.Json)
-    }.execute { objectMapper.readValue<Token>(it.readText()) }
+    }.execute { objectMapper.readValue(it.readText()) }
 
     internal data class Token(
         internal val access_token: String,
