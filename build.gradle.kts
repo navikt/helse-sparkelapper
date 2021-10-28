@@ -1,23 +1,23 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val jvmTarget = "14"
+val jvmTarget = "16"
 
 plugins {
-    kotlin("jvm") version "1.4.32"
+    kotlin("jvm") version "1.5.31"
 }
 
-val gradlewVersion = "6.8.3"
-val junitJupiterVersion = "5.7.1"
-val rapidsAndRiversVersion = "20210617121814-3e67e4d"
-val ktorVersion = "1.5.0" // should be set to same value as rapids and rivers
+val gradlewVersion = "7.2"
+val junitJupiterVersion = "5.8.1"
+val rapidsAndRiversVersion = "2021.10.25-14.15.416988233f9c"
+val ktorVersion = "1.6.3" // should be set to same value as rapids and rivers
 val cxfVersion = "3.4.2"
-val mockkVersion = "1.10.0"
-val wiremockVersion = "2.27.1"
+val mockkVersion = "1.12.0"
+val wiremockVersion = "2.27.2"
 
 buildscript {
     repositories { mavenCentral() }
-    dependencies { "classpath"(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "2.12.0") }
+    dependencies { "classpath"(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "2.13.0") }
 }
 
 val mapper = ObjectMapper()

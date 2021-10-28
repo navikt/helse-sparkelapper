@@ -1,10 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val hikariCPVersion = "4.0.3"
-val ojdbcVersion = "21.1.0.0"
-val kotliqueryVersion = "1.3.1"
+val hikariCPVersion = "5.0.0"
+val ojdbcVersion = "21.3.0.0"
+val kotliqueryVersion = "1.6.1"
 val h2Version = "1.4.200"
-val flywayVersion = "7.7.1"
+val flywayVersion = "8.0.2"
 
 dependencies{
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")
