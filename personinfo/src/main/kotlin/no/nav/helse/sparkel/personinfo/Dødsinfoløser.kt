@@ -8,7 +8,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import org.slf4j.LoggerFactory
 
-internal class Personinfoløser(
+internal class Dødsinfoløser(
     rapidsConnection: RapidsConnection,
     private val personinfoService: PersoninfoService
 ) : River.PacketListener {
@@ -40,7 +40,7 @@ internal class Personinfoløser(
         val vedtaksperiodeId = packet["vedtaksperiodeId"].asText()
         val fnr = packet["fødselsnummer"].asText()
         try {
-            personinfoService.løsningForBehov(behovId, vedtaksperiodeId, fnr).let {
+            personinfoService.løsningForDødsinfo(behovId, vedtaksperiodeId, fnr).let {
                 packet["@løsning"] = mapOf(behov to it)
             }
             packet.toJson().let { løsningJson ->
@@ -54,7 +54,7 @@ internal class Personinfoløser(
             }
         } catch (e: Exception) {
             log.warn(
-                "Feil under løsing av personinfo-behov for {}: ${e.message}",
+                "Feil under løsing av dødsinfo-behov for {}: ${e.message}",
                 keyValue("vedtaksperiodeId", vedtaksperiodeId),
                 e
             )

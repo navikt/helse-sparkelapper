@@ -15,16 +15,18 @@ internal class PdlClient(
     companion object {
         private val objectMapper = ObjectMapper()
         private val httpClient = HttpClient.newHttpClient()
-        private val personQuery = this::class.java.getResource("/pdl/hentPerson.graphql").readText().replace(Regex("[\n\r]"), "")
+        private val dødsdatoQuery = this::class.java.getResource("/pdl/hentDødsdato.graphql").readText().replace(Regex("[\n\r]"), "")
+        private val personinfoQuery = this::class.java.getResource("/pdl/hentPersoninfo.graphql").readText().replace(Regex("[\n\r]"), "")
     }
 
-    internal fun hentPersoninfo(
+    private fun request(
         fødselsnummer: String,
-        behovId: String
+        behovId: String,
+        query: String
     ): JsonNode {
         val stsToken = stsClient.token()
 
-        val body = objectMapper.writeValueAsString(PdlQueryObject(personQuery, Variables(fødselsnummer)))
+        val body = objectMapper.writeValueAsString(PdlQueryObject(query, Variables(fødselsnummer)))
 
         val request = HttpRequest.newBuilder(URI.create(baseUrl))
             .header("TEMA", "SYK")
@@ -43,6 +45,16 @@ internal class PdlClient(
             if (it >= 300) throw RuntimeException("error (responseCode=$it) from PDL")
         }
         return objectMapper.readTree(response.body())
-
     }
+
+    internal fun hentDødsdato(
+        fødselsnummer: String,
+        behovId: String
+    ) = request(fødselsnummer, behovId, dødsdatoQuery)
+
+    internal fun hentPersoninfo(
+        fødselsnummer: String,
+        behovId: String
+    ) = request(fødselsnummer, behovId, personinfoQuery)
+
 }

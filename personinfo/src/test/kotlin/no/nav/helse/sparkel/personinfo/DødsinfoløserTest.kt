@@ -24,7 +24,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 
 @TestInstance(Lifecycle.PER_CLASS)
-internal class PersoninfoløserTest {
+internal class DødsinfoløserTest {
 
     private val wireMockServer: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
     private val objectMapper = jacksonObjectMapper()
@@ -97,10 +97,10 @@ internal class PersoninfoløserTest {
         assertEquals(emptyNode, sendtLøsning)
     }
 
-    private fun JsonNode.personinfoløsning() = this.path("@løsning").path(Personinfoløser.behov)
+    private fun JsonNode.personinfoløsning() = this.path("@løsning").path(Dødsinfoløser.behov)
 
     private fun testBehov(behov: String) {
-        Personinfoløser(rapid, service)
+        Dødsinfoløser(rapid, service)
         rapid.sendTestMessage(behov)
     }
 
