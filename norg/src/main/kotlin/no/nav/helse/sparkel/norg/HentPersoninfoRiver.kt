@@ -7,7 +7,7 @@ import no.nav.tjeneste.virksomhet.person.v3.informasjon.Kjoenn
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class HentNavnRiver(
+class HentPersoninfoRiver(
     rapidsConnection: RapidsConnection,
     private val personinfoService: PersoninfoService
 ) : River.PacketListener {

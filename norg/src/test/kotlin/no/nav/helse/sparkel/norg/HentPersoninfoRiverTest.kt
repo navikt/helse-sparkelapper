@@ -18,10 +18,10 @@ import javax.xml.datatype.DatatypeFactory
 import javax.xml.datatype.XMLGregorianCalendar
 
 
-internal class HentNavnRiverTest {
+internal class HentPersoninfoRiverTest {
 
     val rapid = TestRapid()
-        .apply { HentNavnRiver(this, mockk {
+        .apply { HentPersoninfoRiver(this, mockk {
             every { runBlocking { finnPerson(any()) }}.returns(
                 Person()
                     .withPersonnavn(Personnavn()
