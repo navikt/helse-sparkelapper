@@ -2,7 +2,6 @@ package no.nav.helse.sparkel.personinfo
 
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
-import org.slf4j.LoggerFactory
 import java.io.File
 
 fun main() {
@@ -20,11 +19,6 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         stsClient = stsClient
     )
     val personinfoService = PersoninfoService(pdlClient)
-
-    val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-    sikkerlogg.info("T\tTabulator")
-    sikkerlogg.info("NL\nNewLine")
-    sikkerlogg.info("NLT\n\tNewLineTabulator")
 
     return RapidApplication.create(env).apply {
         Dødsinfoløser(this, personinfoService)
