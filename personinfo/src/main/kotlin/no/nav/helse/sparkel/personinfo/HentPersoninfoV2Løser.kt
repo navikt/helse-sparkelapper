@@ -35,7 +35,7 @@ internal class HentPersoninfoV2Løser(
                 "sender svar {} for {}:\n\t{}",
                 keyValue("id", behovId),
                 keyValue("spleisBehovId", spleisBehovId),
-                løsningJson
+                keyValue("løsning", løsningJson)
             )
         } catch (e: Exception) {
             log.warn(
