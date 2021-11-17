@@ -16,7 +16,7 @@ internal class HentPersoninfoV2Løser(
     init {
         River(rapidsConnection).apply {
             validate {
-                it.demandAll("@behov", listOf("HentPersoninfo"))
+                it.demandAll("@behov", listOf("HentPersoninfoV2"))
                 it.rejectKey("@løsning")
                 it.requireKey("fødselsnummer", "spleisBehovId", "@id")
             }
@@ -29,13 +29,10 @@ internal class HentPersoninfoV2Løser(
         val spleisBehovId = packet["spleisBehovId"].asText()
         val fnr = packet["fødselsnummer"].asText()
         try {
-            packet["@løsning"] = mapOf("HentPersoninfo" to personinfoService.løsningForPersoninfo(behovId, spleisBehovId, fnr))
+            packet["@løsning"] = mapOf("HentPersoninfoV2" to personinfoService.løsningForPersoninfo(behovId, spleisBehovId, fnr))
             val løsningJson = packet.toJson()
-            sikkerLogg.info(
-                "sender svar {} for {}:\n\tløsning=$løsningJson",
-                keyValue("id", behovId),
-                keyValue("spleisBehovId", spleisBehovId)
-            )
+            context.publish(løsningJson)
+
         } catch (e: Exception) {
             log.warn(
                 "Feil under løsing av personinfo-behov {} for {}: ${e.message}",
@@ -47,6 +44,6 @@ internal class HentPersoninfoV2Løser(
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
-        sikkerLogg.error("Forstod ikke HentPersoninfo-behov:\n${problems.toExtendedReport()}")
+        sikkerLogg.error("Forstod ikke HentPersoninfoV2-behov:\n${problems.toExtendedReport()}")
     }
 }

@@ -36,12 +36,7 @@ internal class PersoninfoService(private val pdlClient: PdlClient) {
     ): JsonNode = withMDC("id" to behovId, "spleisBehovId" to spleisBehovId) {
         val pdlRespons = pdlClient.hentPersoninfo(fødselsnummer, behovId)
         log.info(
-            "løser behov HentPersoninfo: {} for {}",
-            keyValue("id", behovId),
-            keyValue("spleisBehovId", spleisBehovId)
-        )
-        sikkerlogg.info(
-            "løser behov HentPersoninfo: {} for {} svarFraPDL=$pdlRespons",
+            "løser behov HentPersoninfoV2: {} for {}",
             keyValue("id", behovId),
             keyValue("spleisBehovId", spleisBehovId)
         )
