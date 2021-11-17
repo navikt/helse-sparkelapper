@@ -22,7 +22,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
 
     return RapidApplication.create(env).apply {
         Dødsinfoløser(this, personinfoService)
-        HentPersoninfoV2Løser(this, personinfoService)
+        //HentPersoninfoV2Løser(this, personinfoService)
     }
 }
 
