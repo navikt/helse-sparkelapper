@@ -17,15 +17,14 @@ internal class PersoninfoService(private val pdlClient: PdlClient) {
     ): JsonNode = withMDC("id" to behovId, "vedtaksperiodeId" to vedtaksperiodeId) {
         val pdlRespons = pdlClient.hentDødsdato(fødselsnummer, behovId)
         log.info(
-            "løser behov: {} for {}",
+            "løser behov Dødsinfo: {} for {}",
             keyValue("id", behovId),
             keyValue("vedtaksperiodeId", vedtaksperiodeId)
         )
         sikkerlogg.info(
-            "løser behov: {} for {} {}",
+            "løser behov Dødsinfo: {} for {} svarFraPDL=$pdlRespons",
             keyValue("id", behovId),
-            keyValue("vedtaksperiodeId", vedtaksperiodeId),
-            keyValue("svarFraPDL", pdlRespons.toString())
+            keyValue("vedtaksperiodeId", vedtaksperiodeId)
         )
         PdlInterpreter().interpretDødsdato(pdlRespons)
     }
@@ -37,15 +36,14 @@ internal class PersoninfoService(private val pdlClient: PdlClient) {
     ): JsonNode = withMDC("id" to behovId, "spleisBehovId" to spleisBehovId) {
         val pdlRespons = pdlClient.hentPersoninfo(fødselsnummer, behovId)
         log.info(
-            "løser behov: {} for {}",
+            "løser behov HentPersoninfo: {} for {}",
             keyValue("id", behovId),
             keyValue("spleisBehovId", spleisBehovId)
         )
         sikkerlogg.info(
-            "løser behov: {} for {} {}",
+            "løser behov HentPersoninfo: {} for {} svarFraPDL=$pdlRespons",
             keyValue("id", behovId),
-            keyValue("spleisBehovId", spleisBehovId),
-            keyValue("svarFraPDL", pdlRespons.toString())
+            keyValue("spleisBehovId", spleisBehovId)
         )
         PdlInterpreter().interpretPersoninfo(pdlRespons)
     }

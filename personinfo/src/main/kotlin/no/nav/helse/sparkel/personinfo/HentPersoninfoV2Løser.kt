@@ -32,10 +32,9 @@ internal class HentPersoninfoV2Løser(
             packet["@løsning"] = mapOf("HentPersoninfo" to personinfoService.løsningForPersoninfo(behovId, spleisBehovId, fnr))
             val løsningJson = packet.toJson()
             sikkerLogg.info(
-                "sender svar {} for {}:\n\t{}",
+                "sender svar {} for {}:\n\tløsning=$løsningJson",
                 keyValue("id", behovId),
-                keyValue("spleisBehovId", spleisBehovId),
-                keyValue("løsning", løsningJson)
+                keyValue("spleisBehovId", spleisBehovId)
             )
         } catch (e: Exception) {
             log.warn(

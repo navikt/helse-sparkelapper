@@ -46,10 +46,9 @@ internal class Dødsinfoløser(
             packet.toJson().let { løsningJson ->
                 context.publish(løsningJson)
                 sikkerlogg.info(
-                    "sender svar {} for {}:\n\t{}",
+                    "sender svar {} for {}:\n\tløsning=$løsningJson",
                     keyValue("id", behovId),
-                    keyValue("vedtaksperiodeId", vedtaksperiodeId),
-                    løsningJson
+                    keyValue("vedtaksperiodeId", vedtaksperiodeId)
                 )
             }
         } catch (e: Exception) {
