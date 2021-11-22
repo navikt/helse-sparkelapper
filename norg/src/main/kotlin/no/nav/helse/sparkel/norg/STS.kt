@@ -8,7 +8,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDateTime
 
-internal class STS(
+class STS(
     private val baseUrl: String,
     private val serviceUser: ServiceUser
 ) {
