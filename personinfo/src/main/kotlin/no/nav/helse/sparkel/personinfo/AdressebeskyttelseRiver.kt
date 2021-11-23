@@ -16,7 +16,7 @@ class AdressebeskyttelseRiver(rapidsConnection: RapidsConnection) : River.Packet
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        sikkerLog.info("Fabs debugmelding:  ${packet.toJson()}")
+        //sikkerLog.info("Fabs debugmelding:  ${packet.toJson()}")
     }
 
 
