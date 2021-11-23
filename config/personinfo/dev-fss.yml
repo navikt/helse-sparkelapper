@@ -7,5 +7,3 @@ env:
   value: http://security-token-service.default.svc.nais.local
 - name: PDL_URL
   value: https://pdl-api.nais.preprod.local/graphql
-- name: KAFKA_EXTRA_TOPIC
-  value: aapen-person-pdl-leesah-v1
