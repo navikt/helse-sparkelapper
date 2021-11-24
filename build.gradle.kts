@@ -96,7 +96,6 @@ allprojects {
         maven("https://oss.sonatype.org")
         maven("https://jitpack.io")
         mavenCentral()
-        jcenter()
     }
 
     tasks {

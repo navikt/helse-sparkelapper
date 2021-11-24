@@ -6,11 +6,11 @@ import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class PdlInterpreterPersoninfoTest {
+internal class PdlOversetterPersoninfoTest {
 
     @Test
     fun `hente ugradert person`() {
-        val response = pdlInterpreter.interpretPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-ugradert.json".loadFromResources()))
+        val response = pdlOversetter.interpretPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-ugradert.json".loadFromResources()))
         @Language("JSON")
         val expected = """
             {
@@ -27,7 +27,7 @@ internal class PdlInterpreterPersoninfoTest {
 
     @Test
     fun `hente person uten gradering`() {
-        val response = pdlInterpreter.interpretPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-uten-gradering.json".loadFromResources()))
+        val response = pdlOversetter.interpretPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-uten-gradering.json".loadFromResources()))
         @Language("JSON")
         val expected = """
             {
@@ -44,7 +44,7 @@ internal class PdlInterpreterPersoninfoTest {
 
     @Test
     fun `hente fortrolig person`() {
-        val response = pdlInterpreter.interpretPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-fortrolig.json".loadFromResources()))
+        val response = pdlOversetter.interpretPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-fortrolig.json".loadFromResources()))
         @Language("JSON")
         val expected = """
             {
@@ -61,7 +61,7 @@ internal class PdlInterpreterPersoninfoTest {
 
     @Test
     fun `hente strengt fortrolig person`() {
-        val response = pdlInterpreter.interpretPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-strengt-fortrolig.json".loadFromResources()))
+        val response = pdlOversetter.interpretPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-strengt-fortrolig.json".loadFromResources()))
         @Language("JSON")
         val expected = """
             {
@@ -78,7 +78,7 @@ internal class PdlInterpreterPersoninfoTest {
 
     @Test
     fun `hente strengt fortrolig utland person`() {
-        val response = pdlInterpreter.interpretPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-strengt-fortrolig-utland.json".loadFromResources()))
+        val response = pdlOversetter.interpretPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-strengt-fortrolig-utland.json".loadFromResources()))
         @Language("JSON")
         val expected = """
             {
@@ -95,7 +95,7 @@ internal class PdlInterpreterPersoninfoTest {
 
     @Test
     fun `hente person med ukjent gradering`() {
-        val response = pdlInterpreter.interpretPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-ukjent-gradering.json".loadFromResources()))
+        val response = pdlOversetter.interpretPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-ukjent-gradering.json".loadFromResources()))
         @Language("JSON")
         val expected = """
             {
@@ -111,7 +111,7 @@ internal class PdlInterpreterPersoninfoTest {
     }
 
     private companion object {
-        private val pdlInterpreter = PdlInterpreter()
+        private val pdlOversetter = PdlOversetter()
         private val objectMapper = ObjectMapper()
         private fun String.toJsonNode() = objectMapper.readTree(this)
     }

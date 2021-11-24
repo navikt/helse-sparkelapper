@@ -26,7 +26,7 @@ internal class PersoninfoService(private val pdlClient: PdlClient) {
             keyValue("id", behovId),
             keyValue("vedtaksperiodeId", vedtaksperiodeId)
         )
-        PdlInterpreter().interpretDødsdato(pdlRespons)
+        PdlOversetter().interpretDødsdato(pdlRespons)
     }
 
     fun løsningForPersoninfo(
@@ -40,7 +40,7 @@ internal class PersoninfoService(private val pdlClient: PdlClient) {
             keyValue("id", behovId),
             keyValue("spleisBehovId", spleisBehovId)
         )
-        PdlInterpreter().interpretPersoninfo(pdlRespons)
+        PdlOversetter().interpretPersoninfo(pdlRespons)
     }
 }
 

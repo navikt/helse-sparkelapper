@@ -2,10 +2,10 @@ package no.nav.helse.sparkel.personinfo
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import no.nav.helse.sparkel.personinfo.PdlInterpreter.Adressebeskyttelse.Companion.somAdressebeskyttelse
-import no.nav.helse.sparkel.personinfo.PdlInterpreter.Kjønn.Companion.somKjønn
+import no.nav.helse.sparkel.personinfo.PdlOversetter.Adressebeskyttelse.Companion.somAdressebeskyttelse
+import no.nav.helse.sparkel.personinfo.PdlOversetter.Kjønn.Companion.somKjønn
 
-internal class PdlInterpreter {
+internal class PdlOversetter {
 
     fun interpretDødsdato(pdlReply: JsonNode): JsonNode {
         håndterErrors(pdlReply)
