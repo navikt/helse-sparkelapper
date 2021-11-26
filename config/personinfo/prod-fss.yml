@@ -8,4 +8,4 @@ env:
 - name: PDL_URL
   value: https://pdl-api.nais.adeo.no/graphql
 - name: KAFKA_BOOTSTRAP_SERVERS
-  value: a01apvl00145.adeo.no:8443,a01apvl00146.adeo.no:8443,a01apvl00147.adeo.no:8443,a01apvl00148.adeo.no:8443,a01apvl00149.adeo.no:8443,a01apvl00150.adeo.no:8443
+  value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443,SASL_SSL://a01apvl00150.adeo.no:8443
