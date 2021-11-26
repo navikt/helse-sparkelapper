@@ -19,7 +19,7 @@ private fun loadBaseConfig(): Properties = Properties().also {
     it["bootstrap.servers"] = System.getenv("KAFKA_BOOTSTRAP_SERVERS")
     it["specific.avro.reader"] = true
     it[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_SSL"
-    it[SaslConfigs.SASL_MECHANISM] = "plain"
+    it[SaslConfigs.SASL_MECHANISM] = "PLAIN"
     it[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = System.getenv("KAFKA_TRUSTSTORE_PATH")
     it[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = System.getenv("KAFKA_CREDSTORE_PASSWORD")
     // consumer specifics:
