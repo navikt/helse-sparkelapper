@@ -20,8 +20,8 @@ private fun loadBaseConfig(): Properties = Properties().also {
     it["specific.avro.reader"] = true
     it[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_SSL"
     it[SaslConfigs.SASL_MECHANISM] = "PLAIN"
-    it[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = System.getenv("KAFKA_TRUSTSTORE_PATH")
-    it[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = System.getenv("KAFKA_CREDSTORE_PASSWORD")
+    it[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = System.getenv("NAV_TRUSTSTORE_PATH")
+    it[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = System.getenv("NAV_TRUSTSTORE_PASSWORD")
     // consumer specifics:
     it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
     it[ConsumerConfig.GROUP_ID_CONFIG] = "sparkel-personinfo"
