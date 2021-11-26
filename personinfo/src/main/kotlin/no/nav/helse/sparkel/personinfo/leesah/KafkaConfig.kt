@@ -4,6 +4,7 @@ import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import java.nio.file.Files
@@ -18,6 +19,7 @@ private fun loadBaseConfig(): Properties = Properties().also {
     it["bootstrap.servers"] = System.getenv("KAFKA_BOOTSTRAP_SERVERS")
     it["specific.avro.reader"] = true
     it[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_SSL"
+    it[SaslConfigs.SASL_MECHANISM] = "plain"
     it[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = System.getenv("KAFKA_TRUSTSTORE_PATH")
     it[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = System.getenv("KAFKA_CREDSTORE_PASSWORD")
     // consumer specifics:
