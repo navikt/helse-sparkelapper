@@ -3,7 +3,6 @@ package no.nav.helse.sparkel.norg
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDateTime
@@ -29,6 +28,7 @@ class STS(
             requestMethod = "POST"
             connectTimeout = 10000
             readTimeout = 10000
+            doOutput = true
             setRequestProperty("Authorization", serviceUser.basicAuth)
             setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
             setRequestProperty("Accept", "application/json")
