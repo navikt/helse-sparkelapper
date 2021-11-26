@@ -32,10 +32,9 @@ class STS(
             setRequestProperty("Authorization", serviceUser.basicAuth)
             setRequestProperty("Accept", "application/json")
 
-            val stream: InputStream = if (responseCode < 300) this.inputStream else this.errorStream
-            stream.use { responseCode to stream.bufferedReader().readText() }
+            this.inputStream.use { responseCode to this.inputStream.bufferedReader().readText() }
         }
-        if (responseCode >= 300) {
+        if (responseCode != 200) {
             throw RuntimeException("error from sts: $responseCode - $responseBody")
         }
 
