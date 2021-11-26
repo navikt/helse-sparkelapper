@@ -24,7 +24,7 @@ class STS(
     }
 
     private fun fetchToken(): Token {
-        val url = "$baseUrl/rest/v1/sts/token?grant_type=client_credentials&scope=openid"
+        val url = "$baseUrl/rest/v1/sts/token"
         val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
             requestMethod = "GET"
             connectTimeout = 10000
