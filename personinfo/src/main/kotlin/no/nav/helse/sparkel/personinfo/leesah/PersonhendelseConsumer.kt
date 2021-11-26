@@ -16,6 +16,7 @@ class PersonhendelseConsumer(
     private var konsumerer = true
 
     override fun run() {
+        log.info("PersonhendelseConsumer starter opp")
         try {
             while (konsumerer) {
                 val records = kafkaConsumer.poll(Duration.ofMillis(100))
