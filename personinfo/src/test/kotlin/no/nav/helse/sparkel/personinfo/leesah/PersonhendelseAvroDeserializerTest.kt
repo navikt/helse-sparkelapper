@@ -22,6 +22,7 @@ class PersonhendelseAvroDeserializerTest {
         val encoder = encoderFactory.binaryEncoder(bytesOut, null)
         writer.write(record, encoder)
         encoder.flush()
-        return bytesOut.toByteArray()
+        // KafkaAvroSerializer legger på to magic bytes, vet ikke hva de er
+        return byteArrayOf(0, 0) + bytesOut.toByteArray()
     }
 }
