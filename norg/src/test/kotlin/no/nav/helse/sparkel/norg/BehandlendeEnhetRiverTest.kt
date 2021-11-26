@@ -4,16 +4,13 @@ import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.features.json.*
 import io.ktor.http.*
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.*
-import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentGeografiskTilknytningResponse
-import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentPersonResponse
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 class BehandlendeEnhetRiverTest {
 
@@ -21,10 +18,8 @@ class BehandlendeEnhetRiverTest {
 
     @Test
     fun `happy case`() {
-        every { personv3mock.hentGeografiskTilknytning(any()) }.returns(
-            HentGeografiskTilknytningResponse().withGeografiskTilknytning(
-                Kommune().withGeografiskTilknytning("3407")
-            )
+        coEvery { pdlMock.finnGeografiskTilhørighet(any(), any()) }.returns(
+            GeografiskTilknytning(null, "3407", null)
         )
         rapid.sendTestMessage(behov)
         assertEquals(NAV_GØVIK, rapid.inspektør.message(0)["@løsning"]["HentEnhet"].textValue())
@@ -32,10 +27,8 @@ class BehandlendeEnhetRiverTest {
 
     @Test
     fun `404 fra norg`() {
-        every { personv3mock.hentGeografiskTilknytning(any()) }.returns(
-            HentGeografiskTilknytningResponse().withGeografiskTilknytning(
-                Land().withGeografiskTilknytning("SWE")
-            )
+        coEvery { pdlMock.finnGeografiskTilhørighet(any(), any()) }.returns(
+            GeografiskTilknytning("SWE", null, null)
         )
         rapid.sendTestMessage(behov)
         assertEquals(NAV_OPPFOLGING_UTLAND_KONTOR_NR, rapid.inspektør.message(0)["@løsning"]["HentEnhet"].textValue())
@@ -43,10 +36,8 @@ class BehandlendeEnhetRiverTest {
 
     @Test
     fun `500 fra norg`() {
-        every { personv3mock.hentGeografiskTilknytning(any()) }.returns(
-            HentGeografiskTilknytningResponse().withGeografiskTilknytning(
-                Land().withGeografiskTilknytning("FOO")
-            )
+        coEvery { pdlMock.finnGeografiskTilhørighet(any(), any()) }.returns(
+            GeografiskTilknytning("FOO", null, null)
         )
         rapid.sendTestMessage(behov)
         assertEquals(0, rapid.inspektør.size)
@@ -67,10 +58,8 @@ class BehandlendeEnhetRiverTest {
         }
 """
 
-    private val personv3mock = mockk<PersonV3> {
-        every { hentPerson(any()) } returns HentPersonResponse().withPerson(
-            Person()
-        )
+    private val pdlMock = mockk<PDL> {
+        coEvery { finnPerson(any(), any()) } returns Person("Jan", null, "Johansen", LocalDate.now(), Kjønn.Mann, Adressebeskyttelse.FORTROLIG)
     }
 
     private val client = HttpClient(MockEngine) {
@@ -108,7 +97,7 @@ class BehandlendeEnhetRiverTest {
     private val norg2Client = Norg2Client("baseurl", client)
     private val rapid = TestRapid()
         .apply {
-            BehandlendeEnhetRiver(this, PersoninfoService(norg2Client, personv3mock))
+            BehandlendeEnhetRiver(this, PersoninfoService(norg2Client, pdlMock))
         }
 }
 

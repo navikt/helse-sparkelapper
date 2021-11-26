@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.norg
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.URI
 import java.net.http.HttpClient
@@ -19,30 +20,35 @@ class PDL(
 ) {
     private companion object {
         private val objectMapper = jacksonObjectMapper()
+        private val log = LoggerFactory.getLogger(PDL::class.java)
     }
 
     internal suspend fun finnPerson(fødselsnummer: String, behovId: String): Person? = try {
-        httpKall(fødselsnummer, finnPersonQuery, behovId, JsonNode::toPerson)
+        httpKall(fødselsnummer, finnPersonQuery, behovId, JsonNode::asPerson)
     } catch (ex: Exception) {
+        log.error("Feil under oppslag av person", ex)
         null
     }
 
     internal suspend fun finnGeografiskTilhørighet(fødselsnummer: String, behovId: String): GeografiskTilknytning? = try {
-        httpKall(fødselsnummer, geografiskTilknytningQuery, behovId, JsonNode::toGeotilknytning)
+        httpKall(fødselsnummer, geografiskTilknytningQuery, behovId, JsonNode::asGeotilknytning)
     } catch (ex: Exception) {
+        log.error("Feil under oppslag av geografisk tilhørighet ", ex)
         null
     }
 
     private suspend fun <T> httpKall(fødselsnummer: String, query: String, behovId: String, responseMapper: (JsonNode) -> T): T =
         retry(
-            "pdl_hent_person",
+            "pdl",
             IOException::class,
             retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L)
         ) {
             val accessToken = sts.token()
 
             val body =
-                objectMapper.writeValueAsString(PdlQuery(query = query, variables = Variables(fødselsnummer)))
+                objectMapper.writeValueAsString(
+                    PdlQuery(query = query.onOneLine(), variables = Variables(fødselsnummer))
+                )
 
             val request = HttpRequest.newBuilder(URI.create(baseUrl))
                 .header("TEMA", "SYK")
@@ -62,13 +68,13 @@ class PDL(
             }
             val responseBody = objectMapper.readTree(response.body())
             if (responseBody.containsErrors()) {
-                throw RuntimeException("errors from PDL: ${responseBody.errorMsgs()}")
+                throw RuntimeException("errors from PDL: ${responseBody["errors"].errorMsgs()}")
             }
             responseMapper(responseBody["data"]?.get("hentPerson") ?: throw RuntimeException("Unable to find expected JSON node 'hentPerson'"))
         }
 }
 
-internal class PdlQuery(
+internal data class PdlQuery(
     val query: String,
     val variables: Variables
 )
@@ -79,24 +85,30 @@ internal class Variables(
 )
 
 internal data class Person(
-    private val fornavn: String,
-    private val mellomnavn: String?,
-    private val etternavn: String,
-    private val fødselsdato: LocalDate,
-    private val kjønn: Kjønn,
-    private val adressebeskyttelse: Adressebeskyttelse
+    val fornavn: String,
+    val mellomnavn: String?,
+    val etternavn: String,
+    val fødselsdato: LocalDate,
+    val kjønn: Kjønn,
+    val adressebeskyttelse: Adressebeskyttelse
 )
 
 internal data class GeografiskTilknytning(
-    private val kommune: String,
+    private val land: String?,
+    private val kommune: String?,
     private val bydel: String?
-)
-
-enum class Adressebeskyttelse {
-    STRENGT_FORTROLIG_UTLAND, STRENGT_FORTROLIG, FORTROLIG, UGRADERT
+) {
+    fun mestNøyaktig() = bydel ?: kommune ?: land ?: "ukjent"
 }
 
-internal fun JsonNode.toPerson() = this.get("data").get("hentPerson").let { personen ->
+enum class Adressebeskyttelse(val kode: String) {
+    STRENGT_FORTROLIG_UTLAND("SPSF"), // behandles som STRENGT_FORTROLIG
+    STRENGT_FORTROLIG("SPSF"),
+    FORTROLIG("SPFO"),
+    UGRADERT("")
+}
+
+internal fun JsonNode.asPerson() = this.get("data").get("hentPerson").let { personen ->
     val pdlNavn = personen["navn"]
     val pdlFødsel = personen["foedsel"]
     val pdlKjønn = personen["kjoenn"]
@@ -106,19 +118,20 @@ internal fun JsonNode.toPerson() = this.get("data").get("hentPerson").let { pers
         pdlNavn["mellomnavn"]?.asText(),
         pdlNavn["etternavn"]?.asText() ?: "Ukjentsen",
         LocalDate.parse(pdlFødsel["foedselsdato"]?.asText()),
-        pdlKjønn["kjoenn"].toKjønn(),
+        pdlKjønn["kjoenn"].asKjønn(),
         Adressebeskyttelse.valueOf(pdlBeskyttelse["gradering"]?.asText() ?: "UGRADERT")
     )
 }
 
-internal fun JsonNode.toGeotilknytning(): GeografiskTilknytning =
+internal fun JsonNode.asGeotilknytning(): GeografiskTilknytning =
     this.get("data").get("hentGeografiskTilknytning").let { tilknytningen ->
-        val kommune = tilknytningen["gtKommune"]?.asText() ?: "Ukjent"
+        val land = tilknytningen["gtLand"]?.asText()
+        val kommune = tilknytningen["gtKommune"]?.asText()
         val bydel = tilknytningen["gtBydel"]?.asText()
-        GeografiskTilknytning(kommune, bydel)
+        GeografiskTilknytning(land, kommune, bydel)
     }
 
-private fun JsonNode.toKjønn() = when(this.asText()) {
+private fun JsonNode.asKjønn() = when(this.asText()) {
     "MANN" -> Kjønn.Mann
     "KVINNE" -> Kjønn.Kvinne
     "UKJENT" -> Kjønn.Ukjent
@@ -127,6 +140,8 @@ private fun JsonNode.toKjønn() = when(this.asText()) {
 
 internal fun JsonNode.containsErrors() = this.has("errors")
 
+internal fun String.onOneLine() = this.replace("\n", " ")
+
 private fun JsonNode.errorMsgs() = with (this as ArrayNode) {
     this.map { it["message"]?.asText() ?: "unknown error" }
 }
@@ -134,6 +149,7 @@ private fun JsonNode.errorMsgs() = with (this as ArrayNode) {
 private val geografiskTilknytningQuery: String = """
     query(${dollar}ident: ID!) {
        hentGeografiskTilknytning(ident: ${dollar}ident) {
+          gtLand
           gtKommune
           gtBydel 
        }

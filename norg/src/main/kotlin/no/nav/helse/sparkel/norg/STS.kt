@@ -40,7 +40,6 @@ class STS(
         }
 
         return objectMapper.readValue(responseBody)
-
     }
 
     internal data class Token(

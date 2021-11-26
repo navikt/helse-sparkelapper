@@ -1,12 +1,9 @@
 package no.nav.helse.sparkel.norg
 
-import io.ktor.client.HttpClient
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.logging.LogLevel
-import io.ktor.client.features.logging.Logging
+import io.ktor.client.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.logging.*
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -29,17 +26,10 @@ fun launchApplication(
         httpClient = simpleHttpClient()
     )
 
-    val personV3 = createPort<PersonV3>(environment.personV3Url) {
-        port {
-            withSTS(
-                serviceUser.username,
-                serviceUser.password,
-                environment.securityTokenServiceUrl
-            )
-        }
-    }
+    val sts = STS(environment.securityTokenServiceUrl, serviceUser)
+    val pdl = PDL(sts, environment.pdlUrl)
 
-    val behandlendeEnhetService = PersoninfoService(norgRestClient, personV3)
+    val behandlendeEnhetService = PersoninfoService(norgRestClient, pdl)
 
     RapidApplication.create(System.getenv()).apply {
         BehandlendeEnhetRiver(this, behandlendeEnhetService)
