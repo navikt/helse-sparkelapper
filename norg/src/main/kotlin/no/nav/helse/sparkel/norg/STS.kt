@@ -26,11 +26,15 @@ class STS(
     private fun fetchToken(): Token {
         val url = "$baseUrl/rest/v1/sts/token"
         val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
-            requestMethod = "GET"
+            requestMethod = "POST"
             connectTimeout = 10000
             readTimeout = 10000
             setRequestProperty("Authorization", serviceUser.basicAuth)
+            setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
             setRequestProperty("Accept", "application/json")
+            outputStream.use { os ->
+                os.writer().write("grant_type=client_credentials&scope=openid")
+            }
 
             this.inputStream.use { responseCode to this.inputStream.bufferedReader().readText() }
         }
