@@ -24,6 +24,7 @@ class PDL(
     }
 
     internal suspend fun finnPerson(fødselsnummer: String, behovId: String): Person? = try {
+        log.info("Gjør oppslag på person for behov $behovId")
         httpKall(fødselsnummer, finnPersonQuery, behovId, JsonNode::asPerson)
     } catch (ex: Exception) {
         log.error("Feil under oppslag av person", ex)
@@ -31,6 +32,7 @@ class PDL(
     }
 
     internal suspend fun finnGeografiskTilhørighet(fødselsnummer: String, behovId: String): GeografiskTilknytning? = try {
+        log.info("Gjør oppslag på geografisk tilhørighet for behov $behovId")
         httpKall(fødselsnummer, geografiskTilknytningQuery, behovId, JsonNode::asGeotilknytning)
     } catch (ex: Exception) {
         log.error("Feil under oppslag av geografisk tilhørighet ", ex)
