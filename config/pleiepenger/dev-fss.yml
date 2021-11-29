@@ -6,4 +6,4 @@ env:
 - name: INFOTRYGD_SCOPE
   value: api://32551525-c4dd-44ae-b906-2f8d8a00bb03/.default
 - name: INFOTRYGD_URL
-  value: http://infotrygd-grunnlag-paaroerende-sykdom.default.svc.nais.local
+  value: http://infotrygd-grunnlag-paaroerende-sykdom.infotrygd.svc.nais.local
