@@ -1,14 +1,13 @@
 package no.nav.helse.sparkel.personinfo.leesah
 
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.rapids_rivers.RapidsConnection
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
 class PersonhendelseConsumer(
-    private val rapidConnection: RapidsConnection,
+    private val rapidApplication: RapidApplication,
     private val kafkaConsumer: KafkaConsumer<ByteArray, GenericRecord>,
     private val personhendelseRiver: PersonhendelseRiver
 ): AutoCloseable, Runnable {
@@ -16,7 +15,6 @@ class PersonhendelseConsumer(
     private var konsumerer = true
 
     override fun run() {
-        log.info("PersonhendelseConsumer starter opp")
         try {
             while (konsumerer) {
                 val records = kafkaConsumer.poll(Duration.ofMillis(100))
@@ -29,7 +27,7 @@ class PersonhendelseConsumer(
             log.error("Feilet under konsumering av personhendelse", e)
         } finally {
             close()
-            rapidConnection.stop()
+            rapidApplication.stop()
         }
     }
 

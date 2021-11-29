@@ -20,12 +20,12 @@ class ServiceUser(
 
 fun readEnvironment() = Environment(
     norg2BaseUrl = System.getenv("NORG2_BASE_URL"),
-    pdlUrl = System.getenv("PDL_URL"),
+    personV3Url = System.getenv("PERSONV3_URL"),
     securityTokenServiceUrl = System.getenv("SECURITY_TOKEN_SERVICE_URL")
 )
 
 data class Environment(
     val norg2BaseUrl: String,
-    val pdlUrl: String,
+    val personV3Url: String,
     val securityTokenServiceUrl: String
 )

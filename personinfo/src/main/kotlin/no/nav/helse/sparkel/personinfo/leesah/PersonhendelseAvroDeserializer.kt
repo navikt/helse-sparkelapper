@@ -7,17 +7,11 @@ import org.apache.avro.io.DecoderFactory
 import org.apache.kafka.common.serialization.Deserializer
 
 class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
-    private val decoderFactory: DecoderFactory = DecoderFactory.get()
+    val decoderFactory = DecoderFactory.get()
     override fun deserialize(topic: String, data: ByteArray): GenericRecord {
         val reader = GenericDatumReader<GenericRecord>(schema)
-        val decoder = decoderFactory.binaryDecoder(data, null)
-        /*
-        KafkaAvroSerializer legger på 5 bytes, 1 magic byte og 4 som sier noe om hvilke entry i schema registeret som
-        brukes. Siden vi ikke ønsker å ha et dependency til schema registryet har vi en egen deserializer og skipper de
-        5 første bytene
-         */
-        decoder.skipFixed(5)
-        return reader.read(null, decoder)
+
+        return reader.read(null, decoderFactory.binaryDecoder(data, null))
     }
 
     companion object {

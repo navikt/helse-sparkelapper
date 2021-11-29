@@ -1,21 +1,35 @@
 package no.nav.helse.sparkel.norg
 
-import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.Foedselsdato
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.Kjoenn
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.Kjoennstyper
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.Person
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.Personnavn
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import javax.xml.datatype.DatatypeFactory
+import javax.xml.datatype.XMLGregorianCalendar
 
 
 internal class HentPersoninfoRiverTest {
 
-    private val rapid = TestRapid()
+    val rapid = TestRapid()
         .apply { HentPersoninfoRiver(this, mockk {
-            coEvery { finnPerson(any(), any()) }.returns(
-                Person("Test", null, "Testsen", LocalDate.of(1986, 2, 23), Kjønn.Mann, Adressebeskyttelse.UGRADERT)
+            every { runBlocking { finnPerson(any()) }}.returns(
+                Person()
+                    .withPersonnavn(Personnavn()
+                        .withFornavn("Test")
+                        .withMellomnavn(null)
+                        .withEtternavn("Testsen"))
+                    .withKjoenn(Kjoenn().withKjoenn(Kjoennstyper().withValue("M")))
+                    .withFoedselsdato(Foedselsdato().withFoedselsdato(LocalDate.of(1986, 2, 23).toXml()))
             )
         }) }
 
@@ -45,3 +59,5 @@ val behov = """{
   "orgnummer": "89123"
 }
 """
+
+fun LocalDate.toXml(): XMLGregorianCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(this.toString())

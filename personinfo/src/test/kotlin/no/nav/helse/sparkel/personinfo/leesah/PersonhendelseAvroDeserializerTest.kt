@@ -4,7 +4,6 @@ import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.nyttDokument
 import org.apache.avro.generic.GenericDatumWriter
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.io.EncoderFactory
-import org.apache.commons.codec.binary.Base64
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
@@ -23,7 +22,6 @@ class PersonhendelseAvroDeserializerTest {
         val encoder = encoderFactory.binaryEncoder(bytesOut, null)
         writer.write(record, encoder)
         encoder.flush()
-        // KafkaAvroSerializer legger på to magic bytes, vet ikke hva de er
-        return byteArrayOf(0, 0, 0, 0, 0) + bytesOut.toByteArray()
+        return bytesOut.toByteArray()
     }
 }
