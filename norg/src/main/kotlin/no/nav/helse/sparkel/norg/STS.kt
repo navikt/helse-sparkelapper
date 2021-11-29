@@ -3,7 +3,6 @@ package no.nav.helse.sparkel.norg
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDateTime
@@ -24,23 +23,26 @@ class STS(
     }
 
     private fun fetchToken(): Token {
-        val url = "$baseUrl/rest/v1/sts/token?grant_type=client_credentials&scope=openid"
+        val url = "$baseUrl/rest/v1/sts/token"
         val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
-            requestMethod = "GET"
+            requestMethod = "POST"
             connectTimeout = 10000
             readTimeout = 10000
+            doOutput = true
             setRequestProperty("Authorization", serviceUser.basicAuth)
+            setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
             setRequestProperty("Accept", "application/json")
+            outputStream.use { os ->
+                os.writer().write("grant_type=client_credentials&scope=openid")
+            }
 
-            val stream: InputStream = if (responseCode < 300) this.inputStream else this.errorStream
-            stream.use { responseCode to stream.bufferedReader().readText() }
+            this.inputStream.use { responseCode to this.inputStream.bufferedReader().readText() }
         }
-        if (responseCode >= 300) {
+        if (responseCode != 200) {
             throw RuntimeException("error from sts: $responseCode - $responseBody")
         }
 
         return objectMapper.readValue(responseBody)
-
     }
 
     internal data class Token(

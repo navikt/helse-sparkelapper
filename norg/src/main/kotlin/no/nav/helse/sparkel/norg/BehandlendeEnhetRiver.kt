@@ -35,7 +35,7 @@ class BehandlendeEnhetRiver(
             keyValue("@id", packet["@id"].asText())
         )
         try {
-            val enhet = personinfoService.finnBehandlendeEnhet(packet["fødselsnummer"].asText())
+            val enhet = personinfoService.finnBehandlendeEnhet(packet["fødselsnummer"].asText(), packet["spleisBehovId"].asText())
             packet["@løsning"] = mapOf(
                 "HentEnhet" to enhet
             )
