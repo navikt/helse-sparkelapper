@@ -145,7 +145,9 @@ internal fun JsonNode.containsErrors() = this.has("errors")
 internal fun String.onOneLine() = this.replace("\n", " ")
 
 private fun JsonNode.errorMsgs() = with (this as ArrayNode) {
-    this.map { it["message"]?.asText() ?: "unknown error" }
+    val errorMsgs = this.map { it["message"]?.asText() ?: "unknown error" }
+    val extensions = this.map { it["extensions"]?.get("details")?.asText() ?: "extension details unknown" }
+    "$errorMsgs -- $extensions"
 }
 
 private val geografiskTilknytningQuery: String = """
