@@ -13,7 +13,7 @@ class PersonhendelseRiver {
             return
         }
         if (finnGradering(record) == PersonhendelseOversetter.Gradering.UGRADERT.name) {
-            sikkerlogg.info("mottok endring på adressebeskyttelse")
+            sikkerlogg.info("mottok endring på adressebeskyttelse: ${record}")
         }
     }
 

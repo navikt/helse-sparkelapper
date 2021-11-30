@@ -6,6 +6,7 @@ import ch.qos.logback.core.read.ListAppender
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.nyttDokument
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 
@@ -33,6 +34,7 @@ class PersonhendelseRiverTest {
         assertEquals(listOf("Mottok event på ident [20046913337]"), logCollector.list.map(ILoggingEvent::getMessage))
     }
 
+    @Disabled
     @Test
     fun `logger hendelse om gradering er ugradert`() {
         personhendelseRiver.onPackage(nyttDokument(
