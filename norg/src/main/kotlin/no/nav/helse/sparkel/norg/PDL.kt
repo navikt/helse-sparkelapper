@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.norg
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.URI
@@ -17,10 +18,12 @@ class PDL(
     private val sts: STS,
     private val baseUrl: String,
     private val httpClient: HttpClient = HttpClient.newHttpClient()
+
 ) {
     private companion object {
         private val objectMapper = jacksonObjectMapper()
         private val log = LoggerFactory.getLogger(PDL::class.java)
+        private val sikkerLogg: Logger = LoggerFactory.getLogger("tjenestekall")
     }
 
     internal suspend fun finnPerson(fødselsnummer: String, behovId: String): Person? = try {
@@ -74,6 +77,7 @@ class PDL(
             if (responseBody.containsErrors()) {
                 throw RuntimeException("errors from PDL: ${responseBody["errors"].errorMsgs()}")
             }
+            sikkerLogg.info("Svar fra PDL:\n$responseBody")
             responseMapper(responseBody)
         }
 }
