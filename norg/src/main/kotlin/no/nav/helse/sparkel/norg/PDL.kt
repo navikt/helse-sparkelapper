@@ -77,7 +77,7 @@ class PDL(
             if (responseBody.containsErrors()) {
                 throw RuntimeException("errors from PDL: ${responseBody["errors"].errorMsgs()}")
             }
-            sikkerLogg.info("Svar fra PDL:\n$responseBody")
+            sikkerLogg.info("Svar fra PDL for behov $behovId:\n$responseBody")
             responseMapper(responseBody)
         }
 }
@@ -117,17 +117,20 @@ enum class Adressebeskyttelse(val kode: String) {
 }
 
 internal fun JsonNode.asPerson() = this.get("data").get("hentPerson").let { personen ->
-    val pdlNavn = personen["navn"]
-    val pdlFødsel = personen["foedsel"]
-    val pdlKjønn = personen["kjoenn"]
-    val pdlBeskyttelse = personen["adressebeskyttelse"]
+    val pdlNavn = personen["navn"].first()
+    val pdlFødsel = personen["foedsel"].first()
+    val pdlKjønn = personen["kjoenn"].first()
+    val adresseBeskyttelse = (personen["adressebeskyttelse"] as ArrayNode)
+        .map { Adressebeskyttelse.valueOf(it["gradering"]?.asText() ?: "UGRADERT") }
+        .sorted()
+        .firstOrNull()
     Person(
         pdlNavn["fornavn"]?.asText() ?: "Ukjent",
-        pdlNavn["mellomnavn"]?.asText(),
+        if (pdlNavn.hasNonNull("mellomnavn")) pdlNavn["mellomnavn"].asText() else null,
         pdlNavn["etternavn"]?.asText() ?: "Ukjentsen",
-        LocalDate.parse(pdlFødsel["foedselsdato"]?.asText()),
+        LocalDate.parse(pdlFødsel["foedselsdato"].asText()),
         pdlKjønn["kjoenn"].asKjønn(),
-        Adressebeskyttelse.valueOf(pdlBeskyttelse["gradering"]?.asText() ?: "UGRADERT")
+        adresseBeskyttelse ?: Adressebeskyttelse.UGRADERT
     )
 }
 
@@ -184,3 +187,5 @@ private val finnPersonQuery: String = """
        }
     }
 """.trimIndent()
+
+

@@ -25,6 +25,13 @@ class PDLTest {
     }
 
     @Test
+    fun `hentPerson  - strengeste adressebeskyttelse velges`() {
+        val expected = Person("LEALAUS", null, "TØFFELDYR", LocalDate.parse("1950-10-27"), Kjønn.Kvinne, Adressebeskyttelse.STRENGT_FORTROLIG)
+        val actual = objectMapper.readTree(personMedFlereAdressebeskyttelser).asPerson()
+        assertEquals(expected, actual)
+    }
+
+    @Test
     fun `hentGeografiskTilknytning - mest nøyaktig velges - bydel`() {
         val expected = "BYDELEN"
         val actual = objectMapper.readTree(geoTilknytningMedAlt).asGeotilknytning().mestNøyaktig()
@@ -57,20 +64,22 @@ class PDLTest {
         {
            "data": {
               "hentPerson": {
-                 "navn": {
+                 "navn": [{
                     "fornavn": "OLA",
                     "mellomnavn": "ANDRE",
                     "etternavn": "NORDMANN"
-                 },
-                 "foedsel": {
+                 }],
+                 "foedsel": [{
                     "foedselsdato": "2019-11-30"
-                 },
-                 "kjoenn": {
+                 }],
+                 "kjoenn": [{
                     "kjoenn": "MANN"
-                 },
-                 "adressebeskyttelse": {
-                    "gradering": "STRENGT_FORTROLIG"
-                 }
+                 }],
+                 "adressebeskyttelse": [
+                    {
+                      "gradering": "STRENGT_FORTROLIG"
+                    }
+                ]
               }
            }
         }
@@ -81,19 +90,22 @@ class PDLTest {
         {
            "data": {
               "hentPerson": {
-                 "navn": {
+                 "navn": [{
                     "fornavn": "OLA",
+                    "mellomnavn": null,
                     "etternavn": "NORDMANN"
-                 },
-                 "foedsel": {
+                 }],
+                 "foedsel": [{
                     "foedselsdato": "2019-11-30"
-                 },
-                 "kjoenn": {
+                 }],
+                 "kjoenn": [{
                     "kjoenn": "MANN"
-                 },
-                 "adressebeskyttelse": {
-                    "gradering": "STRENGT_FORTROLIG"
-                 }
+                 }],
+                 "adressebeskyttelse": [
+                    {
+                      "gradering": "STRENGT_FORTROLIG"
+                    }
+                ]
               }
            }
         }
@@ -138,4 +150,23 @@ class PDLTest {
         }
     """.trimIndent()
 
+    @Language("json")
+    private val personMedFlereAdressebeskyttelser = """
+        {"data": 
+            {
+              "hentPerson": {
+                "navn":[
+                    { 
+                      "fornavn":"LEALAUS",
+                      "mellomnavn": null,
+                      "etternavn":"TØFFELDYR"
+                    }
+              ],
+              "foedsel": [{"foedselsdato":"1950-10-27"}],
+              "kjoenn": [{"kjoenn":"KVINNE"}],
+              "adressebeskyttelse": [{"gradering": "FORTROLIG"},{"gradering": "STRENGT_FORTROLIG"}]
+              }
+            }
+        }
+    """
 }
