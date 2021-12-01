@@ -12,14 +12,8 @@ internal class PdlOversetterIdenterTest {
     @Test
     fun `henter identer`() {
         val response = pdlOversetter.interpretIdenter(objectMapper.readValue("identer/pdl-hentIdenter.json".loadFromResources()))
-        @Language("JSON")
-        val expected = """
-            {
-              "fødselsnummer": "12345678901",
-              "aktørId": "1234567890123"
-            }
-        """
-        assertEquals(expected.toJsonNode(), response)
+        val expected = PdlOversetter.Identer(fødselsnummer = "12345678901", aktørId = "1234567890123")
+        assertEquals(expected, response)
     }
 
     @Test

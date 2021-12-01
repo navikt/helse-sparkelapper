@@ -34,13 +34,11 @@ internal class PdlOversetter {
             .put("adressebeskyttelse", pdlPerson["adressebeskyttelse"].firstOrNull().somAdressebeskyttelse().name)
     }
 
-    fun interpretIdenter(pdlReply: JsonNode): JsonNode {
+    fun interpretIdenter(pdlReply: JsonNode): Identer {
         håndterErrors(pdlReply)
         val pdlPerson = pdlReply["data"]["hentIdenter"]["identer"]
         fun identAvType(type: String) = pdlPerson.single { it["gruppe"].asText() == type }["ident"].asText()
-        return ObjectMapper().createObjectNode()
-            .put("fødselsnummer", identAvType("FOLKEREGISTERIDENT"))
-            .put("aktørId", identAvType("AKTORID"))
+        return Identer(identAvType("FOLKEREGISTERIDENT"), identAvType("AKTORID"))
     }
 
     private fun håndterErrors(pdlReply: JsonNode) {
@@ -56,6 +54,10 @@ internal class PdlOversetter {
         }.path("doedsdato").asText()
     }
 
+    data class Identer(
+        val fødselsnummer: String,
+        val aktørId: String
+    )
 
     private enum class Adressebeskyttelse {
         Fortrolig,
