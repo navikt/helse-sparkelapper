@@ -1,13 +1,12 @@
 package no.nav.helse.sparkel.personinfo.leesah
 
-import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
-class PersonhendelseConsumer(
+internal class PersonhendelseConsumer(
     private val rapidConnection: RapidsConnection,
     private val kafkaConsumer: KafkaConsumer<ByteArray, GenericRecord>,
     private val personhendelseRiver: PersonhendelseRiver

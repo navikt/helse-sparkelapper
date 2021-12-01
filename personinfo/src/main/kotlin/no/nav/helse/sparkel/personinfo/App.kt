@@ -24,9 +24,9 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     val personinfoService = PersoninfoService(pdlClient)
     val kafkaConsumer = createConsumer()
     kafkaConsumer.subscribe(listOf("aapen-person-pdl-leesah-v1"))
-    val personhendelseRiver = PersonhendelseRiver()
 
     return RapidApplication.create(env).apply {
+        val personhendelseRiver = PersonhendelseRiver(this, pdlClient)
         val personhendelseConsumer = PersonhendelseConsumer(this, kafkaConsumer, personhendelseRiver)
         Thread(personhendelseConsumer).start()
         this.register(object : RapidsConnection.StatusListener {

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Adressebeskyttelse.Companion.somAdressebeskyttelse
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Kjønn.Companion.somKjønn
 
-internal class PdlOversetter {
+object PdlOversetter {
 
     fun interpretDødsdato(pdlReply: JsonNode): JsonNode {
         håndterErrors(pdlReply)
