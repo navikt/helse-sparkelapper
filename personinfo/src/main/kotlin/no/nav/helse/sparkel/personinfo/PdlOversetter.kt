@@ -37,7 +37,7 @@ internal class PdlOversetter {
     fun interpretIdenter(pdlReply: JsonNode): JsonNode {
         håndterErrors(pdlReply)
         val pdlPerson = pdlReply["data"]["hentIdenter"]["identer"]
-        fun identAvType(type: String) = pdlPerson.single{ it["gruppe"].asText() == type}["ident"].asText()
+        fun identAvType(type: String) = pdlPerson.single { it["gruppe"].asText() == type }["ident"].asText()
         return ObjectMapper().createObjectNode()
             .put("fødselsnummer", identAvType("FOLKEREGISTERIDENT"))
             .put("aktørId", identAvType("AKTORID"))
@@ -82,7 +82,7 @@ internal class PdlOversetter {
         Ukjent;
 
         companion object {
-            fun JsonNode.somKjønn() = when(asText()) {
+            fun JsonNode.somKjønn() = when (asText()) {
                 "KVINNE" -> Kvinne
                 "MANN" -> Mann
                 else -> Ukjent
