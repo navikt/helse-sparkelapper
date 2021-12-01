@@ -12,6 +12,7 @@ import no.nav.helse.rapids_rivers.River
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import no.nav.helse.sparkel.aareg.util.KodeverkClient
 import no.nav.helse.sparkel.ereg.EregClient
+import no.nav.helse.sparkel.ereg.FeilVedHenting
 
 class Arbeidsgiverinformasjonsbehovløser(
     rapidsConnection: RapidsConnection,
@@ -50,16 +51,16 @@ class Arbeidsgiverinformasjonsbehovløser(
         val organisasjonsnummer = packet["$behov.organisasjonsnummer"]
 
         runBlocking {
-            løsBehov(organisasjonsnummer, UUID.fromString(packet["@id"].asText()))
-                .also { packet.setLøsning(behov, it) }
+            try {
+                løsBehov(organisasjonsnummer, UUID.fromString(packet["@id"].asText()))
+                    .also { packet.setLøsning(behov, it) }
+                sikkerlogg.info("løser $behov-behov {}", keyValue("id", packet["@id"].asText()))
+
+                context.publish(packet.toJson())
+            } catch (ex: FeilVedHenting) {
+                sikkerlogg.error("Oppslag av organisasjon feilet: ${ex.message}")
+            }
         }
-
-        sikkerlogg.info(
-            "løser $behov-behov {}",
-            keyValue("id", packet["@id"].asText()),
-        )
-
-        context.publish(packet.toJson())
     }
 
     private suspend fun løsBehov(organisasjonsnummer: JsonNode, callId: UUID): Any =
