@@ -7,7 +7,7 @@ import no.nav.helse.sparkel.personinfo.PdlOversetter.Kjønn.Companion.somKjønn
 
 object PdlOversetter {
 
-    fun interpretDødsdato(pdlReply: JsonNode): JsonNode {
+    fun oversettDødsdato(pdlReply: JsonNode): JsonNode {
         håndterErrors(pdlReply)
 
         val dødsfall = pdlReply["data"]["hentPerson"].let { hentPerson ->
@@ -22,7 +22,7 @@ object PdlOversetter {
         return ObjectMapper().createObjectNode().put("dødsdato", dødsfall)
     }
 
-    fun interpretPersoninfo(pdlReply: JsonNode): JsonNode {
+    fun oversettPersoninfo(pdlReply: JsonNode): JsonNode {
         håndterErrors(pdlReply)
         val pdlPerson = pdlReply["data"]["hentPerson"]
         return ObjectMapper().createObjectNode()
@@ -34,7 +34,7 @@ object PdlOversetter {
             .put("adressebeskyttelse", pdlPerson["adressebeskyttelse"].firstOrNull().somAdressebeskyttelse().name)
     }
 
-    fun interpretIdenter(pdlReply: JsonNode): Identer {
+    fun oversetterIdenter(pdlReply: JsonNode): Identer {
         håndterErrors(pdlReply)
         val pdlPerson = pdlReply["data"]["hentIdenter"]["identer"]
         fun identAvType(type: String) = pdlPerson.single { it["gruppe"].asText() == type }["ident"].asText()

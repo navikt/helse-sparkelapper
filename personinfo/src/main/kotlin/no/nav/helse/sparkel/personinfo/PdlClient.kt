@@ -17,6 +17,7 @@ internal class PdlClient(
         private val httpClient = HttpClient.newHttpClient()
         private val dødsdatoQuery = this::class.java.getResource("/pdl/hentDødsdato.graphql").readText().replace(Regex("[\n\r]"), "")
         private val personinfoQuery = this::class.java.getResource("/pdl/hentPersoninfo.graphql").readText().replace(Regex("[\n\r]"), "")
+        private val hentIdenterQuery = this::class.java.getResource("/pdl/hentIdenter.graphql").readText().replace(Regex("[\n\r]"), "")
     }
 
     private fun request(
@@ -56,5 +57,10 @@ internal class PdlClient(
         fødselsnummer: String,
         behovId: String
     ) = request(fødselsnummer, behovId, personinfoQuery)
+
+    internal fun hentIdenter(
+        ident: String,
+        behovId: String
+    ) = PdlOversetter.oversetterIdenter(request(ident, behovId, hentIdenterQuery))
 
 }

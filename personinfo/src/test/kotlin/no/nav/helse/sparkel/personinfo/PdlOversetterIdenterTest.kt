@@ -10,7 +10,7 @@ internal class PdlOversetterIdenterTest {
 
     @Test
     fun `henter identer`() {
-        val response = PdlOversetter.interpretIdenter(ObjectMapper().readValue("identer/pdl-hentIdenter.json".loadFromResources()))
+        val response = PdlOversetter.oversetterIdenter(ObjectMapper().readValue("identer/pdl-hentIdenter.json".loadFromResources()))
         val expected = PdlOversetter.Identer(fødselsnummer = "12345678901", aktørId = "1234567890123")
         assertEquals(expected, response)
     }
@@ -18,7 +18,7 @@ internal class PdlOversetterIdenterTest {
     @Test
     fun `Skal kaste exception hvis vi får feil fra PDL`() {
         val thrown = assertThrows<RuntimeException> {
-            PdlOversetter.interpretIdenter(ObjectMapper().readValue("dødsdato/pdl-error-response.json".loadFromResources()))
+            PdlOversetter.oversetterIdenter(ObjectMapper().readValue("dødsdato/pdl-error-response.json".loadFromResources()))
         }
         assertEquals("error message", thrown.message)
     }
