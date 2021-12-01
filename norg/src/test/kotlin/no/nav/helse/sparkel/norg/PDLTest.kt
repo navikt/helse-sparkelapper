@@ -40,7 +40,7 @@ class PDLTest {
 
     @Test
     fun `hentGeografiskTilknytning - mest nøyaktig velges - kommune`() {
-        val expected = "KOMMUNEN"
+        val expected = "3403"
         val actual = objectMapper.readTree(geoTilknytningUtenBydel).asGeotilknytning().mestNøyaktig()
         assertEquals(expected, actual)
     }
@@ -127,15 +127,7 @@ class PDLTest {
 
     @Language("json")
     private val geoTilknytningUtenBydel = """
-        {
-          "data": {
-            "hentGeografiskTilknytning":{
-              "gtType": "KOMMUNE",
-              "gtLand": "LANDET",
-              "gtKommune": "KOMMUNEN"
-            }
-          }
-        }
+        {"data":{"hentGeografiskTilknytning":{"gtLand":null,"gtKommune":"3403","gtBydel":null}}}
     """.trimIndent()
 
     @Language("json")
@@ -143,8 +135,9 @@ class PDLTest {
         {
           "data": {
             "hentGeografiskTilknytning":{
-              "gtType": "LAND",
-              "gtLand": "LANDET"
+              "gtLand": "LANDET",
+              "gtKommune": null,
+              "gtBydel": null
             }
           }
         }
@@ -169,4 +162,5 @@ class PDLTest {
             }
         }
     """
+
 }

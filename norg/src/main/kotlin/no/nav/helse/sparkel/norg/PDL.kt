@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.norg
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import no.nav.helse.rapids_rivers.isMissingOrNull
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -136,9 +137,9 @@ internal fun JsonNode.asPerson() = this.get("data").get("hentPerson").let { pers
 
 internal fun JsonNode.asGeotilknytning(): GeografiskTilknytning =
     this.get("data").get("hentGeografiskTilknytning").let { tilknytningen ->
-        val land = tilknytningen["gtLand"]?.asText()
-        val kommune = tilknytningen["gtKommune"]?.asText()
-        val bydel = tilknytningen["gtBydel"]?.asText()
+        val land = tilknytningen["gtLand"].takeUnless { it.isMissingOrNull() }?.asText()
+        val kommune = tilknytningen["gtKommune"].takeUnless { it.isMissingOrNull() }?.asText()
+        val bydel = tilknytningen["gtBydel"].takeUnless { it.isMissingOrNull() }?.asText()
         GeografiskTilknytning(land, kommune, bydel)
     }
 
