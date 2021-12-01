@@ -39,6 +39,7 @@ fun main() {
 internal fun createApp(environment: Environment, serviceUser: ServiceUser): RapidsConnection {
     val httpClient = HttpClient {
         install(JsonFeature) { serializer = JacksonSerializer() }
+        expectSuccess = false
     }
     val stsRestClient = StsRestClient(environment.stsBaseUrl, serviceUser, httpClient)
 
