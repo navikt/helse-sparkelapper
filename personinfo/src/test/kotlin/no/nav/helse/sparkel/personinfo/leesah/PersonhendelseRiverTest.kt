@@ -10,7 +10,9 @@ import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.personinfo.PdlClient
 import no.nav.helse.sparkel.personinfo.PdlOversetter
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.nyttDokument
-import org.junit.jupiter.api.Assertions.*
+import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.serialize
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -42,7 +44,6 @@ class PersonhendelseRiverTest {
         testRapid.reset()
     }
 
-    @Disabled
     @Test
     fun `logger kun informasjon om endring av adressebeskyttelse`() {
         every { pdlClient.hentIdenter(FNR, any()) } returns PdlOversetter.Identer(
@@ -78,6 +79,20 @@ class PersonhendelseRiverTest {
         assertEquals("adressebeskyttelse_endret", melding["@event_name"].asText())
         assertDoesNotThrow(melding["@opprettet"]::asLocalDateTime)
         assertDoesNotThrow { UUID.fromString(melding["@id"].asText()) }
+    }
+
+    @Test
+    fun `klarer å lese en avro melding som er deserialisert`() {
+        every { pdlClient.hentIdenter(FNR, any()) } returns PdlOversetter.Identer(
+            fødselsnummer = FNR,
+            aktørId = AKTØRID
+        )
+
+        val dokument = nyttDokument(FNR, PersonhendelseOversetter.Gradering.FORTROLIG)
+        val deserialisertDokument = PersonhendelseAvroDeserializer().deserialize("leesah", serialize(dokument))
+
+        personhendelseRiver.onPackage(deserialisertDokument)
+        assertEquals(1, testRapid.inspektør.size)
     }
 
     @Test

@@ -20,12 +20,10 @@ internal class PersonhendelseRiver(
     private var forrigeOppdatering = LocalDateTime.MIN
 
     fun onPackage(record: GenericRecord) {
-        val opplysningstype = record.get("opplysningstype")
-        sikkerlogg.info("mottok event med opplysningstype $opplysningstype av class ${opplysningstype::class}, ${opplysningstype.toString().map(Char::code)} ")
-        if (record.get("opplysningstype") != "ADRESSEBESKYTTELSE_V1") return
+        if (record.get("opplysningstype").toString() != "ADRESSEBESKYTTELSE_V1") return
         sikkerlogg.info("mottok endring på adressebeskyttelse")
 
-        val ident = (record.get("personidenter") as List<Any?>).first() as String
+        val ident = (record.get("personidenter") as List<Any?>).first().toString()
         if (throttle(ident)) return
 
         val hendelseId = UUID.randomUUID().toString()
