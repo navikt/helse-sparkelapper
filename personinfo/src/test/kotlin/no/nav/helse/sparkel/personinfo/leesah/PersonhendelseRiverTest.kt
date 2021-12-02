@@ -12,6 +12,7 @@ import no.nav.helse.sparkel.personinfo.PdlOversetter
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.nyttDokument
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.slf4j.LoggerFactory
@@ -41,6 +42,7 @@ class PersonhendelseRiverTest {
         testRapid.reset()
     }
 
+    @Disabled
     @Test
     fun `logger kun informasjon om endring av adressebeskyttelse`() {
         every { pdlClient.hentIdenter(FNR, any()) } returns PdlOversetter.Identer(
