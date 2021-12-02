@@ -21,7 +21,7 @@ internal class PersonhendelseRiver(
 
     fun onPackage(record: GenericRecord) {
         val opplysningstype = record.get("opplysningstype")
-        sikkerlogg.info("mottok event med opplysningstype $opplysningstype")
+        sikkerlogg.info("mottok event med opplysningstype $opplysningstype av class ${opplysningstype::class}, ${opplysningstype.toString().map(Char::code)} ")
         if (record.get("opplysningstype") != "ADRESSEBESKYTTELSE_V1") return
         sikkerlogg.info("mottok endring på adressebeskyttelse")
 
