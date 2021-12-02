@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.slf4j.LoggerFactory
+import java.time.Duration
 import java.util.*
 
 class PersonhendelseRiverTest {
@@ -22,7 +23,11 @@ class PersonhendelseRiverTest {
     private val AKTØRID = "1234567890123"
     private val pdlClient = mockk<PdlClient>()
     private val testRapid = TestRapid()
-    private val personhendelseRiver = PersonhendelseRiver(testRapid, pdlClient)
+    private val personhendelseRiver = PersonhendelseRiver(
+        rapidsConnection = testRapid,
+        pdlClient = pdlClient,
+        cacheTimeout = Duration.ofMillis(500)
+    )
     private val logCollector = ListAppender<ILoggingEvent>()
 
     init {
@@ -33,6 +38,7 @@ class PersonhendelseRiverTest {
     @BeforeEach
     fun setUp() {
         logCollector.list.clear()
+        testRapid.reset()
     }
 
     @Test
@@ -52,7 +58,7 @@ class PersonhendelseRiverTest {
     }
 
     @Test
-    fun `slår opp i pdl og legger event på rapid`() {
+    fun `slår opp i pdl og legger adressebeskyttelse_endret på rapid`() {
         every { pdlClient.hentIdenter(FNR, any()) } returns PdlOversetter.Identer(
             fødselsnummer = FNR,
             aktørId = AKTØRID
@@ -70,6 +76,47 @@ class PersonhendelseRiverTest {
         assertEquals("adressebeskyttelse_endret", melding["@event_name"].asText())
         assertDoesNotThrow(melding["@opprettet"]::asLocalDateTime)
         assertDoesNotThrow { UUID.fromString(melding["@id"].asText()) }
+    }
+
+    @Test
+    fun `throttler meldinger fra PDL på samme ident som kommer inn tilnærmet samtidig`() {
+        every { pdlClient.hentIdenter(FNR, any()) } returns PdlOversetter.Identer(
+            fødselsnummer = FNR,
+            aktørId = AKTØRID
+        )
+        repeat(5) {
+            personhendelseRiver.onPackage(
+                nyttDokument(
+                    FNR,
+                    gradering = PersonhendelseOversetter.Gradering.FORTROLIG
+                )
+            )
+        }
+        assertEquals(1, testRapid.inspektør.size)
+    }
+
+    @Test
+    fun `throttler ikke når cacheTimeout er utløpt`() {
+        every { pdlClient.hentIdenter(FNR, any()) } returns PdlOversetter.Identer(
+            fødselsnummer = FNR,
+            aktørId = AKTØRID
+        )
+        repeat(5) {
+            personhendelseRiver.onPackage(
+                nyttDokument(
+                    FNR,
+                    gradering = PersonhendelseOversetter.Gradering.FORTROLIG
+                )
+            )
+        }
+        Thread.sleep(600)
+        personhendelseRiver.onPackage(
+            nyttDokument(
+                FNR,
+                gradering = PersonhendelseOversetter.Gradering.FORTROLIG
+            )
+        )
+        assertEquals(2, testRapid.inspektør.size)
     }
 
 }

@@ -6,6 +6,7 @@ import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseConsumer
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseRiver
 import no.nav.helse.sparkel.personinfo.leesah.createConsumer
 import java.io.File
+import java.time.Duration
 
 fun main() {
     val app = createApp(System.getenv())
@@ -15,7 +16,12 @@ fun main() {
 internal fun createApp(env: Map<String, String>): RapidsConnection {
     val stsClient = StsRestClient(
         baseUrl = env.getValue("STS_BASE_URL"),
-        serviceUser = "/var/run/secrets/nais.io/service_user".let { ServiceUser("$it/username".readFile(), "$it/password".readFile()) }
+        serviceUser = "/var/run/secrets/nais.io/service_user".let {
+            ServiceUser(
+                "$it/username".readFile(),
+                "$it/password".readFile()
+            )
+        }
     )
     val pdlClient = PdlClient(
         baseUrl = env.getValue("PDL_URL"),
@@ -26,7 +32,11 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     kafkaConsumer.subscribe(listOf("aapen-person-pdl-leesah-v1"))
 
     return RapidApplication.create(env).apply {
-        val personhendelseRiver = PersonhendelseRiver(this, pdlClient)
+        val personhendelseRiver = PersonhendelseRiver(
+            rapidsConnection = this,
+            pdlClient = pdlClient,
+            cacheTimeout = Duration.ofSeconds(5)
+        )
         val personhendelseConsumer = PersonhendelseConsumer(this, kafkaConsumer, personhendelseRiver)
         Thread(personhendelseConsumer).start()
         this.register(object : RapidsConnection.StatusListener {
