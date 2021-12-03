@@ -117,6 +117,10 @@ enum class Adressebeskyttelse(val kode: String) {
     UGRADERT("")
 }
 
+enum class Kjønn {
+    Mann, Kvinne, Ukjent
+}
+
 internal fun JsonNode.asPerson() = this.get("data").get("hentPerson").let { personen ->
     val pdlNavn = personen["navn"].first()
     val pdlFødsel = personen["foedsel"].first()

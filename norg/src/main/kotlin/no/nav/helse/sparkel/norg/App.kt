@@ -33,7 +33,6 @@ fun launchApplication(
 
     RapidApplication.create(System.getenv()).apply {
         BehandlendeEnhetRiver(this, behandlendeEnhetService)
-        HentPersoninfoRiver(this, behandlendeEnhetService)
     }.start()
 }
 
