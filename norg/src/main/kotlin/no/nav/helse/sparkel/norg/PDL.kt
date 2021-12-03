@@ -77,7 +77,7 @@ class PDL(
             if (responseBody.containsErrors()) {
                 throw RuntimeException("errors from PDL: ${responseBody["errors"].errorMsgs()}")
             }
-            sikkerLogg.info("Svar fra PDL for behov $behovId:\n$responseBody")
+            sikkerLogg.info("Svar fra PDL for behov $behovId")
             responseMapper(responseBody)
         }
 }
