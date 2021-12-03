@@ -11,23 +11,9 @@ class PDLTest {
     private val objectMapper = jacksonObjectMapper()
 
     @Test
-    fun `hentPerson med alle felter`() {
-        val expected = Person("OLA", "ANDRE", "NORDMANN", LocalDate.parse("2019-11-30"), Kjønn.Mann, Adressebeskyttelse.STRENGT_FORTROLIG)
-        val actual = objectMapper.readTree(medMellomnavn).asPerson()
-        assertEquals(expected, actual)
-    }
-
-    @Test
-    fun `hentPerson uten mellomnavn`() {
-        val expected = Person("OLA", null, "NORDMANN", LocalDate.parse("2019-11-30"), Kjønn.Mann, Adressebeskyttelse.STRENGT_FORTROLIG)
-        val actual = objectMapper.readTree(utenMellomnavn).asPerson()
-        assertEquals(expected, actual)
-    }
-
-    @Test
     fun `hentPerson  - strengeste adressebeskyttelse velges`() {
-        val expected = Person("LEALAUS", null, "TØFFELDYR", LocalDate.parse("1950-10-27"), Kjønn.Kvinne, Adressebeskyttelse.STRENGT_FORTROLIG)
-        val actual = objectMapper.readTree(personMedFlereAdressebeskyttelser).asPerson()
+        val expected = Adressebeskyttelse.STRENGT_FORTROLIG
+        val actual = objectMapper.readTree(personMedFlereAdressebeskyttelser).asAdressebeskyttelse()
         assertEquals(expected, actual)
     }
 

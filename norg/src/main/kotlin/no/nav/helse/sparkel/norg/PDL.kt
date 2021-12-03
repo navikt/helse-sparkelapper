@@ -11,7 +11,6 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.time.LocalDate
 
 private const val dollar = '$'
 
@@ -27,12 +26,12 @@ class PDL(
         private val sikkerLogg: Logger = LoggerFactory.getLogger("tjenestekall")
     }
 
-    internal suspend fun finnPerson(fødselsnummer: String, behovId: String): Person? = try {
-        httpKall(fødselsnummer, finnPersonQuery, behovId, JsonNode::asPerson).also {
-            log.info("Gjorde oppslag på person for behov $behovId")
+    internal suspend fun finnAdressebeskyttelse(fødselsnummer: String, behovId: String): Adressebeskyttelse? = try {
+        httpKall(fødselsnummer, finnAdressebeskyttelseQuery, behovId, JsonNode::asAdressebeskyttelse).also {
+            log.info("Gjorde oppslag på adressebeskyttelse til person for behov $behovId")
         }
     } catch (ex: Exception) {
-        log.error("Feil under oppslag av person", ex)
+        log.error("Feil under oppslag på adressebeskyttelse til person", ex)
         null
     }
 
@@ -93,15 +92,6 @@ internal class Variables(
     val historikk: Boolean = false
 )
 
-internal data class Person(
-    val fornavn: String,
-    val mellomnavn: String?,
-    val etternavn: String,
-    val fødselsdato: LocalDate,
-    val kjønn: Kjønn,
-    val adressebeskyttelse: Adressebeskyttelse
-)
-
 internal data class GeografiskTilknytning(
     private val land: String?,
     private val kommune: String?,
@@ -117,26 +107,12 @@ enum class Adressebeskyttelse(val kode: String) {
     UGRADERT("")
 }
 
-enum class Kjønn {
-    Mann, Kvinne, Ukjent
-}
-
-internal fun JsonNode.asPerson() = this.get("data").get("hentPerson").let { personen ->
-    val pdlNavn = personen["navn"].first()
-    val pdlFødsel = personen["foedsel"].first()
-    val pdlKjønn = personen["kjoenn"].first()
+internal fun JsonNode.asAdressebeskyttelse() = this.get("data").get("hentPerson").let { personen ->
     val adresseBeskyttelse = (personen["adressebeskyttelse"] as ArrayNode)
         .map { Adressebeskyttelse.valueOf(it["gradering"]?.asText() ?: "UGRADERT") }
         .sorted()
         .firstOrNull()
-    Person(
-        pdlNavn["fornavn"]?.asText() ?: "Ukjent",
-        if (pdlNavn.hasNonNull("mellomnavn")) pdlNavn["mellomnavn"].asText() else null,
-        pdlNavn["etternavn"]?.asText() ?: "Ukjentsen",
-        LocalDate.parse(pdlFødsel["foedselsdato"].asText()),
-        pdlKjønn["kjoenn"].asKjønn(),
-        adresseBeskyttelse ?: Adressebeskyttelse.UGRADERT
-    )
+    adresseBeskyttelse ?: Adressebeskyttelse.UGRADERT
 }
 
 internal fun JsonNode.asGeotilknytning(): GeografiskTilknytning =
@@ -146,13 +122,6 @@ internal fun JsonNode.asGeotilknytning(): GeografiskTilknytning =
         val bydel = tilknytningen["gtBydel"].takeUnless { it.isMissingOrNull() }?.asText()
         GeografiskTilknytning(land, kommune, bydel)
     }
-
-private fun JsonNode.asKjønn() = when(this.asText()) {
-    "MANN" -> Kjønn.Mann
-    "KVINNE" -> Kjønn.Kvinne
-    "UKJENT" -> Kjønn.Ukjent
-    else -> throw IllegalArgumentException("Kjenner ikke til kjønn '$this'")
-}
 
 internal fun JsonNode.containsErrors() = this.has("errors")
 
@@ -174,18 +143,9 @@ private val geografiskTilknytningQuery: String = """
     }
 """.trimIndent()
 
-private val finnPersonQuery: String = """
+private val finnAdressebeskyttelseQuery: String = """
     query(${dollar}ident: ID!) {
        hentPerson(ident: ${dollar}ident) {
-          navn(historikk: false) {
-             fornavn mellomnavn etternavn
-          }
-          foedsel {
-             foedselsdato
-          }
-          kjoenn {
-             kjoenn
-          }
           adressebeskyttelse {
              gradering
           }

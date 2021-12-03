@@ -19,13 +19,13 @@ class Norg2Client(
 ) {
     private val log: Logger = LoggerFactory.getLogger(Norg2Client::class.java)
 
-    suspend fun finnBehandlendeEnhet(geografiskOmraade: String, diskresjonskode: String?): Enhet =
+    suspend fun finnBehandlendeEnhet(geografiskOmraade: String, adresseBeskyttelse: String?): Enhet =
         retry("find_local_nav_office") {
             val httpResponse = httpClient.get<HttpStatement>("$baseUrl/enhet/navkontor/$geografiskOmraade") {
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
-                if (!diskresjonskode.isNullOrEmpty()) {
-                    parameter("disk", diskresjonskode)
+                if (!adresseBeskyttelse.isNullOrEmpty()) {
+                    parameter("disk", adresseBeskyttelse)
                 }
             }.execute()
             when {

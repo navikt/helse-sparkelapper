@@ -10,7 +10,6 @@ import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 
 class BehandlendeEnhetRiverTest {
 
@@ -59,7 +58,7 @@ class BehandlendeEnhetRiverTest {
 """
 
     private val pdlMock = mockk<PDL> {
-        coEvery { finnPerson(any(), any()) } returns Person("Jan", null, "Johansen", LocalDate.now(), Kjønn.Mann, Adressebeskyttelse.FORTROLIG)
+        coEvery { finnAdressebeskyttelse(any(), any()) } returns Adressebeskyttelse.FORTROLIG
     }
 
     private val client = HttpClient(MockEngine) {
