@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Adressebeskyttelse.Companion.somAdressebeskyttelse
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Kjønn.Companion.somKjønn
+import org.slf4j.LoggerFactory
 
 object PdlOversetter {
+    private val log = LoggerFactory.getLogger("pdl-oversetter")
 
     fun oversettDødsdato(pdlReply: JsonNode): JsonNode {
         håndterErrors(pdlReply)
@@ -67,13 +69,17 @@ object PdlOversetter {
         Ukjent;
 
         companion object {
-            fun JsonNode?.somAdressebeskyttelse() = when (this?.get("gradering")?.asText()) {
-                null, "UGRADERT" -> Ugradert
-                "FORTROLIG" -> Fortrolig
-                "STRENGT_FORTROLIG" -> StrengtFortrolig
-                "STRENGT_FORTROLIG_UTLAND" -> StrengtFortroligUtland
-                else -> Ukjent
-            }
+            fun JsonNode?.somAdressebeskyttelse() =
+                when (val adressebeskyttelse = this?.get("gradering")?.asText()) {
+                    null, "UGRADERT" -> Ugradert
+                    "FORTROLIG" -> Fortrolig
+                    "STRENGT_FORTROLIG" -> StrengtFortrolig
+                    "STRENGT_FORTROLIG_UTLAND" -> StrengtFortroligUtland
+                    else -> {
+                        log.error("Mottok ukjent adressebeskyttelse: $adressebeskyttelse fra PDL")
+                        Ukjent
+                    }
+                }
         }
     }
 

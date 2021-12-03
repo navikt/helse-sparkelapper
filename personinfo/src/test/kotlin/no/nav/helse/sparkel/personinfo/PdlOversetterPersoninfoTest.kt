@@ -1,12 +1,28 @@
 package no.nav.helse.sparkel.personinfo
 
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.slf4j.LoggerFactory
 
 internal class PdlOversetterPersoninfoTest {
+    private val logCollector = ListAppender<ILoggingEvent>()
+
+    init {
+        (LoggerFactory.getLogger("pdl-oversetter") as Logger).addAppender(logCollector)
+        logCollector.start()
+    }
+
+    @BeforeEach
+    fun setUp() {
+        logCollector.list.clear()
+    }
 
     @Test
     fun `hente ugradert person`() {
@@ -107,8 +123,12 @@ internal class PdlOversetterPersoninfoTest {
               "adressebeskyttelse": "Ukjent"
             }
         """
+
+        assertEquals(listOf("Mottok ukjent adressebeskyttelse: TemmeligHemmelig fra PDL"), logCollector.messages())
         assertEquals(expected.toJsonNode(), response)
     }
+
+    private fun ListAppender<ILoggingEvent>.messages() = list.map(ILoggingEvent::getMessage)
 
     private companion object {
         private val objectMapper = ObjectMapper()
