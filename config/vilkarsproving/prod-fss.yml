@@ -1,4 +1,7 @@
 kafkaPool: nav-prod
+azure:
+  enabled: true
+  tenant: nav.no
 mountPaths:
 - mountPath: /var/run/secrets/nais.io/service_user
   kvPath: /serviceuser/data/prod/srvsparkelvilkar
@@ -9,3 +12,7 @@ env:
   value: https://app.adeo.no/tpsws-aura/ws/EgenAnsatt/v1
 - name: AAREG_BASE_URL
   value: https://modapp.adeo.no/aareg-services/api
+- name: NOM_BASE_URL
+  value: https://nom-api.intern.nav.no
+- name: NOM_OAUTH_SCOPE
+  value: api://prod-gcp.nom.nom-api/.default
