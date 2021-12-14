@@ -21,6 +21,8 @@ class NOMTest {
 
         @JvmStatic
         fun permutations() = listOf(
+            Arguments.of(iFortiden, nå, true),
+            Arguments.of(nå, iFramtiden, true),
             Arguments.of(iFortiden, iFortiden, false),
             Arguments.of(iFortiden, iFramtiden, true),
             Arguments.of(iFramtiden, iFortiden, false),

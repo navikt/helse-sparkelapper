@@ -81,7 +81,7 @@ private class Variables(
 private fun JsonNode.containsErrors() = this.has("errors")
 
 private fun JsonNode.errorMsgs() = with (this as ArrayNode) {
-    map { it["message"]?.asText() ?: "unknown error" }?.joinToString(",")
+    joinToString(",") { it["message"]?.asText() ?: "unknown error" }
 }
 
 private fun JsonNode.erEgenAnsatt() = get("data")?.get("ressurs")?.get("koblinger")?.get("organisasjonsenhet")?.let { orgEnhet ->
@@ -92,7 +92,7 @@ private fun JsonNode.maybeLocalDate(key: String) =
     if(this.hasNonNull(key)) LocalDate.parse(this[key].asText()) else null
 
 internal fun erAnsattNå(ansattFom: LocalDate?, ansattTom: LocalDate?) = LocalDate.now().let { now ->
-    val harStartet = ansattFom != null && ansattFom.isBefore(now)
-    val harIkkeSluttet = ansattTom == null || ansattTom.isAfter(now)
+    val harStartet = ansattFom != null && (ansattFom == now || ansattFom.isBefore(now))
+    val harIkkeSluttet = ansattTom == null || (ansattTom == now || ansattTom.isAfter(now))
     harStartet && harIkkeSluttet
 }
