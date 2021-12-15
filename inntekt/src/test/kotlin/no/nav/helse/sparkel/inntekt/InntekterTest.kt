@@ -6,8 +6,7 @@ import io.ktor.client.features.json.*
 import io.ktor.http.*
 import no.nav.helse.rapids_rivers.asYearMonth
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.YearMonth
@@ -52,7 +51,7 @@ internal class InntekterTest {
         val slutt = YearMonth.of(2021, 1)
         testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForSykepengegrunnlag))
         assertEquals(1, testRapid.inspektør.size)
-        assertLøsning(Inntekter.Type.InntekterForSykepengegrunnlag, YearMonth.of(2020, 1), YearMonth.of(2020, 2))
+        assertLøsning(Inntekter.Type.InntekterForSykepengegrunnlag, YearMonth.of(2019, 1), YearMonth.of(2019, 2), YearMonth.of(2019, 3))
     }
 
     @Test
@@ -61,7 +60,7 @@ internal class InntekterTest {
         val slutt = YearMonth.of(2021, 1)
         testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForSammenligningsgrunnlag))
         assertEquals(1, testRapid.inspektør.size)
-        assertLøsning(Inntekter.Type.InntekterForSammenligningsgrunnlag, YearMonth.of(2019, 1), YearMonth.of(2019, 2))
+        assertLøsning(Inntekter.Type.InntekterForSammenligningsgrunnlag, YearMonth.of(2020, 1), YearMonth.of(2020, 2))
     }
 
     @Test
@@ -98,6 +97,28 @@ internal class InntekterTest {
         }
     }
 
+    @Test
+    fun `mapper inn liste over arbeidsforhold på innteker`() {
+        val start = YearMonth.of(2020, 3)
+        val slutt = YearMonth.of(2021, 1)
+        testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForSykepengegrunnlag))
+        val inntekt0 =
+            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[0]
+        val inntekt1 =
+            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[1]
+        val inntekt2 =
+            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[2]
+
+        assertTrue(inntekt0.path("arbeidsforholdliste").isEmpty)
+        assertTrue(inntekt0.path("inntektsliste").isEmpty)
+
+        val arbeidsforhold = inntekt1.path("arbeidsforholdliste")[0]
+        assertEquals("frilanserOppdragstakerHonorarPersonerMm", arbeidsforhold.path("type").asText())
+        assertEquals("orgnummer2", arbeidsforhold.path("orgnummer").asText())
+
+        assertTrue(inntekt2.path("arbeidsInntektInformasjon").path("arbeidsforholdliste").isEmpty)
+    }
+
     private fun assertLøsning(behovType: Inntekter.Type, vararg yearsMonths: YearMonth) {
         assertTrue(testRapid.inspektør.message(0).hasNonNull("@løsning"))
         assertEquals(yearsMonths.toList(),
@@ -120,7 +141,7 @@ internal class InntekterTest {
         )
     )
 
-    fun sykepengegrunnlagResponse() = """
+    fun sammenligningsgrunnlagResponse() = """
     {
         "arbeidsInntektMaaned": [
             {
@@ -168,7 +189,7 @@ internal class InntekterTest {
     }
 """
 
-    fun sammenligningsgrunnlagResponse() = """
+fun sykepengegrunnlagResponse() = """
     {
         "arbeidsInntektMaaned": [
             {
@@ -177,6 +198,58 @@ internal class InntekterTest {
             },
             {
                 "aarMaaned": "2019-02",
+                "arbeidsInntektInformasjon": {
+                    "arbeidsforholdListe": [
+                        {
+                            "antallTimerPerUkeSomEnFullStillingTilsvarer": 37.5,
+                            "arbeidstidsordning": "ikkeSkift",
+                            "frilansPeriodeFom": "2018-09-24",
+                            "stillingsprosent": 0.0,
+                            "yrke": "2221110",
+                            "arbeidsforholdID": "0001-0001-0001-1",
+                            "arbeidsforholdstype": "frilanserOppdragstakerHonorarPersonerMm",
+                            "arbeidsgiver": {
+                              "identifikator": "orgnummer2",
+                              "aktoerType": "ORGANISASJON"
+                            },
+                            "arbeidstaker": {
+                              "identifikator": "20046913337",
+                              "aktoerType": "NATURLIG_IDENT"
+                            }
+                      }
+                    ],
+                    "inntektListe": [
+                        {
+                            "inntektType": "LOENNSINNTEKT",
+                            "beloep": 25000,
+                            "fordel": "kontantytelse",
+                            "inntektskilde": "A-ordningen",
+                            "inntektsperiodetype": "Maaned",
+                            "inntektsstatus": "LoependeInnrapportert",
+                            "leveringstidspunkt": "2020-01",
+                            "utbetaltIMaaned": "2019-05",
+                            "opplysningspliktig": {
+                                "identifikator": "orgnummer2",
+                                "aktoerType": "ORGANISASJON"
+                            },
+                            "virksomhet": {
+                                "identifikator": "orgnummer2",
+                                "aktoerType": "ORGANISASJON"
+                            },
+                            "inntektsmottaker": {
+                                "identifikator": "aktørId",
+                                "aktoerType": "AKTOER_ID"
+                            },
+                            "inngaarIGrunnlagForTrekk": true,
+                            "utloeserArbeidsgiveravgift": true,
+                            "informasjonsstatus": "InngaarAlltid",
+                            "beskrivelse": "fastloenn"
+                        }
+                    ]
+                }
+            },
+            {
+                "aarMaaned": "2019-03",
                 "arbeidsInntektInformasjon": {
                     "inntektListe": [
                         {

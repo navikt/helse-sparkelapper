@@ -71,12 +71,25 @@ private fun identifikator(node: JsonNode, type: String) =
 
 private fun tilMåned(node: JsonNode) = Måned(
     YearMonth.parse(node["aarMaaned"].asText()),
+    node.path("arbeidsInntektInformasjon").path("arbeidsforholdListe").mapNotNull(::toArbeidsforhold),
     node.path("arbeidsInntektInformasjon").path("inntektListe").map(::toInntekt)
 )
 
+private fun toArbeidsforhold(node: JsonNode) = Arbeidsforhold(
+    node.getOptional("arbeidsforholdstype")?.asText(),
+    node.getOptional("arbeidsgiver")?.getOptional("identifikator")?.asText()
+)
+
+private fun JsonNode.getOptional(key: String) = this.takeIf { it.hasNonNull(key) }?.get(key)
+
 data class Måned(
     val årMåned: YearMonth,
+    val arbeidsforholdliste: List<Arbeidsforhold>,
     val inntektsliste: List<Inntekt>
+)
+data class Arbeidsforhold(
+    val type: String?,
+    val orgnummer: String?
 )
 data class Inntekt(
     val beløp: Double,
