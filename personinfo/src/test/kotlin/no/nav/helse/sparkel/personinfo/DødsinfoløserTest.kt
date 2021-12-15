@@ -128,25 +128,7 @@ internal class DødsinfoløserTest {
         }
         """
 
-    private fun stubSts() {
-        stubFor(
-            get(urlPathEqualTo("/rest/v1/sts/token"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(
-                            """
-                            {
-                                "token_type": "Bearer",
-                                "expires_in": 3599,
-                                "access_token": "1234abc"
-                            }
-                            """
-                        )
-                )
-        )
-    }
+
 
     private fun stubOkPdlRespons() {
         stubFor(
@@ -191,4 +173,24 @@ internal class DødsinfoløserTest {
                 )
         )
     }
+}
+
+internal fun stubSts() {
+    stubFor(
+        get(urlPathEqualTo("/rest/v1/sts/token"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        """
+                            {
+                                "token_type": "Bearer",
+                                "expires_in": 3599,
+                                "access_token": "1234abc"
+                            }
+                            """
+                    )
+            )
+    )
 }
