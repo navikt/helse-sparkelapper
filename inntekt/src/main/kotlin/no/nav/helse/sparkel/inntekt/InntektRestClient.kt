@@ -8,6 +8,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.prometheus.client.Summary
 import kotlinx.coroutines.runBlocking
+import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlag
 import java.time.YearMonth
 
 private const val INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME = "inntektskomponent_client_seconds"
@@ -49,14 +50,14 @@ class InntektRestClient(
                     "maanedFom" to fom,
                     "maanedTom" to tom
                 )
-            }.execute { toMånedListe(objectMapper.readValue(it.readText())) }
+            }.execute { tilMånedListe(objectMapper.readValue(it.readText()), filter) }
         }
     }
 }
 
-private fun toMånedListe(node: JsonNode) = node.path("arbeidsInntektMaaned").map(::tilMåned)
+private fun tilMånedListe(node: JsonNode, filter: String) = node.path("arbeidsInntektMaaned").map { tilMåned(it, filter) }
 
-private fun toInntekt(node: JsonNode) = Inntekt(
+private fun tilInntekt(node: JsonNode) = Inntekt(
     beløp = node["beloep"].asDouble(),
     inntektstype = Inntektstype.valueOf(node["inntektType"].textValue()),
     orgnummer = identifikator(node, "ORGANISASJON"),
@@ -69,13 +70,20 @@ private fun toInntekt(node: JsonNode) = Inntekt(
 private fun identifikator(node: JsonNode, type: String) =
     node["virksomhet"].takeIf { it["aktoerType"].asText() == type }?.get("identifikator")?.asText()
 
-private fun tilMåned(node: JsonNode) = Måned(
+private fun tilMåned(node: JsonNode, filter: String) = Måned(
     YearMonth.parse(node["aarMaaned"].asText()),
-    node.path("arbeidsInntektInformasjon").path("arbeidsforholdListe").mapNotNull(::toArbeidsforhold),
-    node.path("arbeidsInntektInformasjon").path("inntektListe").map(::toInntekt)
+    tilArbeidsforholdliste(filter, node),
+    node.path("arbeidsInntektInformasjon").path("inntektListe").map(::tilInntekt)
 )
 
-private fun toArbeidsforhold(node: JsonNode) = Arbeidsforhold(
+private fun tilArbeidsforholdliste(
+    filter: String,
+    node: JsonNode
+) = if (filter == InntekterForSykepengegrunnlag.ainntektfilter) {
+    node.path("arbeidsInntektInformasjon").path("arbeidsforholdListe").mapNotNull(::tilArbeidsforhold)
+} else emptyList()
+
+private fun tilArbeidsforhold(node: JsonNode) = Arbeidsforhold(
     node.getOptional("arbeidsforholdstype")?.asText(),
     node.getOptional("arbeidsgiver")?.getOptional("identifikator")?.asText()
 )

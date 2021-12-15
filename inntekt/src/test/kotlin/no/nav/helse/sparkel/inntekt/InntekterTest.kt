@@ -60,7 +60,7 @@ internal class InntekterTest {
         val slutt = YearMonth.of(2021, 1)
         testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForSammenligningsgrunnlag))
         assertEquals(1, testRapid.inspektør.size)
-        assertLøsning(Inntekter.Type.InntekterForSammenligningsgrunnlag, YearMonth.of(2020, 1), YearMonth.of(2020, 2))
+        assertLøsning(Inntekter.Type.InntekterForSammenligningsgrunnlag, YearMonth.of(2020, 1), YearMonth.of(2020, 2), YearMonth.of(2020, 3))
     }
 
     @Test
@@ -117,6 +117,18 @@ internal class InntekterTest {
         assertEquals("orgnummer2", arbeidsforhold.path("orgnummer").asText())
 
         assertTrue(inntekt2.path("arbeidsInntektInformasjon").path("arbeidsforholdliste").isEmpty)
+    }
+
+    @Test
+    fun `Mapper ikke ut arbeidsforholdliste for sammenligningsgrunnlag`() {
+        val start = YearMonth.of(2020, 3)
+        val slutt = YearMonth.of(2021, 1)
+        testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForSammenligningsgrunnlag))
+        val inntekt =
+            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSammenligningsgrunnlag.name)[2]
+
+        val arbeidsforhold = inntekt.path("arbeidsforholdliste")
+        assertTrue(arbeidsforhold.isEmpty)
     }
 
     private fun assertLøsning(behovType: Inntekter.Type, vararg yearsMonths: YearMonth) {
@@ -178,6 +190,30 @@ internal class InntekterTest {
                             "informasjonsstatus": "InngaarAlltid",
                             "beskrivelse": "fastloenn"
                         }
+                    ]
+                }
+            },
+            {
+                "aarMaaned": "2020-03",
+                "arbeidsInntektInformasjon": {
+                    "arbeidsforholdListe": [
+                        {
+                            "antallTimerPerUkeSomEnFullStillingTilsvarer": 37.5,
+                            "arbeidstidsordning": "ikkeSkift",
+                            "frilansPeriodeFom": "2018-09-24",
+                            "stillingsprosent": 0.0,
+                            "yrke": "2221110",
+                            "arbeidsforholdID": "0001-0001-0001-1",
+                            "arbeidsforholdstype": "frilanserOppdragstakerHonorarPersonerMm",
+                            "arbeidsgiver": {
+                              "identifikator": "orgnummer2",
+                              "aktoerType": "ORGANISASJON"
+                            },
+                            "arbeidstaker": {
+                              "identifikator": "20046913337",
+                              "aktoerType": "NATURLIG_IDENT"
+                            }
+                      }
                     ]
                 }
             }
