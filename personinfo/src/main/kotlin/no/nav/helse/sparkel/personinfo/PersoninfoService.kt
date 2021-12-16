@@ -42,6 +42,19 @@ internal class PersoninfoService(private val pdlClient: PdlClient) {
         )
         PdlOversetter.oversettPersoninfo(pdlRespons)
     }
+
+    fun løsningForVergemål(
+        behovId: String,
+        fødselsnummer: String
+    ): Vergemålløser.Resultat =
+        withMDC("id" to behovId, "spleisBehovId" to behovId) {
+            val pdlRespons = pdlClient.hentVergemål(fødselsnummer, behovId)
+            log.info(
+                "løser behov Vergemål: {}",
+                keyValue("id", behovId),
+            )
+            PdlOversetter.oversetterVergemålOgFullmakt(pdlRespons)
+        }
 }
 
 private fun <T> withMDC(vararg values: Pair<String, String>, block: () -> T): T = try {
