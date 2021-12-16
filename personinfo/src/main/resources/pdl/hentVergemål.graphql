@@ -1,0 +1,12 @@
+query($ident: ID!) {
+    hentPerson(ident: $ident) {
+        vergemaalEllerFremtidsfullmakt(historikk: false) {
+            type,
+        }
+        fullmakt {
+            gyldigFraOgMed,
+            gyldigTilOgMed,
+            omraader
+        }
+    }
+}
