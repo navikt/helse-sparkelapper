@@ -2,12 +2,20 @@ package no.nav.helse.sparkel.personinfo
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Adressebeskyttelse.Companion.somAdressebeskyttelse
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Kjønn.Companion.somKjønn
+import no.nav.helse.sparkel.personinfo.Vergemålløser.*
+import no.nav.helse.sparkel.personinfo.Vergemålløser.Fullmakt
+import no.nav.helse.sparkel.personinfo.Vergemålløser.Område.*
+import no.nav.helse.sparkel.personinfo.Vergemålløser.Resultat
+import no.nav.helse.sparkel.personinfo.Vergemålløser.Vergemål
 import org.slf4j.LoggerFactory
 
 object PdlOversetter {
     private val log = LoggerFactory.getLogger("pdl-oversetter")
+    private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+
 
     fun oversettDødsdato(pdlReply: JsonNode): JsonNode {
         håndterErrors(pdlReply)
@@ -41,6 +49,37 @@ object PdlOversetter {
         val pdlPerson = pdlReply["data"]["hentIdenter"]["identer"]
         fun identAvType(type: String) = pdlPerson.single { it["gruppe"].asText() == type }["ident"].asText()
         return Identer(identAvType("FOLKEREGISTERIDENT"), identAvType("AKTORID"))
+    }
+
+    internal fun oversetterVergemålOgFullmakt(pdlReply: JsonNode): Resultat {
+        håndterErrors(pdlReply)
+        val vergemålNode = pdlReply["data"]["hentPerson"]["vergemaalEllerFremtidsfullmakt"]
+        val fullmaktNode = pdlReply["data"]["hentPerson"]["fullmakt"]
+
+        val (fremtidsfullmakter, vergemål) = vergemålNode
+            .partition { it["type"].asText() == VergemålType.stadfestetFremtidsfullmakt.name }
+
+        val (gyldigeVergemål, ugyldigeVergemål) = vergemål.partition { VergemålType.gyldig(it["type"].asText()) }
+
+        ugyldigeVergemål.forEach {
+            sikkerlogg.warn("Fant et vergemål vi ikke forstod: {}", it.toPrettyString())
+        }
+
+        val interessanteFullmakter = fullmaktNode
+            .map {
+                Fullmakt(
+                    områder = it["omraader"].map { område -> Område.fra(område.asText()) },
+                    gyldigFraOgMed = it["gyldigFraOgMed"].asLocalDate(),
+                    gyldigTilOgMed = it["gyldigTilOgMed"].asLocalDate()
+                )
+            }
+            .filter { it.områder.any { område -> område in listOf(Syk, Sym, Alle) } }
+
+        return Resultat(
+            vergemål = gyldigeVergemål.map { Vergemål(type = enumValueOf(it["type"].asText())) },
+            fremtidsfullmakter = fremtidsfullmakter.map { Vergemål(type = enumValueOf(it["type"].asText())) },
+            fullmakter = interessanteFullmakter
+        )
     }
 
     private fun håndterErrors(pdlReply: JsonNode) {
