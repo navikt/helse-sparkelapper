@@ -90,7 +90,7 @@ internal class VergemålOppslagTest : PdlStubber() {
     }
 
     @Test
-    fun `håndterer ignorerer vergemålstyper`() {
+    fun `håndterer ukjente vergemålstyper`() {
         stubPdlRespons(medVergemål(type = "ukjent rar type"))
         val resultat = personinfoService.løsningForVergemål("behovId", "fnr")
         assertEquals(
