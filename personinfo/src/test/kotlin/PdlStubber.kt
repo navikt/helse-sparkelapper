@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import no.nav.helse.sparkel.personinfo.*
 import no.nav.helse.sparkel.personinfo.stubSts
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
@@ -36,7 +37,7 @@ internal abstract class PdlStubber {
     }
 
     @BeforeAll
-    fun setup() {
+    fun setupWiremock() {
         wireMockServer.start()
         WireMock.configureFor(WireMock.create().port(wireMockServer.port()).build())
         stubSts()
@@ -55,4 +56,52 @@ internal abstract class PdlStubber {
     internal fun teardown() {
         wireMockServer.stop()
     }
+
+    @Language("Json")
+    internal fun utenVergemålOgFullmakt() = """
+        {
+          "data": {
+            "hentPerson": {
+              "vergemaalEllerFremtidsfullmakt": [],
+              "fullmakt": []
+            }
+          }
+        }
+    """.trimIndent()
+
+    internal fun medFremtidsfullmakt() = medVergemål(type = "stadfestetFremtidsfullmakt")
+
+    @Language("Json")
+    internal fun medVergemål(type: String = "voksen") = """
+        {
+          "data": {
+            "hentPerson": {
+              "vergemaalEllerFremtidsfullmakt": [
+                {
+                  "type": "$type"
+                }
+              ],
+              "fullmakt": []
+            }
+          }
+        }
+    """.trimIndent()
+
+    @Language("Json")
+    internal fun medFullmakt(områder: List<String> = listOf("SYK")) = """
+        {
+          "data": {
+            "hentPerson": {
+              "vergemaalEllerFremtidsfullmakt": [],
+              "fullmakt": [
+                {
+                  "gyldigFraOgMed": "2021-12-01",
+                  "gyldigTilOgMed": "2022-12-30",
+                  "omraader": ${områder.map { """"$it"""" }}
+                }
+              ]
+            }
+          }
+        }
+    """.trimIndent()
 }

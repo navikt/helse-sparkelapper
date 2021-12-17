@@ -4,12 +4,11 @@ import PdlStubber
 import no.nav.helse.sparkel.personinfo.Vergemålløser.*
 import no.nav.helse.sparkel.personinfo.Vergemålløser.VergemålType.stadfestetFremtidsfullmakt
 import no.nav.helse.sparkel.personinfo.Vergemålløser.VergemålType.voksen
-import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
-internal class PersoninfoServiceTest : PdlStubber() {
+internal class VergemålOppslagTest : PdlStubber() {
 
     @Test
     fun `oppslag med vergemål`() {
@@ -26,7 +25,7 @@ internal class PersoninfoServiceTest : PdlStubber() {
 
     @Test
     fun `oppslag uten vergemål`() {
-        stubPdlRespons(tom())
+        stubPdlRespons(utenVergemålOgFullmakt())
         val resultat = personinfoService.løsningForVergemål("behovId", "fnr")
         assertEquals(
             Resultat(
@@ -103,49 +102,7 @@ internal class PersoninfoServiceTest : PdlStubber() {
         )
     }
 
-    @Language("Json")
-    fun tom() = """
-        {
-          "data": {
-            "hentPerson": {
-              "vergemaalEllerFremtidsfullmakt": [],
-              "fullmakt": []
-            }
-          }
-        }
-    """.trimIndent()
 
-    @Language("Json")
-    fun medVergemål(type: String = "voksen") = """
-        {
-          "data": {
-            "hentPerson": {
-              "vergemaalEllerFremtidsfullmakt": [
-                {
-                  "type": "$type"
-                }
-              ],
-              "fullmakt": []
-            }
-          }
-        }
-    """.trimIndent()
 
-    @Language("Json")
-    fun medFullmakt(områder: List<String> = listOf("SYK")) = """
-        {
-          "data": {
-            "hentPerson": {
-              "vergemaalEllerFremtidsfullmakt": [],
-              "fullmakt": [
-                {
-                  "gyldigFraOgMed": "2021-12-01",
-                  "gyldigTilOgMed": "2022-12-30",
-                  "omraader": ${områder.map { """"$it"""" }}
-                }
-              ]
-            }
-          }
-        }
-    """.trimIndent()
+
 }
