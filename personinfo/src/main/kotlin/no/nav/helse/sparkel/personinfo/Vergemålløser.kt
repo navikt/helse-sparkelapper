@@ -89,7 +89,7 @@ internal class Vergemålløser(
     )
 
     enum class Område {
-        Alle, Syk, Sym, ANNET;
+        Alle, Syk, Sym, Annet;
 
         companion object {
             fun fra(verdi: String): Område {
@@ -97,7 +97,7 @@ internal class Vergemålløser(
                     "*" -> Alle
                     "SYK" -> Syk
                     "SYM" -> Sym
-                    else -> ANNET
+                    else -> Annet
                 }
             }
         }
