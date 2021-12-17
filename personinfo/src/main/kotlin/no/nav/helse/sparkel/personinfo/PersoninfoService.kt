@@ -50,7 +50,7 @@ internal class PersoninfoService(private val pdlClient: PdlClient) {
         withMDC("id" to behovId, "spleisBehovId" to behovId) {
             val pdlRespons = pdlClient.hentVergemål(fødselsnummer, behovId)
             log.info(
-                "løser behov Vergemål: {}",
+                "løser behov Vergemål {}",
                 keyValue("id", behovId),
             )
             PdlOversetter.oversetterVergemålOgFullmakt(pdlRespons)
