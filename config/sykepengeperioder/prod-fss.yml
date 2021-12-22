@@ -4,5 +4,3 @@ env:
   value: jdbc:oracle:thin:@a01dbfl037.adeo.no:1521/cdc
 - name: INFOTRYGDSP_SCHEMA
   value: REST_READ_P
-- name: KAFKA_MAX_RECORDS
-  value: 1
