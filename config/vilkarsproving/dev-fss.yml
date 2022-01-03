@@ -16,3 +16,6 @@ env:
   value: https://nom-api.dev.intern.nav.no
 - name: NOM_OAUTH_SCOPE
   value: api://dev-gcp.nom.nom-api/.default
+- name: NOM_AAD_APP_NAME
+  value: dev-gcp:nom:nom-api
+

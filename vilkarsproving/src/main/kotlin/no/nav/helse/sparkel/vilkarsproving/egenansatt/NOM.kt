@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
+import java.net.URL
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -13,7 +14,7 @@ import java.time.LocalDate
 
 class NOM(
     private val aad: AzureAD,
-    private val baseUrl: String,
+    private val baseUrl: URL,
     private val httpClient: HttpClient = HttpClient.newHttpClient()
 ) {
 
@@ -89,7 +90,7 @@ private fun JsonNode.erEgenAnsatt() = get("data")?.get("ressurs")?.get("koblinge
 } ?: false
 
 private fun JsonNode.maybeLocalDate(key: String) =
-    if(this.hasNonNull(key)) LocalDate.parse(this[key].asText()) else null
+    this[key].takeIf { it != null }?.let { LocalDate.parse(it.asText()) }
 
 internal fun erAnsattNå(ansattFom: LocalDate?, ansattTom: LocalDate?) = LocalDate.now().let { now ->
     val harStartet = ansattFom != null && (ansattFom == now || ansattFom.isBefore(now))

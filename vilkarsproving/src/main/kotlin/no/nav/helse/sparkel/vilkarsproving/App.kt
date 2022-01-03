@@ -10,14 +10,11 @@ import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.sparkel.vilkarsproving.egenansatt.EgenAnsattFactory
+import no.nav.helse.sparkel.vilkarsproving.egenansatt.*
 import no.nav.helse.sparkel.vilkarsproving.egenansatt.EgenAnsattLøser
-import no.nav.helse.sparkel.vilkarsproving.egenansatt.configureFor
-import no.nav.helse.sparkel.vilkarsproving.egenansatt.stsClient
 import no.nav.helse.sparkel.vilkarsproving.opptjening.AaregClient
 import no.nav.helse.sparkel.vilkarsproving.opptjening.OpptjeningLøser
 import no.nav.helse.sparkel.vilkarsproving.opptjening.StsRestClient
-import org.apache.cxf.ext.logging.LoggingFeature
 
 fun main() {
     val env = setUpEnvironment()
@@ -42,6 +39,13 @@ fun createApp(env: Environment): RapidsConnection {
     val egenAnsattService = EgenAnsattFactory.create(env.egenAnsattBaseUrl, listOf())
     stsClientWs.configureFor(egenAnsattService)
 
+    try {
+        val aad = AzureAD(AzureADProps(env.tokenEndpointURL, env.clientId, env.clientSecret, env.nomAadAppName))
+        val nom = NOM(aad, env.nomBaseURL)
+        println("$nom in da house")
+    } catch (ex: Exception) {
+        System.err.println("Klarte ikke å opprette NOM-klient: $ex")
+    }
 
     val aregClient = AaregClient(
         baseUrl = env.aaregBaseUrl,
