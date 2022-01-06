@@ -4,6 +4,7 @@ val junitJupiterVersion = "5.8.1"
 
 dependencies {
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-jackson:$ktorVersion")
 
     implementation("com.sun.xml.ws:jaxws-ri:2.3.3")

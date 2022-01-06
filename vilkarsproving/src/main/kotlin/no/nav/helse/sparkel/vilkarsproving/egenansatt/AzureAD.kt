@@ -1,9 +1,8 @@
 package no.nav.helse.sparkel.vilkarsproving.egenansatt
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.*
+import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.json.*
 import io.ktor.client.request.*
@@ -13,7 +12,7 @@ import kotlinx.coroutines.runBlocking
 import java.net.URL
 import java.time.LocalDateTime
 
-class AzureAD(val props: AzureADProps) {
+class AzureAD(private val props: AzureADProps) {
     private var cachedAccessToken: Token = fetchToken()
 
     internal fun accessToken(): String {
@@ -22,8 +21,12 @@ class AzureAD(val props: AzureADProps) {
     }
 
     private companion object {
-        private val objectMapper: ObjectMapper = jacksonObjectMapper()
         private val azureAdClient = HttpClient(CIO) {
+            engine {
+                System.getenv("HTTP_PROXY")?.let {
+                    proxy = ProxyBuilder.http(Url(it))
+                }
+            }
             install(JsonFeature) {
                 serializer = JacksonSerializer {
                     registerModule(JavaTimeModule())
