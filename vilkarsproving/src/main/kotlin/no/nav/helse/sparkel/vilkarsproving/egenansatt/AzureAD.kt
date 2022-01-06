@@ -10,11 +10,21 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
+import no.nav.helse.sparkel.vilkarsproving.objectMapper
+import org.slf4j.LoggerFactory
 import java.net.URL
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import java.time.LocalDateTime
 
 class AzureAD(private val props: AzureADProps) {
     private var cachedAccessToken: Token = fetchToken()
+
+    private val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
+
+    init {
+        hentTokenMedEnklereHttpClient()
+    }
 
     internal fun accessToken(): String {
         if (cachedAccessToken.expired) cachedAccessToken = fetchToken()
@@ -49,6 +59,24 @@ class AzureAD(private val props: AzureADProps) {
                     append("client_secret", props.clientSecret)
                 })
             }
+        }
+    }
+
+    private fun hentTokenMedEnklereHttpClient() {
+        try {
+            val body = props.run {
+                "client_id=$clientId&client_secret=$clientSecret&scope=$nomOauthScope&grant_type=client_credentials"
+            }
+            val request = HttpRequest.newBuilder(props.tokenEndpointURL.toURI())
+                .header("Accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build()
+
+            val response = java.net.http.HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString())
+            val token = objectMapper.convertValue(response.body(), Token::class.java)
+            sikkerLogg.info("Hentet token vha java.net.http.HttpClient: $token")
+        } catch (e: Exception) {
+            sikkerLogg.info("Noe gikk gæernt", e)
         }
     }
 
