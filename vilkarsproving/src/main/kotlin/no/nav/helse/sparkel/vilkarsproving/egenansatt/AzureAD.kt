@@ -38,14 +38,13 @@ class AzureAD(val props: AzureADProps) {
                         .also {
                             sikkerLogg.info(it)
                         })
-                    flush()
+                    close()
                 }
             }
 
-            val stream: InputStream = if (responseCode < 300) this.inputStream else this.errorStream
-
+            val stream: InputStream = if (responseCode < 300) inputStream else errorStream
             stream.use {
-                val responseBody = stream.bufferedReader().readText()
+                val responseBody = it.bufferedReader().readText()
                 sikkerLogg.info("Svar fra AD: $responseBody")
                 responseCode to responseBody
             }
