@@ -63,7 +63,6 @@ data class AzureADProps(
     val tokenEndpointURL: URL,
     val clientId: String,
     val clientSecret: String,
-    val nomAadAppName: String,
     val nomOauthScope: String,
 )
 

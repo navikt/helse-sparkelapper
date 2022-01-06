@@ -41,7 +41,7 @@ fun createApp(env: Environment): RapidsConnection {
     stsClientWs.configureFor(egenAnsattService)
 
     try {
-        val aad = AzureAD(AzureADProps(env.tokenEndpointURL, env.clientId, env.clientSecret, env.nomAadAppName, env.nomOauthScope))
+        val aad = AzureAD(AzureADProps(env.tokenEndpointURL, env.clientId, env.clientSecret, env.nomOauthScope))
         val nom = NOM(aad, env.nomBaseURL)
         println("$nom in da house")
     } catch (ex: Exception) {
@@ -60,7 +60,7 @@ fun createApp(env: Environment): RapidsConnection {
     return rapidsConnection
 }
 
-private fun simpleHttpClient(serializer: JacksonSerializer? = JacksonSerializer()) = HttpClient() {
+private fun simpleHttpClient(serializer: JacksonSerializer? = JacksonSerializer()) = HttpClient {
     install(JsonFeature) {
         this.serializer = serializer
     }

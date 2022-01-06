@@ -24,8 +24,6 @@ fun setUpEnvironment() =
             ?: error("Mangler env var EGENANSATT_URL"),
         nomBaseURL = System.getenv("NOM_BASE_URL")?.let {URL(it)}
             ?: error("Mangler env var NOM_BASE_URL"),
-        nomAadAppName = System.getenv("NOM_AAD_APP_NAME")
-            ?: error("Mangler env var NOM_AAD_APP_NAME"),
         nomOauthScope = System.getenv("NOM_OAUTH_SCOPE")
             ?: error("Mangler env var NOM_OAUTH_SCOPE"),
         tokenEndpointURL = System.getenv("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT")?.let {URL(it)}
@@ -43,7 +41,6 @@ data class Environment(
     val aaregBaseUrl: String,
     val egenAnsattBaseUrl: String,
     val nomBaseURL: URL,
-    val nomAadAppName: String,
     val nomOauthScope: String,
     val tokenEndpointURL: URL,
     val clientId: String,
