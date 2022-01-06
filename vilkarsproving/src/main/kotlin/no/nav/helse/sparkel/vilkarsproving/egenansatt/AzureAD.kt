@@ -29,7 +29,7 @@ class AzureAD(val props: AzureADProps) {
             setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
             setRequestProperty("Accept", "application/json")
             outputStream.use { os ->
-                os.writer().write(URLEncoder.encode("client_id=${props.clientId}&client_secret=${props.clientSecret}&scope=api://${props.nomAadAppName}/.default&grant_type=client_credentials", "utf-8"))
+                os.writer().write(URLEncoder.encode("client_id=${props.clientId}&client_secret=${props.clientSecret}&scope=${props.nomOauthScope}&grant_type=client_credentials", "utf-8"))
             }
 
             this.inputStream.use { responseCode to this.inputStream.bufferedReader().readText() }
@@ -55,6 +55,7 @@ data class AzureADProps(
     val tokenEndpointURL: URL,
     val clientId: String,
     val clientSecret: String,
-    val nomAadAppName: String
+    val nomAadAppName: String,
+    val nomOauthScope: String,
 )
 

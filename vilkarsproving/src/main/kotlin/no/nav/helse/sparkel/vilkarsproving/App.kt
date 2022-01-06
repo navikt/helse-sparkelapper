@@ -41,7 +41,7 @@ fun createApp(env: Environment): RapidsConnection {
     stsClientWs.configureFor(egenAnsattService)
 
     try {
-        val aad = AzureAD(AzureADProps(env.tokenEndpointURL, env.clientId, env.clientSecret, env.nomAadAppName))
+        val aad = AzureAD(AzureADProps(env.tokenEndpointURL, env.clientId, env.clientSecret, env.nomAadAppName, env.nomOauthScope))
         val nom = NOM(aad, env.nomBaseURL)
         println("$nom in da house")
     } catch (ex: Exception) {
