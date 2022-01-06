@@ -4,17 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.ktor.client.HttpClient
-import io.ktor.client.features.HttpTimeout
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.*
+import io.ktor.client.features.*
+import io.ktor.client.features.json.*
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.vilkarsproving.egenansatt.*
-import no.nav.helse.sparkel.vilkarsproving.egenansatt.EgenAnsattLøser
 import no.nav.helse.sparkel.vilkarsproving.opptjening.AaregClient
 import no.nav.helse.sparkel.vilkarsproving.opptjening.OpptjeningLøser
 import no.nav.helse.sparkel.vilkarsproving.opptjening.StsRestClient
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 fun main() {
     val env = setUpEnvironment()
@@ -26,6 +26,7 @@ internal val objectMapper: ObjectMapper = jacksonObjectMapper()
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     .registerModule(JavaTimeModule())
 
+internal val logger: Logger = LoggerFactory.getLogger("sparkel-vilkarsproving")
 
 fun createApp(env: Environment): RapidsConnection {
     val rapidsConnection = RapidApplication.create(env.raw)
@@ -44,7 +45,7 @@ fun createApp(env: Environment): RapidsConnection {
         val nom = NOM(aad, env.nomBaseURL)
         println("$nom in da house")
     } catch (ex: Exception) {
-        System.err.println("Klarte ikke å opprette NOM-klient: $ex")
+        logger.error("Klarte ikke å opprette NOM-klient: $ex",  ex)
     }
 
     val aregClient = AaregClient(
