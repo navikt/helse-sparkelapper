@@ -1,16 +1,17 @@
 package no.nav.helse.sparkel.vilkarsproving.egenansatt
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import java.io.InputStream
-import java.net.HttpURLConnection
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.features.json.*
+import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
+import io.ktor.http.*
+import kotlinx.coroutines.runBlocking
 import java.net.URL
 import java.time.LocalDateTime
-
-private val sikkerLogg: Logger = LoggerFactory.getLogger("tjenestekall")
 
 class AzureAD(val props: AzureADProps) {
     private var cachedAccessToken: Token = fetchToken()
@@ -22,38 +23,28 @@ class AzureAD(val props: AzureADProps) {
 
     private companion object {
         private val objectMapper: ObjectMapper = jacksonObjectMapper()
+        private val azureAdClient = HttpClient(CIO) {
+            install(JsonFeature) {
+                serializer = JacksonSerializer {
+                    registerModule(JavaTimeModule())
+                }
+            }
+        }
     }
 
     private fun fetchToken(): Token {
-        val (responseCode, responseBody) = with(props.tokenEndpointURL.openConnection() as HttpURLConnection) {
-            requestMethod = "POST"
-            connectTimeout = 10000
-            readTimeout = 10000
-            doOutput = true
-            setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-            setRequestProperty("Accept", "application/json")
-            outputStream.use { os ->
-                os.writer().run {
-                    write("client_id=${props.clientId}&client_secret=${props.clientSecret}&scope=${props.nomOauthScope}&grant_type=client_credentials"
-                        .also {
-                            sikkerLogg.info(it)
-                        })
-                    close()
-                }
-            }
-
-            val stream: InputStream = if (responseCode < 300) inputStream else errorStream
-            stream.use {
-                val responseBody = it.bufferedReader().readText()
-                sikkerLogg.info("Svar fra AD: $responseBody")
-                responseCode to responseBody
+        return runBlocking {
+            azureAdClient.post(props.tokenEndpointURL) {
+                accept(ContentType.Application.Json)
+                method = HttpMethod.Post
+                body = FormDataContent(Parameters.build {
+                    append("client_id", props.clientId)
+                    append("scope", props.nomOauthScope)
+                    append("grant_type", "client_credentials")
+                    append("client_secret", props.clientSecret)
+                })
             }
         }
-        if (responseCode != 200) {
-            throw RuntimeException("Error from Azure AD: $responseCode - $responseBody")
-        }
-
-        return objectMapper.readValue(responseBody)
     }
 
     internal data class Token(
