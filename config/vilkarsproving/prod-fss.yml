@@ -15,6 +15,6 @@ env:
 - name: NOM_BASE_URL
   value: https://nom-api.intern.nav.no
 - name: NOM_OAUTH_SCOPE
-  value: api://prod-gcp.nom.nom-api/.default
+  value: api://prod-gcp.nom.skjermede-personer-pip/.default
 - name: NOM_AAD_APP_NAME
-  value: prod-gcp:nom:nom-api
+  value: prod-gcp:nom:skjermede-personer-pip
