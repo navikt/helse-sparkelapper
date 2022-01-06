@@ -25,6 +25,8 @@ internal class EgenAnsattLøserTest {
 
     private val egenansattV1 = mockk<EgenAnsattV1>()
 
+    private val nom = mockk<NOM>()
+
     private val meldinger = mutableListOf<JsonNode>()
 
     private val sendtMelding get() = meldinger.last()
@@ -82,7 +84,7 @@ internal class EgenAnsattLøserTest {
     private fun JsonNode.løsning() = this.path("@løsning").path(EgenAnsattLøser.behov).booleanValue()
 
     private fun testBehov(behov: String) {
-        EgenAnsattLøser(rapid, egenansattV1)
+        EgenAnsattLøser(rapid, egenansattV1, nom)
         rapid.sendTestMessage(behov)
     }
 }

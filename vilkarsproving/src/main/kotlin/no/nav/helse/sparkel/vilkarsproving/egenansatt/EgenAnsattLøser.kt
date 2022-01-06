@@ -2,11 +2,16 @@ package no.nav.helse.sparkel.vilkarsproving.egenansatt
 
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
+import no.nav.helse.sparkel.vilkarsproving.logger
 import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
 import no.nav.tjeneste.pip.egen.ansatt.v1.WSHentErEgenAnsattEllerIFamilieMedEgenAnsattRequest
 import org.slf4j.LoggerFactory
 
-internal class EgenAnsattLøser(rapidsConnection: RapidsConnection, private val egenAnsattService: EgenAnsattV1) :
+internal class EgenAnsattLøser(
+    rapidsConnection: RapidsConnection,
+    private val egenAnsattService: EgenAnsattV1,
+    private val nom: NOM,
+) :
     River.PacketListener {
 
     companion object {
@@ -32,6 +37,12 @@ internal class EgenAnsattLøser(rapidsConnection: RapidsConnection, private val 
                 WSHentErEgenAnsattEllerIFamilieMedEgenAnsattRequest().withIdent(packet["fødselsnummer"].asText())
             ).isEgenAnsatt.also {
                 packet.setLøsning(behov, it)
+            }
+
+            try {
+                nom.erEgenAnsatt(packet["fødselsnummer"].asText(), packet["@id"].asText())
+            } catch (e: Exception) {
+                logger.info("Exception ifm kall til NOM - ignoreres under utvikling", e)
             }
 
             log.info(

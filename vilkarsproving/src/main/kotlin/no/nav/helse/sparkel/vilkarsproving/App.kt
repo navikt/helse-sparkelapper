@@ -40,13 +40,14 @@ fun createApp(env: Environment): RapidsConnection {
     val egenAnsattService = EgenAnsattFactory.create(env.egenAnsattBaseUrl, listOf())
     stsClientWs.configureFor(egenAnsattService)
 
-    try {
-        val aad = AzureAD(AzureADProps(env.tokenEndpointURL, env.clientId, env.clientSecret, env.nomOauthScope))
-        val nom = NOM(aad, env.nomBaseURL)
-        println("NOM in da house: $nom")
+    val aad: AzureAD? = try {
+        AzureAD(AzureADProps(env.tokenEndpointURL, env.clientId, env.clientSecret, env.nomOauthScope))
+            .also { logger.info("Initielt token mot NOM hentet fra AD.") }
     } catch (ex: Exception) {
         logger.error("Klarte ikke å opprette NOM-klient: $ex",  ex)
+        null
     }
+    val nom = NOM(aad, env.nomBaseURL)
 
     val aregClient = AaregClient(
         baseUrl = env.aaregBaseUrl,
@@ -54,7 +55,7 @@ fun createApp(env: Environment): RapidsConnection {
         httpClient = simpleHttpClient()
     )
 
-    EgenAnsattLøser(rapidsConnection, egenAnsattService)
+    EgenAnsattLøser(rapidsConnection, egenAnsattService, nom)
     OpptjeningLøser(rapidsConnection, aregClient)
 
     return rapidsConnection

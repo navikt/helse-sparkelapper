@@ -13,7 +13,7 @@ import java.net.http.HttpResponse
 import java.time.LocalDate
 
 class NOM(
-    private val aad: AzureAD,
+    private val aad: AzureAD?, // Nullable inntil vi har byttet over til NOM
     private val baseUrl: URL,
     private val httpClient: HttpClient = HttpClient.newHttpClient()
 ) {
@@ -24,7 +24,7 @@ class NOM(
     }
 
     internal fun erEgenAnsatt(fødselsnummer: String, behovId: String): Boolean {
-        val accessToken = aad.accessToken()
+        val accessToken = aad?.accessToken() ?: throw RuntimeException("Kan ikke få tak i access_token.")
 
         val body = objectMapper.writeValueAsString(
             NomQuery(query = organisasjonsenhetQuery, variables = Variables(fødselsnummer))
