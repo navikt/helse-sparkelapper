@@ -33,7 +33,7 @@ class AzureAD(val props: AzureADProps) {
             setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
             setRequestProperty("Accept", "application/json")
             outputStream.use { os ->
-                os.writer().write(URLEncoder.encode("client_id=${props.clientId}&client_secret=${props.clientSecret}&scope=${props.nomOauthScope}&grant_type=client_credentials", "utf-8").also { sikkerLogg.info(it) })
+                os.writer().write("client_id=${props.clientId}&client_secret=${props.clientSecret}&scope=${URLEncoder.encode(props.nomOauthScope, "utf-8")}&grant_type=client_credentials".also { sikkerLogg.info(it) })
             }
 
             this.inputStream.use { responseCode to this.inputStream.bufferedReader().readText() }
