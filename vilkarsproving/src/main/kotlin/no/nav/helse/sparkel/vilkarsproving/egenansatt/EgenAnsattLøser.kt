@@ -40,7 +40,13 @@ internal class EgenAnsattLøser(
             }
 
             try {
-                nom.erEgenAnsatt(packet["fødselsnummer"].asText(), packet["@id"].asText())
+                nom.erEgenAnsatt(packet["fødselsnummer"].asText(), packet["@id"].asText()).let { svarFraNOM ->
+                    val svarFraTPS = packet["@løsning"].path(behov).booleanValue()
+                    if (svarFraNOM == svarFraTPS)
+                        logger.info("Svarene fra NOM og TPS er like")
+                    else
+                        logger.info("NOM svarte $svarFraNOM, TPS svarte $svarFraTPS.")
+                }
             } catch (e: Exception) {
                 logger.info("Exception ifm kall til NOM - ignoreres under utvikling", e)
             }
