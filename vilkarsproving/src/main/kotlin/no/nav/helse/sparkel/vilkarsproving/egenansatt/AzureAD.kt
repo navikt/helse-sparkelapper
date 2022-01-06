@@ -3,9 +3,9 @@ package no.nav.helse.sparkel.vilkarsproving.egenansatt
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.helse.sparkel.vilkarsproving.logger
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDateTime
@@ -33,12 +33,20 @@ class AzureAD(val props: AzureADProps) {
             setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
             setRequestProperty("Accept", "application/json")
             outputStream.use { os ->
-                os.writer().write("client_id=${props.clientId}&client_secret=${props.clientSecret}&scope=${props.nomOauthScope}&grant_type=client_credentials".also { sikkerLogg.info(it) })
+                os.writer().run {
+                    write("client_id=${props.clientId}&client_secret=${props.clientSecret}&scope=${props.nomOauthScope}&grant_type=client_credentials"
+                        .also {
+                            sikkerLogg.info(it)
+                        })
+                    flush()
+                }
             }
 
-            this.inputStream.use {
-                val responseBody = this.inputStream.bufferedReader().readText()
-                logger.error("Feil fra AD: $responseBody")
+            val stream: InputStream = if (responseCode < 300) this.inputStream else this.errorStream
+
+            stream.use {
+                val responseBody = stream.bufferedReader().readText()
+                sikkerLogg.info("Svar fra AD: $responseBody")
                 responseCode to responseBody
             }
         }
