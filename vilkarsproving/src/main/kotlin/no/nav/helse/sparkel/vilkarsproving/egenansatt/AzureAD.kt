@@ -36,7 +36,11 @@ class AzureAD(val props: AzureADProps) {
                 os.writer().write("client_id=${props.clientId}&client_secret=${props.clientSecret}&scope=${URLEncoder.encode(props.nomOauthScope, "utf-8")}&grant_type=client_credentials".also { sikkerLogg.info(it) })
             }
 
-            this.inputStream.use { responseCode to this.inputStream.bufferedReader().readText() }
+            this.inputStream.use {
+                val responseBody = this.inputStream.bufferedReader().readText()
+                sikkerLogg.error("Feil fra AD: $responseBody")
+                responseCode to responseBody
+            }
         }
         if (responseCode != 200) {
             throw RuntimeException("Error from Azure AD: $responseCode - $responseBody")
