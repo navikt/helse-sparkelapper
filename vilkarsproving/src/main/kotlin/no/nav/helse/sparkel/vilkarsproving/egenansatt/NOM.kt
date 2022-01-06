@@ -76,7 +76,7 @@ private data class NomQuery(
 )
 
 private class Variables(
-    val ident: String
+    val fnr: String
 )
 
 private fun JsonNode.containsErrors() = this.has("errors")
