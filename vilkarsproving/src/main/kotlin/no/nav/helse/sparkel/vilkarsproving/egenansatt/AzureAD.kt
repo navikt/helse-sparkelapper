@@ -7,7 +7,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.HttpURLConnection
 import java.net.URL
-import java.net.URLEncoder
 import java.time.LocalDateTime
 
 private val sikkerLogg: Logger = LoggerFactory.getLogger("tjenestekall")
@@ -33,7 +32,7 @@ class AzureAD(val props: AzureADProps) {
             setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
             setRequestProperty("Accept", "application/json")
             outputStream.use { os ->
-                os.writer().write("client_id=${props.clientId}&client_secret=${props.clientSecret}&scope=${URLEncoder.encode(props.nomOauthScope, "utf-8")}&grant_type=client_credentials".also { sikkerLogg.info(it) })
+                os.writer().write("client_id=${props.clientId}&client_secret=${props.clientSecret}&scope=${props.nomOauthScope}&grant_type=client_credentials".also { sikkerLogg.info(it) })
             }
 
             this.inputStream.use {
