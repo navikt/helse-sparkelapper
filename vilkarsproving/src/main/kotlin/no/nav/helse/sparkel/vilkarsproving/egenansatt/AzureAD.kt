@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.vilkarsproving.egenansatt
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.client.*
 import io.ktor.client.engine.*
@@ -30,6 +31,7 @@ class AzureAD(private val props: AzureADProps) {
             install(JsonFeature) {
                 serializer = JacksonSerializer {
                     registerModule(JavaTimeModule())
+                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 }
             }
         }

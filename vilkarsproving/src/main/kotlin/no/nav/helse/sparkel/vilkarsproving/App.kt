@@ -43,7 +43,7 @@ fun createApp(env: Environment): RapidsConnection {
     try {
         val aad = AzureAD(AzureADProps(env.tokenEndpointURL, env.clientId, env.clientSecret, env.nomOauthScope))
         val nom = NOM(aad, env.nomBaseURL)
-        println("$nom in da house")
+        println("NOM in da house: $nom")
     } catch (ex: Exception) {
         logger.error("Klarte ikke å opprette NOM-klient: $ex",  ex)
     }
