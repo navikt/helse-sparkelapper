@@ -62,7 +62,7 @@ internal class EgenAnsattLøserTest {
 
     @Test
     internal fun `løser behov ikke egen ansatt`() {
-        val behov = """{"@id": "behovsid", "@behov":["${EgenAnsattLøser.behov}"], "fødselsnummer": "fnr" }"""
+        val behov = """{"@id": "behovsid", "@behov":["${EgenAnsattLøser.behov}"], "fødselsnummer": "fnr", "aktørId": "aktørId" }"""
 
         testBehov(behov)
 
@@ -74,7 +74,7 @@ internal class EgenAnsattLøserTest {
     internal fun `løser behov egen ansatt`() {
         mockEgenAnsatt(true)
 
-        val behov = """{"@id": "behovsid", "@behov":["${EgenAnsattLøser.behov}"], "fødselsnummer": "fnr" }"""
+        val behov = """{"@id": "behovsid", "@behov":["${EgenAnsattLøser.behov}"], "fødselsnummer": "fnr", "aktørId": "aktørId" }"""
 
         testBehov(behov)
 
