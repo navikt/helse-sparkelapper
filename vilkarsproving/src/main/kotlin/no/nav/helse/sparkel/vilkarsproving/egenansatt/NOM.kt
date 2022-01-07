@@ -49,7 +49,6 @@ class NOM(
         if (responseBody.containsErrors()) {
             throw RuntimeException("errors from NOM: ${responseBody["errors"].errorMsgs()}")
         }
-        sikkerLogg.info("Svar fra NOM for behov $behovId")
         return responseBody.erEgenAnsatt()
     }
 

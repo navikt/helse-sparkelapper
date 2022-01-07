@@ -26,6 +26,7 @@ internal class EgenAnsattLøser(
             validate { it.requireContains("@behov", behov) }
             validate { it.forbid("@løsning") }
             validate { it.requireKey("@id") }
+            validate { it.requireKey("aktørId") } // Midlertidig, for logging hvis diff mellom TPS og NOM
             validate { it.requireKey("fødselsnummer") }
         }.register(this)
     }
@@ -45,7 +46,10 @@ internal class EgenAnsattLøser(
                     if (svarFraNOM == svarFraTPS)
                         logger.info("Svarene fra NOM og TPS er like")
                     else
-                        logger.info("NOM svarte $svarFraNOM, TPS svarte $svarFraTPS.")
+                        "Svarene fra NOM og TPS er ulike. NOM svarte $svarFraNOM, TPS svarte $svarFraTPS for behovId ${packet["@id"]}".let {
+                            logger.info(it)
+                            sikkerlogg.info("$it, aktørId ${packet["aktørId"].asText()}")
+                        }
                 }
             } catch (e: Exception) {
                 logger.info("Exception ifm kall til NOM - ignoreres under utvikling", e)
