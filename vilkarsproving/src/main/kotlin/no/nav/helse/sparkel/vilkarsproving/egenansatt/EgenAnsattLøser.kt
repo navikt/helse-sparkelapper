@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.vilkarsproving.egenansatt
 
+import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.sparkel.vilkarsproving.logger
@@ -26,7 +27,7 @@ internal class EgenAnsattLøser(
             validate { it.requireContains("@behov", behov) }
             validate { it.forbid("@løsning") }
             validate { it.requireKey("@id") }
-            validate { it.requireKey("aktørId") } // Midlertidig, for logging hvis diff mellom TPS og NOM
+            validate { it.interestedIn("aktørId") } // Midlertidig, for logging hvis diff mellom TPS og NOM
             validate { it.requireKey("fødselsnummer") }
         }.register(this)
     }
@@ -48,7 +49,9 @@ internal class EgenAnsattLøser(
                     else
                         "Svarene fra NOM og TPS er ulike. NOM svarte $svarFraNOM, TPS svarte $svarFraTPS for behovId ${packet["@id"]}".let {
                             logger.info(it)
-                            sikkerlogg.info("$it, aktørId ${packet["aktørId"].asText()}")
+                            packet["aktørId"].takeUnless(JsonNode::isMissingOrNull)?.asText()?.let { aktørId ->
+                                sikkerlogg.info("$it, aktørId ${aktørId}")
+                            }
                         }
                 }
             } catch (e: Exception) {
