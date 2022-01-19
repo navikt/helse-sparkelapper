@@ -1,6 +1,5 @@
 val ktorVersion: String by project
 val cxfVersion: String by project
-val junitJupiterVersion = "5.8.1"
 
 dependencies {
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
@@ -15,6 +14,4 @@ dependencies {
     implementation("javax.activation:activation:1.1.1")
 
     implementation("no.nav.tjenestespesifikasjoner:egenansatt-v1-tjenestespesifikasjon:1.2019.09.25-00.21-49b69f0625e0")
-
-    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
 }
