@@ -6,7 +6,7 @@ fun main() {
     val env = System.getenv()
     RapidApplication.create(env).apply {
         val client = MedlemskapClient(
-            baseUrl = env["MEDLEMSKAP_BASE_URL"] ?: "http://medlemskap-oppslag.medlemskap.svc.nais.local",
+            baseUrl = env.getValue("MEDLEMSKAP_BASE_URL"),
             AzureClient(
                 tokenEndpoint = env.getValue("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
                 clientId = env.getValue("AZURE_APP_CLIENT_ID"),
