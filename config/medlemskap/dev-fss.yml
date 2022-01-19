@@ -4,6 +4,6 @@ azure:
   tenant: trygdeetaten.no
 env:
 - name: MEDLEMSKAP_SCOPE
-  value: api://496b0ded-cfdb-4430-b7b6-b568504de005/.default
+  value: api://2719da58-489e-4185-9ee6-74b7e93763d2/.default
 - name: MEDLEMSKAP_BASE_URL
   value: https://medlemskap-oppslag.dev.intern.nav.no
