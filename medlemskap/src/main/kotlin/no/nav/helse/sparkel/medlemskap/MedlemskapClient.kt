@@ -56,4 +56,3 @@ internal class MedlemskapClient(
 }
 
 internal class MedlemskapException(message: String, val statusCode: Int, val responseBody: String?) : RuntimeException(message)
-

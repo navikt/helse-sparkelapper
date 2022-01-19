@@ -5,3 +5,5 @@ azure:
 env:
 - name: MEDLEMSKAP_SCOPE
   value: api://496b0ded-cfdb-4430-b7b6-b568504de005/.default
+- name: MEDLEMSKAP_BASE_URL
+  value: https://medlemskap-oppslag.dev.intern.nav.no
