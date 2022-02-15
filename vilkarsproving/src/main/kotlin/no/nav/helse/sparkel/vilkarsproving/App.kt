@@ -4,15 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.ktor.client.*
-import io.ktor.client.features.*
-import io.ktor.client.features.json.*
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.vilkarsproving.egenansatt.*
-import no.nav.helse.sparkel.vilkarsproving.opptjening.AaregClient
-import no.nav.helse.sparkel.vilkarsproving.opptjening.OpptjeningLøser
-import no.nav.helse.sparkel.vilkarsproving.opptjening.StsRestClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -49,25 +43,7 @@ fun createApp(env: Environment): RapidsConnection {
     }
     val nom = NOM(aad, env.nomBaseURL)
 
-    val aregClient = AaregClient(
-        baseUrl = env.aaregBaseUrl,
-        stsRestClient = StsRestClient(env.stsBaseUrl, serviceUser),
-        httpClient = simpleHttpClient()
-    )
-
     EgenAnsattLøser(rapidsConnection, egenAnsattService, nom)
-    OpptjeningLøser(rapidsConnection, aregClient)
 
     return rapidsConnection
-}
-
-private fun simpleHttpClient(serializer: JacksonSerializer? = JacksonSerializer()) = HttpClient {
-    install(JsonFeature) {
-        this.serializer = serializer
-    }
-    install(HttpTimeout) {
-        socketTimeoutMillis = 10000
-        requestTimeoutMillis = 10000
-        connectTimeoutMillis = 10000
-    }
 }

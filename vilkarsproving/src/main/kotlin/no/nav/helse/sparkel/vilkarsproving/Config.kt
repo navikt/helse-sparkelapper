@@ -4,7 +4,6 @@ import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.*
 
 const val vaultServiceUserBase = "/var/run/secrets/nais.io/service_user"
 val vaultServiceUserBasePath: Path = Paths.get(vaultServiceUserBase)
@@ -51,5 +50,4 @@ data class ServiceUser(
     val username: String,
     val password: String
 ) {
-    val basicAuth = "Basic ${Base64.getEncoder().encodeToString("$username:$password".toByteArray())}"
 }
