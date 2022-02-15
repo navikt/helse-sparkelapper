@@ -73,7 +73,7 @@ class AzureAD(private val props: AzureADProps) {
                 .build()
 
             val response = java.net.http.HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString())
-            val token = objectMapper.convertValue(response.body(), Token::class.java)
+            val token = objectMapper.readValue(response.body(), Token::class.java)
             sikkerLogg.info("Hentet token vha java.net.http.HttpClient: $token")
         } catch (e: Exception) {
             sikkerLogg.info("Noe gikk gæernt", e)
