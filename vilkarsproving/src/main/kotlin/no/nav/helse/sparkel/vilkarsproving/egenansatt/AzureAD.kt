@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.vilkarsproving.egenansatt
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.client.*
@@ -80,6 +81,7 @@ class AzureAD(private val props: AzureADProps) {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     internal data class Token(
         internal val access_token: String,
         private val token_type: String,
