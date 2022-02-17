@@ -1,11 +1,7 @@
 package no.nav.helse.sparkel.gosys
 
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.MessageProblems
-import no.nav.helse.rapids_rivers.MessageContext
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.*
 import org.slf4j.LoggerFactory
 
 internal class Oppgaveløser(
@@ -37,11 +33,11 @@ internal class Oppgaveløser(
         oppgaveService.løsningForBehov(
             packet["@id"].asText(),
             packet["ÅpneOppgaver.aktørId"].asText()
-        ).let { løsning ->
+        ).let { antall ->
             packet["@løsning"] = mapOf(
                 behov to mapOf(
-                    "antall" to (løsning?.takeUnless { it.isMissingNode }?.let { it["antallTreffTotalt"].asInt() }),
-                    "oppslagFeilet" to (løsning == null)
+                    "antall" to antall,
+                    "oppslagFeilet" to (antall == null)
                 )
             )
             context.publish(packet.toJson().also { json ->

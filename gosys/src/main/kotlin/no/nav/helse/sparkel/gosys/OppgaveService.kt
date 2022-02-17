@@ -18,7 +18,7 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
     fun løsningForBehov(
         behovId: String,
         aktørId: String
-    ): JsonNode? = withMDC("id" to behovId) {
+    ): Int? = withMDC("id" to behovId) {
         try {
             val oppgaver = oppgavehenter.hentÅpneOppgaver(
                 aktørId = aktørId,
@@ -32,7 +32,7 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
                 "løser behov: {}",
                 keyValue("id", behovId)
             )
-            oppgaver
+            oppgaver.lagSvar()
         } catch (err: Exception) {
             log.warn(
                 "feil ved henting av oppgave-data: ${err.message} for behov {}",
@@ -47,6 +47,9 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
             null
         }
     }
+
+    private fun JsonNode.lagSvar(): Int? =
+        takeUnless { it.isMissingNode }?.let { it["antallTreffTotalt"].asInt() }
 }
 
 private fun <T> withMDC(vararg values: Pair<String, String>, block: () -> T): T = try {
