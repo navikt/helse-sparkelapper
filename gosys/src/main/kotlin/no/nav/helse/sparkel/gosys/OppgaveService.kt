@@ -5,7 +5,12 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 
-internal class OppgaveService(private val oppgaveClient: OppgaveClient) {
+
+internal fun interface Oppgavehenter {
+    fun hentÅpneOppgaver(aktørId: String, behovId: String): JsonNode
+}
+
+internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
 
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -15,7 +20,7 @@ internal class OppgaveService(private val oppgaveClient: OppgaveClient) {
         aktørId: String
     ): JsonNode? = withMDC("id" to behovId) {
         try {
-            val oppgaver = oppgaveClient.hentÅpneOppgaver(
+            val oppgaver = oppgavehenter.hentÅpneOppgaver(
                 aktørId = aktørId,
                 behovId = behovId
             )

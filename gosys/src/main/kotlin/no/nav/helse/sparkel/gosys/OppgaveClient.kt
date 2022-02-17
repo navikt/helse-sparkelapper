@@ -9,13 +9,13 @@ import java.net.URL
 internal class OppgaveClient(
     private val baseUrl: String,
     private val stsClient: StsRestClient
-) {
+) : Oppgavehenter {
 
     companion object {
         private val objectMapper = ObjectMapper()
     }
 
-    internal fun hentÅpneOppgaver(
+    override fun hentÅpneOppgaver(
         aktørId: String,
         behovId: String
     ): JsonNode {
