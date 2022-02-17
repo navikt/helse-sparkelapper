@@ -6,4 +6,4 @@ env:
 - name: STS_BASE_URL
   value: http://security-token-service.default.svc.nais.local
 - name: OPPGAVE_URL
-  value: http://oppgave.default.svc.nais.local
+  value: https://oppgave.intern.nav.no
