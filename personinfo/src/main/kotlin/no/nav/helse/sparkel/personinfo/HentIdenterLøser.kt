@@ -29,15 +29,19 @@ internal class HentIdenterLøser(
         withMDC(mapOf(
             "id" to hendelseId
         )) {
-            val identer = pdlClient.hentIdenter(packet["ident"].asText(), hendelseId)
-            packet["@løsning"] = mapOf(
-                "HentIdenter" to mapOf(
-                    "fødselsnummer" to identer.fødselsnummer,
-                    "aktørId" to identer.aktørId
+            try {
+                val identer = pdlClient.hentIdenter(packet["ident"].asText(), hendelseId)
+                packet["@løsning"] = mapOf(
+                    "HentIdenter" to mapOf(
+                        "fødselsnummer" to identer.fødselsnummer,
+                        "aktørId" to identer.aktørId
+                    )
                 )
-            )
-            sikkerLogg.info("løser behov=HentIdenter melding:\n${packet.toJson()}")
-            context.publish(identer.fødselsnummer, packet.toJson())
+                sikkerLogg.info("løser behov=HentIdenter melding:\n${packet.toJson()}")
+                context.publish(identer.fødselsnummer, packet.toJson())
+            } catch (err: Exception) {
+                sikkerLogg.warn("klarte ikke finne identer: ${err.message} behov=HentIdenter melding:\n${packet.toJson()}", err)
+            }
         }
     }
 
