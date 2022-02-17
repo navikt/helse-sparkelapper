@@ -30,23 +30,24 @@ internal class Oppgaveløser(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
-        oppgaveService.løsningForBehov(
-            packet["@id"].asText(),
-            packet["ÅpneOppgaver.aktørId"].asText()
-        ).let { antall ->
-            packet["@løsning"] = mapOf(
-                behov to mapOf(
-                    "antall" to antall,
-                    "oppslagFeilet" to (antall == null)
-                )
+
+        val behovId = packet["@id"].asText()
+
+        val antall = oppgaveService.løsningForBehov(behovId, packet["ÅpneOppgaver.aktørId"].asText())
+
+        packet["@løsning"] = mapOf(
+            behov to mapOf(
+                "antall" to antall,
+                "oppslagFeilet" to (antall == null)
             )
-            context.publish(packet.toJson().also { json ->
-                sikkerlogg.info(
-                    "sender svar {} for {}",
-                    keyValue("id", packet["@id"].asText()),
-                    json
-                )
-            })
-        }
+        )
+        context.publish(packet.toJson().also { json ->
+            sikkerlogg.info(
+                "sender svar {} for {}",
+                keyValue("id", behovId),
+                json
+            )
+        })
+
     }
 }
