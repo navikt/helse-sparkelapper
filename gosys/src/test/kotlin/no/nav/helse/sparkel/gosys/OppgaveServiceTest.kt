@@ -8,11 +8,30 @@ class OppgaveServiceTest {
 
     @Test
     fun `kan hente oppgaver`() {
-        val forventetAntall = 0
+        val forventetAntall = 2
 
-        val oppgavehenter = Oppgavehenter { aktørId, behovId -> jacksonObjectMapper().createObjectNode().run {
-            put("antallTreffTotalt", forventetAntall)
-        } }
+        val oppgavehenter = Oppgavehenter { _, _ ->
+            jacksonObjectMapper().createObjectNode().run {
+                set("oppgaver", jacksonObjectMapper().createArrayNode().run {
+                    add(jacksonObjectMapper().createObjectNode().run {
+                        putNull("behandlingstema")
+                        put("behandlingstype", "ae0046") // Anke
+                    })
+                    add(jacksonObjectMapper().createObjectNode().run {
+                        put("behandlingstema", "ab0455") // Overgangssak fra Speil (skal gi varsel - ikke i enum)
+                        putNull("behandlingstype")
+                    })
+                    add(jacksonObjectMapper().createObjectNode().run {
+                        putNull("behandlingstema")
+                        putNull("behandlingstype")
+                    })
+                    add(jacksonObjectMapper().createObjectNode().run {
+                        put("behandlingstema", "ab0338") // KLAGE_UNNTAK_FRA_ARBEIDSGIVERPERIODE
+                        put("behandlingstype", "ae0058")
+                    })
+                })
+            }
+        }
 
         val service = OppgaveService(oppgavehenter)
 
@@ -21,3 +40,4 @@ class OppgaveServiceTest {
         assertEquals(forventetAntall, svar)
     }
 }
+

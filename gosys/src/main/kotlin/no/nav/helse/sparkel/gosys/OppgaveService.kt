@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.gosys
 
 import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.helse.sparkel.gosys.GjelderverdierSomIkkeSkalTriggeVarsel.Companion.inneholder
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 
@@ -49,7 +50,11 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
     }
 
     private fun JsonNode.lagSvar(): Int? =
-        takeUnless { it.isMissingNode }?.let { it["antallTreffTotalt"].asInt() }
+        takeUnless { it.isMissingNode }?.let {
+            it["oppgaver"].filterNot { oppgave ->
+                inneholder(oppgave["behandlingstype"].textValue(), oppgave["behandlingstema"].textValue())
+            }.size
+        }
 }
 
 private fun <T> withMDC(vararg values: Pair<String, String>, block: () -> T): T = try {
