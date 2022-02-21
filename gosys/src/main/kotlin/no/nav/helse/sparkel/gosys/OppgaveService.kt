@@ -33,7 +33,11 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
                 "løser behov: {}",
                 keyValue("id", behovId)
             )
-            oppgaver.lagSvar()
+            oppgaver.lagSvar().also { antallEtterFiltrering ->
+                if (antallEtterFiltrering == 0 && oppgaver["oppgaver"].size() > 0) {
+                    log.info("Gosys-oppgaver ble filtrert ned til 0 slik at varsel ikke vil bli laget for $aktørId.")
+                }
+            }
         } catch (err: Exception) {
             log.warn(
                 "feil ved henting av oppgave-data: ${err.message} for behov {}",
