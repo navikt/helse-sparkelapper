@@ -14,12 +14,6 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         baseUrl = env.getValue("STS_BASE_URL"),
         serviceUser = "/var/run/secrets/nais.io/service_user".let { ServiceUser("$it/username".readFile(), "$it/password".readFile()) }
     )
-
-    GjelderClient(
-        baseUrl = env.getValue("OPPGAVE_URL"),
-        stsClient = stsClient
-    ).hentGjelderverdier()
-
     val oppgaveClient = OppgaveClient(
         baseUrl = env.getValue("OPPGAVE_URL"),
         stsClient = stsClient
