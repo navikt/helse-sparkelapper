@@ -105,6 +105,14 @@ class OppgaveServiceTest {
         assertEquals(forventetAntall, svar)
     }
 
+    @Test
+    fun `oppgaver-feltet mangler i responsen`() {
+        val oppgavehenter = Oppgavehenter { _, _ -> objectNode() }
+        val service = OppgaveService(oppgavehenter)
+        val svar = service.løsningForBehov("behovId", "aktørId")
+        assertEquals(null, svar)
+    }
+
     private fun objectNode() = jacksonObjectMapper().createObjectNode()
 }
 

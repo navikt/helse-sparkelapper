@@ -35,8 +35,10 @@ internal class OppgaveClient(
             responseCode to stream?.bufferedReader()?.readText()
         }
 
-        if (responseCode >= 300 || responseBody == null) {
+        if (responseCode >= 300) {
             throw RuntimeException("unknown error (responseCode=$responseCode) from oppgave")
+        } else if (responseBody == "" || responseBody == null) {
+            throw RuntimeException("Fikk ikke noe innhold tilbake fra oppgaveoppslaget, gav responseCode=$responseCode")
         }
 
         return objectMapper.readTree(responseBody)

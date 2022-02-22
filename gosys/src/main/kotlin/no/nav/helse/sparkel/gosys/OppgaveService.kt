@@ -33,7 +33,10 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
                 "løser behov: {}",
                 keyValue("id", behovId)
             )
-            loggHvisResponsenIkkeErSomForventet(response)
+            if (!response.path("oppgaver").isArray) {
+                sikkerlogg.info("Forventet å finne et oppgaver-felt med et array:\n$response")
+                return@withMDC null
+            }
             response.antallRelevanteOppgaver().also { antallEtterFiltrering ->
                 if (antallEtterFiltrering == 0 && response["oppgaver"].size() > 0) {
                     log.info("Gosys-oppgaver ble filtrert ned til 0 slik at varsel ikke vil bli laget for $aktørId.")
@@ -54,20 +57,10 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
         }
     }
 
-    // Dette tror vi ikke skal kunne skje i virkeligheten, men hvem vet?
-    private fun loggHvisResponsenIkkeErSomForventet(response: JsonNode) {
-        if (response.path("oppgaver") == null) {
-            sikkerlogg.info("Forventet at verken responsen eller feltet oppgaver skulle være null eller mangle:\n$response")
-            return
-        }
-    }
-
-    private fun JsonNode.antallRelevanteOppgaver(): Int? =
-        takeUnless { it.isMissingNode }?.let {
-            it["oppgaver"].filterNot { oppgave ->
-                inneholder(oppgave.finnVerdi("behandlingstype"), oppgave.finnVerdi("behandlingstema"))
-            }.size
-        }
+    private fun JsonNode.antallRelevanteOppgaver(): Int =
+        get("oppgaver").filterNot { oppgave ->
+            inneholder(oppgave.finnVerdi("behandlingstype"), oppgave.finnVerdi("behandlingstema"))
+        }.size
 
     private fun JsonNode.finnVerdi(key: String): String? =
         if (hasNonNull(key)) get(key).textValue() else null
