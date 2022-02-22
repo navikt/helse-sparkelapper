@@ -56,8 +56,15 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
     private fun JsonNode.lagSvar(): Int? =
         takeUnless { it.isMissingNode }?.let {
             it["oppgaver"].filterNot { oppgave ->
-                inneholder(oppgave["behandlingstype"].textValue(), oppgave["behandlingstema"].textValue())
+                inneholder(oppgave.finnVerdi("behandlingstype"), oppgave.finnVerdi("behandlingstema"))
             }.size
+        }
+
+    private fun JsonNode.finnVerdi(key: String): String? =
+        if (hasNonNull(key)) get(key).textValue() else {
+            // Midlertidig logging - for å finne ut hva responsen egentlig inneholder når det mangler tema eller type
+            sikkerlogg.info("Her mangler det muligvis noe?:\n$this")
+            null
         }
 }
 

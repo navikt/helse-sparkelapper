@@ -18,6 +18,9 @@ class OppgaveServiceTest {
                         put("behandlingstype", "ae0046") // Anke
                     })
                     add(jacksonObjectMapper().createObjectNode().run {
+                        put("behandlingstype", "ae0046") //
+                    })
+                    add(jacksonObjectMapper().createObjectNode().run {
                         put("behandlingstema", "ab0455") // Overgangssak fra Speil (skal gi varsel - ikke i enum)
                         putNull("behandlingstype")
                     })
