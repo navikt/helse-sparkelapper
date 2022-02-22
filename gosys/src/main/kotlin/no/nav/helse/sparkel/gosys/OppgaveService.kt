@@ -21,7 +21,7 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
         aktørId: String
     ): Int? = withMDC("id" to behovId) {
         try {
-            val oppgaver = oppgavehenter.hentÅpneOppgaver(
+            val response = oppgavehenter.hentÅpneOppgaver(
                 aktørId = aktørId,
                 behovId = behovId
             )
@@ -33,8 +33,9 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
                 "løser behov: {}",
                 keyValue("id", behovId)
             )
-            oppgaver.lagSvar().also { antallEtterFiltrering ->
-                if (antallEtterFiltrering == 0 && oppgaver["oppgaver"].size() > 0) {
+            loggHvisEttertraktedeFelterMangler(response)
+            response.antallRelevanteOppgaver().also { antallEtterFiltrering ->
+                if (antallEtterFiltrering == 0 && response["oppgaver"].size() > 0) {
                     log.info("Gosys-oppgaver ble filtrert ned til 0 slik at varsel ikke vil bli laget for $aktørId.")
                 }
             }
@@ -53,7 +54,19 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
         }
     }
 
-    private fun JsonNode.lagSvar(): Int? =
+    // Dette er sannsynligvis bare nødvendig i en feilsøkingsperiode
+    private fun loggHvisEttertraktedeFelterMangler(response: JsonNode) {
+        if (response.path("oppgaver") == null) {
+            sikkerlogg.info("Forventet at verken responsen eller feltet oppgaver skulle være null eller mangle:\n$response")
+            return
+        }
+        response.path("oppgaver").filter { oppgave -> oppgave.get("behandlingstype") == null || oppgave.get("behandlingstema") == null }
+            .forEach { oppgave ->
+                sikkerlogg.info("Her mangler det muligvis noe?:\n$oppgave")
+            }
+    }
+
+    private fun JsonNode.antallRelevanteOppgaver(): Int? =
         takeUnless { it.isMissingNode }?.let {
             it["oppgaver"].filterNot { oppgave ->
                 inneholder(oppgave.finnVerdi("behandlingstype"), oppgave.finnVerdi("behandlingstema"))
@@ -63,7 +76,7 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
     private fun JsonNode.finnVerdi(key: String): String? =
         if (hasNonNull(key)) get(key).textValue() else {
             // Midlertidig logging - for å finne ut hva responsen egentlig inneholder når det mangler tema eller type
-            sikkerlogg.info("Her mangler det muligvis noe?:\n$this")
+
             null
         }
 }

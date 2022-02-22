@@ -8,7 +8,7 @@ class OppgaveServiceTest {
 
     @Test
     fun `kan hente oppgaver`() {
-        val forventetAntall = 2
+        val forventetAntall = 3
 
         val oppgavehenter = Oppgavehenter { _, _ ->
             jacksonObjectMapper().createObjectNode().run {
@@ -23,6 +23,9 @@ class OppgaveServiceTest {
                     add(jacksonObjectMapper().createObjectNode().run {
                         put("behandlingstema", "ab0455") // Overgangssak fra Speil (skal gi varsel - ikke i enum)
                         putNull("behandlingstype")
+                    })
+                    add(jacksonObjectMapper().createObjectNode().run {
+                        put("behandlingstema", "ab0455") // Overgangssak fra Speil (skal gi varsel - ikke i enum)
                     })
                     add(jacksonObjectMapper().createObjectNode().run {
                         putNull("behandlingstema")
