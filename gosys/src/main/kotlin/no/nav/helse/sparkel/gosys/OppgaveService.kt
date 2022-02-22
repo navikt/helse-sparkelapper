@@ -33,7 +33,7 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
                 "løser behov: {}",
                 keyValue("id", behovId)
             )
-            loggHvisEttertraktedeFelterMangler(response)
+            loggHvisResponsenIkkeErSomForventet(response)
             response.antallRelevanteOppgaver().also { antallEtterFiltrering ->
                 if (antallEtterFiltrering == 0 && response["oppgaver"].size() > 0) {
                     log.info("Gosys-oppgaver ble filtrert ned til 0 slik at varsel ikke vil bli laget for $aktørId.")
@@ -54,16 +54,12 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
         }
     }
 
-    // Dette er sannsynligvis bare nødvendig i en feilsøkingsperiode
-    private fun loggHvisEttertraktedeFelterMangler(response: JsonNode) {
+    // Dette tror vi ikke skal kunne skje i virkeligheten, men hvem vet?
+    private fun loggHvisResponsenIkkeErSomForventet(response: JsonNode) {
         if (response.path("oppgaver") == null) {
             sikkerlogg.info("Forventet at verken responsen eller feltet oppgaver skulle være null eller mangle:\n$response")
             return
         }
-        response.path("oppgaver").filter { oppgave -> oppgave.get("behandlingstype") == null || oppgave.get("behandlingstema") == null }
-            .forEach { oppgave ->
-                sikkerlogg.info("Her mangler det muligvis noe?:\n$oppgave")
-            }
     }
 
     private fun JsonNode.antallRelevanteOppgaver(): Int? =
@@ -74,11 +70,7 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
         }
 
     private fun JsonNode.finnVerdi(key: String): String? =
-        if (hasNonNull(key)) get(key).textValue() else {
-            // Midlertidig logging - for å finne ut hva responsen egentlig inneholder når det mangler tema eller type
-
-            null
-        }
+        if (hasNonNull(key)) get(key).textValue() else null
 }
 
 private fun <T> withMDC(vararg values: Pair<String, String>, block: () -> T): T = try {
