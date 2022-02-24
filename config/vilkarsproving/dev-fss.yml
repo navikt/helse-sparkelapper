@@ -2,14 +2,7 @@ kafkaPool: nav-dev
 azure:
   enabled: true
   tenant: nav.no
-mountPaths:
-- mountPath: /var/run/secrets/nais.io/service_user
-  kvPath: /serviceuser/data/dev/srvsparkelvilkar
 env:
-- name: STS_URL
-  value: https://sts-q1.preprod.local/SecurityTokenServiceProvider/
-- name: EGENANSATT_URL
-  value: https://app-q1.adeo.no/tpsws-aura/ws/EgenAnsatt/v1
 - name: SKJERMEDE_BASE_URL
   value: https://skjermede-personer-pip.dev.intern.nav.no
 - name: SKJERMEDE_OAUTH_SCOPE
