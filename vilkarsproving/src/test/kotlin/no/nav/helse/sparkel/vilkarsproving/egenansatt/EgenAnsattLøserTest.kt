@@ -7,8 +7,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
-import no.nav.tjeneste.pip.egen.ansatt.v1.WSHentErEgenAnsattEllerIFamilieMedEgenAnsattResponse
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -22,8 +20,6 @@ internal class EgenAnsattLøserTest {
     private val objectMapper = jacksonObjectMapper()
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .registerModule(JavaTimeModule())
-
-    private val egenansattV1 = mockk<EgenAnsattV1>()
 
     private val skjermedePersoner = mockk<SkjermedePersoner>()
 
@@ -52,10 +48,9 @@ internal class EgenAnsattLøserTest {
     }
 
     private fun mockEgenAnsatt(egenAnsatt: Boolean = false) {
-        egenansattV1.apply {
-            every { hentErEgenAnsattEllerIFamilieMedEgenAnsatt(any()) } answers {
-                WSHentErEgenAnsattEllerIFamilieMedEgenAnsattResponse()
-                    .withEgenAnsatt(egenAnsatt)
+        skjermedePersoner.apply {
+            every { erSkjermetPerson(any(), any()) } answers {
+                egenAnsatt
             }
         }
     }
@@ -84,7 +79,7 @@ internal class EgenAnsattLøserTest {
     private fun JsonNode.løsning() = this.path("@løsning").path(EgenAnsattLøser.behov).booleanValue()
 
     private fun testBehov(behov: String) {
-        EgenAnsattLøser(rapid, egenansattV1, skjermedePersoner)
+        EgenAnsattLøser(rapid, skjermedePersoner)
         rapid.sendTestMessage(behov)
     }
 }

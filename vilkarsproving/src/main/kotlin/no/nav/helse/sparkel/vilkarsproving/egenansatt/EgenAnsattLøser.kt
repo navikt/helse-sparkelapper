@@ -2,14 +2,10 @@ package no.nav.helse.sparkel.vilkarsproving.egenansatt
 
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
-import no.nav.helse.sparkel.vilkarsproving.logger
-import no.nav.tjeneste.pip.egen.ansatt.v1.EgenAnsattV1
-import no.nav.tjeneste.pip.egen.ansatt.v1.WSHentErEgenAnsattEllerIFamilieMedEgenAnsattRequest
 import org.slf4j.LoggerFactory
 
 internal class EgenAnsattLøser(
     rapidsConnection: RapidsConnection,
-    private val egenAnsattService: EgenAnsattV1,
     private val skjermedePersoner: SkjermedePersoner,
 ) :
     River.PacketListener {
@@ -33,25 +29,8 @@ internal class EgenAnsattLøser(
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         try {
             sikkerlogg.info("mottok melding: ${packet.toJson()}")
-            egenAnsattService.hentErEgenAnsattEllerIFamilieMedEgenAnsatt(
-                WSHentErEgenAnsattEllerIFamilieMedEgenAnsattRequest().withIdent(packet["fødselsnummer"].asText())
-            ).isEgenAnsatt.also {
+            skjermedePersoner.erSkjermetPerson(packet["fødselsnummer"].asText(), packet["@id"].asText()).also {
                 packet.setLøsning(behov, it)
-            }
-
-            try {
-                skjermedePersoner.erSkjermetPerson(packet["fødselsnummer"].asText(), packet["@id"].asText()).let { svarFraSkjermedePersoner ->
-                    val svarFraTPS = packet["@løsning"].path(behov).booleanValue()
-                    if (svarFraSkjermedePersoner == svarFraTPS)
-                        logger.info("Svarene fra skjermedePersoner og TPS er like")
-                    else
-                        "Svarene fra skjermedePersoner og TPS er ulike. skjermedePersoner svarte $svarFraSkjermedePersoner, TPS svarte $svarFraTPS for behovId ${packet["@id"]}".let {
-                            logger.info(it)
-                            sikkerlogg.info("$it, fnr ${packet["fødselsnummer"].asText()}")
-                        }
-                }
-            } catch (e: Exception) {
-                logger.info("Exception ifm kall til skjermedePersoner - ignoreres under utvikling", e)
             }
 
             log.info(

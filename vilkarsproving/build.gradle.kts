@@ -13,5 +13,4 @@ dependencies {
     implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
     implementation("javax.activation:activation:1.1.1")
 
-    implementation("no.nav.tjenestespesifikasjoner:egenansatt-v1-tjenestespesifikasjon:1.2019.09.25-00.21-49b69f0625e0")
 }
