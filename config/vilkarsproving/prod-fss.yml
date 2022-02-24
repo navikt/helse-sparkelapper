@@ -10,7 +10,7 @@ env:
   value: https://sts.adeo.no/SecurityTokenServiceProvider/
 - name: EGENANSATT_URL
   value: https://app.adeo.no/tpsws-aura/ws/EgenAnsatt/v1
-- name: NOM_BASE_URL
-  value: https://nom-api.intern.nav.no
-- name: NOM_OAUTH_SCOPE
-  value: api://prod-gcp.nom.nom-api/.default
+- name: SKJERMEDE_BASE_URL
+  value: https://skjermede-personer-pip.intern.nav.no
+- name: SKJERMEDE_OAUTH_SCOPE
+  value: api://prod-gcp.nom.skjermede-personer-pip/.default

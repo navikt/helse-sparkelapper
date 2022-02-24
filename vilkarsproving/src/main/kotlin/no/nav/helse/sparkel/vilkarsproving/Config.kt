@@ -19,10 +19,10 @@ fun setUpEnvironment() =
         stsSoapBaseUrl = System.getenv("STS_URL"),
         egenAnsattBaseUrl = System.getenv("EGENANSATT_URL")
             ?: error("Mangler env var EGENANSATT_URL"),
-        nomBaseURL = System.getenv("NOM_BASE_URL")?.let {URL(it)}
-            ?: error("Mangler env var NOM_BASE_URL"),
-        nomOauthScope = System.getenv("NOM_OAUTH_SCOPE")
-            ?: error("Mangler env var NOM_OAUTH_SCOPE"),
+        skjermedeBaseURL = System.getenv("SKJERMEDE_BASE_URL")?.let {URL(it)}
+            ?: error("Mangler env var SKJERMEDE_BASE_URL"),
+        skjermendeOauthScope = System.getenv("SKJERMEDE_OAUTH_SCOPE")
+            ?: error("Mangler env var SKJERMEDE_OAUTH_SCOPE"),
         tokenEndpointURL = System.getenv("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT")?.let {URL(it)}
             ?: error("Mangler env var AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
         clientId = System.getenv("AZURE_APP_CLIENT_ID")
@@ -36,8 +36,8 @@ data class Environment(
     val stsBaseUrl: String = "http://security-token-service.default.svc.nais.local",
     val stsSoapBaseUrl: String,
     val egenAnsattBaseUrl: String,
-    val nomBaseURL: URL,
-    val nomOauthScope: String,
+    val skjermedeBaseURL: URL,
+    val skjermendeOauthScope: String,
     val tokenEndpointURL: URL,
     val clientId: String,
     val clientSecret: String

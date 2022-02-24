@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 internal class EgenAnsattLøser(
     rapidsConnection: RapidsConnection,
     private val egenAnsattService: EgenAnsattV1,
-    private val nom: NOM,
+    private val skjermedePersoner: SkjermedePersoner,
 ) :
     River.PacketListener {
 
@@ -40,18 +40,18 @@ internal class EgenAnsattLøser(
             }
 
             try {
-                nom.erEgenAnsatt(packet["fødselsnummer"].asText(), packet["@id"].asText()).let { svarFraNOM ->
+                skjermedePersoner.erSkjermetPerson(packet["fødselsnummer"].asText(), packet["@id"].asText()).let { svarFraSkjermedePersoner ->
                     val svarFraTPS = packet["@løsning"].path(behov).booleanValue()
-                    if (svarFraNOM == svarFraTPS)
-                        logger.info("Svarene fra NOM og TPS er like")
+                    if (svarFraSkjermedePersoner == svarFraTPS)
+                        logger.info("Svarene fra skjermedePersoner og TPS er like")
                     else
-                        "Svarene fra NOM og TPS er ulike. NOM svarte $svarFraNOM, TPS svarte $svarFraTPS for behovId ${packet["@id"]}".let {
+                        "Svarene fra skjermedePersoner og TPS er ulike. skjermedePersoner svarte $svarFraSkjermedePersoner, TPS svarte $svarFraTPS for behovId ${packet["@id"]}".let {
                             logger.info(it)
                             sikkerlogg.info("$it, fnr ${packet["fødselsnummer"].asText()}")
                         }
                 }
             } catch (e: Exception) {
-                logger.info("Exception ifm kall til NOM - ignoreres under utvikling", e)
+                logger.info("Exception ifm kall til skjermedePersoner - ignoreres under utvikling", e)
             }
 
             log.info(

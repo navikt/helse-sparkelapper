@@ -55,7 +55,7 @@ class AzureAD(private val props: AzureADProps) {
                 method = HttpMethod.Post
                 body = FormDataContent(Parameters.build {
                     append("client_id", props.clientId)
-                    append("scope", props.nomOauthScope)
+                    append("scope", props.skjermendeOauthScope)
                     append("grant_type", "client_credentials")
                     append("client_secret", props.clientSecret)
                 })
@@ -66,7 +66,7 @@ class AzureAD(private val props: AzureADProps) {
     private fun hentTokenMedEnklereHttpClient() {
         try {
             val body = props.run {
-                "client_id=$clientId&client_secret=$clientSecret&scope=$nomOauthScope&grant_type=client_credentials"
+                "client_id=$clientId&client_secret=$clientSecret&scope=$skjermendeOauthScope&grant_type=client_credentials"
             }
             val request = HttpRequest.newBuilder(props.tokenEndpointURL.toURI())
                 .header("Accept", "application/json")
@@ -96,6 +96,6 @@ data class AzureADProps(
     val tokenEndpointURL: URL,
     val clientId: String,
     val clientSecret: String,
-    val nomOauthScope: String,
+    val skjermendeOauthScope: String,
 )
 

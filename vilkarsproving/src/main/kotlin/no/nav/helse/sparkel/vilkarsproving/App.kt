@@ -35,15 +35,15 @@ fun createApp(env: Environment): RapidsConnection {
     stsClientWs.configureFor(egenAnsattService)
 
     val aad: AzureAD? = try {
-        AzureAD(AzureADProps(env.tokenEndpointURL, env.clientId, env.clientSecret, env.nomOauthScope))
-            .also { logger.info("Initielt token mot NOM hentet fra AD.") }
+        AzureAD(AzureADProps(env.tokenEndpointURL, env.clientId, env.clientSecret, env.skjermendeOauthScope))
+            .also { logger.info("Initielt token mot skjermende hentet fra AD.") }
     } catch (ex: Exception) {
-        logger.error("Klarte ikke å opprette NOM-klient: $ex",  ex)
+        logger.error("Klarte ikke å opprette skjermende-klient: $ex",  ex)
         null
     }
-    val nom = NOM(aad, env.nomBaseURL)
+    val skjermedePersoner = SkjermedePersoner(aad, env.skjermedeBaseURL)
 
-    EgenAnsattLøser(rapidsConnection, egenAnsattService, nom)
+    EgenAnsattLøser(rapidsConnection, egenAnsattService, skjermedePersoner)
 
     return rapidsConnection
 }
