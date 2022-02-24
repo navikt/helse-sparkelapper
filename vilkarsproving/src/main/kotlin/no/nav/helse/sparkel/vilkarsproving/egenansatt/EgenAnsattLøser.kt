@@ -31,6 +31,10 @@ internal class EgenAnsattLøser(
             sikkerlogg.info("mottok melding: ${packet.toJson()}")
             skjermedePersoner.erSkjermetPerson(packet["fødselsnummer"].asText(), packet["@id"].asText()).also {
                 packet.setLøsning(behov, it)
+                if (it) {
+                    sikkerlogg.info("Er egenAnsatt $it, fnr ${packet["fødselsnummer"].asText()}")
+                }
+                sikkerlogg.info("Er ikke egenAnsatt $it, fnr ${packet["fødselsnummer"].asText()}")
             }
 
             log.info(
