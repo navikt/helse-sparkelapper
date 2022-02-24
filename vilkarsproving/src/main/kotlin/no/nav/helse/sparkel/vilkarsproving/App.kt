@@ -24,15 +24,6 @@ internal val logger: Logger = LoggerFactory.getLogger("sparkel-vilkarsproving")
 
 fun createApp(env: Environment): RapidsConnection {
     val rapidsConnection = RapidApplication.create(env.raw)
-    val serviceUser = readServiceUserCredentials()
-
-    val stsClientWs = stsClient(
-        stsUrl = env.stsSoapBaseUrl,
-        serviceUser = serviceUser
-    )
-
-    val egenAnsattService = EgenAnsattFactory.create(env.egenAnsattBaseUrl, listOf())
-    stsClientWs.configureFor(egenAnsattService)
 
     val aad: AzureAD? = try {
         AzureAD(AzureADProps(env.tokenEndpointURL, env.clientId, env.clientSecret, env.skjermendeOauthScope))
@@ -43,7 +34,7 @@ fun createApp(env: Environment): RapidsConnection {
     }
     val skjermedePersoner = SkjermedePersoner(aad, env.skjermedeBaseURL)
 
-    EgenAnsattLøser(rapidsConnection, egenAnsattService, skjermedePersoner)
+    EgenAnsattLøser(rapidsConnection, skjermedePersoner)
 
     return rapidsConnection
 }
