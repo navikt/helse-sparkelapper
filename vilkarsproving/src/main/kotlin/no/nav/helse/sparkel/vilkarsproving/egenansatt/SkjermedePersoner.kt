@@ -6,6 +6,7 @@ import java.net.URL
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.time.Duration
 
 class SkjermedePersoner(
     private val aad: AzureAD?,
@@ -30,6 +31,7 @@ class SkjermedePersoner(
             .header("Accept", "application/json")
             .header("Nav-Call-Id", behovId)
             .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+            .timeout(Duration.ofSeconds(30))
             .build()
 
         val responseHandler = HttpResponse.BodyHandlers.ofString()
