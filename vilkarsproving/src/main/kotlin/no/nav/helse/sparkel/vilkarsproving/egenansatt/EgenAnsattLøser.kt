@@ -29,13 +29,10 @@ internal class EgenAnsattLøser(
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         try {
             sikkerlogg.info("mottok melding: ${packet.toJson()}")
-            skjermedePersoner.erSkjermetPerson(packet["fødselsnummer"].asText(), packet["@id"].asText()).also {
-                packet.setLøsning(behov, it)
-                if (it) {
-                    sikkerlogg.info("Er egenAnsatt, fnr ${packet["fødselsnummer"].asText()}")
-                }
-                sikkerlogg.info("Er ikke egenAnsatt, fnr ${packet["fødselsnummer"].asText()}")
-            }
+            val personErSkjermet = skjermedePersoner.erSkjermetPerson(packet["fødselsnummer"].asText(), packet["@id"].asText())
+            packet.setLøsning(behov, personErSkjermet)
+            if (personErSkjermet) sikkerlogg.info("Er egenAnsatt, fnr ${packet["fødselsnummer"].asText()}")
+            else sikkerlogg.info("Er ikke egenAnsatt, fnr ${packet["fødselsnummer"].asText()}")
 
             log.info(
                 "løser behov {}",
