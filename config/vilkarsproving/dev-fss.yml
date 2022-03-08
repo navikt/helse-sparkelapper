@@ -1,7 +1,7 @@
 kafkaPool: nav-dev
 azure:
   enabled: true
-  tenant: nav.no
+  tenant: trygdeetaten.no
 env:
 - name: SKJERMEDE_BASE_URL
   value: https://skjermede-personer-pip.dev.intern.nav.no
