@@ -9,7 +9,7 @@ import java.net.http.HttpResponse
 import java.time.Duration
 
 class SkjermedePersoner(
-    private val aadAccessToken: String,
+    private val tokenSupplier: () -> String,
     private val baseUrl: URL,
     private val httpClient: HttpClient = HttpClient.newHttpClient()
 ) {
@@ -25,7 +25,7 @@ class SkjermedePersoner(
         )
 
         val request = HttpRequest.newBuilder(URI.create("$baseUrl/skjermet"))
-            .header("Authorization", "Bearer $aadAccessToken")
+            .header("Authorization", "Bearer ${tokenSupplier()}")
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
             .header("Nav-Call-Id", behovId)

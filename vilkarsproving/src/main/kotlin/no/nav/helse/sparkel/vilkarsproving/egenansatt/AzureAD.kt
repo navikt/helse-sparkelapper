@@ -11,6 +11,7 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
+import no.nav.helse.sparkel.vilkarsproving.logger
 import no.nav.helse.sparkel.vilkarsproving.objectMapper
 import org.slf4j.LoggerFactory
 import java.net.URL
@@ -24,11 +25,11 @@ class AzureAD(private val props: AzureADProps) {
     private val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
 
     init {
-        hentTokenMedEnklereHttpClient()
+        hentTokenMedEnklereHttpClient().also { logger.info("Token mot skjermende hentet ut fra AD.") }
     }
 
     internal fun accessToken(): String {
-        if (cachedAccessToken.expired) cachedAccessToken = fetchToken()
+        if (cachedAccessToken.expired) cachedAccessToken = fetchToken().also { logger.info("Token mot skjermede oppfrisket 👍") }
         return cachedAccessToken.access_token
     }
 
