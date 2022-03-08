@@ -9,7 +9,7 @@ import java.net.http.HttpResponse
 import java.time.Duration
 
 class SkjermedePersoner(
-    private val aad: AzureAD?,
+    private val aadAccessToken: String,
     private val baseUrl: URL,
     private val httpClient: HttpClient = HttpClient.newHttpClient()
 ) {
@@ -19,14 +19,13 @@ class SkjermedePersoner(
     }
 
     internal fun erSkjermetPerson(fødselsnummer: String, behovId: String): Boolean {
-        val accessToken = aad?.accessToken() ?: throw RuntimeException("Kan ikke få tak i access_token.")
 
         val requestBody = objectMapper.writeValueAsString(
             SkjermetDataRequestDTO(fødselsnummer)
         )
 
         val request = HttpRequest.newBuilder(URI.create("$baseUrl/skjermet"))
-            .header("Authorization", "Bearer $accessToken")
+            .header("Authorization", "Bearer $aadAccessToken")
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
             .header("Nav-Call-Id", behovId)

@@ -25,14 +25,10 @@ internal val logger: Logger = LoggerFactory.getLogger("sparkel-vilkarsproving")
 fun createApp(env: Environment): RapidsConnection {
     val rapidsConnection = RapidApplication.create(env.raw)
 
-    val aad: AzureAD? = try {
-        AzureAD(AzureADProps(env.tokenEndpointURL, env.clientId, env.clientSecret, env.skjermendeOauthScope))
-            .also { logger.info("Initielt token mot skjermende hentet fra AD.") }
-    } catch (ex: Exception) {
-        logger.error("Klarte ikke å opprette skjermende-klient: $ex",  ex)
-        null
-    }
-    val skjermedePersoner = SkjermedePersoner(aad, env.skjermedeBaseURL)
+    val aad: AzureAD = AzureAD(AzureADProps(env.tokenEndpointURL, env.clientId, env.clientSecret, env.skjermendeOauthScope))
+            .also { logger.info("Token mot skjermende hentet ut fra AD.") }
+
+    val skjermedePersoner = SkjermedePersoner(aad.accessToken(), env.skjermedeBaseURL)
 
     EgenAnsattLøser(rapidsConnection, skjermedePersoner)
 
