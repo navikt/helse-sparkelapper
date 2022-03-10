@@ -26,10 +26,11 @@ internal class PdlOversetterPersoninfoTest {
 
     @Test
     fun `hente ugradert person`() {
-        val response = PdlOversetter.oversettPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-ugradert.json".loadFromResources()))
+        val response = PdlOversetter.oversettPersoninfo("fnr", objectMapper.readValue("personinfo/pdl-hentPerson-ugradert.json".loadFromResources()))
         @Language("JSON")
         val expected = """
             {
+              "ident": "fnr",
               "fornavn": "LITEN",
               "mellomnavn": null,
               "etternavn": "TRANFLASKE",
@@ -43,10 +44,11 @@ internal class PdlOversetterPersoninfoTest {
 
     @Test
     fun `hente person uten gradering`() {
-        val response = PdlOversetter.oversettPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-uten-gradering.json".loadFromResources()))
+        val response = PdlOversetter.oversettPersoninfo("fnr", objectMapper.readValue("personinfo/pdl-hentPerson-uten-gradering.json".loadFromResources()))
         @Language("JSON")
         val expected = """
             {
+              "ident": "fnr",
               "fornavn": "LITEN",
               "mellomnavn": null,
               "etternavn": "TRANFLASKE",
@@ -60,10 +62,11 @@ internal class PdlOversetterPersoninfoTest {
 
     @Test
     fun `hente fortrolig person`() {
-        val response = PdlOversetter.oversettPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-fortrolig.json".loadFromResources()))
+        val response = PdlOversetter.oversettPersoninfo("fnr", objectMapper.readValue("personinfo/pdl-hentPerson-fortrolig.json".loadFromResources()))
         @Language("JSON")
         val expected = """
             {
+              "ident": "fnr",
               "fornavn": "LITEN",
               "mellomnavn": "STOR",
               "etternavn": "TRANFLASKE",
@@ -77,10 +80,11 @@ internal class PdlOversetterPersoninfoTest {
 
     @Test
     fun `hente strengt fortrolig person`() {
-        val response = PdlOversetter.oversettPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-strengt-fortrolig.json".loadFromResources()))
+        val response = PdlOversetter.oversettPersoninfo("fnr", objectMapper.readValue("personinfo/pdl-hentPerson-strengt-fortrolig.json".loadFromResources()))
         @Language("JSON")
         val expected = """
             {
+              "ident": "fnr",
               "fornavn": "LITEN",
               "mellomnavn": "STOR",
               "etternavn": "TRANFLASKE",
@@ -94,10 +98,11 @@ internal class PdlOversetterPersoninfoTest {
 
     @Test
     fun `hente strengt fortrolig utland person`() {
-        val response = PdlOversetter.oversettPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-strengt-fortrolig-utland.json".loadFromResources()))
+        val response = PdlOversetter.oversettPersoninfo("fnr", objectMapper.readValue("personinfo/pdl-hentPerson-strengt-fortrolig-utland.json".loadFromResources()))
         @Language("JSON")
         val expected = """
             {
+              "ident": "fnr",
               "fornavn": "LITEN",
               "mellomnavn": "STOR",
               "etternavn": "TRANFLASKE",
@@ -111,10 +116,11 @@ internal class PdlOversetterPersoninfoTest {
 
     @Test
     fun `hente person med ukjent gradering`() {
-        val response = PdlOversetter.oversettPersoninfo(objectMapper.readValue("personinfo/pdl-hentPerson-ukjent-gradering.json".loadFromResources()))
+        val response = PdlOversetter.oversettPersoninfo("fnr", objectMapper.readValue("personinfo/pdl-hentPerson-ukjent-gradering.json".loadFromResources()))
         @Language("JSON")
         val expected = """
             {
+              "ident": "fnr",
               "fornavn": "LITEN",
               "mellomnavn": "STOR",
               "etternavn": "TRANFLASKE",

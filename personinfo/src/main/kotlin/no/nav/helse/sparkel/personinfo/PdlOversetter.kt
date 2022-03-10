@@ -32,10 +32,11 @@ object PdlOversetter {
         return ObjectMapper().createObjectNode().put("dødsdato", dødsfall)
     }
 
-    fun oversettPersoninfo(pdlReply: JsonNode): JsonNode {
+    fun oversettPersoninfo(ident: String, pdlReply: JsonNode): JsonNode {
         håndterErrors(pdlReply)
         val pdlPerson = pdlReply["data"]["hentPerson"]
         return ObjectMapper().createObjectNode()
+            .put("ident", ident)
             .put("fornavn", pdlPerson["navn"].first()["fornavn"].asText())
             .put("mellomnavn", pdlPerson["navn"].first()["mellomnavn"]?.textValue())
             .put("etternavn", pdlPerson["navn"].first()["etternavn"].asText())

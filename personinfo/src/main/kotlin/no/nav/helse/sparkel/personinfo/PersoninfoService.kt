@@ -34,7 +34,7 @@ internal class PersoninfoService(private val pdlClient: PdlClient) {
             ident: String
     ): JsonNode {
         val pdlRespons = pdlClient.hentPersoninfo(ident, callId)
-        return PdlOversetter.oversettPersoninfo(pdlRespons)
+        return PdlOversetter.oversettPersoninfo(ident, pdlRespons)
     }
 
     fun løsningForVergemål(

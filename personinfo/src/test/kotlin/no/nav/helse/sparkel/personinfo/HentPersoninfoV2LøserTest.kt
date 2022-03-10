@@ -31,6 +31,7 @@ internal class HentPersoninfoV2LøserTest {
         val løsning = objectMapper.readTree(
             """
             {
+              "ident": "fnr",
               "fornavn": "LITEN",
               "mellomnavn": null,
               "etternavn": "TRANFLASKE",
@@ -64,6 +65,7 @@ internal class HentPersoninfoV2LøserTest {
         val løsning = objectMapper.readTree(
             """
             {
+              "ident": "fnr",
               "fornavn": "LITEN",
               "mellomnavn": null,
               "etternavn": "TRANFLASKE",
@@ -100,6 +102,7 @@ internal class HentPersoninfoV2LøserTest {
         val løsning = objectMapper.readTree(
             """
             {
+              "ident": "bruker denne",
               "fornavn": "LITEN",
               "mellomnavn": null,
               "etternavn": "TRANFLASKE",
@@ -114,5 +117,56 @@ internal class HentPersoninfoV2LøserTest {
         rapid.sendTestMessage(behov)
         assertEquals(løsning, rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"])
         verify { personinfoService.løsningForPersoninfo(any(), eq("bruker denne")) }
+    }
+
+    @Test
+    fun `besvarer behov med flere identer`() {
+        val behov = """
+        {
+            "@event_name" : "behov",
+            "@behov" : [ "HentPersoninfoV2" ],
+            "@id" : "id",
+            "@opprettet" : "2021-11-17",
+            "spleisBehovId" : "spleisBehovId",
+            "fødselsnummer" : "fnr",
+            "HentPersoninfoV2": {
+                "ident": ["ident1", "ident2"]
+            }
+        }
+        """
+
+        val løsning1 = objectMapper.readTree(
+            """
+            {
+              "ident": "ident1",
+              "fornavn": "LITEN",
+              "mellomnavn": null,
+              "etternavn": "TRANFLASKE",
+              "fødselsdato": "1976-04-09",
+              "kjønn": "Ukjent",
+              "adressebeskyttelse": "Ugradert"
+            }
+        """
+        )
+
+        val løsning2 = objectMapper.readTree(
+            """
+            {
+              "ident": "ident2",
+              "fornavn": "STOR",
+              "mellomnavn": null,
+              "etternavn": "HYGGE",
+              "fødselsdato": "1980-01-01",
+              "kjønn": "Mann",
+              "adressebeskyttelse": "Ugradert"
+            }
+        """
+        )
+
+        every { personinfoService.løsningForPersoninfo(any(), eq("ident1")) } returns løsning1
+        every { personinfoService.løsningForPersoninfo(any(), eq("ident2")) } returns løsning2
+        rapid.sendTestMessage(behov)
+        assertEquals(løsning1, rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"][0])
+        assertEquals(løsning2, rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"][1])
     }
 }

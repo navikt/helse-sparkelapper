@@ -1,5 +1,7 @@
 package no.nav.helse.sparkel.personinfo
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.*
 import org.slf4j.Logger
@@ -31,9 +33,20 @@ internal class HentPersoninfoV2Løser(
                 "behovId" to behovId
         )) {
             sikkerLogg.info("mottok melding: ${packet.toJson()}")
-            val ident = packet["HentPersoninfoV2.ident"].takeUnless { it.isMissingOrNull() }?.asText() ?: packet["fødselsnummer"].asText()
+            val ident = packet["HentPersoninfoV2.ident"].takeUnless { it.isMissingOrNull() } ?: packet["fødselsnummer"]
+
             try {
-                packet["@løsning"] = mapOf("HentPersoninfoV2" to personinfoService.løsningForPersoninfo(behovId, ident))
+                val løsning = if (ident.isArray) {
+                    ObjectMapper().createArrayNode().apply {
+                        (ident as ArrayNode).forEach {
+                            this.add(personinfoService.løsningForPersoninfo(behovId, it.asText()))
+                        }
+                    }
+                } else {
+                    personinfoService.løsningForPersoninfo(behovId, ident.asText())
+                }
+
+                packet["@løsning"] = mapOf("HentPersoninfoV2" to løsning)
                 context.publish(packet.toJson())
 
             } catch (e: Exception) {
