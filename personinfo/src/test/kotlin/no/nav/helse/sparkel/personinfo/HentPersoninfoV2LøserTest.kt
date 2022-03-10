@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.personinfo
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -41,9 +42,77 @@ internal class HentPersoninfoV2LøserTest {
         )
 
 
-        every { personinfoService.løsningForPersoninfo(any(), any(), any()) } returns løsning
+        every { personinfoService.løsningForPersoninfo(any(), any()) } returns løsning
         rapid.sendTestMessage(behov)
 
         assertEquals(løsning, rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"])
+    }
+
+    @Test
+    fun `besvarer komposittbehov`() {
+        val behov = """
+        {
+            "@event_name" : "behov",
+            "@behov" : [ "HentNoeAnnetOgså", "HentPersoninfoV2" ],
+            "@id" : "id",
+            "@opprettet" : "2021-11-17",
+            "spleisBehovId" : "spleisBehovId",
+            "fødselsnummer" : "fnr"
+        }
+        """
+
+        val løsning = objectMapper.readTree(
+            """
+            {
+              "fornavn": "LITEN",
+              "mellomnavn": null,
+              "etternavn": "TRANFLASKE",
+              "fødselsdato": "1976-04-09",
+              "kjønn": "Ukjent",
+              "adressebeskyttelse": "Ugradert"
+            }
+        """
+        )
+
+
+        every { personinfoService.løsningForPersoninfo(any(), any()) } returns løsning
+        rapid.sendTestMessage(behov)
+
+        assertEquals(løsning, rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"])
+    }
+
+    @Test
+    fun `besvarer behov med egen ident`() {
+        val behov = """
+        {
+            "@event_name" : "behov",
+            "@behov" : [ "HentPersoninfoV2" ],
+            "@id" : "id",
+            "@opprettet" : "2021-11-17",
+            "spleisBehovId" : "spleisBehovId",
+            "fødselsnummer" : "fnr",
+            "HentPersoninfoV2": {
+                "ident": "bruker denne"
+            }
+        }
+        """
+
+        val løsning = objectMapper.readTree(
+            """
+            {
+              "fornavn": "LITEN",
+              "mellomnavn": null,
+              "etternavn": "TRANFLASKE",
+              "fødselsdato": "1976-04-09",
+              "kjønn": "Ukjent",
+              "adressebeskyttelse": "Ugradert"
+            }
+        """
+        )
+
+        every { personinfoService.løsningForPersoninfo(any(), any()) } returns løsning
+        rapid.sendTestMessage(behov)
+        assertEquals(løsning, rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"])
+        verify { personinfoService.løsningForPersoninfo(any(), eq("bruker denne")) }
     }
 }

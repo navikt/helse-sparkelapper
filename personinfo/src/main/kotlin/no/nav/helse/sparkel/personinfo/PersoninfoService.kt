@@ -30,17 +30,11 @@ internal class PersoninfoService(private val pdlClient: PdlClient) {
     }
 
     fun løsningForPersoninfo(
-        behovId: String,
-        spleisBehovId: String,
-        fødselsnummer: String
-    ): JsonNode = withMDC("id" to behovId, "spleisBehovId" to spleisBehovId) {
-        val pdlRespons = pdlClient.hentPersoninfo(fødselsnummer, behovId)
-        log.info(
-            "løser behov HentPersoninfoV2: {} for {}",
-            keyValue("id", behovId),
-            keyValue("spleisBehovId", spleisBehovId)
-        )
-        PdlOversetter.oversettPersoninfo(pdlRespons)
+            callId: String,
+            ident: String
+    ): JsonNode {
+        val pdlRespons = pdlClient.hentPersoninfo(ident, callId)
+        return PdlOversetter.oversettPersoninfo(pdlRespons)
     }
 
     fun løsningForVergemål(

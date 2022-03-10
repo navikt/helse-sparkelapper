@@ -22,13 +22,13 @@ internal class PdlClient(
     }
 
     private fun request(
-        fødselsnummer: String,
-        behovId: String,
+        ident: String,
+        callId: String,
         query: String
     ): JsonNode {
         val stsToken = stsClient.token()
 
-        val body = objectMapper.writeValueAsString(PdlQueryObject(query, Variables(fødselsnummer)))
+        val body = objectMapper.writeValueAsString(PdlQueryObject(query, Variables(ident)))
 
         val request = HttpRequest.newBuilder(URI.create(baseUrl))
             .header("TEMA", "SYK")
@@ -36,7 +36,7 @@ internal class PdlClient(
             .header("Nav-Consumer-Token", "Bearer $stsToken")
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
-            .header("Nav-Call-Id", behovId)
+            .header("Nav-Call-Id", callId)
             .POST(HttpRequest.BodyPublishers.ofString(body))
             .build()
 
@@ -50,22 +50,22 @@ internal class PdlClient(
     }
 
     internal fun hentDødsdato(
-        fødselsnummer: String,
-        behovId: String
-    ) = request(fødselsnummer, behovId, dødsdatoQuery)
+        ident: String,
+        callId: String
+    ) = request(ident, callId, dødsdatoQuery)
 
     internal fun hentPersoninfo(
-        fødselsnummer: String,
-        behovId: String
-    ) = request(fødselsnummer, behovId, personinfoQuery)
+        ident: String,
+        callId: String
+    ) = request(ident, callId, personinfoQuery)
 
     internal fun hentIdenter(
         ident: String,
-        behovId: String
-    ) = PdlOversetter.oversetterIdenter(request(ident, behovId, hentIdenterQuery))
+        callId: String
+    ) = PdlOversetter.oversetterIdenter(request(ident, callId, hentIdenterQuery))
 
     internal fun hentVergemål(
         ident: String,
-        behovId: String
-    ) = request(ident, behovId, hentVergemålQuery)
+        callId: String
+    ) = request(ident, callId, hentVergemålQuery)
 }

@@ -1,7 +1,6 @@
 package no.nav.helse.sparkel.personinfo
 
 import kotlinx.coroutines.runBlocking
-import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -18,28 +17,29 @@ internal class HentPersoninfoV2Løser(
             validate {
                 it.demandAll("@behov", listOf("HentPersoninfoV2"))
                 it.rejectKey("@løsning")
-                it.requireKey("fødselsnummer", "spleisBehovId", "@id")
+                it.requireKey("fødselsnummer")
+                it.interestedIn("HentPersoninfoV2.ident", "spleisBehovId", "@id")
             }
         }.register(this)
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) = runBlocking {
-        sikkerLogg.info("mottok melding: ${packet.toJson()}")
         val behovId = packet["@id"].asText()
         val spleisBehovId = packet["spleisBehovId"].asText()
-        val fnr = packet["fødselsnummer"].asText()
-        try {
-            packet["@løsning"] = mapOf("HentPersoninfoV2" to personinfoService.løsningForPersoninfo(behovId, spleisBehovId, fnr))
-            val løsningJson = packet.toJson()
-            context.publish(løsningJson)
+        withMDC(mapOf(
+                "spleisBehovId" to spleisBehovId,
+                "behovId" to behovId
+        )) {
+            sikkerLogg.info("mottok melding: ${packet.toJson()}")
+            val ident = packet["HentPersoninfoV2.ident"].takeUnless { it.isMissingOrNull() }?.asText() ?: packet["fødselsnummer"].asText()
+            try {
+                packet["@løsning"] = mapOf("HentPersoninfoV2" to personinfoService.løsningForPersoninfo(behovId, ident))
+                context.publish(packet.toJson())
 
-        } catch (e: Exception) {
-            log.warn(
-                "Feil under løsing av personinfo-behov {} for {}: ${e.message}",
-                keyValue("id", behovId),
-                keyValue("spleisBehovId", spleisBehovId),
-                e
-            )
+            } catch (e: Exception) {
+                sikkerLogg.warn("Feil under løsing av personinfo-behov: ${e.message}", e)
+                log.warn("Feil under løsing av personinfo-behov: ${e.message}", e)
+            }
         }
     }
 
