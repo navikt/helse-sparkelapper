@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class HentPersoninfoV2LøserTest {
@@ -168,5 +169,28 @@ internal class HentPersoninfoV2LøserTest {
         rapid.sendTestMessage(behov)
         assertEquals(løsning1, rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"][0])
         assertEquals(løsning2, rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"][1])
+    }
+
+    @Test
+    fun `besvarer behov med ingen identer`() {
+        val behov = """
+        {
+            "@event_name" : "behov",
+            "@behov" : [ "HentPersoninfoV2" ],
+            "@id" : "id",
+            "@opprettet" : "2021-11-17",
+            "spleisBehovId" : "spleisBehovId",
+            "fødselsnummer" : "fnr",
+            "HentPersoninfoV2": {
+                "ident": []
+            }
+        }
+        """
+
+        rapid.sendTestMessage(behov)
+        val løsning = rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"]
+        println(rapid.inspektør.message(0).toPrettyString())
+        assertTrue(løsning.isArray)
+        assertTrue(løsning.isEmpty)
     }
 }
