@@ -37,6 +37,7 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
                 sikkerlogg.info("Forventet å finne et oppgaver-felt med et array:\n$response")
                 return@withMDC null
             }
+            sikkerlogg.info("Åpne oppgaver, respons: $response")
             response.antallRelevanteOppgaver().also { antallEtterFiltrering ->
                 if (antallEtterFiltrering == 0 && response["oppgaver"].size() > 0) {
                     log.info("Gosys-oppgaver ble filtrert ned til 0 slik at varsel ikke vil bli laget for $aktørId.")
