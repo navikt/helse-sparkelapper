@@ -1,5 +1,7 @@
 package no.nav.helse.sparkel.sykepengeperioder.dbting
 
+import java.time.LocalDate
+import javax.sql.DataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.helse.sparkel.sykepengeperioder.Fnr
@@ -7,8 +9,6 @@ import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk.Inntektsopply
 import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode.Premiegrunnlag
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
-import javax.sql.DataSource
 
 internal class InntektDAO(
     private val dataSource: DataSource
@@ -47,9 +47,23 @@ internal class InntektDAO(
                         loenn = rs.double("is13_loenn")
                     )
                 }.asList
-            )
+            ).also { loggHvisFlereInntekterForSammeDato(it, fnr) }
         }
     }
+
+    private fun loggHvisFlereInntekterForSammeDato(inntektDTOS: List<InntektDTO>, fnr: Fnr) {
+        inntektDTOS.fold(mutableMapOf<String, Int>()) { acc, dto ->
+            acc.apply {
+                compute(key(dto.sykepengerFom, dto.loenn)) { _, antall ->
+                    if (antall == null) 1
+                    else antall + 1
+                }
+            }
+        }.filter { it.value > 1 }
+            .forEach { _ -> tjenestekallLog.info("Mer enn én inntekt for samme dato for FNR $fnr: $inntektDTOS") }
+    }
+
+    private fun key(dato: LocalDate, inntekt: Double) = "$dato-$inntekt"
 
     internal data class InntektDTO(
         var orgNr: String,
