@@ -19,6 +19,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
 import kotlinx.coroutines.runBlocking
+import org.slf4j.LoggerFactory
 
 class SkjermedePersoner(
     private val tokenSupplier: () -> String,
@@ -41,6 +42,8 @@ class SkjermedePersoner(
         private val objectMapper = jacksonObjectMapper()
     }
 
+    private val log = LoggerFactory.getLogger(this::class.java)
+
     internal fun erSkjermetPerson(fødselsnummer: String, behovId: String): Boolean {
 
         val requestBody = objectMapper.writeValueAsString(
@@ -49,7 +52,6 @@ class SkjermedePersoner(
 
         try {
             runBlocking {
-                retry("er_skjermet_person") {
                     val httpResponse = ktorHttpClient.post<HttpStatement>("$baseUrl/skjermet") {
                         header("Authorization", "Bearer ${tokenSupplier()}")
                         header("Nav-Call-Id", behovId)
@@ -65,7 +67,6 @@ class SkjermedePersoner(
                             log.warn("Statuskode: ${httpResponse.status.description} feil på oppslag mot skjermet")
                         }
                     }
-                }
             }
         } catch (exception: Exception) {
             log.warn("ktorHttpClient feilet på oppslag mot skjermet", exception)
