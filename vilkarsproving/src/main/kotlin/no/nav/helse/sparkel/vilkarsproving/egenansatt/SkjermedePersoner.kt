@@ -48,7 +48,7 @@ class SkjermedePersoner(
             SkjermetDataRequestDTO(fødselsnummer)
         )
 
-        testerSkjermetPersonMedKtorKlient(ktorHttpClient, baseUrl, tokenSupplier, requestBody, behovId)
+        testerSkjermetPersonMedKtorKlient(behovId, requestBody)
 
         val request = HttpRequest.newBuilder(URI.create("$baseUrl/skjermet"))
             .header("Authorization", "Bearer ${tokenSupplier()}")
@@ -70,38 +70,36 @@ class SkjermedePersoner(
         return objectMapper.readTree(response.body()).asBoolean()
     }
 
+    private fun testerSkjermetPersonMedKtorKlient(behovId: String, requestBody: String) {
+        val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+
+        try {
+            runBlocking {
+                val httpResponse = ktorHttpClient.post<HttpStatement>("$baseUrl/skjermet") {
+                    header("Authorization", "Bearer ${tokenSupplier()}")
+                    header("Nav-Call-Id", behovId)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                    body = requestBody
+                }.execute()
+                when (httpResponse.status.value) {
+                    200 -> {
+                        val response: String = httpResponse.call.response.receive()
+                        sikkerlogg.info("ktorHttpClient kallet fungerte fikk dette som svar: " + response)
+                    }
+                    else -> {
+                        sikkerlogg.warn("Statuskode: ${httpResponse.status.description} feil på oppslag mot skjermet")
+                    }
+                }
+            }
+        } catch (exception: Exception) {
+            sikkerlogg.warn("ktorHttpClient feilet på oppslag mot skjermet", exception)
+        }
+    }
+
 }
 
 private data class SkjermetDataRequestDTO(
     val personident: String
 )
 
-fun testerSkjermetPersonMedKtorKlient(
-    ktorHttpClient: KtorHttpClient, baseUrl: URL,
-    tokenSupplier: () -> String, requestBody: String, behovId: String
-) {
-    val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-
-    try {
-        runBlocking {
-            val httpResponse = ktorHttpClient.post<HttpStatement>("$baseUrl/skjermet") {
-                header("Authorization", "Bearer ${tokenSupplier()}")
-                header("Nav-Call-Id", behovId)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                body = requestBody
-            }.execute()
-            when (httpResponse.status.value) {
-                200 -> {
-                    val response: String = httpResponse.call.response.receive()
-                    sikkerlogg.info("ktorHttpClient kallet fungerte fikk dette som svar: " + response)
-                }
-                else -> {
-                    sikkerlogg.warn("Statuskode: ${httpResponse.status.description} feil på oppslag mot skjermet")
-                }
-            }
-        }
-    } catch (exception: Exception) {
-        sikkerlogg.warn("ktorHttpClient feilet på oppslag mot skjermet", exception)
-    }
-}
