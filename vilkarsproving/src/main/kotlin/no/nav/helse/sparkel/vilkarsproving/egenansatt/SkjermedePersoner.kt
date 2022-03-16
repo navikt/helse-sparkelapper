@@ -2,6 +2,9 @@ package no.nav.helse.sparkel.vilkarsproving.egenansatt
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.call.receive
+import io.ktor.client.features.HttpTimeout
+import io.ktor.client.features.json.JacksonSerializer
+import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.accept
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -21,7 +24,17 @@ class SkjermedePersoner(
     private val tokenSupplier: () -> String,
     private val baseUrl: URL,
     private val httpClient: HttpClient = HttpClient.newHttpClient(),
-    private val ktorHttpClient: KtorHttpClient
+    private val ktorHttpClient: KtorHttpClient = KtorHttpClient {
+        install(JsonFeature)
+        {
+            serializer = JacksonSerializer()
+        }
+        install(HttpTimeout) {
+            connectTimeoutMillis = 10000
+            requestTimeoutMillis = 10000
+            socketTimeoutMillis = 10000
+        }
+    }
 ) {
 
     private companion object {
@@ -54,9 +67,8 @@ class SkjermedePersoner(
                     }
                 }
             }
-        }
-        catch (exception: Exception) {
-            log.warn("ktorHttpClient feilet på oppslag mot skjermet" , exception)
+        } catch (exception: Exception) {
+            log.warn("ktorHttpClient feilet på oppslag mot skjermet", exception)
         }
 
         val request = HttpRequest.newBuilder(URI.create("$baseUrl/skjermet"))
