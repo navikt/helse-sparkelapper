@@ -52,18 +52,11 @@ internal class InntektDAO(
     }
 
     private fun loggHvisFlereInntekterForSammeDato(inntektDTOS: List<InntektDTO>, fnr: Fnr) {
-        inntektDTOS.fold(mutableMapOf<String, Int>()) { acc, dto ->
-            acc.apply {
-                compute(key(dto.sykepengerFom, dto.loenn)) { _, antall ->
-                    if (antall == null) 1
-                    else antall + 1
-                }
-            }
-        }.filter { it.value > 1 }
-            .forEach { _ -> tjenestekallLog.info("Mer enn én inntekt for samme dato for FNR $fnr: $inntektDTOS") }
+        inntektDTOS.fold(mutableMapOf<LocalDate, Set<Double>>()) { acc, dto ->
+            acc.apply { merge(dto.sykepengerFom, setOf(dto.loenn), Set<Double>::plus) }
+        }.filter { it.value.size > 1 }
+            .forEach { (dato, _) -> tjenestekallLog.info("Mer enn én inntekt for $dato for FNR $fnr: $inntektDTOS") }
     }
-
-    private fun key(dato: LocalDate, inntekt: Double) = "$dato-$inntekt"
 
     internal data class InntektDTO(
         var orgNr: String,
