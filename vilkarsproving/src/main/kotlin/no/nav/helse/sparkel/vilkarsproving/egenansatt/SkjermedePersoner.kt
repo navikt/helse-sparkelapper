@@ -89,7 +89,7 @@ class SkjermedePersoner(
                 }.execute()
                 when (httpResponse.status.value) {
                     200 -> {
-                        val response: String = httpResponse.call.response.receive()
+                        val response: Boolean = httpResponse.call.response.receive()
                         sikkerlogg.info("ktorHttpClient kallet fungerte fikk dette som svar: " + response)
                     }
                     else -> {
