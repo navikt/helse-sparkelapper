@@ -1,6 +1,8 @@
 package no.nav.helse.sparkel.vilkarsproving.egenansatt
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.call.receive
 import io.ktor.client.features.HttpTimeout
 import io.ktor.client.features.json.JacksonSerializer
@@ -28,7 +30,10 @@ class SkjermedePersoner(
     private val ktorHttpClient: KtorHttpClient = KtorHttpClient {
         install(JsonFeature)
         {
-            serializer = JacksonSerializer()
+            serializer = JacksonSerializer {
+                registerKotlinModule()
+                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            }
         }
         install(HttpTimeout) {
             connectTimeoutMillis = 10000
@@ -44,11 +49,11 @@ class SkjermedePersoner(
 
     internal fun erSkjermetPerson(fødselsnummer: String, behovId: String): Boolean {
 
+        testerSkjermetPersonMedKtorKlient(behovId, fødselsnummer)
+
         val requestBody = objectMapper.writeValueAsString(
             SkjermetDataRequestDTO(fødselsnummer)
         )
-
-        testerSkjermetPersonMedKtorKlient(behovId, requestBody)
 
         val request = HttpRequest.newBuilder(URI.create("$baseUrl/skjermet"))
             .header("Authorization", "Bearer ${tokenSupplier()}")
@@ -70,7 +75,7 @@ class SkjermedePersoner(
         return objectMapper.readTree(response.body()).asBoolean()
     }
 
-    private fun testerSkjermetPersonMedKtorKlient(behovId: String, requestBody: String) {
+    private fun testerSkjermetPersonMedKtorKlient(behovId: String, fødselsnummer: String) {
         val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
         try {
@@ -80,7 +85,7 @@ class SkjermedePersoner(
                     header("Nav-Call-Id", behovId)
                     accept(ContentType.Application.Json)
                     contentType(ContentType.Application.Json)
-                    body = requestBody
+                    body = SkjermetDataRequestDTO(fødselsnummer)
                 }.execute()
                 when (httpResponse.status.value) {
                     200 -> {
