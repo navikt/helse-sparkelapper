@@ -43,6 +43,6 @@ internal class SparkelUtbetalingsperioderMockRiver(
         packet["@løsning"] = mapOf(
             behov to objectMapper.convertValue(utbetalingsperioder, ArrayNode::class.java)
         )
-        rapidsConnection.publish(packet.toJson())
+        context.publish(packet.toJson())
     }
 }

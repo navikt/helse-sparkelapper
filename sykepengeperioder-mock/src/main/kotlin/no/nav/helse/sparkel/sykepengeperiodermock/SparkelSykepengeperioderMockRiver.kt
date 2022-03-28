@@ -49,6 +49,6 @@ internal class SparkelSykepengeperioderMockRiver(
         packet["@løsning"] = mapOf(
             behov to objectMapper.convertValue(utbetalteSykeperiode, ArrayNode::class.java)
         )
-        rapidsConnection.publish(packet.toJson())
+        context.publish(packet.toJson())
     }
 }
