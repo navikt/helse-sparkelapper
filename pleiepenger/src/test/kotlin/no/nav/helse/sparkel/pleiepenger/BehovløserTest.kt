@@ -122,7 +122,7 @@ internal class BehovløserTest {
             "@behov" : [ "Pleiepenger", "Omsorgspenger", "Opplæringspenger" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "fnr",
             "Pleiepenger" : {
@@ -147,7 +147,7 @@ internal class BehovløserTest {
             "@behov" : [ "Pleiepenger" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "fnr",
             "Pleiepenger": {
@@ -164,7 +164,7 @@ internal class BehovløserTest {
             "@behov" : [ "Pleiepenger" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "ikkeTilgang",
             "Pleiepenger": {
@@ -181,7 +181,7 @@ internal class BehovløserTest {
             "@behov" : [ "Omsorgspenger" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "fnr",
             "Omsorgspenger": {
@@ -198,7 +198,7 @@ internal class BehovløserTest {
             "@behov" : [ "Omsorgspenger" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "ikkeTilgang",
             "Omsorgspenger": {
@@ -215,7 +215,7 @@ internal class BehovløserTest {
             "@behov" : [ "Opplæringspenger" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "fnr",
             "Opplæringspenger": {
@@ -232,7 +232,7 @@ internal class BehovløserTest {
             "@behov" : [ "Opplæringspenger" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "ikkeTilgang",
             "Opplæringspenger": {

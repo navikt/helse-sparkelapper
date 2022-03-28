@@ -23,7 +23,8 @@ class BehandlendeEnhetRiver(
                 it.demandAll("@behov", listOf("HentEnhet"))
                 it.requireKey("@id")
                 it.rejectKey("@løsning")
-                it.requireKey("fødselsnummer", "spleisBehovId")
+                it.requireKey("fødselsnummer")
+                it.interestedIn("hendelseId")
             }
         }.register(this)
     }
@@ -31,18 +32,18 @@ class BehandlendeEnhetRiver(
     override fun onPacket(packet: JsonMessage, context: MessageContext) = runBlocking {
         log.info(
             "Henter behandlende enhet for {}, {}",
-            keyValue("spleisBehovId", packet["spleisBehovId"].asText()),
+            keyValue("hendelseId", packet["hendelseId"].asText()),
             keyValue("@id", packet["@id"].asText())
         )
         try {
-            val enhet = personinfoService.finnBehandlendeEnhet(packet["fødselsnummer"].asText(), packet["spleisBehovId"].asText())
+            val enhet = personinfoService.finnBehandlendeEnhet(packet["fødselsnummer"].asText(), packet["hendelseId"].asText())
             packet["@løsning"] = mapOf(
                 "HentEnhet" to enhet
             )
             context.publish(packet.toJson())
         } catch (err: Exception) {
             log.error("feil ved håntering av behov {} for {}: ${err.message}",
-                keyValue("spleisBehovId", packet["spleisBehovId"].asText()),
+                keyValue("hendelseId", packet["hendelseId"].asText()),
                 keyValue("@id", packet["@id"].asText()),
                 err)
         }

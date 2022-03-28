@@ -24,7 +24,7 @@ internal class HentPersoninfoV2LøserTest {
             "@behov" : [ "HentPersoninfoV2" ],
             "@id" : "id",
             "@opprettet" : "2021-11-17",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "fødselsnummer" : "fnr"
         }
         """
@@ -58,7 +58,7 @@ internal class HentPersoninfoV2LøserTest {
             "@behov" : [ "HentNoeAnnetOgså", "HentPersoninfoV2" ],
             "@id" : "id",
             "@opprettet" : "2021-11-17",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "fødselsnummer" : "fnr"
         }
         """
@@ -92,7 +92,7 @@ internal class HentPersoninfoV2LøserTest {
             "@behov" : [ "HentPersoninfoV2" ],
             "@id" : "id",
             "@opprettet" : "2021-11-17",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "fødselsnummer" : "fnr",
             "HentPersoninfoV2": {
                 "ident": "bruker denne"
@@ -128,7 +128,7 @@ internal class HentPersoninfoV2LøserTest {
             "@behov" : [ "HentPersoninfoV2" ],
             "@id" : "id",
             "@opprettet" : "2021-11-17",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "fødselsnummer" : "fnr",
             "HentPersoninfoV2": {
                 "ident": ["ident1", "ident2"]
@@ -179,7 +179,7 @@ internal class HentPersoninfoV2LøserTest {
             "@behov" : [ "HentPersoninfoV2" ],
             "@id" : "id",
             "@opprettet" : "2021-11-17",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "fødselsnummer" : "fnr",
             "HentPersoninfoV2": {
                 "ident": []

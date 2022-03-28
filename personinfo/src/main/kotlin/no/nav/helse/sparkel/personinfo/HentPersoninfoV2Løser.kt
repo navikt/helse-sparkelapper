@@ -20,16 +20,16 @@ internal class HentPersoninfoV2Løser(
                 it.demandAll("@behov", listOf("HentPersoninfoV2"))
                 it.rejectKey("@løsning")
                 it.requireKey("fødselsnummer")
-                it.interestedIn("HentPersoninfoV2.ident", "spleisBehovId", "@id")
+                it.interestedIn("HentPersoninfoV2.ident", "hendelseId", "@id")
             }
         }.register(this)
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) = runBlocking {
         val behovId = packet["@id"].asText()
-        val spleisBehovId = packet["spleisBehovId"].asText()
+        val hendelseId = packet["hendelseId"].asText()
         withMDC(mapOf(
-                "spleisBehovId" to spleisBehovId,
+                "hendelseId" to hendelseId,
                 "behovId" to behovId
         )) {
             sikkerLogg.info("mottok melding: ${packet.toJson()}")

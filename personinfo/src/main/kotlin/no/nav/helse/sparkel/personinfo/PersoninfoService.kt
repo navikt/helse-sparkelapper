@@ -41,7 +41,7 @@ internal class PersoninfoService(private val pdlClient: PdlClient) {
         behovId: String,
         fødselsnummer: String
     ): Vergemålløser.Resultat =
-        withMDC("id" to behovId, "spleisBehovId" to behovId) {
+        withMDC("id" to behovId, "hendelseId" to behovId) {
             val pdlRespons = pdlClient.hentVergemål(fødselsnummer, behovId)
             log.info(
                 "løser behov Vergemål {}",

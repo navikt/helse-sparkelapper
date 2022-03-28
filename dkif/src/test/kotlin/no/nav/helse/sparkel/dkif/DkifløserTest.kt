@@ -124,7 +124,7 @@ internal class DkifløserTest {
             "@behov" : [ "DigitalKontaktinformasjon" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "fødselsnummer" : "fnr"
         }
         """
@@ -136,7 +136,7 @@ internal class DkifløserTest {
             "@behov" : [ "DigitalKontaktinformasjon" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "fødselsnummer" : "ikkeTilgang"
         }
         """
@@ -148,7 +148,7 @@ internal class DkifløserTest {
             "@behov" : [ "DigitalKontaktinformasjon" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "fødselsnummer" : "feil"
         }
         """
@@ -160,7 +160,7 @@ internal class DkifløserTest {
             "@behov" : [ "DigitalKontaktinformasjon" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "fødselsnummer" : "reservert"
         }
         """
@@ -172,7 +172,7 @@ internal class DkifløserTest {
             "@behov" : [ "DigitalKontaktinformasjon" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "fødselsnummer" : "kanIkkeVarsles"
         }
         """
@@ -184,7 +184,7 @@ internal class DkifløserTest {
             "@behov" : [ "DigitalKontaktinformasjon" ],
             "@id" : "id",
             "@opprettet" : "2020-05-18",
-            "spleisBehovId" : "spleisBehovId",
+            "hendelseId" : "hendelseId",
             "fødselsnummer" : "erReservertOgKanIkkeVarsles"
         }
         """
