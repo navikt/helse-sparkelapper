@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.sparkel.sykepengeperioder.DatabaseConfig.Companion.databaseConfig
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*
 import no.nav.helse.sparkel.sykepengeperioder.dbting.FeriepengeDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.InntektDAO
@@ -15,11 +16,13 @@ fun main() {
 }
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
+    val databaseConfig = env.databaseConfig()
+
     val dataSource = HikariDataSource(HikariConfig().apply {
-        jdbcUrl = env.getValue("INFOTRYGDSP_URL")
-        username = env.getValue("INFOTRYGDSP_USERNAME")
-        password = env.getValue("INFOTRYGDSP_PASSWORD")
-        schema = env.getValue("INFOTRYGDSP_SCHEMA")
+        jdbcUrl = databaseConfig.jdbcUrl
+        username = databaseConfig.username
+        password = databaseConfig.password
+        schema = databaseConfig.schema
     })
 
     val infotrygdService = InfotrygdService(
