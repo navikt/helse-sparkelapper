@@ -179,7 +179,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-snyk-gradle-caches-
       - name: Gradle vulnerability check
-        uses: snyk/actions/gradle-jdk16@master
+        uses: snyk/actions/gradle-jdk@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
