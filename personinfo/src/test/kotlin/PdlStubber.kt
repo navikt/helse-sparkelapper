@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import no.nav.helse.sparkel.personinfo.*
 import no.nav.helse.sparkel.personinfo.stubSts
 import org.intellij.lang.annotations.Language
@@ -21,11 +22,11 @@ internal abstract class PdlStubber {
 
     protected lateinit var personinfoService: PersoninfoService
 
-    protected fun stubPdlRespons(body: String, callId:String = "behovId") {
+    protected fun stubPdlRespons(body: String) {
         WireMock.stubFor(
             WireMock.post(WireMock.urlPathEqualTo("/graphql"))
                 .withHeader("Accept", WireMock.equalTo("application/json"))
-                .withHeader("Nav-Call-Id", WireMock.equalTo(callId))
+                .withHeader("Nav-Call-Id", AnythingPattern())
 
                 .willReturn(
                     WireMock.aResponse()

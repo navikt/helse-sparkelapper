@@ -7,6 +7,8 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.github.tomakehurst.wiremock.matching.AnythingPattern
+import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
@@ -35,6 +37,10 @@ internal class DkifløserTest {
 
         override fun publish(key: String, message: String) {
             sendtMelding = objectMapper.readTree(message)
+        }
+
+        override fun rapidName(): String {
+            return "Test"
         }
 
         override fun start() {}
@@ -122,7 +128,7 @@ internal class DkifløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "DigitalKontaktinformasjon" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "fødselsnummer" : "fnr"
@@ -134,7 +140,7 @@ internal class DkifløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "DigitalKontaktinformasjon" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "fødselsnummer" : "ikkeTilgang"
@@ -146,7 +152,7 @@ internal class DkifløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "DigitalKontaktinformasjon" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "fødselsnummer" : "feil"
@@ -158,7 +164,7 @@ internal class DkifløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "DigitalKontaktinformasjon" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "fødselsnummer" : "reservert"
@@ -170,7 +176,7 @@ internal class DkifløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "DigitalKontaktinformasjon" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "fødselsnummer" : "kanIkkeVarsles"
@@ -182,7 +188,7 @@ internal class DkifløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "DigitalKontaktinformasjon" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "fødselsnummer" : "erReservertOgKanIkkeVarsles"
@@ -209,7 +215,7 @@ internal class DkifløserTest {
             get(urlPathEqualTo("/api/v1/personer/kontaktinformasjon"))
                 .withHeader("Accept", equalTo("application/json"))
                 .withHeader("Nav-Personidenter", equalTo("fnr"))
-                .withHeader("Nav-Call-Id", equalTo("id"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     aResponse()
                         .withStatus(200)
@@ -235,7 +241,7 @@ internal class DkifløserTest {
             get(urlPathEqualTo("/api/v1/personer/kontaktinformasjon"))
                 .withHeader("Accept", equalTo("application/json"))
                 .withHeader("Nav-Personidenter", equalTo("erReservert"))
-                .withHeader("Nav-Call-Id", equalTo("id"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     aResponse()
                         .withStatus(200)
@@ -261,7 +267,7 @@ internal class DkifløserTest {
             get(urlPathEqualTo("/api/v1/personer/kontaktinformasjon"))
                 .withHeader("Accept", equalTo("application/json"))
                 .withHeader("Nav-Personidenter", equalTo("kanIkkeVarsles"))
-                .withHeader("Nav-Call-Id", equalTo("id"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     aResponse()
                         .withStatus(200)
@@ -287,7 +293,7 @@ internal class DkifløserTest {
             get(urlPathEqualTo("/api/v1/personer/kontaktinformasjon"))
                 .withHeader("Accept", equalTo("application/json"))
                 .withHeader("Nav-Personidenter", equalTo("erReservertOgKanIkkeVarsles"))
-                .withHeader("Nav-Call-Id", equalTo("id"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     aResponse()
                         .withStatus(200)
@@ -313,7 +319,7 @@ internal class DkifløserTest {
             get(urlPathEqualTo("/api/v1/personer/kontaktinformasjon"))
                 .withHeader("Accept", equalTo("application/json"))
                 .withHeader("Nav-Personidenter", equalTo("feilet"))
-                .withHeader("Nav-Call-Id", equalTo("id"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     aResponse()
                         .withStatus(200)
@@ -334,7 +340,7 @@ internal class DkifløserTest {
             get(urlPathEqualTo("/api/v1/personer/kontaktinformasjon"))
                 .withHeader("Accept", equalTo("application/json"))
                 .withHeader("Nav-Personidenter", equalTo("ikkeTilgang"))
-                .withHeader("Nav-Call-Id", equalTo("id"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     aResponse()
                         .withStatus(401)

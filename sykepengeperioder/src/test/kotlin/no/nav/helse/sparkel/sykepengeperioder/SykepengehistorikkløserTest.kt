@@ -12,6 +12,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SykepengehistorikkløserTest : H2Database() {
@@ -62,7 +63,7 @@ internal class SykepengehistorikkløserTest : H2Database() {
         opprettPeriode(seq = 1)
         opprettPeriode(seq = 2)
         val behov =
-            """{"@id": "behovsid", "@opprettet":"${
+            """{"@id": "${UUID.randomUUID()}", "@opprettet":"${
                 LocalDateTime.now().minusMinutes(1)
             }", "@behov":["${Sykepengehistorikkløser.behov}"], "${Sykepengehistorikkløser.behov}": { "historikkFom": "2017-01-01", "historikkTom": "2021-01-01"}, "fødselsnummer": "$fnr" }"""
 
@@ -246,7 +247,7 @@ internal class SykepengehistorikkløserTest : H2Database() {
     private fun behov(opprettet: LocalDateTime = LocalDateTime.now().minusMinutes(5)) =
         """
             {
-            "@id": "behovsid", 
+            "@id": "${UUID.randomUUID()}", 
             "@opprettet":"$opprettet",
             "@behov":[
                 "${Sykepengehistorikkløser.behov}"], 

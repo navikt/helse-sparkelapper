@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.pleiepenger.pleiepenger.AzureClient
 import no.nav.helse.sparkel.pleiepenger.pleiepenger.InfotrygdClient
@@ -37,6 +38,10 @@ internal class BehovløserTest {
         }
 
         override fun publish(key: String, message: String) {}
+
+        override fun rapidName(): String {
+            return "Test"
+        }
 
         override fun start() {}
 
@@ -120,7 +125,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Pleiepenger", "Omsorgspenger", "Opplæringspenger" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
@@ -145,7 +150,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Pleiepenger" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
@@ -162,7 +167,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Pleiepenger" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
@@ -179,7 +184,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Omsorgspenger" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
@@ -196,7 +201,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Omsorgspenger" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
@@ -213,7 +218,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Opplæringspenger" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
@@ -230,7 +235,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Opplæringspenger" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",

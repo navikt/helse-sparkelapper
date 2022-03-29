@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.YearMonth
+import java.util.UUID
 
 internal class InntekterTest {
     private val testRapid = TestRapid()
@@ -139,10 +140,10 @@ internal class InntekterTest {
         )
     }
 
-    private fun behov(start: YearMonth, slutt: YearMonth, type: Inntekter.Type, id: String = "behovsid") =
+    private fun behov(start: YearMonth, slutt: YearMonth, type: Inntekter.Type, id: UUID = UUID.randomUUID()) =
         objectMapper.writeValueAsString(behovMap(start, slutt, id, type))
 
-    private fun behovMap(start: YearMonth, slutt: YearMonth, id: String, type: Inntekter.Type) = mapOf(
+    private fun behovMap(start: YearMonth, slutt: YearMonth, id: UUID, type: Inntekter.Type) = mapOf(
         "@id" to id,
         "@behov" to listOf(type.name),
         "fødselsnummer" to "123",

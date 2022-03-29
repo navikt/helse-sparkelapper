@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
@@ -37,9 +38,16 @@ internal class OppgaveløserTest {
             sendtMelding = objectMapper.readTree(message)
         }
 
+        override fun rapidName(): String {
+            return "Test"
+        }
+
         override fun start() {}
         override fun stop() {}
     }
+
+    private val okBehov = UUID.randomUUID()
+    private val feilendeBehov = UUID.randomUUID()
 
     @BeforeAll
     fun setup() {
@@ -96,7 +104,7 @@ internal class OppgaveløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "ÅpneOppgaver" ],
-            "@id" : "id",
+            "@id" : "$okBehov",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "ÅpneOppgaver": {
@@ -110,7 +118,7 @@ internal class OppgaveløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "ÅpneOppgaver" ],
-            "@id" : "id2",
+            "@id" : "$feilendeBehov",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "ÅpneOppgaver": {
@@ -138,7 +146,7 @@ internal class OppgaveløserTest {
         stubFor(
             get(urlPathEqualTo("/api/v1/oppgaver"))
                 .withHeader("Accept", equalTo("application/json"))
-                .withHeader("X-Correlation-ID", equalTo("id"))
+                .withHeader("X-Correlation-ID", equalTo(okBehov.toString()))
                 .willReturn(
                     aResponse()
                         .withStatus(200)
@@ -194,7 +202,7 @@ internal class OppgaveløserTest {
         stubFor(
             get(urlPathEqualTo("/api/v1/oppgaver"))
                 .withHeader("Accept", equalTo("application/json"))
-                .withHeader("X-Correlation-ID", equalTo("id2"))
+                .withHeader("X-Correlation-ID", equalTo(feilendeBehov.toString()))
                 .willReturn(
                     aResponse()
                         .withStatus(401)

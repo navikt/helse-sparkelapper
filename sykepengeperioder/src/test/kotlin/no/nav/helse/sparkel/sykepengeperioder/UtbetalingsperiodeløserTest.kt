@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.time.LocalDate
+import java.util.UUID
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class UtbetalingsperiodeløserTest : H2Database() {
@@ -34,6 +35,9 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
         }
 
         override fun publish(key: String, message: String) {}
+        override fun rapidName(): String {
+            return "Test"
+        }
 
         override fun start() {}
 
@@ -157,7 +161,7 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
         {
             "@event_name" : "behov",
             "@behov" : [ "HentEnhet", "HentPersoninfo", "HentInfotrygdutbetalinger" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18T18:56:47.339159",
             "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
@@ -175,7 +179,7 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
         {
             "@event_name" : "behov",
             "@behov" : [ "HentInfotrygdutbetalinger" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18T18:56:47.339159",
             "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",

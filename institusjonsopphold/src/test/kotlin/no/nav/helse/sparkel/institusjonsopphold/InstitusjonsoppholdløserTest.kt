@@ -7,6 +7,8 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.github.tomakehurst.wiremock.matching.AnythingPattern
+import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -36,6 +38,10 @@ internal class InstitusjonsoppholdløserTest {
 
         override fun publish(key: String, message: String) {
             sendtMelding = objectMapper.readTree(message)
+        }
+
+        override fun rapidName(): String {
+            return "Test"
         }
 
         override fun start() {}
@@ -101,7 +107,7 @@ internal class InstitusjonsoppholdløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Institusjonsopphold" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
@@ -118,7 +124,7 @@ internal class InstitusjonsoppholdløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Institusjonsopphold" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
@@ -150,7 +156,7 @@ internal class InstitusjonsoppholdløserTest {
             get(urlPathEqualTo("/api/v1/person/institusjonsopphold"))
                 .withHeader("Accept", equalTo("application/json"))
                 .withHeader("Nav-Personident", equalTo("fnr"))
-                .withHeader("Nav-Call-Id", equalTo("id"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     aResponse()
                         .withStatus(200)
@@ -225,7 +231,7 @@ internal class InstitusjonsoppholdløserTest {
             get(urlPathEqualTo("/api/v1/person/institusjonsopphold"))
                 .withHeader("Accept", equalTo("application/json"))
                 .withHeader("Nav-Personident", equalTo("ikkeTilgang"))
-                .withHeader("Nav-Call-Id", equalTo("id"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     aResponse()
                         .withStatus(401)

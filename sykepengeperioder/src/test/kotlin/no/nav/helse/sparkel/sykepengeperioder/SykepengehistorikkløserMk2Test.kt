@@ -13,6 +13,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SykepengehistorikkløserMk2Test : H2Database() {
@@ -567,7 +568,7 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
     ) =
         """
             {
-            "@id": "behovsid", 
+            "@id": "${UUID.randomUUID()}", 
             "@opprettet":"$opprettet",
             "@behov":[
                 "${SykepengehistorikkløserMK2.behov}"], 

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.util.UUID
 
 internal class VergemålløserTest : PdlStubber() {
 
@@ -72,7 +73,7 @@ internal class VergemålløserTest : PdlStubber() {
         {
             "@event_name" : "behov",
             "@behov" : [ "Vergemål" ],
-            "@id" : "behovId",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "fødselsnummer" : "fnr"
         }

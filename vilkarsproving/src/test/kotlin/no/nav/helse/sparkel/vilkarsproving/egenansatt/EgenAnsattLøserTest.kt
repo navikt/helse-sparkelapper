@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
+import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -36,6 +37,10 @@ internal class EgenAnsattLøserTest {
 
         override fun publish(key: String, message: String) {}
 
+        override fun rapidName(): String {
+            return "Test"
+        }
+
         override fun start() {}
 
         override fun stop() {}
@@ -57,7 +62,7 @@ internal class EgenAnsattLøserTest {
 
     @Test
     internal fun `løser behov ikke egen ansatt`() {
-        val behov = """{"@id": "behovsid", "@behov":["${EgenAnsattLøser.behov}"], "fødselsnummer": "fnr", "aktørId": "aktørId" }"""
+        val behov = """{"@id": "${UUID.randomUUID()}", "@behov":["${EgenAnsattLøser.behov}"], "fødselsnummer": "fnr", "aktørId": "aktørId" }"""
 
         testBehov(behov)
 
@@ -69,7 +74,7 @@ internal class EgenAnsattLøserTest {
     internal fun `løser behov egen ansatt`() {
         mockEgenAnsatt(true)
 
-        val behov = """{"@id": "behovsid", "@behov":["${EgenAnsattLøser.behov}"], "fødselsnummer": "fnr", "aktørId": "aktørId" }"""
+        val behov = """{"@id": "${UUID.randomUUID()}", "@behov":["${EgenAnsattLøser.behov}"], "fødselsnummer": "fnr", "aktørId": "aktørId" }"""
 
         testBehov(behov)
 

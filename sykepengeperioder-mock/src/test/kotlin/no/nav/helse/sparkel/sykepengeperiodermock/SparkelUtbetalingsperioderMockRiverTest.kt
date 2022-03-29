@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import java.time.LocalDate
+import java.util.UUID
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SparkelUtbetalingsperioderMockRiverTest {
@@ -59,7 +60,7 @@ internal class SparkelUtbetalingsperioderMockRiverTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "HentInfotrygdutbetalinger" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "$fødselsnummer",

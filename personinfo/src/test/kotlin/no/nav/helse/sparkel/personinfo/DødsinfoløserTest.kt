@@ -14,6 +14,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.github.tomakehurst.wiremock.matching.AnythingPattern
+import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -43,6 +45,10 @@ internal class DødsinfoløserTest {
 
         override fun publish(message: String) {
             sendtLøsning = objectMapper.readTree(message)
+        }
+
+        override fun rapidName(): String {
+            return "Test"
         }
 
         override fun publish(key: String, message: String) {}
@@ -109,7 +115,7 @@ internal class DødsinfoløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Dødsinfo" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "fnr"
@@ -121,7 +127,7 @@ internal class DødsinfoløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Dødsinfo" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "ikkeTilgang"
@@ -134,7 +140,7 @@ internal class DødsinfoløserTest {
         stubFor(
             post(urlPathEqualTo("/graphql"))
                 .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Nav-Call-Id", equalTo("id"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
 
                 .willReturn(
                     aResponse()
@@ -166,7 +172,7 @@ internal class DødsinfoløserTest {
         stubFor(
             post(urlPathEqualTo("/graphql"))
                 .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Nav-Call-Id", equalTo("id"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     aResponse()
                         .withStatus(401)

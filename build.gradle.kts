@@ -9,7 +9,7 @@ plugins {
 
 val gradlewVersion = "7.3.3"
 val junitJupiterVersion = "5.8.2"
-val rapidsAndRiversVersion = "2022.01.19-09.53.b526ca84a9e4"
+val rapidsAndRiversVersion = "2022.03.28-20.54.89f957fff8f2"
 val ktorVersion = "1.6.6" // should be set to same value as rapids and rivers
 val cxfVersion = "3.4.2"
 val mockkVersion = "1.12.0"

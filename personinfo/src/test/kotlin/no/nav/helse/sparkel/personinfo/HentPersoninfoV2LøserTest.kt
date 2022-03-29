@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -22,7 +23,7 @@ internal class HentPersoninfoV2LøserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "HentPersoninfoV2" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2021-11-17",
             "hendelseId" : "hendelseId",
             "fødselsnummer" : "fnr"
@@ -56,7 +57,7 @@ internal class HentPersoninfoV2LøserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "HentNoeAnnetOgså", "HentPersoninfoV2" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2021-11-17",
             "hendelseId" : "hendelseId",
             "fødselsnummer" : "fnr"
@@ -90,7 +91,7 @@ internal class HentPersoninfoV2LøserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "HentPersoninfoV2" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2021-11-17",
             "hendelseId" : "hendelseId",
             "fødselsnummer" : "fnr",
@@ -126,7 +127,7 @@ internal class HentPersoninfoV2LøserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "HentPersoninfoV2" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2021-11-17",
             "hendelseId" : "hendelseId",
             "fødselsnummer" : "fnr",
@@ -177,7 +178,7 @@ internal class HentPersoninfoV2LøserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "HentPersoninfoV2" ],
-            "@id" : "id",
+            "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2021-11-17",
             "hendelseId" : "hendelseId",
             "fødselsnummer" : "fnr",

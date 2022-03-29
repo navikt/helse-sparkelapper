@@ -23,6 +23,9 @@ internal class ArbeidsforholdLøserV2Test {
         }
 
         override fun publish(message: String) { sendtMelding = objectMapper.readTree(message) }
+        override fun rapidName(): String {
+            return "Test"
+        }
 
         override fun publish(key: String, message: String) {}
 
