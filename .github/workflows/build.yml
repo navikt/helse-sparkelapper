@@ -117,8 +117,36 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  snyk:
+    name: check vulnerabilities
+    needs: generate_vars
+    # only check for vulnerabilities if any code has been changed
+    if: needs.generate_vars.outputs.emptyMatrix == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: /home/runner/work/_temp/_github_home/.gradle/wrapper
+          key: ${{ runner.os }}-snyk-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
+      - name: cache gradle caches
+        uses: actions/cache@v2
+        with:
+          path: /home/runner/work/_temp/_github_home/.gradle/caches
+          key: ${{ runner.os }}-snyk-gradle-caches-${{ hashFiles('**/build.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-snyk-gradle-caches-
+      - name: Gradle vulnerability check
+        uses: snyk/actions/gradle@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --all-sub-projects --org=${{ env.SNYK_ORG }} --fail-on=all --configuration-matching='^runtimeClasspath'
+          command: monitor
+
   deploy:
-    needs: [generate_vars, build]
+    needs: [generate_vars, snyk, build]
     name: deploy
     if: always() && needs.generate_vars.outputs.emptyDeployMatrix == 'false'
     strategy:
@@ -157,31 +185,3 @@ jobs:
           CLUSTER: ${{ matrix.cluster }}
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           VAR: team=${{ needs.generate_vars.outputs.team }},app=${{ matrix.project }}
-
-  snyk:
-    name: check vulnerabilities
-    needs: generate_vars
-    # only check for vulns if any code has been changed
-    if: needs.generate_vars.outputs.emptyMatrix == 'false'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: cache gradle wrapper
-        uses: actions/cache@v2
-        with:
-          path: /home/runner/work/_temp/_github_home/.gradle/wrapper
-          key: ${{ runner.os }}-snyk-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
-      - name: cache gradle caches
-        uses: actions/cache@v2
-        with:
-          path: /home/runner/work/_temp/_github_home/.gradle/caches
-          key: ${{ runner.os }}-snyk-gradle-caches-${{ hashFiles('**/build.gradle.kts') }}
-          restore-keys: |
-            ${{ runner.os }}-snyk-gradle-caches-
-      - name: Gradle vulnerability check
-        uses: snyk/actions/gradle@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --all-sub-projects --org=${{ env.SNYK_ORG }} --fail-on=all --configuration-matching='^runtimeClasspath'
-          command: monitor
