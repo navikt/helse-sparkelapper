@@ -1,6 +1,13 @@
 kafkaPool: nav-prod
+mountPaths:
+  - mountPath: /var/run/secrets/nais.io/oracle/creds
+    kvPath: oracle/data/prod/creds/sp_infotrygd_p-user
+  - mountPath: /var/run/secrets/nais.io/oracle/config
+    kvPath: oracle/data/prod/config/infotrygd_spp
 env:
 - name: INFOTRYGDSP_URL
   value: jdbc:oracle:thin:@a01dbfl037.adeo.no:1521/cdc
 - name: INFOTRYGDSP_SCHEMA
   value: REST_READ_P
+- name: DATABASE_SCHEMA
+  value: INFOTRYGD_SPP
