@@ -4,10 +4,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val jvmTarget = "17"
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.6.20"
 }
 
-val gradlewVersion = "7.3.3"
+val gradlewVersion = "7.4.2"
 val junitJupiterVersion = "5.8.2"
 val rapidsAndRiversVersion = "2022.04.05-09.40.11a466d7ac70"
 val ktorVersion = "1.6.6" // should be set to same value as rapids and rivers
