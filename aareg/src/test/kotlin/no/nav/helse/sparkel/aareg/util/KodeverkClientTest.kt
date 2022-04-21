@@ -25,7 +25,7 @@ internal class KodeverkClientTest {
             engine {
                 addHandler { request ->
                     when (request.url.encodedPath) {
-                        "/api/v1/kodeverk/N%C3%A6ringskoder/koder/betydninger" -> respond(næringRespons)
+                        "/api/v1/kodeverk/Næringskoder/koder/betydninger" -> respond(næringRespons)
                         else -> respondBadRequest()
                     }
                 }
@@ -67,7 +67,7 @@ internal class KodeverkClientTest {
             engine {
                 addHandler { request ->
                     when (request.url.encodedPath) {
-                        "/api/v1/kodeverk/N%C3%A6ringskoder/koder/betydninger" -> respond(næringRespons)
+                        "/api/v1/kodeverk/Næringskoder/koder/betydninger" -> respond(næringRespons)
                         else -> respondBadRequest()
                     }
                 }

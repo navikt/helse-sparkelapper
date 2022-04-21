@@ -4,20 +4,20 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val jvmTarget = "17"
 
 plugins {
-    kotlin("jvm") version "1.6.20"
+    kotlin("jvm") version "1.6.21"
 }
 
-val gradlewVersion = "7.4.2"
+val gradleWrapperVersion = "7.4.2"
 val junitJupiterVersion = "5.8.2"
-val rapidsAndRiversVersion = "2022.04.05-09.40.11a466d7ac70"
-val ktorVersion = "1.6.6" // should be set to same value as rapids and rivers
+val rapidsAndRiversVersion = "2022.04.21-09.34.08966130226f"
+val ktorVersion = "2.0.0"
 val cxfVersion = "3.4.2"
 val mockkVersion = "1.12.0"
 val wiremockVersion = "2.27.2"
 
 buildscript {
     repositories { mavenCentral() }
-    dependencies { "classpath"(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "2.13.1") }
+    dependencies { "classpath"(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "2.13.2.2") }
 }
 
 val mapper = ObjectMapper()
@@ -108,7 +108,7 @@ allprojects {
         }
 
         withType<Wrapper> {
-            gradleVersion = gradlewVersion
+            gradleVersion = gradleWrapperVersion
         }
 
         withType<Test> {

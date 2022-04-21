@@ -5,8 +5,9 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.HttpClient
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.http.ContentType
+import io.ktor.serialization.jackson.JacksonConverter
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdbehovløser
@@ -38,7 +39,9 @@ fun main() {
 
 internal fun createApp(environment: Environment, serviceUser: ServiceUser): RapidsConnection {
     val httpClient = HttpClient {
-        install(JsonFeature) { serializer = JacksonSerializer() }
+        install(ContentNegotiation) {
+            register(ContentType.Application.Json, JacksonConverter(objectMapper))
+        }
         expectSuccess = false
     }
     val stsRestClient = StsRestClient(environment.stsBaseUrl, serviceUser, httpClient)

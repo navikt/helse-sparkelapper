@@ -20,15 +20,14 @@ class AaregClient(
     suspend fun hentFraAareg(
         fnr: String,
         callId: UUID
-    ) = httpClient.get<HttpStatement>("$baseUrl/v1/arbeidstaker/arbeidsforhold") {
+    ) = httpClient.prepareGet("$baseUrl/v1/arbeidstaker/arbeidsforhold") {
         header("Authorization", "Bearer ${stsRestClient.token()}")
         header("Nav-Consumer-Token", "Bearer ${stsRestClient.token()}")
         System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
         header("Nav-Call-Id", callId)
         accept(ContentType.Application.Json)
         header("Nav-Personident", fnr)
-    }
-        .execute { objectMapper.readValue<ArrayNode>(it.readText()) }
+    }.execute { objectMapper.readValue<ArrayNode>(it.bodyAsText()) }
 }
 
 data class Arbeidsforhold(

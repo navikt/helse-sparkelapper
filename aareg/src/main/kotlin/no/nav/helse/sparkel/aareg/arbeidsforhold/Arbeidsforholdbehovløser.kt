@@ -1,7 +1,7 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.ktor.client.features.*
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
@@ -83,7 +83,7 @@ class Arbeidsforholdbehovløser(
             sikkerlogg.warn(
                 "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Svarer med tom liste. Response: {}",
                 keyValue("id", id),
-                runBlocking { err.response.readText() },
+                runBlocking { err.response.bodyAsText() },
                 err
             )
             emptyList()

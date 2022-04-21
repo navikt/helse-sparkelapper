@@ -2,8 +2,10 @@ package no.nav.helse.sparkel.inntekt
 
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
-import io.ktor.client.features.json.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.*
+import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.serialization.jackson.jackson
 import io.mockk.every
 import io.mockk.mockk
 import java.time.LocalDateTime
@@ -18,9 +20,10 @@ internal fun defaultMockResponseGenerator() = mockk<ResponseGenerator>(relaxed =
 }
 
 internal fun mockHttpClient(mockResponseGenerator: ResponseGenerator) = HttpClient(MockEngine) {
-    install(JsonFeature) {
-        serializer = JacksonSerializer(jackson = objectMapper)
+    install(ContentNegotiation) {
+        register(ContentType.Application.Json, JacksonConverter(objectMapper))
     }
+
     engine {
         addHandler { request ->
             when {

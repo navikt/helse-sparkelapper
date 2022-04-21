@@ -1,9 +1,9 @@
 package no.nav.helse.sparkel.norg
 
-import io.ktor.application.call
-import io.ktor.response.respond
-import io.ktor.routing.Routing
-import io.ktor.routing.get
+import io.ktor.server.application.call
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Routing
+import io.ktor.server.routing.get
 
 fun Routing.registerBehandlendeEnhetApi(personinfoService: PersoninfoService){
     get("/behandlendeEnhet") {

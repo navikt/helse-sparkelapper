@@ -2,7 +2,7 @@ package no.nav.helse.sparkel.aareg.arbeidsforholdV2
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
-import io.ktor.client.features.*
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -32,12 +32,12 @@ class StsRestClient(
         return cachedOidcToken.access_token
     }
 
-    private suspend fun fetchToken(): Token = httpClient.get<HttpStatement>(
+    private suspend fun fetchToken(): Token = httpClient.prepareGet(
         "$baseUrl/rest/v1/sts/token?grant_type=client_credentials&scope=openid"
     ) {
         header("Authorization", serviceUser.basicAuth)
         accept(ContentType.Application.Json)
-    }.execute { objectMapper.readValue(it.readText()) }
+    }.execute { objectMapper.readValue(it.bodyAsText()) }
 
     internal data class Token(
         internal val access_token: String,

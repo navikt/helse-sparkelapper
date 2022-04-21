@@ -3,9 +3,11 @@ package no.nav.helse.sparkel.inntekt
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.http.ContentType
 import io.ktor.http.fullPath
+import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.serialization.jackson.jackson
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -60,8 +62,8 @@ class InntektRestClientTest {
 
     private val inntektRestClient = InntektRestClient(
         "http://localhost.no", HttpClient(MockEngine) {
-            install(JsonFeature) {
-                this.serializer = JacksonSerializer(jackson = objectMapper)
+            install(ContentNegotiation) {
+                register(ContentType.Application.Json, JacksonConverter(objectMapper))
             }
             engine {
                 addHandler { request ->

@@ -6,10 +6,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.client.*
 import io.ktor.client.engine.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.features.json.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
+import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.serialization.jackson.jackson
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.sparkel.vilkarsproving.logger
 import no.nav.helse.sparkel.vilkarsproving.objectMapper
@@ -40,27 +42,24 @@ class AzureAD(private val props: AzureADProps) {
                     proxy = ProxyBuilder.http(Url(it))
                 }
             }
-            install(JsonFeature) {
-                serializer = JacksonSerializer {
-                    registerModule(JavaTimeModule())
-                    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                }
+            install(ContentNegotiation) {
+                register(ContentType.Application.Json, JacksonConverter(objectMapper))
             }
         }
     }
 
     private fun fetchToken(): Token {
         return runBlocking {
-            azureAdClient.post(props.tokenEndpointURL) {
+            azureAdClient.preparePost(props.tokenEndpointURL) {
                 accept(ContentType.Application.Json)
                 method = HttpMethod.Post
-                body = FormDataContent(Parameters.build {
+                setBody(FormDataContent(Parameters.build {
                     append("client_id", props.clientId)
                     append("scope", props.skjermendeOauthScope)
                     append("grant_type", "client_credentials")
                     append("client_secret", props.clientSecret)
-                })
-            }
+                }))
+            }.body()
         }
     }
 
