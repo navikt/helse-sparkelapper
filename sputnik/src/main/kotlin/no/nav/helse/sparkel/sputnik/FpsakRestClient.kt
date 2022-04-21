@@ -8,7 +8,9 @@ import io.ktor.client.request.accept
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
+import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.HttpStatement
+import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.readText
 import io.ktor.http.ContentType
 import java.time.LocalDate
@@ -32,11 +34,11 @@ class FpsakRestClient(
             .firstOrNull()
 
     private suspend fun hentYtelse(aktørId: String, url: String) =
-        httpClient.get<HttpStatement>(url) {
+        httpClient.prepareGet(url) {
             header("Authorization", "Bearer ${stsRestClient.token()}")
             accept(ContentType.Application.Json)
             parameter("aktoerId", aktørId)
-        }.execute { objectMapper.readValue<ArrayNode>(it.readText()) }
+        }.execute { objectMapper.readValue<ArrayNode>(it.bodyAsText()) }
 
     private fun JsonNode.toYtelse() = Ytelse(
         aktørId = this["aktør"]["verdi"].textValue(),

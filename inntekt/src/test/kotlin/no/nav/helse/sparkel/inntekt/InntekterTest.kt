@@ -1,9 +1,15 @@
 package no.nav.helse.sparkel.inntekt
 
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
-import io.ktor.client.features.json.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.*
+import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.serialization.jackson.jackson
 import no.nav.helse.rapids_rivers.asYearMonth
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.junit.jupiter.api.Assertions.*
@@ -15,8 +21,8 @@ import java.util.UUID
 internal class InntekterTest {
     private val testRapid = TestRapid()
     private val inntektRestClient = InntektRestClient("http://base.url", HttpClient(MockEngine) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer(jackson = objectMapper)
+        install(ContentNegotiation) {
+            register(ContentType.Application.Json, JacksonConverter(objectMapper))
         }
         engine {
             addHandler { request ->

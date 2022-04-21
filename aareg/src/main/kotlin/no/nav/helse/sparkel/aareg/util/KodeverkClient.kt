@@ -3,10 +3,9 @@ package no.nav.helse.sparkel.aareg.util
 import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.client.HttpClient
 import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
-import io.ktor.client.statement.HttpStatement
+import io.ktor.client.request.prepareGet
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.sparkel.aareg.objectMapper
 import org.slf4j.LoggerFactory
@@ -32,9 +31,9 @@ class KodeverkClient(
     fun getYrke(kode: String) = requireNotNull(yrker.hentTekst(kode))
 
     private fun hentFraKodeverk(path: String): String = runBlocking {
-        httpClient.get<HttpStatement>("$kodeverkBaseUrl$path") {
+        httpClient.prepareGet("$kodeverkBaseUrl$path") {
             setup(UUID.randomUUID().toString())
-        }.receive()
+        }.body()
     }
 
     private fun HttpRequestBuilder.setup(callId: String) {
@@ -54,4 +53,3 @@ fun JsonNode.hentTekst(kode: String): String =
             log.warn("Mangler betydning for næringskode $kode")
             "Ukjent"
         }
-

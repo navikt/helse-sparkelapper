@@ -3,10 +3,9 @@ package no.nav.helse.sparkel.inntekt
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.HttpClient
 import io.ktor.client.request.accept
-import io.ktor.client.request.get
 import io.ktor.client.request.header
-import io.ktor.client.statement.HttpStatement
-import io.ktor.client.statement.readText
+import io.ktor.client.request.prepareGet
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDateTime
@@ -26,12 +25,12 @@ class StsRestClient(
         return cachedOidcToken.access_token
     }
 
-    private suspend fun fetchToken(): Token = httpClient.get<HttpStatement>(
+    private suspend fun fetchToken(): Token = httpClient.prepareGet(
         "$baseUrl/rest/v1/sts/token?grant_type=client_credentials&scope=openid"
     ) {
         header("Authorization", serviceUser.basicAuth)
         accept(ContentType.Application.Json)
-    }.execute { objectMapper.readValue<Token>(it.readText()) }
+    }.execute { objectMapper.readValue(it.bodyAsText()) }
 
     internal data class Token(
         internal val access_token: String,

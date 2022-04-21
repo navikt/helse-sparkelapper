@@ -1,8 +1,10 @@
 package no.nav.helse.sparkel.norg
 
 import io.ktor.client.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.logging.*
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.jackson.jackson
 import no.nav.helse.rapids_rivers.RapidApplication
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -36,17 +38,17 @@ fun launchApplication(
     }.start()
 }
 
-private fun simpleHttpClient(serializer: JacksonSerializer? = JacksonSerializer()) = HttpClient {
+private fun simpleHttpClient() = HttpClient {
     install(Logging) {
         level = LogLevel.BODY
-        logger = object : io.ktor.client.features.logging.Logger {
+        logger = object : io.ktor.client.plugins.logging.Logger {
             override fun log(message: String) {
                 sikkerLogg.debug(message)
             }
         }
     }
-    install(JsonFeature) {
-        this.serializer = serializer
+    install(ContentNegotiation) {
+        jackson()
     }
     expectSuccess = false
 }

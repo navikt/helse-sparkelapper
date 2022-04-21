@@ -35,7 +35,7 @@ class EregClient(
             }
 
         if (response.status.isSuccess()) {
-            val json = objectMapper.readTree(response.readText())
+            val json = objectMapper.readTree(response.bodyAsText())
             return EregResponse(
                     navn = trekkUtNavn(json),
                     næringer = json.path("organisasjonDetaljer").path("naeringer").takeIf { !it.isMissingNode }

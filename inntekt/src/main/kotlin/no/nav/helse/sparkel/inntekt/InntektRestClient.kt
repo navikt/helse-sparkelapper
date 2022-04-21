@@ -33,14 +33,13 @@ class InntektRestClient(
         callId: String
     ) = clientLatencyStats.startTimer().use {
         runBlocking {
-            httpClient.request<HttpStatement>("$baseUrl/api/v1/hentinntektliste") {
-                method = HttpMethod.Post
+            httpClient.preparePost("$baseUrl/api/v1/hentinntektliste") {
                 header("Authorization", "Bearer ${stsRestClient.token()}")
                 header("Nav-Consumer-Id", "srvsparkelinntekt")
                 header("Nav-Call-Id", callId)
                 contentType(ContentType.Application.Json)
                 accept(ContentType.Application.Json)
-                body = mapOf(
+                setBody(mapOf(
                     "ident" to mapOf(
                         "identifikator" to fnr,
                         "aktoerType" to "NATURLIG_IDENT"
@@ -49,8 +48,8 @@ class InntektRestClient(
                     "formaal" to "Foreldrepenger",
                     "maanedFom" to fom,
                     "maanedTom" to tom
-                )
-            }.execute { tilMånedListe(objectMapper.readValue(it.readText()), filter) }
+                ))
+            }.execute { tilMånedListe(objectMapper.readValue(it.bodyAsText()), filter) }
         }
     }
 }

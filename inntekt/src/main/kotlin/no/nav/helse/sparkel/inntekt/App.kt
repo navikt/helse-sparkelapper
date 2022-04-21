@@ -5,9 +5,13 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.*
-import io.ktor.client.features.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.logging.*
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.http.ContentType
+import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.serialization.jackson.jackson
 import no.nav.helse.rapids_rivers.RapidApplication
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
@@ -38,12 +42,12 @@ fun main() {
     }.start()
 }
 
-private fun simpleHttpClient() = HttpClient() {
+private fun simpleHttpClient() = HttpClient {
     val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
 
     install(Logging) {
         level = LogLevel.BODY
-        logger = object : io.ktor.client.features.logging.Logger {
+        logger = object : io.ktor.client.plugins.logging.Logger {
             private var logBody = false
             override fun log(message: String) {
                 when {
@@ -61,8 +65,8 @@ private fun simpleHttpClient() = HttpClient() {
         socketTimeoutMillis = 10000
     }
 
-    install(JsonFeature) {
-        this.serializer = JacksonSerializer(jackson = objectMapper)
+    install(ContentNegotiation) {
+        register(ContentType.Application.Json, JacksonConverter(objectMapper))
     }
 }
 

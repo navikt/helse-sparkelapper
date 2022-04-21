@@ -1,7 +1,7 @@
 package no.nav.helse.sparkel.inntekt
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.ktor.client.features.*
+import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
@@ -133,7 +133,7 @@ class Inntekter(
             log.warn("Feilet ved løsing av behov: ${e.message}", e)
             runBlocking {
                 sikkerlogg.warn(
-                    "Feilet ved løsing av behov: ${e.message}\n\t${e.response.readText()}",
+                    "Feilet ved løsing av behov: ${e.message}\n\t${e.response.bodyAsText()}",
                     e
                 )
             }

@@ -2,8 +2,9 @@ package no.nav.helse.sparkel.norg
 
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
-import io.ktor.client.features.json.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.*
+import io.ktor.serialization.jackson.jackson
 import io.mockk.coEvery
 import io.mockk.mockk
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
@@ -62,8 +63,8 @@ class BehandlendeEnhetRiverTest {
     }
 
     private val client = HttpClient(MockEngine) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer()
+        install(ContentNegotiation) {
+            jackson()
         }
         expectSuccess = false
         engine {
