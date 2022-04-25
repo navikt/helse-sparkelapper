@@ -21,19 +21,19 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
             "$it/password".readFile()
         )
     }
+
     val kafkaConfig = KafkaConfig(
-        kafkaBootstrapServers = getEnvVar("KAFKA_BOOTSTRAP_SERVERS_URL"),
-        truststore = getEnvVar("NAV_TRUSTSTORE_PATH"),
-        truststorePassword = getEnvVar("NAV_TRUSTSTORE_PASSWORD"),
-        cluster = getEnvVar("NAIS_CLUSTER_NAME")
+        kafkaBootstrapServers = getEnvVar(env,"KAFKA_BOOTSTRAP_SERVERS_URL"),
+        truststore = getEnvVar(env,"NAV_TRUSTSTORE_PATH"),
+        truststorePassword = getEnvVar(env,"NAV_TRUSTSTORE_PASSWORD"),
+        cluster = getEnvVar(env,"NAIS_CLUSTER_NAME")
     )
-
     val properties = loadBaseConfig(kafkaConfig, serviceUser)
-
-    val applicationName: String = getEnvVar("NAIS_APP_NAME")
+    val applicationName: String = getEnvVar(env,"NAIS_APP_NAME")
     val consumerProperties =
         properties.toConsumerConfig("${applicationName}-consumer", valueDeserializer = StringDeserializer::class)
-    val consumeTopic = getEnvVar("OPPGAVE_ENDRET_TOPIC")
+    val consumeTopic = getEnvVar(env,"OPPGAVE_ENDRET_TOPIC")
+
     val kafkaConsumerOppgaveEndret = KafkaConsumer<String, String>(consumerProperties)
     kafkaConsumerOppgaveEndret.subscribe(listOf(consumeTopic))
 
@@ -48,7 +48,8 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     }
 }
 
-private fun getEnvVar(varName: String, defaultValue: String? = null) =
-    System.getenv(varName) ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
+private fun getEnvVar(env: Map<String, String>, varName: String) =
+    env[varName] ?: throw RuntimeException("Missing required variable \"$varName\"")
+
 
 private fun String.readFile() = File(this).readText(Charsets.UTF_8)

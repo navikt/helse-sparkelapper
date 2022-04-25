@@ -1,9 +1,9 @@
 kafkaPool: nav-dev
 mountPaths:
-  - mountPath: /var/run/secrets/nais.io/service_user
-    kvPath: /serviceuser/data/dev/srvsparkelendretoppg
+- mountPath: /var/run/secrets/nais.io/service_user
+  kvPath: /serviceuser/data/dev/srvsparkelendretoppg
 env:
-  - name: KAFKA_BOOTSTRAP_SERVERS_URL
-    value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
-  - name: OPPGAVE_ENDRET_TOPIC
-    value: aapen-oppgave-endret-v1
+- name: KAFKA_BOOTSTRAP_SERVERS_URL
+  value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
+- name: OPPGAVE_ENDRET_TOPIC
+  value: aapen-oppgave-endret-v1-preprod

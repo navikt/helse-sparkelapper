@@ -21,7 +21,7 @@ fun loadBaseConfig(env: KafkaConfig, serviceUser: ServiceUser): Properties = Pro
     it["sasl.jaas.config"] = "org.apache.kafka.common.security.plain.PlainLoginModule required " +
             "username=\"${serviceUser.username}\" password=\"${serviceUser.password}\";"
     it["bootstrap.servers"] = env.kafkaBootstrapServers
-    if(env.cluster != "localhost") {
+    if (env.cluster != "localhost") {
         it[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_SSL"
         it[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = File(env.truststore!!).absolutePath
         it[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = env.truststorePassword!!
