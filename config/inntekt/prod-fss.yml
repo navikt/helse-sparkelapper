@@ -1,0 +1,7 @@
+kafkaPool: nav-prod
+mountPaths:
+- mountPath: /var/run/secrets/nais.io/service_user
+  kvPath: /serviceuser/data/prod/srvsparkelinntekt
+env:
+- name: INNTEKTSKOMPONENT_BASE_URL
+  value: https://app.adeo.no/inntektskomponenten-ws/rs

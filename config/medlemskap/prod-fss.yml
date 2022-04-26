@@ -1,0 +1,8 @@
+kafkaPool: nav-prod
+azure:
+  enabled: true
+env:
+- name: MEDLEMSKAP_SCOPE
+  value: api://23600ac9-019c-445d-87a4-2df4996e6f63/.default
+- name: MEDLEMSKAP_BASE_URL
+  value: https://medlemskap-oppslag.intern.nav.no

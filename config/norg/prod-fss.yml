@@ -1,0 +1,11 @@
+kafkaPool: nav-prod
+mountPaths:
+- mountPath: /var/run/secrets/nais.io/service_user
+  kvPath: /serviceuser/data/prod/srvsparkelnorg
+env:
+- name: NORG2_BASE_URL
+  value: https://app.adeo.no/norg2/api/v1
+- name: SECURITY_TOKEN_SERVICE_URL
+  value: http://security-token-service.aura.svc.nais.local
+- name: PDL_URL
+  value: https://pdl-api.nais.adeo.no/graphql
