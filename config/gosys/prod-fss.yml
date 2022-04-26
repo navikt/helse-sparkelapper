@@ -1,9 +1,0 @@
-kafkaPool: nav-prod
-mountPaths:
-  - mountPath: /var/run/secrets/nais.io/service_user
-    kvPath: /serviceuser/data/prod/srvsparkelgosys
-env:
-- name: STS_BASE_URL
-  value: http://security-token-service.default.svc.nais.local
-- name: OPPGAVE_URL
-  value: https://oppgave.nais.adeo.no
