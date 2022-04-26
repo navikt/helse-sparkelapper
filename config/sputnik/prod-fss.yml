@@ -1,9 +1,0 @@
-kafkaPool: nav-prod
-mountPaths:
-- mountPath: /var/run/secrets/nais.io/service_user
-  kvPath: /serviceuser/data/prod/srvsputnik
-env:
-- name: FPSAK_BASE_URL
-  value: http://fpsak.teamforeldrepenger.svc.nais.local
-- name: STS_BASE_URL
-  value: http://security-token-service.default.svc.nais.local
