@@ -1,7 +1,6 @@
 package no.nav.helse.sparkel.oppgaveendret
 
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 data class Oppgave(
     val id: Long,
@@ -26,9 +25,6 @@ data class Oppgave(
     val aktivDato: LocalDate,
     val opprettetAv: String,
     val endretAv: String? = null,
-    val opprettetTidspunkt: LocalDateTime,
-    val endretTidspunkt: LocalDateTime,
-    val ferdigstiltTidspunkt: LocalDateTime? = null,
     val behandlesAvApplikasjon: String? = null,
     val journalpostkilde: String? = null,
     val ident: Ident? = null,

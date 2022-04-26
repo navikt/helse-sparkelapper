@@ -28,8 +28,10 @@ internal class OppgaveEndretConsumer(
         try {
             while (konsumerer) {
                 kafkaConsumer.poll(Duration.ofMillis(100)).forEach { consumerRecord ->
-                    val oppgave: Oppgave = objectMapper.readValue(consumerRecord.value())
-                    logger.info("Mottatt oppgave_endret %s", oppgave.id)
+                    val record = consumerRecord.value()
+                    logger.info("Value on kafka topic: " + record)
+                    val oppgave: Oppgave = objectMapper.readValue(record)
+                    logger.info("Mottatt oppgave_endret {}", oppgave.id)
 
                     // TODO use rapidsConnection to produce need
                 }
