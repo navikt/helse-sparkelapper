@@ -29,7 +29,6 @@ internal class OppgaveEndretConsumer(
             while (konsumerer) {
                 kafkaConsumer.poll(Duration.ofMillis(100)).forEach { consumerRecord ->
                     val record = consumerRecord.value()
-                    logger.info("Value on kafka topic: " + record)
                     val oppgave: Oppgave = objectMapper.readValue(record)
                     logger.info("Mottatt oppgave_endret {}", oppgave.id)
 
