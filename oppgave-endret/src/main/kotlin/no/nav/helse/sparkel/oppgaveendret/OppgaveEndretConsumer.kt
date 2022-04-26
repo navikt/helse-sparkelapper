@@ -35,7 +35,7 @@ internal class OppgaveEndretConsumer(
                 }
             }
         } catch (e: Exception) {
-            logger.error("Feilet under konsumering av oppgave_endret")
+            logger.error("Feilet under konsumering av oppgave_endret", e)
         } finally {
             close()
             rapidConnection.stop()
