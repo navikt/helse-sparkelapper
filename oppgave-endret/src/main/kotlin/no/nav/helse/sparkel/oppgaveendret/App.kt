@@ -38,7 +38,8 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     kafkaConsumerOppgaveEndret.subscribe(listOf(consumeTopic))
 
     return RapidApplication.create(env).apply {
-        val oppgaveEndretConsumer = OppgaveEndretConsumer(this, kafkaConsumerOppgaveEndret)
+        val oppgaveEndretProducer = OppgaveEndretProducer(this)
+        val oppgaveEndretConsumer = OppgaveEndretConsumer(this, kafkaConsumerOppgaveEndret, oppgaveEndretProducer)
         Thread(oppgaveEndretConsumer).start()
         this.register(object : RapidsConnection.StatusListener {
             override fun onShutdown(rapidsConnection: RapidsConnection) {

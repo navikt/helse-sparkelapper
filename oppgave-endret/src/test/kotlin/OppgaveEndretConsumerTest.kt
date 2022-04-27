@@ -5,6 +5,7 @@ import java.io.IOException
 import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.sparkel.oppgaveendret.OppgaveEndretConsumer
+import no.nav.helse.sparkel.oppgaveendret.OppgaveEndretProducer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -17,20 +18,22 @@ class OppgaveEndretConsumerTest {
 
     @Test
     fun `happy case`() {
-        val personhendelseConsumer = OppgaveEndretConsumer(rapidApplication, kafkaConsumer)
+        val oppgaveEndretProducer = OppgaveEndretProducer(rapidApplication)
+        val oppgaveEndretConsumer = OppgaveEndretConsumer(rapidApplication, kafkaConsumer, oppgaveEndretProducer)
         queueMessages(
-            personhendelseConsumer,
+            oppgaveEndretConsumer,
             listOf(null, null)
         )
-        personhendelseConsumer.run()
+        oppgaveEndretConsumer.run()
         verify(exactly = 1) { rapidApplication.stop() }
     }
 
     @Test
     fun `kaller close på rapidapplication når vi får en exception`() {
-        val personhendelseConsumer = OppgaveEndretConsumer(rapidApplication, kafkaConsumer)
+        val oppgaveEndretProducer = OppgaveEndretProducer(rapidApplication)
+        val oppgaveEndretConsumer = OppgaveEndretConsumer(rapidApplication, kafkaConsumer, oppgaveEndretProducer)
         every { kafkaConsumer.poll(any<Duration>()) } throws IOException()
-        personhendelseConsumer.run()
+        oppgaveEndretConsumer.run()
         verify(exactly = 1) { rapidApplication.stop() }
 
     }

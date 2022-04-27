@@ -13,7 +13,8 @@ import org.slf4j.LoggerFactory
 
 internal class OppgaveEndretConsumer(
     private val rapidConnection: RapidsConnection,
-    private val kafkaConsumer: KafkaConsumer<String, String>
+    private val kafkaConsumer: KafkaConsumer<String, String>,
+    private val oppgaveEndretProducer: OppgaveEndretProducer
 ) : AutoCloseable, Runnable {
     private var konsumerer = true
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -34,7 +35,8 @@ internal class OppgaveEndretConsumer(
                     logger.info("oppgave: " + oppgave)
                     logger.info("Mottatt oppgave_endret {}", oppgave.id)
 
-                    // TODO use rapidsConnection to produce need
+                    // TODO håndtere at meldinger bare blir lest en gang?
+                    oppgaveEndretProducer.onPacket(oppgave)
                 }
             }
         } catch (e: Exception) {
