@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test
 class OppgaveEndretConsumerTest {
     private val rapidApplication = mockk<RapidApplication>(relaxed = true)
     private val kafkaConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
-    private val pdlClient = mockk<PdlClient>(relaxed = true)
+    private val pdlClient = mockk<PdlClient>()
 
     private val objectMapper: ObjectMapper = ObjectMapper()
         .registerModule(JavaTimeModule())
