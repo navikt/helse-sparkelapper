@@ -17,19 +17,31 @@ class OppgaveEndretProducer(
 
     fun onPacket(oppgave: Oppgave) {
         if (oppgave.behandlesAvApplikasjon != GOSYS || oppgave.behandlingstema != "SYK") return
-        sikkerlogg.info("mottok endring på gosysoppgave")
+        sikkerlogg.info("mottok endring på gosysoppgave på behandlingstema SYK")
 
         if (oppgave.ident == null) return
-        val hendelseId = UUID.randomUUID().toString()
-        val identer = pdlClient.hentIdenter(oppgave.ident.verdi, hendelseId)
 
-        val packet: JsonMessage = JsonMessage.newMessage(mapOf(
-            "@event_name" to "oppgave_endret",
-            "@id" to UUID.randomUUID(),
-            "@opprettet" to LocalDateTime.now(),
-            "fødselsnummer" to identer.fødselsnummer,
-            "aktørId" to identer.aktørId
-        ))
-        rapidsConnection.publish(identer.fødselsnummer, packet.toJson())
+        if (oppgave.ident.folkeregisterident!!.isNotEmpty()) {
+            val fnr = oppgave.ident.folkeregisterident
+            publish(fnr)
+        }
+        else {
+            val hendelseId = UUID.randomUUID().toString()
+            val identer = pdlClient.hentIdenter(oppgave.ident.verdi, hendelseId)
+            publish(identer.fødselsnummer)
+        }
     }
+
+    fun publish(fødselsnummer: String) {
+        val packet: JsonMessage = JsonMessage.newMessage(
+            mapOf(
+                "@event_name" to "oppgave_endret",
+                "@id" to UUID.randomUUID(),
+                "@opprettet" to LocalDateTime.now(),
+                "fødselsnummer" to fødselsnummer
+            )
+        )
+        rapidsConnection.publish(fødselsnummer, packet.toJson())
+    }
+
 }

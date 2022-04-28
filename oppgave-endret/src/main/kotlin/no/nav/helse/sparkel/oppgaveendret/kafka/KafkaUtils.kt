@@ -6,7 +6,7 @@ import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.*
 import java.io.File
 import java.util.Properties
-import no.nav.helse.sparkel.oppgaveendret.ServiceUser
+import no.nav.helse.sparkel.oppgaveendret.util.ServiceUser
 import kotlin.reflect.KClass
 
 data class KafkaConfig(

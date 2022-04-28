@@ -6,14 +6,15 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import no.nav.helse.sparkel.oppgaveendret.sts.StsRestClient
 
 class PdlClient(
     private val baseUrl: String,
-    private val stsClient: StsRestClient
+    private val stsClient: StsRestClient,
+    private val objectMapper: ObjectMapper
 ) {
 
     companion object {
-        private val objectMapper = ObjectMapper()
         private val httpClient = HttpClient.newHttpClient()
         private val hentIdenterQuery = this::class.java.getResource("/pdl/hentIdenter.graphql").readText().replace(Regex("[\n\r]"), "")
     }

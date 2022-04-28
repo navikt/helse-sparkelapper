@@ -1,31 +1,26 @@
-package no.nav.helse.sparkel.oppgaveendret.pdl
+package no.nav.helse.sparkel.oppgaveendret.sts
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDateTime
-import java.util.*
-import no.nav.helse.sparkel.oppgaveendret.ServiceUser
+import no.nav.helse.sparkel.oppgaveendret.util.ServiceUser
 
 /**
  * henter jwt token fra STS
  */
 class StsRestClient(
     private val baseUrl: String,
-    private val serviceUser: ServiceUser
+    private val serviceUser: ServiceUser,
+    private val objectMapper: ObjectMapper
 ) {
     private var cachedOidcToken: Token = fetchToken()
 
     internal fun token(): String {
         if (cachedOidcToken.expired) cachedOidcToken = fetchToken()
         return cachedOidcToken.access_token
-    }
-
-    private companion object {
-        private val objectMapper: ObjectMapper = jacksonObjectMapper()
     }
 
     private fun fetchToken(): Token {

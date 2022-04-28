@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.oppgaveendret
+package no.nav.helse.sparkel.oppgaveendret.util
 
 import java.util.Base64
 
