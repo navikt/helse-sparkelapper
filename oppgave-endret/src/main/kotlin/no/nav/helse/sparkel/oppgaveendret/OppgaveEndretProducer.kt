@@ -27,14 +27,14 @@ class OppgaveEndretProducer(
             publish(fnr)
         }
         else {
-            logger.info("Mangler folkeregisterident gjør kall mot pdl")
+            logger.info("Mangler folkeregisterident gjør kall mot pdl for å finne fødselsnummer")
             val hendelseId = UUID.randomUUID().toString()
             val identer = pdlClient.hentIdenter(oppgave.ident.verdi, hendelseId)
             publish(identer.fødselsnummer)
         }
     }
 
-    fun publish(fødselsnummer: String) {
+    private fun publish(fødselsnummer: String) {
         val packet: JsonMessage = JsonMessage.newMessage(
             mapOf(
                 "@event_name" to "oppgave_endret",
