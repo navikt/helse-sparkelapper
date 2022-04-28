@@ -23,25 +23,29 @@ class GosysOppgaveSykEndretProducer(
         if (oppgave.ident == null) return
 
         if (oppgave.ident.folkeregisterident != null && oppgave.ident.folkeregisterident.isNotEmpty()) {
-            logger.info("Fant folkeregisterident(fødselsnummer)")
             val fnr = oppgave.ident.folkeregisterident
-            //packetAndPublish(fnr)
+            if (oppgave.ident.identType == IdentType.AKTOERID) {
+                logger.info("Fant folkeregisterident(fødselsnummer) og aktørId trenger ikkje kalle PDL")
+                val aktørId = oppgave.ident.verdi
+            }
+            //packetAndPublish(fnr, aktørId)
         }
         else {
             logger.info("Mangler folkeregisterident gjør kall mot pdl for å finne fødselsnummer")
             val hendelseId = UUID.randomUUID().toString()
             val identer = pdlClient.hentIdenter(oppgave.ident.verdi, hendelseId)
-            //packetAndPublish(identer.fødselsnummer)
+            //packetAndPublish(identer.fødselsnummer, identer.aktørId)
         }
     }
 
-    private fun packetAndPublish(fødselsnummer: String) {
+    private fun packetAndPublish(fødselsnummer: String, aktørId: String) {
         val packet: JsonMessage = JsonMessage.newMessage(
             mapOf(
                 "@event_name" to "oppgave_endret",
                 "@id" to UUID.randomUUID(),
                 "@opprettet" to LocalDateTime.now(),
-                "fødselsnummer" to fødselsnummer
+                "fødselsnummer" to fødselsnummer,
+                "aktørId" to aktørId
             )
         )
         rapidsConnection.publish(fødselsnummer, packet.toJson())
