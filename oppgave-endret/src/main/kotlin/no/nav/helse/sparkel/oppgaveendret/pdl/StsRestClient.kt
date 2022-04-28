@@ -7,8 +7,7 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDateTime
-import java.util.*
-import no.nav.helse.sparkel.oppgaveendret.ServiceUser
+import no.nav.helse.sparkel.oppgaveendret.util.ServiceUser
 
 /**
  * henter jwt token fra STS
