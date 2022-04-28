@@ -12,6 +12,7 @@ class OppgaveEndretProducer(
     private val pdlClient: PdlClient
 ) {
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+    private val logger = LoggerFactory.getLogger(this::class.java)
 
     private val GOSYS = "FS22"
 
@@ -26,6 +27,7 @@ class OppgaveEndretProducer(
             publish(fnr)
         }
         else {
+            logger.info("Mangler folkeregisterident gjør kall mot pdl")
             val hendelseId = UUID.randomUUID().toString()
             val identer = pdlClient.hentIdenter(oppgave.ident.verdi, hendelseId)
             publish(identer.fødselsnummer)
