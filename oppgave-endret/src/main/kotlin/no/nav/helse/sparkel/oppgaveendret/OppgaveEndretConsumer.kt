@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 internal class OppgaveEndretConsumer(
     private val rapidConnection: RapidsConnection,
     private val kafkaConsumer: KafkaConsumer<String, String>,
-    private val oppgaveEndretProducer: OppgaveEndretProducer,
+    private val gosysOppgaveSykEndretProducer: GosysOppgaveSykEndretProducer,
     private val objectMapper: ObjectMapper
 ) : AutoCloseable, Runnable {
     private var konsumerer = true
@@ -28,11 +28,11 @@ internal class OppgaveEndretConsumer(
                     logger.info("Mottatt oppgave_endret {}", oppgave.id)
 
                     // TODO håndtere at meldinger bare blir lest en gang?
-                    oppgaveEndretProducer.onPacket(oppgave)
+                    gosysOppgaveSykEndretProducer.onPacket(oppgave)
                 }
             }
-        } catch (e: Exception) {
-            logger.error("Feilet under konsumering av oppgave_endret", e)
+        } catch (exception: Exception) {
+            logger.error("Feilet under konsumering av oppgave_endret", exception)
         } finally {
             close()
             rapidConnection.stop()

@@ -1,3 +1,8 @@
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -5,7 +10,8 @@ import java.io.IOException
 import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.sparkel.oppgaveendret.OppgaveEndretConsumer
-import no.nav.helse.sparkel.oppgaveendret.OppgaveEndretProducer
+import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveSykEndretProducer
+import no.nav.helse.sparkel.oppgaveendret.pdl.PdlClient
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -15,11 +21,19 @@ import org.junit.jupiter.api.Test
 class OppgaveEndretConsumerTest {
     private val rapidApplication = mockk<RapidApplication>(relaxed = true)
     private val kafkaConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
+    private val pdlClient = mockk<PdlClient>(relaxed = true)
+
+    private val objectMapper: ObjectMapper = ObjectMapper()
+        .registerModule(JavaTimeModule())
+        .registerKotlinModule()
+        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
     @Test
     fun `happy case`() {
-        val oppgaveEndretProducer = OppgaveEndretProducer(rapidApplication)
-        val oppgaveEndretConsumer = OppgaveEndretConsumer(rapidApplication, kafkaConsumer, oppgaveEndretProducer)
+        val gosysOppgaveSykEndretProducer = GosysOppgaveSykEndretProducer(rapidApplication, pdlClient)
+        val oppgaveEndretConsumer =
+            OppgaveEndretConsumer(rapidApplication, kafkaConsumer, gosysOppgaveSykEndretProducer, objectMapper)
         queueMessages(
             oppgaveEndretConsumer,
             listOf(null, null)
@@ -30,8 +44,9 @@ class OppgaveEndretConsumerTest {
 
     @Test
     fun `kaller close på rapidapplication når vi får en exception`() {
-        val oppgaveEndretProducer = OppgaveEndretProducer(rapidApplication)
-        val oppgaveEndretConsumer = OppgaveEndretConsumer(rapidApplication, kafkaConsumer, oppgaveEndretProducer)
+        val gosysOppgaveSykEndretProducer = GosysOppgaveSykEndretProducer(rapidApplication, pdlClient)
+        val oppgaveEndretConsumer =
+            OppgaveEndretConsumer(rapidApplication, kafkaConsumer, gosysOppgaveSykEndretProducer, objectMapper)
         every { kafkaConsumer.poll(any<Duration>()) } throws IOException()
         oppgaveEndretConsumer.run()
         verify(exactly = 1) { rapidApplication.stop() }

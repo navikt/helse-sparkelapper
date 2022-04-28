@@ -7,7 +7,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.oppgaveendret.pdl.PdlClient
 import org.slf4j.LoggerFactory
 
-class OppgaveEndretProducer(
+class GosysOppgaveSykEndretProducer(
     private val rapidsConnection: RapidsConnection,
     private val pdlClient: PdlClient
 ) {
@@ -22,19 +22,20 @@ class OppgaveEndretProducer(
 
         if (oppgave.ident == null) return
 
-        if (oppgave.ident.folkeregisterident!!.isNotEmpty()) {
+        if (oppgave.ident.folkeregisterident != null && oppgave.ident.folkeregisterident.isNotEmpty()) {
+            logger.info("Fant folkeregisterident(fødselsnummer)")
             val fnr = oppgave.ident.folkeregisterident
-            publish(fnr)
+            //packetAndPublish(fnr)
         }
         else {
             logger.info("Mangler folkeregisterident gjør kall mot pdl for å finne fødselsnummer")
             val hendelseId = UUID.randomUUID().toString()
             val identer = pdlClient.hentIdenter(oppgave.ident.verdi, hendelseId)
-            publish(identer.fødselsnummer)
+            //packetAndPublish(identer.fødselsnummer)
         }
     }
 
-    private fun publish(fødselsnummer: String) {
+    private fun packetAndPublish(fødselsnummer: String) {
         val packet: JsonMessage = JsonMessage.newMessage(
             mapOf(
                 "@event_name" to "oppgave_endret",
