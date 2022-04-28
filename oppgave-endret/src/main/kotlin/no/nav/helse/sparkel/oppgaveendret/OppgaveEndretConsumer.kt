@@ -22,9 +22,7 @@ internal class OppgaveEndretConsumer(
             while (konsumerer) {
                 kafkaConsumer.poll(Duration.ofMillis(100)).forEach { consumerRecord ->
                     val record = consumerRecord.value()
-                    logger.info("record: " + record)
                     val oppgave: Oppgave = objectMapper.readValue(record)
-                    logger.info("oppgave: " + oppgave)
                     logger.info("Mottatt oppgave_endret {}", oppgave.id)
 
                     // TODO håndtere at meldinger bare blir lest en gang?
