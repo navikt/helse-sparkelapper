@@ -4,10 +4,12 @@ import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.sparkel.oppgaveendret.pdl.PdlClient
 import org.slf4j.LoggerFactory
 
 class OppgaveEndretProducer(
-    private val rapidsConnection: RapidsConnection
+    private val rapidsConnection: RapidsConnection,
+    private val pdlClient: PdlClient
 ) {
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
@@ -18,17 +20,16 @@ class OppgaveEndretProducer(
         sikkerlogg.info("mottok endring på gosysoppgave")
 
         if (oppgave.ident == null) return
-        val identType = oppgave.ident.identType
-        val aktorId = oppgave.ident.verdi
+        val hendelseId = UUID.randomUUID().toString()
+        val identer = pdlClient.hentIdenter(oppgave.ident.verdi, hendelseId)
 
         val packet: JsonMessage = JsonMessage.newMessage(mapOf(
             "@event_name" to "oppgave_endret",
             "@id" to UUID.randomUUID(),
             "@opprettet" to LocalDateTime.now(),
-            "aktørId" to aktorId
+            "fødselsnummer" to identer.fødselsnummer,
+            "aktørId" to identer.aktørId
         ))
-
-        val fnr = ""
-        rapidsConnection.publish(fnr, packet.toJson())
+        rapidsConnection.publish(identer.fødselsnummer, packet.toJson())
     }
 }

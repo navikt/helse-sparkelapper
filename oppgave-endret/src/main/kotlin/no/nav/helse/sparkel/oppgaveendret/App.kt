@@ -6,6 +6,8 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.oppgaveendret.kafka.KafkaConfig
 import no.nav.helse.sparkel.oppgaveendret.kafka.loadBaseConfig
 import no.nav.helse.sparkel.oppgaveendret.kafka.toConsumerConfig
+import no.nav.helse.sparkel.oppgaveendret.pdl.PdlClient
+import no.nav.helse.sparkel.oppgaveendret.pdl.StsRestClient
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
 
@@ -22,6 +24,14 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         )
     }
 
+    val stsClient = StsRestClient(
+        baseUrl = env.getValue("STS_BASE_URL"),
+        serviceUser = serviceUser
+    )
+    val pdlClient = PdlClient(
+        baseUrl = env.getValue("PDL_URL"),
+        stsClient = stsClient
+    )
     val kafkaConfig = KafkaConfig(
         kafkaBootstrapServers = getEnvVar(env,"KAFKA_BOOTSTRAP_SERVERS_URL"),
         truststore = getEnvVar(env,"NAV_TRUSTSTORE_PATH"),
@@ -38,7 +48,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     kafkaConsumerOppgaveEndret.subscribe(listOf(consumeTopic))
 
     return RapidApplication.create(env).apply {
-        val oppgaveEndretProducer = OppgaveEndretProducer(this)
+        val oppgaveEndretProducer = OppgaveEndretProducer(this, pdlClient)
         val oppgaveEndretConsumer = OppgaveEndretConsumer(this, kafkaConsumerOppgaveEndret, oppgaveEndretProducer)
         Thread(oppgaveEndretConsumer).start()
         this.register(object : RapidsConnection.StatusListener {
