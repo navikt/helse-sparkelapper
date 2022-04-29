@@ -11,37 +11,43 @@ class GosysOppgaveSykEndretProducer(
     private val rapidsConnection: RapidsConnection,
     private val pdlClient: PdlClient
 ) {
-    private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     private val GOSYS = "FS22"
 
     fun onPacket(oppgave: Oppgave) {
         if (oppgave.behandlesAvApplikasjon != GOSYS || oppgave.behandlingstema != "SYK") return
-        sikkerlogg.info("mottok endring på gosysoppgave på behandlingstema SYK")
+        logger.info("Mottok endring på gosysoppgave på behandlingstema SYK")
 
         if (oppgave.ident == null) return
 
-        if (oppgave.ident.folkeregisterident != null && oppgave.ident.folkeregisterident.isNotEmpty()) {
-            val fnr = oppgave.ident.folkeregisterident
-            if (oppgave.ident.identType == IdentType.AKTOERID) {
-                logger.info("Fant folkeregisterident(fødselsnummer) og aktørId trenger ikkje kalle PDL")
-                val aktørId = oppgave.ident.verdi
-            }
-            //packetAndPublish(fnr, aktørId)
-        }
-        else {
-            logger.info("Mangler folkeregisterident gjør kall mot pdl for å finne fødselsnummer")
+        if (!oppgave.ident.folkeregisterident.isNullOrEmpty() && oppgave.ident.identType == IdentType.AKTOERID) {
+            logger.info("Har folkeregisterident og aktorId på oppgaven")
+            packetAndPublish(oppgave.ident.folkeregisterident, oppgave.ident.verdi)
+
+        } else if (!oppgave.ident.folkeregisterident.isNullOrEmpty()) {
+            logger.info("Har folkeregisterident på oppgaven")
+            val hendelseId = UUID.randomUUID().toString()
+            val identer = pdlClient.hentIdenter(oppgave.ident.folkeregisterident, hendelseId)
+            logger.info("pdl kallet gikk fint!")
+
+            packetAndPublish(identer.fødselsnummer, identer.aktørId)
+
+        } else if (oppgave.ident.identType == IdentType.AKTOERID) {
+            logger.info("Har aktorId på oppgaven")
             val hendelseId = UUID.randomUUID().toString()
             val identer = pdlClient.hentIdenter(oppgave.ident.verdi, hendelseId)
-            //packetAndPublish(identer.fødselsnummer, identer.aktørId)
+            logger.info("pdl kallet gikk fint!")
+
+            packetAndPublish(identer.fødselsnummer, identer.aktørId)
         }
+
     }
 
     private fun packetAndPublish(fødselsnummer: String, aktørId: String) {
         val packet: JsonMessage = JsonMessage.newMessage(
             mapOf(
-                "@event_name" to "oppgave_endret",
+                "@event_name" to "gosys_syk_oppgave_endret",
                 "@id" to UUID.randomUUID(),
                 "@opprettet" to LocalDateTime.now(),
                 "fødselsnummer" to fødselsnummer,

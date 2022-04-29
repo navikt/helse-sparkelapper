@@ -1,3 +1,5 @@
+package no.nav.helse.sparkel.oppgaveendret.oppgave
+
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -9,7 +11,6 @@ import io.mockk.verify
 import java.io.IOException
 import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.sparkel.oppgaveendret.OppgaveEndretConsumer
 import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveSykEndretProducer
 import no.nav.helse.sparkel.oppgaveendret.pdl.PdlClient
 import org.apache.kafka.clients.consumer.ConsumerRecord

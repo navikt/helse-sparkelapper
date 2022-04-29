@@ -11,6 +11,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.oppgaveendret.kafka.KafkaConfig
 import no.nav.helse.sparkel.oppgaveendret.kafka.loadBaseConfig
 import no.nav.helse.sparkel.oppgaveendret.kafka.toConsumerConfig
+import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretConsumer
 import no.nav.helse.sparkel.oppgaveendret.pdl.PdlClient
 import no.nav.helse.sparkel.oppgaveendret.sts.StsRestClient
 import no.nav.helse.sparkel.oppgaveendret.util.ServiceUser
