@@ -5,7 +5,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveSykEndretProducer
-import no.nav.helse.sparkel.oppgaveendret.Oppgave
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 

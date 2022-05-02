@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.oppgaveendret
+package no.nav.helse.sparkel.oppgaveendret.oppgave
 
 
 // Det finnes flere felter på klassen Oppgave, men vi velger å bare mappe dei vi trenger

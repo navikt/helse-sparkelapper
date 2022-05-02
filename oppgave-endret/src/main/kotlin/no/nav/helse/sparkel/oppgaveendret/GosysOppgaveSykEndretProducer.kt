@@ -4,6 +4,8 @@ import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.sparkel.oppgaveendret.oppgave.IdentType
+import no.nav.helse.sparkel.oppgaveendret.oppgave.Oppgave
 import no.nav.helse.sparkel.oppgaveendret.pdl.PdlClient
 import org.slf4j.LoggerFactory
 
@@ -18,6 +20,7 @@ class GosysOppgaveSykEndretProducer(
     fun onPacket(oppgave: Oppgave) {
         //if (oppgave.behandlesAvApplikasjon != GOSYS || oppgave.behandlingstema != "SYK") return
         // logger.info("Mottok endring på gosysoppgave på behandlingstema SYK")
+        logger.info("behandlingstema: " +  oppgave.behandlingstema + " behandlesAvApplikasjon: " + oppgave.behandlesAvApplikasjon)
         if ( oppgave.behandlingstema != "SYK") return
         logger.info("Mottok endring på behandlingstema SYK")
         logger.info("behandlesAvApplikasjon: " + oppgave.behandlesAvApplikasjon)
