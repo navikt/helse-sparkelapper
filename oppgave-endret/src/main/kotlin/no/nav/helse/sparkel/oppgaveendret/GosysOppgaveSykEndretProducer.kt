@@ -16,8 +16,11 @@ class GosysOppgaveSykEndretProducer(
     private val GOSYS = "FS22"
 
     fun onPacket(oppgave: Oppgave) {
-        if (oppgave.behandlesAvApplikasjon != GOSYS || oppgave.behandlingstema != "SYK") return
-        logger.info("Mottok endring på gosysoppgave på behandlingstema SYK")
+        //if (oppgave.behandlesAvApplikasjon != GOSYS || oppgave.behandlingstema != "SYK") return
+        // logger.info("Mottok endring på gosysoppgave på behandlingstema SYK")
+        if ( oppgave.behandlingstema != "SYK") return
+        logger.info("Mottok endring på behandlingstema SYK")
+        logger.info("behandlesAvApplikasjon: " + oppgave.behandlesAvApplikasjon)
 
         if (oppgave.ident == null) return
 
