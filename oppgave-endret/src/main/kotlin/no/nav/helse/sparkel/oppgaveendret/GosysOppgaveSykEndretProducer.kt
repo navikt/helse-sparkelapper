@@ -20,8 +20,8 @@ class GosysOppgaveSykEndretProducer(
     fun onPacket(oppgave: Oppgave) {
         //if (oppgave.behandlesAvApplikasjon != GOSYS || oppgave.behandlingstema != "SYK") return
         // logger.info("Mottok endring på gosysoppgave på behandlingstema SYK")
-        logger.info("behandlingstema: " +  oppgave.behandlingstema + " behandlesAvApplikasjon: " + oppgave.behandlesAvApplikasjon)
-        if ( oppgave.behandlingstema != "SYK") return
+        logger.info("tema: " +  oppgave.tema + " behandlesAvApplikasjon: " + oppgave.behandlesAvApplikasjon)
+        if ( oppgave.tema != "SYK") return
         logger.info("Mottok endring på behandlingstema SYK")
         logger.info("behandlesAvApplikasjon: " + oppgave.behandlesAvApplikasjon)
 
