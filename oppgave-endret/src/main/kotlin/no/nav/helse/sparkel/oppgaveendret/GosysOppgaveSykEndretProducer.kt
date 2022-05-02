@@ -18,16 +18,13 @@ class GosysOppgaveSykEndretProducer(
     private val GOSYS = "FS22"
 
     fun onPacket(oppgave: Oppgave) {
-        //if (oppgave.behandlesAvApplikasjon != GOSYS || oppgave.behandlingstema != "SYK") return
-        // logger.info("Mottok endring på gosysoppgave på behandlingstema SYK")
-        if ( oppgave.tema != "SYK") return
-        logger.info("behandlesAvApplikasjon: " + oppgave.behandlesAvApplikasjon)
-
+        if (oppgave.behandlesAvApplikasjon != GOSYS || oppgave.tema != "SYK") return
+        logger.info("Mottok endring på gosysoppgave på tema SYK")
         if (oppgave.ident == null) return
 
         if (!oppgave.ident.folkeregisterident.isNullOrEmpty() && oppgave.ident.identType == IdentType.AKTOERID) {
             logger.info("Har folkeregisterident og aktorId på oppgaven")
-           // packetAndPublish(oppgave.ident.folkeregisterident, oppgave.ident.verdi)
+            packetAndPublish(oppgave.ident.folkeregisterident, oppgave.ident.verdi)
 
         } else if (!oppgave.ident.folkeregisterident.isNullOrEmpty()) {
             logger.info("Har folkeregisterident på oppgaven")
@@ -35,7 +32,7 @@ class GosysOppgaveSykEndretProducer(
             val identer = pdlClient.hentIdenter(oppgave.ident.folkeregisterident, hendelseId)
             logger.info("pdl kallet gikk fint!")
 
-            //packetAndPublish(identer.fødselsnummer, identer.aktørId)
+            packetAndPublish(identer.fødselsnummer, identer.aktørId)
 
         } else if (oppgave.ident.identType == IdentType.AKTOERID) {
             logger.info("Har aktorId på oppgaven")
@@ -43,7 +40,7 @@ class GosysOppgaveSykEndretProducer(
             val identer = pdlClient.hentIdenter(oppgave.ident.verdi, hendelseId)
             logger.info("pdl kallet gikk fint!")
 
-            //packetAndPublish(identer.fødselsnummer, identer.aktørId)
+            packetAndPublish(identer.fødselsnummer, identer.aktørId)
         }
 
     }
