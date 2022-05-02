@@ -20,7 +20,7 @@ class AaregClient(
     suspend fun hentFraAareg(
         fnr: String,
         callId: UUID
-    ) = httpClient.prepareGet("$baseUrl/v2/arbeidstaker/arbeidsforhold") {
+    ) = httpClient.prepareGet("$baseUrl/v1/arbeidstaker/arbeidsforhold") {
         header("Authorization", "Bearer ${stsRestClient.token()}")
         header("Nav-Consumer-Token", "Bearer ${stsRestClient.token()}")
         System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
