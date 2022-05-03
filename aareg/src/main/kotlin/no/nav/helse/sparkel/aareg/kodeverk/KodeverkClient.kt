@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.aareg.util
+package no.nav.helse.sparkel.aareg.kodeverk
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.client.HttpClient

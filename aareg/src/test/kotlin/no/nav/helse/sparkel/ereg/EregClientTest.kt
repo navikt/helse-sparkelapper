@@ -2,7 +2,6 @@ package no.nav.helse.sparkel.ereg
 
 import io.mockk.every
 import kotlinx.coroutines.runBlocking
-import no.nav.helse.sparkel.aareg.util.mockStsRestClient
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.util.UUID.randomUUID
@@ -13,7 +12,6 @@ internal class EregClientTest {
     fun ok() {
         val eregClient = EregClient(
             baseUrl = "http://baseUrl.local",
-            stsRestClient = mockStsRestClient,
             httpClient = eregMockClient(mockGenerator),
             appName = "appens navn",
         )
@@ -29,7 +27,6 @@ internal class EregClientTest {
 
         val eregClient = EregClient(
             baseUrl = "http://baseUrl.local",
-            stsRestClient = mockStsRestClient,
             httpClient = eregMockClient(mockGenerator),
             appName = "appens navn",
         )

@@ -9,8 +9,8 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.sikkerlogg
-import no.nav.helse.sparkel.aareg.util.KodeverkClient
 import no.nav.helse.sparkel.ereg.EregClient
 import no.nav.helse.sparkel.ereg.FeilVedHenting
 

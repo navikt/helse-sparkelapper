@@ -6,7 +6,6 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import no.nav.helse.rapids_rivers.isMissingOrNull
-import no.nav.helse.sparkel.aareg.arbeidsforholdV2.StsRestClient
 import no.nav.helse.sparkel.aareg.objectMapper
 import java.util.*
 

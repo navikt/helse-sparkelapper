@@ -10,10 +10,10 @@ import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.asLocalDate
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.asOptionalLocalDate
 import no.nav.helse.sparkel.aareg.sikkerlogg
-import no.nav.helse.sparkel.aareg.util.KodeverkClient
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.util.*
+import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 
 class Arbeidsforholdbehovløser(
     rapidsConnection: RapidsConnection,

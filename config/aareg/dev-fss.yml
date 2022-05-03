@@ -2,9 +2,6 @@ kafkaPool: nav-dev
 azure:
   enabled: true
   tenant: trygdeetaten.no
-mountPaths:
-- mountPath: /var/run/secrets/nais.io/service_user
-  kvPath: /serviceuser/data/dev/srvsparkelaareg
 env:
 - name: KODEVERK_BASE_URL
   value: http://kodeverk.default.svc.nais.local
