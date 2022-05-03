@@ -13,14 +13,11 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdbehovløser
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.ArbeidsforholdLøserV2
-import no.nav.helse.sparkel.aareg.arbeidsforholdV2.StsRestClient
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.Arbeidsgiverinformasjonsbehovløser
 import no.nav.helse.sparkel.aareg.azure.AzureAD
 import no.nav.helse.sparkel.aareg.azure.AzureADProps
+import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.util.Environment
-import no.nav.helse.sparkel.aareg.util.KodeverkClient
-import no.nav.helse.sparkel.aareg.util.ServiceUser
-import no.nav.helse.sparkel.aareg.util.readServiceUserCredentials
 import no.nav.helse.sparkel.aareg.util.setUpEnvironment
 import no.nav.helse.sparkel.ereg.EregClient
 import org.slf4j.Logger
@@ -36,19 +33,17 @@ internal val objectMapper: ObjectMapper = jacksonObjectMapper()
 
 fun main() {
     val environment = setUpEnvironment()
-    val serviceUser = readServiceUserCredentials()
-    val app = createApp(environment, serviceUser)
+    val app = createApp(environment)
     app.start()
 }
 
-internal fun createApp(environment: Environment, serviceUser: ServiceUser): RapidsConnection {
+internal fun createApp(environment: Environment): RapidsConnection {
     val httpClient = HttpClient {
         install(ContentNegotiation) {
             register(ContentType.Application.Json, JacksonConverter(objectMapper))
         }
         expectSuccess = false
     }
-    val stsRestClient = StsRestClient(environment.stsBaseUrl, serviceUser, httpClient)
     val azureAD = AzureAD(AzureADProps(environment.tokenEndpointURL, environment.clientId, environment.clientSecret, environment.aaregOauthScope))
 
     val kodeverkClient = KodeverkClient(
@@ -57,8 +52,7 @@ internal fun createApp(environment: Environment, serviceUser: ServiceUser): Rapi
         appName = environment.appName
     )
 
-
-    val eregClient = EregClient(environment.organisasjonBaseUrl, environment.appName, httpClient, stsRestClient)
+    val eregClient = EregClient(environment.organisasjonBaseUrl, environment.appName, httpClient)
     val aaregClient = AaregClient(environment.aaregBaseUrlRest, {azureAD.accessToken()})
 
     val rapidsConnection = RapidApplication.create(environment.raw)

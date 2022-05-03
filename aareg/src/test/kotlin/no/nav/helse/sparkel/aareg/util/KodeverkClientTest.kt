@@ -2,6 +2,8 @@ package no.nav.helse.sparkel.aareg.util
 
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
+import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
+import no.nav.helse.sparkel.aareg.kodeverk.hentTekst
 import no.nav.helse.sparkel.aareg.objectMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.fail

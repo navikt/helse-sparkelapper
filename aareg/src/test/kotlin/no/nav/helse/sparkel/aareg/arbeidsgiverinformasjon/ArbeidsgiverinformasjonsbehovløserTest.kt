@@ -7,8 +7,8 @@ import io.mockk.every
 import io.mockk.mockk
 import java.util.*
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.objectMapper
-import no.nav.helse.sparkel.aareg.util.KodeverkClient
 import no.nav.helse.sparkel.ereg.EregClient
 import no.nav.helse.sparkel.ereg.EregResponse
 import org.junit.jupiter.api.Assertions.*
