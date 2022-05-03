@@ -14,15 +14,14 @@ import java.util.*
 
 class AaregClient(
     private val baseUrl: String,
-    private val stsRestClient: StsRestClient,
+    private val tokenSupplier: () -> String,
     private val httpClient: HttpClient = HttpClient()
 ) {
     suspend fun hentFraAareg(
         fnr: String,
         callId: UUID
     ) = httpClient.prepareGet("$baseUrl/v1/arbeidstaker/arbeidsforhold") {
-        header("Authorization", "Bearer ${stsRestClient.token()}")
-        header("Nav-Consumer-Token", "Bearer ${stsRestClient.token()}")
+        header("Authorization", "Bearer ${tokenSupplier()}")
         System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
         header("Nav-Call-Id", callId)
         accept(ContentType.Application.Json)

@@ -13,8 +13,7 @@ import java.util.*
 class EregClient(
     private val baseUrl: String,
     private val appName: String,
-    private val httpClient: HttpClient,
-    private val stsRestClient: StsRestClient,
+    private val httpClient: HttpClient
 ) {
     suspend fun hentOrganisasjon(
         organisasjonsnummer: String,
@@ -27,8 +26,6 @@ class EregClient(
     ): EregResponse {
         val response: HttpResponse =
             httpClient.get("$baseUrl/v1/organisasjon/$organisasjonsnummer?inkluderHierarki=true&inkluderHistorikk=true") {
-                header("Authorization", "Bearer ${stsRestClient.token()}")
-                header("Nav-Consumer-Token", "Bearer ${stsRestClient.token()}")
                 header("Nav-Consumer-Id", appName)
                 header("Nav-Call-Id", callId)
                 accept(ContentType.Application.Json)
