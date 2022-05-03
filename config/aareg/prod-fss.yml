@@ -1,4 +1,6 @@
 kafkaPool: nav-prod
+azure:
+  enabled: true
 mountPaths:
 - mountPath: /var/run/secrets/nais.io/service_user
   kvPath: /serviceuser/data/prod/srvsparkelaareg
@@ -9,3 +11,5 @@ env:
   value: https://ereg-services.intern.nav.no/api/v1
 - name: AAREG_BASE_URL_REST
   value: https://aareg-services.intern.nav.no
+- name: AAREG_OAUTH_SCOPE
+  value: api://prod-fss.arbeidsforhold.aareg-services-nais/.default

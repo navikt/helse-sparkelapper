@@ -15,6 +15,8 @@ import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.ArbeidsforholdLøserV2
 import no.nav.helse.sparkel.aareg.arbeidsforholdV2.StsRestClient
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.Arbeidsgiverinformasjonsbehovløser
+import no.nav.helse.sparkel.aareg.azure.AzureAD
+import no.nav.helse.sparkel.aareg.azure.AzureADProps
 import no.nav.helse.sparkel.aareg.util.Environment
 import no.nav.helse.sparkel.aareg.util.KodeverkClient
 import no.nav.helse.sparkel.aareg.util.ServiceUser
@@ -26,7 +28,9 @@ import org.slf4j.LoggerFactory
 
 val sikkerlogg: Logger = LoggerFactory.getLogger("tjenestekall")
 
-val objectMapper: ObjectMapper = jacksonObjectMapper()
+internal val logger: Logger = LoggerFactory.getLogger("sparkel-aareg")
+
+internal val objectMapper: ObjectMapper = jacksonObjectMapper()
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     .registerModule(JavaTimeModule())
 
@@ -45,6 +49,7 @@ internal fun createApp(environment: Environment, serviceUser: ServiceUser): Rapi
         expectSuccess = false
     }
     val stsRestClient = StsRestClient(environment.stsBaseUrl, serviceUser, httpClient)
+    val azureAD = AzureAD(AzureADProps(environment.tokenEndpointURL, environment.clientId, environment.clientSecret, environment.aaregOauthScope))
 
     val kodeverkClient = KodeverkClient(
         httpClient = httpClient,
@@ -52,8 +57,9 @@ internal fun createApp(environment: Environment, serviceUser: ServiceUser): Rapi
         appName = environment.appName
     )
 
+
     val eregClient = EregClient(environment.organisasjonBaseUrl, environment.appName, httpClient, stsRestClient)
-    val aaregClient = AaregClient(environment.aaregBaseUrlRest, stsRestClient)
+    val aaregClient = AaregClient(environment.aaregBaseUrlRest, {azureAD.accessToken()})
 
     val rapidsConnection = RapidApplication.create(environment.raw)
     Arbeidsgiverinformasjonsbehovløser(rapidsConnection, kodeverkClient, eregClient)
