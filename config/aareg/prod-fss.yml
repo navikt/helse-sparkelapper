@@ -5,7 +5,7 @@ env:
   - name: KODEVERK_BASE_URL
     value: http://kodeverk.default.svc.nais.local
   - name: ORGANISASJON_BASE_URL
-    value: https://ereg-services.intern.nav.no/api/v1
+    value: https://ereg-services.intern.nav.no/api
   - name: AAREG_BASE_URL_REST
     value: https://aareg-services.intern.nav.no/api
   - name: AAREG_OAUTH_SCOPE
