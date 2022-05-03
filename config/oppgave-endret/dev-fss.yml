@@ -7,7 +7,3 @@ env:
   value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
 - name: OPPGAVE_ENDRET_TOPIC
   value: aapen-oppgave-endret-v1-preprod
-- name: STS_BASE_URL
-  value: http://security-token-service.default.svc.nais.local
-- name: PDL_URL
-  value: https://pdl-api.nais.preprod.local/graphql

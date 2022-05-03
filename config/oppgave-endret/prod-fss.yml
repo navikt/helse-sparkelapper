@@ -7,7 +7,3 @@ env:
   value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443,SASL_SSL://a01apvl00150.adeo.no:8443
 - name: OPPGAVE_ENDRET_TOPIC
   value: aapen-oppgave-endret-v1-prod
-- name: STS_BASE_URL
-  value: http://security-token-service.default.svc.nais.local
-- name: PDL_URL
-  value: https://pdl-api.nais.adeo.no/graphql

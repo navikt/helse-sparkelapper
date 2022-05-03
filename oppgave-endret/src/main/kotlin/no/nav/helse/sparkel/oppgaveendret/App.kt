@@ -12,8 +12,6 @@ import no.nav.helse.sparkel.oppgaveendret.kafka.KafkaConfig
 import no.nav.helse.sparkel.oppgaveendret.kafka.loadBaseConfig
 import no.nav.helse.sparkel.oppgaveendret.kafka.toConsumerConfig
 import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretConsumer
-import no.nav.helse.sparkel.oppgaveendret.pdl.PdlClient
-import no.nav.helse.sparkel.oppgaveendret.sts.StsRestClient
 import no.nav.helse.sparkel.oppgaveendret.util.ServiceUser
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -38,16 +36,6 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         )
     }
 
-    val stsClient = StsRestClient(
-        baseUrl = env.getValue("STS_BASE_URL"),
-        serviceUser = serviceUser,
-        objectMapper = objectMapper
-    )
-    val pdlClient = PdlClient(
-        baseUrl = env.getValue("PDL_URL"),
-        stsClient = stsClient,
-        objectMapper = objectMapper
-    )
     val kafkaConfig = KafkaConfig(
         kafkaBootstrapServers = getEnvVar(env,"KAFKA_BOOTSTRAP_SERVERS_URL"),
         truststore = getEnvVar(env,"NAV_TRUSTSTORE_PATH"),
@@ -64,7 +52,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     kafkaConsumerOppgaveEndret.subscribe(listOf(consumeTopic))
 
     return RapidApplication.create(env).apply {
-        val gosysOppgaveSykEndretProducer = GosysOppgaveSykEndretProducer(this, pdlClient)
+        val gosysOppgaveSykEndretProducer = GosysOppgaveSykEndretProducer(this)
         val oppgaveEndretConsumer = OppgaveEndretConsumer(this, kafkaConsumerOppgaveEndret, gosysOppgaveSykEndretProducer, objectMapper)
         Thread(oppgaveEndretConsumer).start()
         this.register(object : RapidsConnection.StatusListener {

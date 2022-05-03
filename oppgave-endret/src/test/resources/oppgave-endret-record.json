@@ -1,0 +1,34 @@
+{
+  "id": 34333333,
+  "tildeltEnhetsnr": "4488",
+  "endretAvEnhetsnr": "4488",
+  "journalpostId": "53242222",
+  "saksreferanse": "1644444",
+  "tilordnetRessurs": "H123456",
+  "tema": "SYK",
+  "behandlingstema": "ab0061",
+  "oppgavetype": "INNT",
+  "versjon": 4,
+  "beskrivelse": "Det har kommet en inntektsmelding på sykepenger.",
+  "fristFerdigstillelse": "2022-03-21",
+  "aktivDato": "2022-03-12",
+  "opprettetTidspunkt": "2022-03-12T14:59:01.431+01:00",
+  "opprettetAv": "srvsyfoinntektsmel",
+  "endretAv": "H160599",
+  "endretTidspunkt": "2022-05-02T15:15:22.887+02:00",
+  "prioritet": "NORM",
+  "status": "AAPNET",
+  "statuskategori": "AAPEN",
+  "behandlesAvApplikasjon": "FS22",
+  "ident": {
+    "identType": "AKTOERID",
+    "verdi": "100001231333",
+    "folkeregisterident": "21312434234",
+    "registrert_dato": [
+      2020,
+      7,
+      16
+    ]
+  },
+  "metadata": {}
+}
