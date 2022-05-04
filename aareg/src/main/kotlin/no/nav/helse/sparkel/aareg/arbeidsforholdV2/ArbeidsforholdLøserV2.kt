@@ -35,6 +35,7 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
                 aaregClient
                     .hentFraAareg(packet["fødselsnummer"].asText(), UUID.fromString(packet["@id"].asText()))
                     .map { it.toArbeidsforhold() }
+                    .also { sikkerlogg.info("Responsen fra Aareg er: $it") }
             }
         } catch (err: ClientRequestException) {
             log.warn(

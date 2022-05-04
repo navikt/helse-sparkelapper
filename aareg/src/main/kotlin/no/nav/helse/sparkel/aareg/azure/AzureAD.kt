@@ -25,11 +25,11 @@ class AzureAD(private val props: AzureADProps) {
     private val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
 
     init {
-        hentTokenMedEnklereHttpClient().also { logger.info("Token mot skjermende hentet ut fra AD.") }
+        hentTokenMedEnklereHttpClient().also { logger.info("Token mot arreg hentet ut fra AD.") }
     }
 
     internal fun accessToken(): String {
-        if (cachedAccessToken.expired) cachedAccessToken = fetchToken().also { logger.info("Token mot skjermede oppfrisket 👍") }
+        if (cachedAccessToken.expired) cachedAccessToken = fetchToken().also { logger.info("Token mot arreg oppfrisket 👍") }
         return cachedAccessToken.access_token
     }
 

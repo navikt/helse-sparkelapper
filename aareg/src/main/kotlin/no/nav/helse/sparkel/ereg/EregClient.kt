@@ -8,6 +8,7 @@ import io.ktor.http.*
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.sparkel.aareg.objectMapper
 import java.util.*
+import no.nav.helse.sparkel.aareg.sikkerlogg
 
 class EregClient(
     private val baseUrl: String,
@@ -30,8 +31,11 @@ class EregClient(
                 accept(ContentType.Application.Json)
             }
 
+        sikkerlogg.info("EregResponse status: " + response.status )
+
         if (response.status.isSuccess()) {
             val json = objectMapper.readTree(response.bodyAsText())
+            sikkerlogg.info("EregResponse json: $json")
             return EregResponse(
                     navn = trekkUtNavn(json),
                     næringer = json.path("organisasjonDetaljer").path("naeringer").takeIf { !it.isMissingNode }
