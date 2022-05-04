@@ -10,6 +10,7 @@ import io.ktor.http.*
 import no.nav.helse.sparkel.aareg.objectMapper
 import java.time.LocalDate
 import java.util.*
+import no.nav.helse.sparkel.aareg.sikkerlogg
 
 
 class AaregClient(
@@ -20,13 +21,19 @@ class AaregClient(
     suspend fun hentFraAareg(
         fnr: String,
         callId: UUID
-    ) = httpClient.prepareGet("$baseUrl/v1/arbeidstaker/arbeidsforhold") {
-        header("Authorization", "Bearer ${tokenSupplier()}")
-        System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
-        header("Nav-Call-Id", callId)
-        accept(ContentType.Application.Json)
-        header("Nav-Personident", fnr)
-    }.execute { objectMapper.readValue<ArrayNode>(it.bodyAsText()) }
+    ): ArrayNode {
+        val response = httpClient.prepareGet("$baseUrl/v1/arbeidstaker/arbeidsforhold") {
+            header("Authorization", "Bearer ${tokenSupplier()}")
+            System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
+            header("Nav-Call-Id", callId)
+            accept(ContentType.Application.Json)
+            header("Nav-Personident", fnr)
+        }.execute()
+
+        sikkerlogg.info("AaregResponse status: " + response.status)
+
+        return objectMapper.readValue(response.bodyAsText())
+    }
 }
 
 data class Arbeidsforhold(
