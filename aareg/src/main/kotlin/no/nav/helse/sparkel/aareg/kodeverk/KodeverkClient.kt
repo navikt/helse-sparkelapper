@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.aareg.kodeverk
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
@@ -37,10 +38,14 @@ class KodeverkClient(
         return requireNotNull(yrker.hentTekst(kode))
     }
 
-    private fun hentFraKodeverk(path: String): String = runBlocking {
-        httpClient.prepareGet("$kodeverkBaseUrl$path") {
-            setup(UUID.randomUUID().toString())
-        }.body()
+    private fun hentFraKodeverk(path: String): String {
+        return runBlocking {
+            val response = httpClient.prepareGet("$kodeverkBaseUrl$path") {
+                setup(UUID.randomUUID().toString())
+            }.execute()
+            sikkerlogg.info("Kodeverk status: " + response.status + "for path: " + path)
+            return@runBlocking response.body()
+        }
     }
 
     private fun HttpRequestBuilder.setup(callId: String) {
