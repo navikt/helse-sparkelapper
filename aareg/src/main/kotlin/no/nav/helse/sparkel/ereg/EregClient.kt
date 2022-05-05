@@ -35,7 +35,6 @@ class EregClient(
 
         if (response.status.isSuccess()) {
             val json = objectMapper.readTree(response.bodyAsText())
-            sikkerlogg.info("EregResponse json: $json")
             return EregResponse(
                     navn = trekkUtNavn(json),
                     næringer = json.path("organisasjonDetaljer").path("naeringer").takeIf { !it.isMissingNode }

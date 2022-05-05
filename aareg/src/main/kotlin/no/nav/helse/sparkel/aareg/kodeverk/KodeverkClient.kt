@@ -29,12 +29,10 @@ class KodeverkClient(
     }
 
     fun getNæring(kode: String): String {
-        sikkerlogg.info("getNæring på kode: $kode")
         return requireNotNull(næringer.hentTekst(kode))
     }
 
     fun getYrke(kode: String): String {
-        sikkerlogg.info("getYrke på kode: $kode")
         return requireNotNull(yrker.hentTekst(kode))
     }
 
@@ -43,7 +41,7 @@ class KodeverkClient(
             val response = httpClient.prepareGet("$kodeverkBaseUrl$path") {
                 setup(UUID.randomUUID().toString())
             }.execute()
-            sikkerlogg.info("Kodeverk status: " + response.status + "for path: " + path)
+            sikkerlogg.info("Kodeverk status: " + response.status + " for path: " + path)
             return@runBlocking response.body()
         }
     }
