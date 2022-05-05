@@ -4,14 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveSykEndretProducer
+import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveEndretProducer
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 
 internal class OppgaveEndretConsumer(
     private val rapidConnection: RapidsConnection,
     private val kafkaConsumer: KafkaConsumer<String, String>,
-    private val gosysOppgaveSykEndretProducer: GosysOppgaveSykEndretProducer,
+    private val gosysOppgaveEndretProducer: GosysOppgaveEndretProducer,
     private val objectMapper: ObjectMapper
 ) : AutoCloseable, Runnable {
     private var konsumerer = true
@@ -26,7 +26,7 @@ internal class OppgaveEndretConsumer(
                     val oppgave: Oppgave = objectMapper.readValue(record)
                     logger.info("Mottatt oppgave_endret {}", oppgave.id)
 
-                    gosysOppgaveSykEndretProducer.onPacket(oppgave)
+                    gosysOppgaveEndretProducer.onPacket(oppgave)
                 }
             }
         } catch (exception: Exception) {

@@ -8,12 +8,11 @@ import no.nav.helse.sparkel.oppgaveendret.oppgave.IdentType
 import no.nav.helse.sparkel.oppgaveendret.oppgave.Oppgave
 import org.slf4j.LoggerFactory
 
-class GosysOppgaveSykEndretProducer(
+class GosysOppgaveEndretProducer(
     private val rapidsConnection: RapidsConnection
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-
 
     private val GOSYS = "FS22"
 
@@ -29,13 +28,12 @@ class GosysOppgaveSykEndretProducer(
             sikkerlogg.info("Oppgave: " + oppgave)
             logger.error("Mangler folkeregisterident og aktorId på oppgaven " + oppgave.id)
         }
-
     }
 
     private fun packetAndPublish(fødselsnummer: String, aktørId: String) {
         val packet: JsonMessage = JsonMessage.newMessage(
             mapOf(
-                "@event_name" to "gosys_syk_oppgave_endret",
+                "@event_name" to "gosys_oppgave_endret",
                 "@id" to UUID.randomUUID(),
                 "@opprettet" to LocalDateTime.now(),
                 "fødselsnummer" to fødselsnummer,

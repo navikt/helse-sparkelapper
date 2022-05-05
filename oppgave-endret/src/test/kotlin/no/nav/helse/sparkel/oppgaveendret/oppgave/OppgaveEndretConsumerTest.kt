@@ -12,7 +12,7 @@ import io.mockk.verify
 import java.io.IOException
 import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveSykEndretProducer
+import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveEndretProducer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -32,9 +32,9 @@ class OppgaveEndretConsumerTest {
 
     @Test
     fun `happy case`() {
-        val gosysOppgaveSykEndretProducer = GosysOppgaveSykEndretProducer(rapidApplication)
+        val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapidApplication)
         val oppgaveEndretConsumer =
-            OppgaveEndretConsumer(rapidApplication, kafkaConsumer, gosysOppgaveSykEndretProducer, objectMapper)
+            OppgaveEndretConsumer(rapidApplication, kafkaConsumer, gosysOppgaveEndretProducer, objectMapper)
         queueMessages(
             oppgaveEndretConsumer,
             listOf(null, null)
@@ -45,9 +45,9 @@ class OppgaveEndretConsumerTest {
 
     @Test
     fun `kaller close på rapidapplication når vi får en exception`() {
-        val gosysOppgaveSykEndretProducer = GosysOppgaveSykEndretProducer(rapidApplication)
+        val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapidApplication)
         val oppgaveEndretConsumer =
-            OppgaveEndretConsumer(rapidApplication, kafkaConsumer, gosysOppgaveSykEndretProducer, objectMapper)
+            OppgaveEndretConsumer(rapidApplication, kafkaConsumer, gosysOppgaveEndretProducer, objectMapper)
         every { kafkaConsumer.poll(any<Duration>()) } throws IOException()
         oppgaveEndretConsumer.run()
         verify(exactly = 1) { rapidApplication.stop() }
