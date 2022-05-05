@@ -4,6 +4,7 @@ import org.apache.avro.Schema
 import org.apache.avro.generic.GenericDatumReader
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.io.DecoderFactory
+import org.apache.avro.util.Utf8
 import org.apache.kafka.common.serialization.Deserializer
 import org.slf4j.LoggerFactory
 
@@ -21,7 +22,7 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
             decoder.skipFixed(5)
             return reader.read(null, decoder)
         } catch (throwable: Throwable) {
-            sikkerlogg.warn("Mottok ugyldig melding fra Leesah '${String(data)}'")
+            sikkerlogg.warn("Mottok ugyldig melding fra Leesah '${Utf8(data)}'", throwable)
             throw throwable
         }
     }
