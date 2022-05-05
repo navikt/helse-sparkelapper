@@ -22,10 +22,10 @@ class KodeverkClient(
     private val appName: String
 ) {
     private val næringer: JsonNode by lazy {
-        objectMapper.readTree(hentFraKodeverk("/api/v1/kodeverk/Næringskoder/koder/betydninger"))
+        objectMapper.readTree(hentFraKodeverk("/v1/kodeverk/Næringskoder/koder/betydninger"))
     }
     private val yrker: JsonNode by lazy {
-        objectMapper.readTree(hentFraKodeverk("/api/v1/kodeverk/Yrker/koder/betydninger"))
+        objectMapper.readTree(hentFraKodeverk("/v1/kodeverk/Yrker/koder/betydninger"))
     }
 
     fun getNæring(kode: String): String {

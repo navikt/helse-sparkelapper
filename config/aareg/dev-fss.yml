@@ -4,7 +4,7 @@ azure:
   tenant: trygdeetaten.no
 env:
 - name: KODEVERK_BASE_URL
-  value: http://kodeverk.default.svc.nais.local
+  value: https://kodeverk.dev.intern.nav.no/api
 - name: ORGANISASJON_BASE_URL
   value: https://ereg-services.dev.intern.nav.no/api
 - name: AAREG_BASE_URL_REST

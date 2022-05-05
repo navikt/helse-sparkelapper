@@ -3,7 +3,7 @@ azure:
   enabled: true
 env:
   - name: KODEVERK_BASE_URL
-    value: http://kodeverk.default.svc.nais.local
+    value: https://kodeverk.intern.nav.no/api
   - name: ORGANISASJON_BASE_URL
     value: https://ereg-services.intern.nav.no/api
   - name: AAREG_BASE_URL_REST
