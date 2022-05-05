@@ -12,7 +12,7 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
     private val decoderFactory: DecoderFactory = DecoderFactory.get()
     override fun deserialize(topic: String, data: ByteArray): GenericRecord {
         try {
-            val reader = GenericDatumReader<GenericRecord>(v11schema)
+            val reader = GenericDatumReader<GenericRecord>(schema)
             val decoder = decoderFactory.binaryDecoder(data, null)
             /*
             KafkaAvroSerializer legger på 5 bytes, 1 magic byte og 4 som sier noe om hvilke entry i schema registeret som
@@ -29,6 +29,7 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
 
     companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-        val v11schema = Schema.Parser().parse(PersonhendelseAvroDeserializer::class.java.getResourceAsStream("/pdl/Personhendelse_V11.avsc"))
+        private val schemaVersjon = System.getenv("PERSONHENDELSE_VERSJON") ?: "V11"
+        val schema = Schema.Parser().parse(PersonhendelseAvroDeserializer::class.java.getResourceAsStream("/pdl/Personhendelse_$schemaVersjon.avsc"))
     }
 }
