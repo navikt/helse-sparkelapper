@@ -14,15 +14,15 @@ internal object PersonhendelseFactory {
         fodselsnummer: String,
         gradering: PersonhendelseOversetter.Gradering = PersonhendelseOversetter.Gradering.UGRADERT,
         hendelseId: UUID = UUID.randomUUID()
-    ): GenericRecord = GenericData.Record(PersonhendelseAvroDeserializer.schema).apply {
+    ): GenericRecord = GenericData.Record(PersonhendelseAvroDeserializer.sisteSkjema).apply {
         val addressebeskyttelseSchema =
-            PersonhendelseAvroDeserializer.schema.getField("adressebeskyttelse").schema().types.last()
+            PersonhendelseAvroDeserializer.sisteSkjema.getField("adressebeskyttelse").schema().types.last()
         put("opplysningstype", "ADRESSEBESKYTTELSE_V1")
         put("hendelseId", "$hendelseId")
         put("personidenter", listOf(fodselsnummer))
         put("master", "skatt")
         put("opprettet", 420L)
-        put("endringstype", GenericData.EnumSymbol(PersonhendelseAvroDeserializer.schema, "KORRIGERT"))
+        put("endringstype", GenericData.EnumSymbol(PersonhendelseAvroDeserializer.sisteSkjema, "KORRIGERT"))
         put("adressebeskyttelse", GenericData.Record(addressebeskyttelseSchema).apply {
             put("gradering", GenericData.EnumSymbol(addressebeskyttelseSchema, gradering.name))
         })
