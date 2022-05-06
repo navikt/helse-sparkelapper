@@ -1,6 +1,8 @@
 package no.nav.helse.sparkel.personinfo.leesah
 
+import java.net.URL
 import java.util.Base64
+import no.nav.helse.sparkel.personinfo.leesah.Skjemainnhenter.resourceUrl
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericDatumReader
 import org.apache.avro.generic.GenericRecord
@@ -14,15 +16,22 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
 
     override fun deserialize(topic: String, data: ByteArray): GenericRecord {
         try {
-            return deserialize(data, v12Skjema)
+            return deserialize(data, lokaltSkjema.schema)
         } catch (exception: Exception) {
-            sikkerlogg.feilVedDeserialisering(data, exception, "V12")
+            sikkerlogg.feilVedDeserialisering(data, exception, lokaltSkjema.versjon)
+            if (lokaltSkjema == sisteSkjema) {
+                logger.error("Deserialiseringsfeil tross at vi er på siste versjon ${sisteSkjema.versjon}")
+                throw exception
+            }
         }
 
         try {
-            return deserialize(data, v11Skjema)
+            val record = deserialize(data, sisteSkjema.schema)
+            logger.error("Deserialiserte melding med siste versjon av skjemaet (${sisteSkjema.versjon}). Vi er på versjon ${lokaltSkjema.versjon}. Burde oppdateres!")
+            return record
         } catch (exception: Exception) {
-            sikkerlogg.feilVedDeserialisering(data, exception, "V11")
+            logger.error("Deserialiseringsfeil også på siste versjon ${sisteSkjema.versjon}")
+            sikkerlogg.feilVedDeserialisering(data, exception, sisteSkjema.versjon)
             throw exception
         }
     }
@@ -40,13 +49,13 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
     }
 
     companion object {
+        private val logger = LoggerFactory.getLogger(PersonhendelseAvroDeserializer::class.java)
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private fun Logger.feilVedDeserialisering(data: ByteArray, throwable: Throwable, versjon: String) =
-            warn("Klarte ikke å deserialisere Personhendelse-melding fra Leesah med $versjon. Base64='${Base64.getEncoder().encodeToString(data)}'", throwable)
-        private fun String.lastSkjema() =
-            Schema.Parser().parse(PersonhendelseAvroDeserializer::class.java.getResourceAsStream("/pdl/Personhendelse_$this.avsc"))
-        private val v11Skjema = "V11".lastSkjema()
-        private val v12Skjema = "V12".lastSkjema()
-        val sisteSkjema = v12Skjema
+            warn("Klarte ikke å deserialisere Personhendelse-melding fra Leesah med versjon $versjon. Base64='${Base64.getEncoder().encodeToString(data)}'", throwable)
+        internal val lokaltSkjema = Skjemainnhenter.hentSkjema("/pdl/Personhendelse_V11.avsc".resourceUrl()) { "11" }
+        private val sisteSkjema by lazy {
+            System.getenv("SISTE_PERSONHENDELSE_SKJEMA_URL")?.let { Skjemainnhenter.hentSkjema(URL(it)) } ?: lokaltSkjema
+        }
     }
 }
