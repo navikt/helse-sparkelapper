@@ -9,12 +9,11 @@ import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.personinfo.PdlClient
 import no.nav.helse.sparkel.personinfo.PdlOversetter
-import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.nyttDokument
+import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.adressebeskyttelseV1
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.serialize
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.slf4j.LoggerFactory
@@ -51,7 +50,7 @@ class PersonhendelseRiverTest {
             aktørId = AKTØRID
         )
         personhendelseRiver.onPackage(
-            nyttDokument(
+            adressebeskyttelseV1(
                 FNR,
                 gradering = PersonhendelseOversetter.Gradering.FORTROLIG
             )
@@ -67,7 +66,7 @@ class PersonhendelseRiverTest {
             aktørId = AKTØRID
         )
         personhendelseRiver.onPackage(
-            nyttDokument(
+            adressebeskyttelseV1(
                 FNR,
                 gradering = PersonhendelseOversetter.Gradering.FORTROLIG
             )
@@ -88,7 +87,7 @@ class PersonhendelseRiverTest {
             aktørId = AKTØRID
         )
 
-        val dokument = nyttDokument(FNR, PersonhendelseOversetter.Gradering.FORTROLIG)
+        val dokument = adressebeskyttelseV1(FNR, PersonhendelseOversetter.Gradering.FORTROLIG)
         val deserialisertDokument = PersonhendelseAvroDeserializer().deserialize("leesah", serialize(dokument))
 
         personhendelseRiver.onPackage(deserialisertDokument)
@@ -103,7 +102,7 @@ class PersonhendelseRiverTest {
         )
         repeat(5) {
             personhendelseRiver.onPackage(
-                nyttDokument(
+                adressebeskyttelseV1(
                     FNR,
                     gradering = PersonhendelseOversetter.Gradering.FORTROLIG
                 )
@@ -120,7 +119,7 @@ class PersonhendelseRiverTest {
         )
         repeat(5) {
             personhendelseRiver.onPackage(
-                nyttDokument(
+                adressebeskyttelseV1(
                     FNR,
                     gradering = PersonhendelseOversetter.Gradering.FORTROLIG
                 )
@@ -128,7 +127,7 @@ class PersonhendelseRiverTest {
         }
         Thread.sleep(600)
         personhendelseRiver.onPackage(
-            nyttDokument(
+            adressebeskyttelseV1(
                 FNR,
                 gradering = PersonhendelseOversetter.Gradering.FORTROLIG
             )

@@ -5,20 +5,20 @@ import org.apache.avro.generic.GenericDatumWriter
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.io.EncoderFactory
 import java.io.ByteArrayOutputStream
-import java.util.*
+import java.util.UUID
 
-object PersonhendelseFactory {
+internal object PersonhendelseFactory {
     private val encoderFactory = EncoderFactory.get()
 
-    fun nyttDokument(
+    internal fun adressebeskyttelseV1(
         fodselsnummer: String,
         gradering: PersonhendelseOversetter.Gradering = PersonhendelseOversetter.Gradering.UGRADERT,
-        opplysningstype: String = "ADRESSEBESKYTTELSE_V1"
+        hendelseId: UUID = UUID.randomUUID()
     ): GenericRecord = GenericData.Record(PersonhendelseAvroDeserializer.schema).apply {
         val addressebeskyttelseSchema =
             PersonhendelseAvroDeserializer.schema.getField("adressebeskyttelse").schema().types.last()
-        put("opplysningstype", opplysningstype)
-        put("hendelseId", UUID.randomUUID().toString())
+        put("opplysningstype", "ADRESSEBESKYTTELSE_V1")
+        put("hendelseId", "$hendelseId")
         put("personidenter", listOf(fodselsnummer))
         put("master", "skatt")
         put("opprettet", 420L)

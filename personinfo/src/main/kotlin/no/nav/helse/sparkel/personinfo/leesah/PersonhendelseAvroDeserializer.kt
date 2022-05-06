@@ -1,10 +1,10 @@
 package no.nav.helse.sparkel.personinfo.leesah
 
+import java.util.Base64
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericDatumReader
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.io.DecoderFactory
-import org.apache.avro.util.Utf8
 import org.apache.kafka.common.serialization.Deserializer
 import org.slf4j.LoggerFactory
 
@@ -22,7 +22,7 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
             decoder.skipFixed(5)
             return reader.read(null, decoder)
         } catch (throwable: Throwable) {
-            sikkerlogg.warn("Mottok ugyldig melding fra Leesah '${Utf8(data)}'", throwable)
+            sikkerlogg.warn("Klarte ikke å deserialisere Personhendelse-melding fra Leesah. Base64='${Base64.getEncoder().encodeToString(data)}'", throwable)
             throw throwable
         }
     }
