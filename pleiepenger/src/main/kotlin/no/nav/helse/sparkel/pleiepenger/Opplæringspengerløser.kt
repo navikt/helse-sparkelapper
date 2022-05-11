@@ -2,7 +2,12 @@ package no.nav.helse.sparkel.pleiepenger
 
 import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.rapids_rivers.*
+import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
+import no.nav.helse.rapids_rivers.MessageProblems
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.pleiepenger.pleiepenger.Stønadsperiode
 import org.slf4j.LoggerFactory
 
@@ -12,6 +17,7 @@ internal class Opplæringspengerløser(
 ) : River.PacketListener {
 
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+    private val log = LoggerFactory.getLogger(this::class.java)
 
     companion object {
         const val behov = "Opplæringspenger"
@@ -34,6 +40,14 @@ internal class Opplæringspengerløser(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        if (packet["vedtaksperiodeId"].asText() == "2fa6c5cb-b43b-424f-8da3-11bae421b678") {
+            log.warn(
+                "Dropper {} for {} fordi Infotrygd-tingen svarer 500. NB det betyr at perioden vil være stuck i Spleis!",
+                keyValue("behov", packet["@id"].asText()),
+                keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText()),
+            )
+            return
+        }
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         infotrygdService.løsningForBehov(
             Stønadsperiode.Stønadstype.OPPLAERINGSPENGER,
