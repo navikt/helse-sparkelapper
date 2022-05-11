@@ -29,7 +29,8 @@ class InfotrygdClient(
             put("tom", tom.toString())
         }
 
-        val (responseCode, responseBody) = with(URL("$baseUrl${stønadstype.url}").openConnection() as HttpURLConnection) {
+        val url = "$baseUrl${stønadstype.url}"
+        val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
             requestMethod = "POST"
             connectTimeout = 10000
             readTimeout = 10000
@@ -45,7 +46,7 @@ class InfotrygdClient(
         }
 
         if (responseCode >= 300 || responseBody == null) {
-            throw RuntimeException("unknown error (responseCode=$responseCode) from pleiepenger")
+            throw RuntimeException("Mottok responseCode=$responseCode fra URL=$url")
         }
 
         return objectMapper.readTree(responseBody)

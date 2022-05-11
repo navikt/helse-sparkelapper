@@ -1,11 +1,11 @@
 package no.nav.helse.sparkel.pleiepenger
 
+import java.time.LocalDate
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.pleiepenger.pleiepenger.InfotrygdClient
 import no.nav.helse.sparkel.pleiepenger.pleiepenger.Stønadsperiode
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
-import java.time.LocalDate
 
 internal class InfotrygdService(private val infotrygdClient: InfotrygdClient) {
 
@@ -41,16 +41,13 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient) {
             )
             pleiepenger
         } catch (err: Exception) {
-            log.warn(
-                "feil ved henting av pleiepenger-data: ${err.message} for {}",
-                keyValue("vedtaksperiodeId", vedtaksperiodeId),
-                err
-            )
-            sikkerlogg.warn(
-                "feil ved henting av pleiepenger-data: ${err.message} for {}",
-                keyValue("vedtaksperiodeId", vedtaksperiodeId),
-                err
-            )
+            arrayOf(log, sikkerlogg).forEach {
+                it.warn(
+                    "Feil ved henting av data for {}: ${err.message}",
+                    keyValue("vedtaksperiodeId", vedtaksperiodeId),
+                    err
+                )
+            }
             throw err
         }
     }
