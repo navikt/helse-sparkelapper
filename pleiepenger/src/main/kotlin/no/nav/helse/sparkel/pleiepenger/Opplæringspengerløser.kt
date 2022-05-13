@@ -42,12 +42,21 @@ internal class Opplæringspengerløser(
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         if (packet["vedtaksperiodeId"].asText() == "2fa6c5cb-b43b-424f-8da3-11bae421b678") {
             log.warn(
-                "Dropper {} for {} fordi Infotrygd-tingen svarer 500. NB det betyr at perioden vil være stuck i Spleis!",
-                keyValue("behov", packet["@id"].asText()),
+                "Svarer med hardkodet respons for {} for {}",
                 keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText()),
+                keyValue("fnr", packet["fødselsnummer"].asText())
             )
-            return
-        }
+            packet["@løsning"] = mapOf(
+                behov to emptyList<Stønadsperiode>()
+            )
+            context.publish(packet.toJson().also { json ->
+                sikkerlogg.info(
+                    "sender svar {} for {}:\n\t{}",
+                    keyValue("id", packet["@id"].asText()),
+                    keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText()),
+                    json
+                )
+            })        }
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         infotrygdService.løsningForBehov(
             Stønadsperiode.Stønadstype.OPPLAERINGSPENGER,
