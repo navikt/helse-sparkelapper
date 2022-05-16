@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import java.time.Duration
 import java.time.LocalTime
 import java.time.LocalTime.now
+import java.time.temporal.ChronoUnit
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveEndretProducer
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -22,8 +23,12 @@ internal class OppgaveEndretConsumer(
     override fun run() {
         logger.info("OppgaveEndretConsumer starter opp")
         try {
-            // sorry my dudes
-            while (konsumerer && åpentVindu()) {
+            while (konsumerer) {
+                // sorry my dudes
+                if (!åpentVindu()) {
+                    Thread.sleep(Duration.of(5, ChronoUnit.MINUTES).toMillis())
+                    continue
+                }
                 kafkaConsumer.poll(Duration.ofMillis(100)).forEach { consumerRecord ->
                     val record = consumerRecord.value()
                     val oppgave: Oppgave = objectMapper.readValue(record)
