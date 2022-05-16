@@ -56,7 +56,9 @@ internal class Opplæringspengerløser(
                     keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asText()),
                     json
                 )
-            })        }
+            })
+            return
+        }
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         infotrygdService.løsningForBehov(
             Stønadsperiode.Stønadstype.OPPLAERINGSPENGER,
