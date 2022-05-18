@@ -35,5 +35,15 @@ internal class DatabaseConfig private constructor(
                 )
             }
         }
+
+        internal fun Map<String, String>.databaseConfigForFeriepenger(): DatabaseConfig {
+            logger.info("Kobler opp mot felles replika til bruk for beregning av feriepenger.")
+            return DatabaseConfig(
+                username = getValue("INFOTRYGDSP_USERNAME"),
+                password = getValue("INFOTRYGDSP_PASSWORD"),
+                jdbcUrl = getValue("INFOTRYGDSP_URL"),
+                schema = getValue("INFOTRYGDSP_SCHEMA")
+            )
+        }
     }
 }
