@@ -67,7 +67,7 @@ internal class Omsorgspengerløser(
             packet["fødselsnummer"].asText(),
             packet["$behov.omsorgspengerFom"].asLocalDate(),
             packet["$behov.omsorgspengerTom"].asLocalDate()
-        ).let { løsning ->
+        )?.let { løsning ->
             packet["@løsning"] = mapOf(
                 behov to løsning
             )

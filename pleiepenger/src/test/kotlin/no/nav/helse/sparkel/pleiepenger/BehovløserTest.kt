@@ -94,6 +94,12 @@ internal class BehovløserTest {
     }
 
     @Test
+    fun `ignorerer behov dersom feil for pleiepenger`() {
+        testBehov(enkeltPleiepengerBehov("feilITjenesten"))
+        assertEquals(0, sendteMeldinger.løsning(Pleiepengerløser.behov).size)
+    }
+
+    @Test
     fun `løser behov for omsorgspenger`() {
         testBehov(enkeltOmsorgspengerBehov())
         assertEquals(1, sendteMeldinger.løsning(Omsorgspengerløser.behov).size)
@@ -106,15 +112,16 @@ internal class BehovløserTest {
     }
 
     @Test
-    fun `kaster feil hvis ikke tilgang til Infotrygd`() {
-        assertThrows<RuntimeException> { testBehov(ikkeTilgangPleiepengerBehov()) }
-        assertThrows<RuntimeException> { testBehov(ikkeTilgangOmsorgspengerBehov()) }
-        assertThrows<RuntimeException> { testBehov(ikkeTilgangOpplæringspengerBehov()) }
+    fun `kaster ikke feil hvis ikke tilgang til Infotrygd`() {
+        assertDoesNotThrow { testBehov(ikkeTilgangPleiepengerBehov()) }
+        assertDoesNotThrow { testBehov(ikkeTilgangOmsorgspengerBehov()) }
+        assertDoesNotThrow { testBehov(ikkeTilgangOpplæringspengerBehov()) }
     }
 
     private fun List<JsonNode>.løsning(behov: String) = map { it.path("@løsning").path(behov) }
-        .first { !it.isMissingNode }
-        .map { Stønadsperiode(it) }
+        .firstOrNull { !it.isMissingNode }
+        ?.map { Stønadsperiode(it) }
+        ?: emptyList()
 
     private fun testBehov(behov: String) {
         rapid.sendTestMessage(behov)
@@ -145,7 +152,7 @@ internal class BehovløserTest {
         }
         """
 
-    private fun enkeltPleiepengerBehov() =
+    private fun enkeltPleiepengerBehov(fnr: String = "fnr") =
         """
         {
             "@event_name" : "behov",
@@ -154,7 +161,7 @@ internal class BehovløserTest {
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "vedtaksperiodeId" : "vedtaksperiodeId",
-            "fødselsnummer" : "fnr",
+            "fødselsnummer" : "$fnr",
             "Pleiepenger": {
                 "pleiepengerFom" : "2017-05-18",
                 "pleiepengerTom" : "2020-05-18"
@@ -293,6 +300,16 @@ internal class BehovløserTest {
                 .willReturn(
                     aResponse()
                         .withStatus(401)
+                )
+        )
+        stubFor(
+            post(urlPathEqualTo("/vedtak/pleiepenger"))
+                .withHeader("Accept", equalTo("application/json"))
+                .withHeader("Content-Type", equalTo("application/json"))
+                .withRequestBody(matchingJsonPath("identitetsnummer", equalTo("feilITjenesten")))
+                .willReturn(
+                    aResponse()
+                        .withStatus(500)
                 )
         )
         stubFor(

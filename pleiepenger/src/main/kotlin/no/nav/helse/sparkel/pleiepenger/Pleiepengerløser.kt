@@ -68,7 +68,7 @@ internal class Pleiepengerløser(
             packet["fødselsnummer"].asText(),
             packet["$behov.pleiepengerFom"].asLocalDate(),
             packet["$behov.pleiepengerTom"].asLocalDate()
-        ).let { løsning ->
+        )?.let { løsning ->
             packet["@løsning"] = mapOf(
                 behov to løsning
             )

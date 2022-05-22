@@ -6,6 +6,8 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDate
+import net.logstash.logback.argument.StructuredArguments.keyValue
+import org.slf4j.LoggerFactory
 
 class InfotrygdClient(
     private val baseUrl: String,
@@ -13,8 +15,10 @@ class InfotrygdClient(
     private val azureClient: AzureClient
 ) {
 
-    companion object {
+    private companion object {
         private val objectMapper = ObjectMapper()
+        private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+        private val log = LoggerFactory.getLogger(InfotrygdClient::class.java)
     }
 
     internal fun hent(
@@ -22,7 +26,7 @@ class InfotrygdClient(
         fnr: String,
         fom: LocalDate,
         tom: LocalDate
-    ): JsonNode {
+    ): JsonNode? {
         val requestBody = objectMapper.createObjectNode().apply {
             put("identitetsnummer", fnr)
             put("fom", fom.toString())
@@ -46,7 +50,9 @@ class InfotrygdClient(
         }
 
         if (responseCode >= 300 || responseBody == null) {
-            throw RuntimeException("Mottok responseCode=$responseCode fra URL=$url")
+            sikkerlogg.error("Kunne ikke hente pleiepenger responseCode=$responseCode, url=$url:\nBody:\n$responseBody", keyValue("fødselsnummer", fnr))
+            log.error("Kunne ikke hente pleiepenger responseCode=$responseCode, url=$url (se sikkerlogg for detaljer)")
+            return null
         }
 
         return objectMapper.readTree(responseBody)

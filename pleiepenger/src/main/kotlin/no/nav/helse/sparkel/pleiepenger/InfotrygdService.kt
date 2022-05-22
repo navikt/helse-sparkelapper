@@ -19,16 +19,14 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient) {
         fødselsnummer: String,
         fom: LocalDate,
         tom: LocalDate
-    ): List<Stønadsperiode> = withMDC("id" to behovId, "vedtaksperiodeId" to vedtaksperiodeId) {
+    ): List<Stønadsperiode>? = withMDC("id" to behovId, "vedtaksperiodeId" to vedtaksperiodeId) {
         try {
             val pleiepenger = infotrygdClient.hent(
                 stønadstype = stønadstype,
                 fnr = fødselsnummer,
                 fom = fom,
                 tom = tom
-            )
-                .get("vedtak")
-                .map { Stønadsperiode(it) }
+            )?.get("vedtak")?.map { Stønadsperiode(it) } ?: return@withMDC null
             log.info(
                 "løser behov: {} for {}",
                 keyValue("id", behovId),
@@ -48,7 +46,7 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient) {
                     err
                 )
             }
-            throw err
+            null
         }
     }
 }
