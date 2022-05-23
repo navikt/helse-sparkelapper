@@ -61,6 +61,20 @@ internal class AbakusClientTest {
         ), client.opplæringspenger(fnr, fom, tom))
     }
 
+    @Test
+    fun `håndterer feil ved oppslag som en tom liste med stønadsperioder`() {
+        val feilFnr = "2222222222"
+        mock(feilFnr, fom, tom, "PSB", errorResponse, status = 500)
+        assertEquals(emptySet<Stønadsperiode>(), client.pleiepenger(feilFnr, fom, tom))
+    }
+
+    @Test
+    fun `håndterer feil ved mapping som en tom liste med stønadsperioder`() {
+        val feilFnr = "2222222223"
+        mock(feilFnr, fom, tom, "PSB", errorResponse)
+        assertEquals(emptySet<Stønadsperiode>(), client.pleiepenger(feilFnr, fom, tom))
+    }
+
     internal companion object {
         private val fnr = "11111111111"
         private val fom = LocalDate.parse("2018-01-01")
@@ -163,7 +177,21 @@ internal class AbakusClientTest {
         ]
         """
 
-        private fun mock(fnr: String, fom: LocalDate, tom: LocalDate, ytelse: String, response: String) {
+        @Language("JSON")
+        private val errorResponse = """
+        {
+          "type": "GENERELL_FEIL",
+          "feilmelding": "FP-328673:Det oppstod en valideringsfeil på felt [FeltFeilDto[navn=personident, melding=must not be null]]. Vennligst kontroller at alle feltverdier er korrekte.",
+          "feltFeil": [
+            {
+              "navn": "personident",
+              "melding": "must not be null"
+            }
+          ]
+        }
+        """
+
+        private fun mock(fnr: String, fom: LocalDate, tom: LocalDate, ytelse: String, response: String, status: Int = 200) {
             WireMock.stubFor(
                 WireMock.post(WireMock.urlEqualTo("/abakus"))
                     .withHeader("Authorization", equalTo("Bearer abakus-access-token"))
@@ -177,7 +205,7 @@ internal class AbakusClientTest {
                     .withRequestBody(matchingJsonPath("$.ytelser[0].kodeverk", equalTo("FAGSAK_YTELSE_TYPE")))
                     .willReturn(
                         WireMock.aResponse()
-                            .withStatus(200)
+                            .withStatus(status)
                             .withBody(response)
                     )
             )
