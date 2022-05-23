@@ -5,17 +5,35 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
-import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.client.WireMock.configureFor
+import com.github.tomakehurst.wiremock.client.WireMock.create
+import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
+import com.github.tomakehurst.wiremock.client.WireMock.post
+import com.github.tomakehurst.wiremock.client.WireMock.stubFor
+import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
+import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import java.time.LocalDate
 import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.pleiepenger.infotrygd.AzureClient
 import no.nav.helse.sparkel.pleiepenger.infotrygd.InfotrygdClient
-import no.nav.helse.sparkel.pleiepenger.infotrygd.InfotrygdService
-import org.junit.jupiter.api.*
+import no.nav.helse.sparkel.pleiepenger.k9.AbakusClient
+import no.nav.helse.sparkel.pleiepenger.k9.AbakusClientTest.Companion.abakusUrl
+import no.nav.helse.sparkel.pleiepenger.k9.AbakusClientTest.Companion.mockAbakus
+import no.nav.helse.sparkel.pleiepenger.k9.ClientSecretBasic
+import no.nav.helse.sparkel.pleiepenger.k9.ClientSecretBasicTest.Companion.mockSts
+import no.nav.helse.sparkel.pleiepenger.k9.ClientSecretBasicTest.Companion.stsTokenEndpoint
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
+import org.junit.jupiter.api.assertDoesNotThrow
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class BehovløserTest {
@@ -26,7 +44,6 @@ internal class BehovløserTest {
         .registerModule(JavaTimeModule())
 
     private var sendteMeldinger = mutableListOf<JsonNode>()
-    private lateinit var service: InfotrygdService
 
     private val rapid = object : RapidsConnection() {
 
@@ -54,6 +71,8 @@ internal class BehovløserTest {
         wireMockServer.start()
         configureFor(create().port(wireMockServer.port()).build())
         stubEksterneEndepunkt()
+        mockAbakus(fnr = "fnr", fom = LocalDate.parse("2017-05-18"), tom = LocalDate.parse("2020-05-18"))
+        mockSts()
         val infotrygdClient = InfotrygdClient(
             baseUrl = wireMockServer.baseUrl(),
             accesstokenScope = "a_scope",
@@ -63,13 +82,17 @@ internal class BehovløserTest {
                 clientSecret = "client_secret"
             )
         )
-        service = InfotrygdService(infotrygdClient)
-        Pleiepengerløser(rapid, service)
-        Omsorgspengerløser(rapid, service)
-        Opplæringspengerløser(rapid, service)
-        //PleiepengerløserV2(rapid, infotrygdClient)
-        //OmsorgspengerløserV2(rapid, infotrygdClient)
-        //OpplæringspengerløserV2(rapid, infotrygdClient)
+        val abakusClient = AbakusClient(
+            url = wireMockServer.abakusUrl(),
+            accessTokenClient = ClientSecretBasic(
+                tokenEndpoint = wireMockServer.stsTokenEndpoint(),
+                clientId = "foo",
+                clientSecret = "bar"
+            )
+        )
+        PleiepengerløserV2(rapid, infotrygdClient, abakusClient)
+        OmsorgspengerløserV2(rapid, infotrygdClient, abakusClient)
+        OpplæringspengerløserV2(rapid, infotrygdClient, abakusClient)
     }
 
     @AfterAll
@@ -85,15 +108,15 @@ internal class BehovløserTest {
     @Test
     fun `løser behov for pleiepenger, omsorgspenger og opplæringspenger`() {
         testBehov(alleBehov())
-        assertEquals(1, sendteMeldinger.løsning(Pleiepengerløser.behov).size)
-        assertEquals(1, sendteMeldinger.løsning(Omsorgspengerløser.behov).size)
-        assertEquals(1, sendteMeldinger.løsning(Opplæringspengerløser.behov).size)
+        assertEquals(3, sendteMeldinger.løsning(Pleiepengerløser.behov).size)
+        assertEquals(3, sendteMeldinger.løsning(Omsorgspengerløser.behov).size)
+        assertEquals(2, sendteMeldinger.løsning(Opplæringspengerløser.behov).size)
     }
 
     @Test
     fun `løser behov for pleiepenger`() {
         testBehov(enkeltPleiepengerBehov())
-        assertEquals(1, sendteMeldinger.løsning(Pleiepengerløser.behov).size)
+        assertEquals(3, sendteMeldinger.løsning(Pleiepengerløser.behov).size)
     }
 
     @Test
@@ -105,13 +128,13 @@ internal class BehovløserTest {
     @Test
     fun `løser behov for omsorgspenger`() {
         testBehov(enkeltOmsorgspengerBehov())
-        assertEquals(1, sendteMeldinger.løsning(Omsorgspengerløser.behov).size)
+        assertEquals(3, sendteMeldinger.løsning(Omsorgspengerløser.behov).size)
     }
 
     @Test
     fun `løser behov for opplæringspenger`() {
         testBehov(enkeltOpplæringspengerBehov())
-        assertEquals(1, sendteMeldinger.løsning(Opplæringspengerløser.behov).size)
+        assertEquals(2, sendteMeldinger.løsning(Opplæringspengerløser.behov).size)
     }
 
     @Test
