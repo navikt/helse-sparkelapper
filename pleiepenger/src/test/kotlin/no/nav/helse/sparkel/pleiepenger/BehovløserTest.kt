@@ -54,20 +54,22 @@ internal class BehovløserTest {
         wireMockServer.start()
         configureFor(create().port(wireMockServer.port()).build())
         stubEksterneEndepunkt()
-        service = InfotrygdService(
-            InfotrygdClient(
-                baseUrl = wireMockServer.baseUrl(),
-                accesstokenScope = "a_scope",
-                azureClient = AzureClient(
-                    tokenEndpoint = "${wireMockServer.baseUrl()}/token",
-                    clientId = "client_id",
-                    clientSecret = "client_secret"
-                )
+        val infotrygdClient = InfotrygdClient(
+            baseUrl = wireMockServer.baseUrl(),
+            accesstokenScope = "a_scope",
+            azureClient = AzureClient(
+                tokenEndpoint = "${wireMockServer.baseUrl()}/token",
+                clientId = "client_id",
+                clientSecret = "client_secret"
             )
         )
+        service = InfotrygdService(infotrygdClient)
         Pleiepengerløser(rapid, service)
         Omsorgspengerløser(rapid, service)
         Opplæringspengerløser(rapid, service)
+        //PleiepengerløserV2(rapid, infotrygdClient)
+        //OmsorgspengerløserV2(rapid, infotrygdClient)
+        //OpplæringspengerløserV2(rapid, infotrygdClient)
     }
 
     @AfterAll
