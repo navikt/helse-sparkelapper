@@ -77,6 +77,18 @@ internal class AbakusClientTest {
     }
 
     @Test
+    fun `filtrerer bort urelevante stønadsperioder`() {
+        val filterFnr = "2222222224"
+        mock(filterFnr, fom, tom, "PSB", urelevanteStønadsperioderResponse)
+        assertEquals(setOf(
+            Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-01-01"), grad = 100),
+            Stønadsperiode(fom = LocalDate.parse("2019-05-01"), tom = LocalDate.parse("2019-07-31"), grad = 100),
+            Stønadsperiode(fom = LocalDate.parse("2020-12-31"), tom = LocalDate.parse("2020-12-31"), grad = 100),
+        ), client.pleiepenger(filterFnr, fom, tom))
+        assertEquals(emptySet<Stønadsperiode>(), disabledClient.pleiepenger(filterFnr, fom, tom))
+    }
+
+    @Test
     fun `håndterer feil ved oppslag som en tom liste med stønadsperioder`() {
         val feilFnr = "2222222222"
         mock(feilFnr, fom, tom, "PSB", errorResponse, status = 500)
@@ -93,7 +105,7 @@ internal class AbakusClientTest {
     internal companion object {
         private val fnr = "11111111111"
         private val fom = LocalDate.parse("2018-01-01")
-        private val tom = fom.plusMonths(3)
+        private val tom = LocalDate.parse("2020-12-31")
 
         @Language("JSON")
         private val pleiepengerResponse = """
@@ -204,6 +216,87 @@ internal class AbakusClientTest {
             }
           ]
         }
+        """
+
+        @Language("JSON")
+        private val urelevanteStønadsperioderResponse = """
+        [
+          {
+            "ytelseStatus": "AVSLUTTET",
+            "anvist": [
+              {
+                "periode": {
+                  "@TestForklaring": "Skal filteres bort ettersom det er før fom",
+                  "fom": "2017-12-31",
+                  "tom": "2017-12-31"
+                },
+                "utbetalingsgrad": {
+                  "verdi": 100
+                }
+              }
+            ]
+          },
+          {
+            "ytelseStatus": "AVSLUTTET",
+            "anvist": [
+              {
+                "periode": {
+                  "@TestForklaring": "Skal bli med ettersom det overlapper med fom",
+                  "fom": "2018-01-01",
+                  "tom": "2018-01-01"
+                },
+                "utbetalingsgrad": {
+                  "verdi": 100
+                }
+              }
+            ]
+          },
+          {
+            "ytelseStatus": "AVSLUTTET",
+            "anvist": [
+              {
+                "periode": {
+                  "@TestForklaring": "Skal bli med ettersom det er midt i perioden",
+                  "fom": "2019-05-01",
+                  "tom": "2019-07-31"
+                },
+                "utbetalingsgrad": {
+                  "verdi": 100
+                }
+              }
+            ]
+          },
+          {
+            "ytelseStatus": "AVSLUTTET",
+            "anvist": [
+              {
+                "periode": {
+                  "@TestForklaring": "Skal bli med ettersom det overlapper med tom",
+                  "fom": "2020-12-31",
+                  "tom": "2020-12-31"
+                },
+                "utbetalingsgrad": {
+                  "verdi": 100
+                }
+              }
+            ]
+          },
+          {
+            "ytelseStatus": "AVSLUTTET",
+            "anvist": [
+              {
+                "periode": {
+                  "@TestForklaring": "Skal filteres bort ettersom det er etter tom",
+                  "fom": "2021-01-01",
+                  "tom": "2021-01-01"
+                },
+                "utbetalingsgrad": {
+                  "verdi": 100
+                }
+              }
+            ]
+          }
+        ]
         """
 
         private fun mock(fnr: String, fom: LocalDate, tom: LocalDate, ytelse: String, response: String, status: Int = 200) {

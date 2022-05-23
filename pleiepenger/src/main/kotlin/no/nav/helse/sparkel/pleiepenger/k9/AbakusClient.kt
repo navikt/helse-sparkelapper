@@ -19,24 +19,25 @@ internal class AbakusClient(
 ): SyktBarnKilde {
 
     override fun pleiepenger(fnr: String, fom: LocalDate, tom: LocalDate) =
-        hent(requestBody(fnr, PleiepengerSyktBarn, fom, tom)).håndter("pleiepenger")
+        hent(fnr, fom, tom, PleiepengerSyktBarn).håndter("pleiepenger")
 
     override fun omsorgspenger(fnr: String, fom: LocalDate, tom: LocalDate) =
-        hent(requestBody(fnr, Omsorgspenger, fom, tom)).håndter("omsorgspenger")
+        hent(fnr, fom, tom, Omsorgspenger).håndter("omsorgspenger")
 
     override fun opplæringspenger(fnr: String, fom: LocalDate, tom: LocalDate) =
-        hent(requestBody(fnr, Opplæringspenger, fom, tom)).håndter("opplæringspenger")
+        hent(fnr, fom, tom, Opplæringspenger).håndter("opplæringspenger")
 
-    private fun hent(requestBody: String): Set<Stønadsperiode> {
+    private fun hent(fnr: String, fom: LocalDate, tom: LocalDate, ytelse: String): Set<Stønadsperiode> {
         var response: JsonNode? = null
         val callId = "${UUID.randomUUID()}"
+        val requestBody = requestBody(fnr, fom, tom, ytelse)
         return try {
             response = url.postJson(requestBody,
                 "Authorization" to "Bearer ${accessTokenClient.accessToken()}",
                 "Nav-Consumer-Id" to "Sykepenger",
                 "Nav-Callid" to callId
             ).second
-            response.abakusResponseTilStønadsperioder()
+            response.abakusResponseTilStønadsperioder(fom, tom)
         } catch (exception: Exception) {
             sikkerlogg.error("Feil ved henting fra Abakus med {}. Response:\n$response", keyValue("callId", callId), exception)
             emptySet()
@@ -59,7 +60,7 @@ internal class AbakusClient(
         private val aktiveYtelseStatuser = setOf("LØPENDE", "AVSLUTTET")
 
         @Language("JSON")
-        private fun requestBody(fnr: String, ytelse: String, fom: LocalDate, tom: LocalDate) = """
+        private fun requestBody(fnr: String, fom: LocalDate, tom: LocalDate, ytelse: String) = """
         {
             "person": {
                 "identType": "FNR",
@@ -76,7 +77,7 @@ internal class AbakusClient(
         }
         """
 
-        internal fun JsonNode.abakusResponseTilStønadsperioder() = asSequence()
+        internal fun JsonNode.abakusResponseTilStønadsperioder(fom: LocalDate, tom: LocalDate) = asSequence()
             .filter { it.get("ytelseStatus").asText() in aktiveYtelseStatuser }
             .map { it.get("anvist") }
             .flatten()
@@ -86,6 +87,9 @@ internal class AbakusClient(
                     tom = LocalDate.parse(anvisning.get("periode").get("tom").asText()),
                     grad = anvisning.get("utbetalingsgrad").get("verdi").asDouble().roundToInt()
                 )
-            }.toSet()
+            }
+            .filterNot { it.fom > tom } // Filtrerer bort perioder som starter etter tom
+            .filterNot { it.tom < fom } // Filtrerer bort perioder som slutter før fom
+            .toSet()
     }
 }
