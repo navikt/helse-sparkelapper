@@ -14,7 +14,7 @@ internal object HttpRequest {
 
     private fun URL.request(
         method: String,
-        body: (outputStream: OutputStream) -> Unit,
+        body: ((outputStream: OutputStream) -> Unit)?,
         vararg headers: Pair<String, String>
     ) = with(openConnection() as HttpURLConnection) {
         requestMethod = method
@@ -24,7 +24,7 @@ internal object HttpRequest {
         headers.forEach { (key, value) ->
             setRequestProperty(key, value)
         }
-        outputStream.use(body)
+        body?.let { outputStream.use(it) }
         val stream: InputStream? = if (responseCode < 300) this.inputStream else this.errorStream
         val responseBody = stream?.use { it.bufferedReader().readText() }
         if (responseBody == null || responseCode >= 300) {
@@ -36,7 +36,7 @@ internal object HttpRequest {
 
     internal fun URL.get(
         vararg headers: Pair<String, String>
-    ) = request(method = "GET", body = {}, *headers)
+    ) = request(method = "GET", body = null, *headers)
 
     internal fun URL.postJson(
         requestBody: String,
