@@ -2,6 +2,8 @@ package no.nav.helse.sparkel.pleiepenger.infotrygd
 
 import java.time.LocalDate
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.helse.sparkel.pleiepenger.Stønadsperiode
+import no.nav.helse.sparkel.pleiepenger.infotrygd.InfotrygdClient.Companion.infotrygdResponseSomStønadsperioder
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 
@@ -11,7 +13,7 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient) {
     private val log = LoggerFactory.getLogger(this::class.java)
 
     fun løsningForBehov(
-        stønadstype: Stønadsperiode.Stønadstype,
+        stønadstype: Stønadstype,
         behovId: String,
         vedtaksperiodeId: String,
         fødselsnummer: String,
@@ -24,7 +26,7 @@ internal class InfotrygdService(private val infotrygdClient: InfotrygdClient) {
                 fnr = fødselsnummer,
                 fom = fom,
                 tom = tom
-            )?.get("vedtak")?.map { Stønadsperiode(it) } ?: return@withMDC null
+            )?.infotrygdResponseSomStønadsperioder() ?: return@withMDC null
             log.info(
                 "løser behov: {} for {}",
                 keyValue("id", behovId),

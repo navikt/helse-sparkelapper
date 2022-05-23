@@ -7,12 +7,12 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import java.time.LocalDate
 import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.pleiepenger.infotrygd.AzureClient
 import no.nav.helse.sparkel.pleiepenger.infotrygd.InfotrygdClient
 import no.nav.helse.sparkel.pleiepenger.infotrygd.InfotrygdService
-import no.nav.helse.sparkel.pleiepenger.infotrygd.Stønadsperiode
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -121,7 +121,11 @@ internal class BehovløserTest {
 
     private fun List<JsonNode>.løsning(behov: String) = map { it.path("@løsning").path(behov) }
         .firstOrNull { !it.isMissingNode }
-        ?.map { Stønadsperiode(it) }
+        ?.map { Stønadsperiode(
+            fom = it.path("fom").textValue().let { LocalDate.parse(it) },
+            tom = it.path("tom").textValue().let { LocalDate.parse(it) },
+            grad = it.path("grad").intValue()
+        )}
         ?: emptyList()
 
     private fun testBehov(behov: String) {

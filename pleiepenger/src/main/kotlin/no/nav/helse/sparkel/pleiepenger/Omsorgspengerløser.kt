@@ -9,7 +9,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.pleiepenger.infotrygd.InfotrygdService
-import no.nav.helse.sparkel.pleiepenger.infotrygd.Stønadsperiode
+import no.nav.helse.sparkel.pleiepenger.infotrygd.Stønadstype
 import org.slf4j.LoggerFactory
 
 internal class Omsorgspengerløser(
@@ -62,7 +62,7 @@ internal class Omsorgspengerløser(
         }
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         infotrygdService.løsningForBehov(
-            Stønadsperiode.Stønadstype.OMSORGSPENGER,
+            Stønadstype.OMSORGSPENGER,
             packet["@id"].asText(),
             packet["vedtaksperiodeId"].asText(),
             packet["fødselsnummer"].asText(),

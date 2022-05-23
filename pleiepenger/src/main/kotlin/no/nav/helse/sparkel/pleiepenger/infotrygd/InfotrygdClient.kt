@@ -7,6 +7,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDate
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.helse.sparkel.pleiepenger.Stønadsperiode
 import org.slf4j.LoggerFactory
 
 class InfotrygdClient(
@@ -15,14 +16,23 @@ class InfotrygdClient(
     private val azureClient: AzureClient
 ) {
 
-    private companion object {
+    internal companion object {
         private val objectMapper = ObjectMapper()
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private val log = LoggerFactory.getLogger(InfotrygdClient::class.java)
+
+        private fun JsonNode.infotrygdVedtakSomStønadsperiode() = Stønadsperiode(
+            fom = path("fom").textValue().let { LocalDate.parse(it) },
+            tom = path("tom").textValue().let { LocalDate.parse(it) },
+            grad = path("grad").intValue()
+        )
+
+        internal fun JsonNode.infotrygdResponseSomStønadsperioder() =
+            get("vedtak").map { it.infotrygdVedtakSomStønadsperiode() }
     }
 
     internal fun hent(
-        stønadstype: Stønadsperiode.Stønadstype,
+        stønadstype: Stønadstype,
         fnr: String,
         fom: LocalDate,
         tom: LocalDate
