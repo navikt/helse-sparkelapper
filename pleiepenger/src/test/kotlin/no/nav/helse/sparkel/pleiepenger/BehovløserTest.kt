@@ -37,6 +37,9 @@ import org.junit.jupiter.api.assertDoesNotThrow
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class BehovløserTest {
+    private val PleiepengerBehov = "Pleiepenger"
+    private val OmsorgspengerBehov = "Omsorgspenger"
+    private val OpplæringspengerBehov = "Opplæringspenger"
 
     private val wireMockServer: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
     private val objectMapper = jacksonObjectMapper()
@@ -109,33 +112,33 @@ internal class BehovløserTest {
     @Test
     fun `løser behov for pleiepenger, omsorgspenger og opplæringspenger`() {
         testBehov(alleBehov())
-        assertEquals(3, sendteMeldinger.løsning(Pleiepengerløser.behov).size)
-        assertEquals(3, sendteMeldinger.løsning(Omsorgspengerløser.behov).size)
-        assertEquals(2, sendteMeldinger.løsning(Opplæringspengerløser.behov).size)
+        assertEquals(3, sendteMeldinger.løsning(PleiepengerBehov).size)
+        assertEquals(3, sendteMeldinger.løsning(OmsorgspengerBehov).size)
+        assertEquals(2, sendteMeldinger.løsning(OpplæringspengerBehov).size)
     }
 
     @Test
     fun `løser behov for pleiepenger`() {
         testBehov(enkeltPleiepengerBehov())
-        assertEquals(3, sendteMeldinger.løsning(Pleiepengerløser.behov).size)
+        assertEquals(3, sendteMeldinger.løsning(PleiepengerBehov).size)
     }
 
     @Test
     fun `ignorerer behov dersom feil for pleiepenger`() {
         testBehov(enkeltPleiepengerBehov("feilITjenesten"))
-        assertEquals(0, sendteMeldinger.løsning(Pleiepengerløser.behov).size)
+        assertEquals(0, sendteMeldinger.løsning(PleiepengerBehov).size)
     }
 
     @Test
     fun `løser behov for omsorgspenger`() {
         testBehov(enkeltOmsorgspengerBehov())
-        assertEquals(3, sendteMeldinger.løsning(Omsorgspengerløser.behov).size)
+        assertEquals(3, sendteMeldinger.løsning(OmsorgspengerBehov).size)
     }
 
     @Test
     fun `løser behov for opplæringspenger`() {
         testBehov(enkeltOpplæringspengerBehov())
-        assertEquals(2, sendteMeldinger.løsning(Opplæringspengerløser.behov).size)
+        assertEquals(2, sendteMeldinger.løsning(OpplæringspengerBehov).size)
     }
 
     @Test
@@ -163,6 +166,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Pleiepenger", "Omsorgspenger", "Opplæringspenger" ],
+            "@behovId": "${UUID.randomUUID()}",
             "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
@@ -188,6 +192,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Pleiepenger" ],
+            "@behovId": "${UUID.randomUUID()}",
             "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
@@ -205,6 +210,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Pleiepenger" ],
+            "@behovId": "${UUID.randomUUID()}",
             "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
@@ -222,6 +228,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Omsorgspenger" ],
+            "@behovId": "${UUID.randomUUID()}",
             "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
@@ -239,6 +246,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Omsorgspenger" ],
+            "@behovId": "${UUID.randomUUID()}",
             "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
@@ -256,6 +264,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Opplæringspenger" ],
+            "@behovId": "${UUID.randomUUID()}",
             "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
@@ -273,6 +282,7 @@ internal class BehovløserTest {
         {
             "@event_name" : "behov",
             "@behov" : [ "Opplæringspenger" ],
+            "@behovId": "${UUID.randomUUID()}",
             "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",

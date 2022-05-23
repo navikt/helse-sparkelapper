@@ -25,11 +25,11 @@ internal abstract class SyktBarnLøser(
             validate { it.demandAll("@behov", listOf(behov)) }
             validate { it.rejectKey("@løsning") }
             validate { it.requireKey("@id") }
+            validate { it.requireKey("@behovId")}
             validate { it.requireKey("fødselsnummer") }
             validate { it.requireKey("vedtaksperiodeId") }
             validate { it.require("$behov.$fomKey", JsonNode::asLocalDate) }
             validate { it.require("$behov.$tomKey", JsonNode::asLocalDate) }
-            validate { it.interestedIn("@behovId")}
         }.register(this)
     }
 
