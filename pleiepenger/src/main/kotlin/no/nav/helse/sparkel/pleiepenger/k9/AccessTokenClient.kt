@@ -6,6 +6,7 @@ import java.time.LocalDateTime.now
 import java.util.Base64
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.sparkel.pleiepenger.k9.HttpRequest.get
+import org.slf4j.LoggerFactory
 
 interface AccessTokenClient {
     fun accessToken(): String
@@ -41,8 +42,13 @@ internal class ClientSecretBasic(
     }
 
     private fun hentOgCache(): String {
+        logger.info("Henter nytt access token fra $tokenUrl")
         val (accessToken, expiresIn) = accessTokenResponse()
         cachedAccessToken = accessToken to now().plusSeconds(expiresIn).minusSeconds(30)
         return accessToken
+    }
+
+    private companion object {
+        private val logger = LoggerFactory.getLogger(ClientSecretBasic::class.java)
     }
 }

@@ -12,17 +12,18 @@ import kotlin.math.roundToInt
 
 internal class AbakusClient(
     private val url: URL,
-    private val accessTokenClient: AccessTokenClient
+    private val accessTokenClient: AccessTokenClient,
+    private val enabled: Boolean
 ): SyktBarnKilde {
 
     override fun pleiepenger(fnr: String, fom: LocalDate, tom: LocalDate) =
-        hent(requestBody(fnr, PleiepengerSyktBarn, fom, tom))
+        hent(requestBody(fnr, PleiepengerSyktBarn, fom, tom)).håndter("pleiepenger")
 
     override fun omsorgspenger(fnr: String, fom: LocalDate, tom: LocalDate) =
-        hent(requestBody(fnr, Omsorgspenger, fom, tom))
+        hent(requestBody(fnr, Omsorgspenger, fom, tom)).håndter("omsorgspenger")
 
     override fun opplæringspenger(fnr: String, fom: LocalDate, tom: LocalDate) =
-        hent(requestBody(fnr, Opplæringspenger, fom, tom))
+        hent(requestBody(fnr, Opplæringspenger, fom, tom)).håndter("opplæringspenger")
 
     private fun hent(requestBody: String): Set<Stønadsperiode> {
         var response: JsonNode? = null
@@ -33,6 +34,12 @@ internal class AbakusClient(
             sikkerlogg.error("Feil ved henting fra Abakus. Response:\n$response", exception)
             emptySet()
         }
+    }
+
+    private fun Set<Stønadsperiode>.håndter(ytelse: String): Set<Stønadsperiode> {
+        if (enabled || isEmpty()) return this
+        sikkerlogg.info("Hentet $size stønadsperioder for $ytelse fra Abakus. Blir ikke lagt til i løsningen på behovet enda:\n$this")
+        return emptySet()
     }
 
     internal companion object {

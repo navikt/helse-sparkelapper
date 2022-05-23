@@ -21,6 +21,7 @@ internal class AbakusClientTest {
 
     private lateinit var server: WireMockServer
     private lateinit var client: AbakusClient
+    private lateinit var disabledClient: AbakusClient
 
     @BeforeAll
     fun beforeAll() {
@@ -32,7 +33,15 @@ internal class AbakusClientTest {
             url = server.abakusUrl(),
             accessTokenClient = object : AccessTokenClient {
                 override fun accessToken() = "ey-abakus-access-token"
-            }
+            },
+            enabled = true
+        )
+        disabledClient = AbakusClient(
+            url = server.abakusUrl(),
+            accessTokenClient = object : AccessTokenClient {
+                override fun accessToken() = "ey-abakus-access-token"
+            },
+            enabled = false
         )
     }
 
@@ -45,6 +54,7 @@ internal class AbakusClientTest {
             Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-06-01"), grad = 91),
             Stønadsperiode(fom = LocalDate.parse("2018-07-01"), tom = LocalDate.parse("2018-12-31"), grad = 50)
         ), client.pleiepenger(fnr, fom, tom))
+        assertEquals(emptySet<Stønadsperiode>(), disabledClient.pleiepenger(fnr, fom, tom))
     }
 
     @Test
@@ -53,6 +63,8 @@ internal class AbakusClientTest {
             Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-12-31"), grad = 100),
             Stønadsperiode(fom = LocalDate.parse("2020-01-01"), tom = LocalDate.parse("2020-12-31"), grad = 69)
         ), client.omsorgspenger(fnr, fom, tom))
+        assertEquals(emptySet<Stønadsperiode>(), disabledClient.omsorgspenger(fnr, fom, tom))
+
     }
 
     @Test
@@ -60,6 +72,7 @@ internal class AbakusClientTest {
         assertEquals(setOf(
             Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-12-31"), grad = 12),
         ), client.opplæringspenger(fnr, fom, tom))
+        assertEquals(emptySet<Stønadsperiode>(), disabledClient.opplæringspenger(fnr, fom, tom))
     }
 
     @Test
