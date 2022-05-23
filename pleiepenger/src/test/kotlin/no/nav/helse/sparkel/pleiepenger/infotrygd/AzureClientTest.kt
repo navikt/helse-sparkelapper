@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.pleiepenger.pleiepenger
+package no.nav.helse.sparkel.pleiepenger.infotrygd
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock

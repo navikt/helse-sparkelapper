@@ -8,7 +8,8 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
-import no.nav.helse.sparkel.pleiepenger.pleiepenger.Stønadsperiode
+import no.nav.helse.sparkel.pleiepenger.infotrygd.InfotrygdService
+import no.nav.helse.sparkel.pleiepenger.infotrygd.Stønadsperiode
 import org.slf4j.LoggerFactory
 
 internal class Omsorgspengerløser(

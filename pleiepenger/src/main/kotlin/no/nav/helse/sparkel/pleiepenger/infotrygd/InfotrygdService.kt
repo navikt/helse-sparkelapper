@@ -1,9 +1,7 @@
-package no.nav.helse.sparkel.pleiepenger
+package no.nav.helse.sparkel.pleiepenger.infotrygd
 
 import java.time.LocalDate
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.sparkel.pleiepenger.pleiepenger.InfotrygdClient
-import no.nav.helse.sparkel.pleiepenger.pleiepenger.Stønadsperiode
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 

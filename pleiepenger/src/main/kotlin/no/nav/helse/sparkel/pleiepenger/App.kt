@@ -2,8 +2,9 @@ package no.nav.helse.sparkel.pleiepenger
 
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.sparkel.pleiepenger.pleiepenger.AzureClient
-import no.nav.helse.sparkel.pleiepenger.pleiepenger.InfotrygdClient
+import no.nav.helse.sparkel.pleiepenger.infotrygd.AzureClient
+import no.nav.helse.sparkel.pleiepenger.infotrygd.InfotrygdClient
+import no.nav.helse.sparkel.pleiepenger.infotrygd.InfotrygdService
 
 fun main() {
     val app = createApp(System.getenv())

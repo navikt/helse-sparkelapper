@@ -9,9 +9,10 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.sparkel.pleiepenger.pleiepenger.AzureClient
-import no.nav.helse.sparkel.pleiepenger.pleiepenger.InfotrygdClient
-import no.nav.helse.sparkel.pleiepenger.pleiepenger.Stønadsperiode
+import no.nav.helse.sparkel.pleiepenger.infotrygd.AzureClient
+import no.nav.helse.sparkel.pleiepenger.infotrygd.InfotrygdClient
+import no.nav.helse.sparkel.pleiepenger.infotrygd.InfotrygdService
+import no.nav.helse.sparkel.pleiepenger.infotrygd.Stønadsperiode
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.TestInstance.Lifecycle

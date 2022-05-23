@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.pleiepenger.pleiepenger
+package no.nav.helse.sparkel.pleiepenger.infotrygd
 
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.LocalDate
