@@ -1,4 +1,7 @@
 kafkaPool: nav-prod
+mountPaths:
+  - mountPath: /var/run/secrets/nais.io/service_user
+    kvPath: /serviceuser/data/prod/srvsparkelpleiepenge
 azure:
   enabled: true
 env:
@@ -6,3 +9,7 @@ env:
   value: api://fadafa61-0d49-43d4-b256-8a589b215da5/.default
 - name: INFOTRYGD_URL
   value: http://infotrygd-grunnlag-paaroerende-sykdom.infotrygd.svc.nais.local
+- name: STS_TOKEN_ENDPOINT
+  value: http://security-token-service.default.svc.nais.local/rest/v1/sts/token
+- name: ABAKUS_URL
+  value: https://fpabakus.nais.adeo.no/fpabakus/api/ytelse/v1/hent-vedtatte
