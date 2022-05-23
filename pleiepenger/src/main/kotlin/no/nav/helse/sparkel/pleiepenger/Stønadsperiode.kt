@@ -12,4 +12,6 @@ class Stønadsperiode(
 
     override fun equals(other: Any?) =
         other is Stønadsperiode && other.fom == fom && other.tom == tom && other.grad == grad
+
+    override fun toString() = "$fom til $tom ($grad%)"
 }
