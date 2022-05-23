@@ -5,11 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Adressebeskyttelse.Companion.somAdressebeskyttelse
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Kjønn.Companion.somKjønn
-import no.nav.helse.sparkel.personinfo.Vergemålløser.*
 import no.nav.helse.sparkel.personinfo.Vergemålløser.Fullmakt
-import no.nav.helse.sparkel.personinfo.Vergemålløser.Område.*
+import no.nav.helse.sparkel.personinfo.Vergemålløser.Område
+import no.nav.helse.sparkel.personinfo.Vergemålløser.Område.Alle
+import no.nav.helse.sparkel.personinfo.Vergemålløser.Område.Syk
+import no.nav.helse.sparkel.personinfo.Vergemålløser.Område.Sym
 import no.nav.helse.sparkel.personinfo.Vergemålløser.Resultat
 import no.nav.helse.sparkel.personinfo.Vergemålløser.Vergemål
+import no.nav.helse.sparkel.personinfo.Vergemålløser.VergemålType
 import org.slf4j.LoggerFactory
 
 object PdlOversetter {
@@ -48,7 +51,14 @@ object PdlOversetter {
     fun oversetterIdenter(pdlReply: JsonNode): Identer {
         håndterErrors(pdlReply)
         val pdlPerson = pdlReply["data"]["hentIdenter"]["identer"]
-        fun identAvType(type: String) = pdlPerson.single { it["gruppe"].asText() == type }["ident"].asText()
+        fun identAvType(type: String): String {
+            val identgruppe = pdlPerson.firstOrNull { it["gruppe"].asText() == type }
+                ?: run {
+                    sikkerlogg.info("Finner ikke ident av type=$type i svaret fra PDL\n$pdlReply")
+                    throw NoSuchElementException("Finner ikke ident av type=$type i svaret fra PDL")
+                }
+            return identgruppe["ident"].asText()
+        }
         return Identer(identAvType("FOLKEREGISTERIDENT"), identAvType("AKTORID"))
     }
 
