@@ -1,4 +1,7 @@
 kafkaPool: nav-dev
+mountPaths:
+  - mountPath: /var/run/secrets/nais.io/service_user
+    kvPath: /serviceuser/data/dev/srvsparkelpleiepenge
 azure:
   enabled: true
   tenant: trygdeetaten.no
@@ -7,3 +10,7 @@ env:
   value: api://32551525-c4dd-44ae-b906-2f8d8a00bb03/.default
 - name: INFOTRYGD_URL
   value: http://infotrygd-grunnlag-paaroerende-sykdom.infotrygd.svc.nais.local
+- name: STS_TOKEN_ENDPOINT
+  value: http://security-token-service.default.svc.nais.local/rest/v1/sts/token
+- name: ABAKUS_URL
+  value: https://fpabakus.nais.preprod.local/fpabakus/api/ytelse/v1/hent-vedtatte
