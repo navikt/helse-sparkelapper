@@ -6,6 +6,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import java.net.URL
 import java.time.LocalDate
 import no.nav.helse.sparkel.pleiepenger.Stønadsperiode
@@ -211,6 +212,8 @@ internal class AbakusClientTest {
                     .withHeader("Authorization", matching("Bearer ey.*"))
                     .withHeader("Accept", equalTo("application/json"))
                     .withHeader("Content-Type", equalTo("application/json"))
+                    .withHeader("Nav-Consumer-Id", equalTo("Sykepenger"))
+                    .withHeader("Nav-Callid", AnythingPattern())
                     .withRequestBody(matchingJsonPath("$.person.identType", equalTo("FNR")))
                     .withRequestBody(matchingJsonPath("$.person.ident", equalTo(fnr)))
                     .withRequestBody(matchingJsonPath("$.periode.fom", equalTo("$fom")))

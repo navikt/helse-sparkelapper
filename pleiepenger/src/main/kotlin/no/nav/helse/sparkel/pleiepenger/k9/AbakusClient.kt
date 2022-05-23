@@ -3,6 +3,8 @@ package no.nav.helse.sparkel.pleiepenger.k9
 import com.fasterxml.jackson.databind.JsonNode
 import java.net.URL
 import java.time.LocalDate
+import java.util.UUID
+import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.pleiepenger.Stønadsperiode
 import no.nav.helse.sparkel.pleiepenger.SyktBarnKilde
 import no.nav.helse.sparkel.pleiepenger.k9.HttpRequest.postJson
@@ -27,11 +29,16 @@ internal class AbakusClient(
 
     private fun hent(requestBody: String): Set<Stønadsperiode> {
         var response: JsonNode? = null
+        val callId = "${UUID.randomUUID()}"
         return try {
-            response = url.postJson(requestBody, "Authorization" to "Bearer ${accessTokenClient.accessToken()}").second
+            response = url.postJson(requestBody,
+                "Authorization" to "Bearer ${accessTokenClient.accessToken()}",
+                "Nav-Consumer-Id" to "Sykepenger",
+                "Nav-Callid" to callId
+            ).second
             response.abakusResponseTilStønadsperioder()
         } catch (exception: Exception) {
-            sikkerlogg.error("Feil ved henting fra Abakus. Response:\n$response", exception)
+            sikkerlogg.error("Feil ved henting fra Abakus med {}. Response:\n$response", keyValue("callId", callId), exception)
             emptySet()
         }
     }

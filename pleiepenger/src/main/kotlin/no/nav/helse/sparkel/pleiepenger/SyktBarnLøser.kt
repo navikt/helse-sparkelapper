@@ -45,16 +45,18 @@ internal abstract class SyktBarnLøser(
         val behovId = packet.behovId()
         val vedtaksperiodeId = packet.vedtaksperiodeId()
         val fødselsnummer = packet.fnr()
+        val fom = packet.fom()
+        val tom = packet.tom()
         val sporing = arrayOf("behov" to behov, "behovId" to behovId, "vedtaksperiodeId" to vedtaksperiodeId, "id" to id)
         val sikkerSporing = sporing.map { (key, value) -> keyValue(key, value) }.plus(keyValue("fødselsnummer", fødselsnummer)).toTypedArray()
 
         withMDC(*sporing) {
-            sikkerlogg.info("Løser {}, {}, {}, {}, {}:\n\t${packet.toJson()}", *sikkerSporing)
+            sikkerlogg.info("Løser {}, {}, {}, {}, {} ($fom til $tom):\n\t${packet.toJson()}", *sikkerSporing)
             try {
                 val stønadsperioder = kilder.flatMap { kilde -> stønadsperioder(
                     fnr = fødselsnummer,
-                    fom = packet.fom(),
-                    tom = packet.tom(),
+                    fom = fom,
+                    tom = tom,
                     kilde = kilde
                 ).also {
                     sikkerlogg.info("Hentet ${it.size} stønadsperiode(r) fra ${kilde.javaClass.simpleName} for {}, {}, {}, {}, {}", *sikkerSporing)
@@ -64,7 +66,7 @@ internal abstract class SyktBarnLøser(
                     behov to stønadsperioder
                 )
                 context.publish(packet.toJson().also { json ->
-                    sikkerlogg.info("Sender løsning for {}, {}, {}, {}, {}:\n\t$json", *sikkerSporing)
+                    sikkerlogg.info("Sender løsning for {}, {}, {}, {}, {} ($fom til $tom):\n\t$json", *sikkerSporing)
                 })
             } catch (exception: Exception) {
                 sikkerlogg.error("Feil ved løsing av {}, {}, {}, {}, {}: ${exception.message}", *sikkerSporing, exception)
