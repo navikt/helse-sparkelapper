@@ -41,7 +41,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         RapidApplication.create(env).apply {
             PleiepengerløserV2(this, infotrygdClient, abakusClient)
             OmsorgspengerløserV2(this, infotrygdClient, abakusClient)
-            PleiepengerløserV2(this, infotrygdClient, abakusClient)
+            OpplæringspengerløserV2(this, infotrygdClient, abakusClient)
         }
     } else {
         val infotrygdService = InfotrygdService(
