@@ -33,8 +33,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     )
     val abakusClient = AbakusClient(
         url = URL(env.getValue("ABAKUS_URL")),
-        accessTokenClient = stsClient,
-        enabled = env.getValue("NAIS_CLUSTER_NAME") == "dev-fss"
+        accessTokenClient = stsClient
     )
     return RapidApplication.create(env).apply {
         PleiepengerløserV2(this, infotrygdClient, abakusClient)

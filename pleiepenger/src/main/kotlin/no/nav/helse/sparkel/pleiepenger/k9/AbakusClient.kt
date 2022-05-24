@@ -14,43 +14,44 @@ import kotlin.math.roundToInt
 
 internal class AbakusClient(
     private val url: URL,
-    private val accessTokenClient: AccessTokenClient,
-    private val enabled: Boolean
+    private val accessTokenClient: AccessTokenClient
 ): SyktBarnKilde {
 
     override fun pleiepenger(fnr: String, fom: LocalDate, tom: LocalDate) =
-        hent(fnr, fom, tom, PleiepengerSyktBarn).håndter("pleiepenger")
+        hent(fnr, fom, tom, PleiepengerSyktBarn)
 
     override fun omsorgspenger(fnr: String, fom: LocalDate, tom: LocalDate) =
-        hent(fnr, fom, tom, Omsorgspenger).håndter("omsorgspenger")
+        hent(fnr, fom, tom, Omsorgspenger)
 
     override fun opplæringspenger(fnr: String, fom: LocalDate, tom: LocalDate) =
-        hent(fnr, fom, tom, Opplæringspenger).håndter("opplæringspenger")
+        hent(fnr, fom, tom, Opplæringspenger)
 
     private fun hent(fnr: String, fom: LocalDate, tom: LocalDate, ytelse: String): Set<Stønadsperiode> {
-        var response: JsonNode? = null
         val callId = "${UUID.randomUUID()}"
         val requestBody = requestBody(fnr, fom, tom, ytelse)
-        return try {
-            response = url.postJson(requestBody,
+
+        val response = try {
+            url.postJson(requestBody,
                 "Authorization" to "Bearer ${accessTokenClient.accessToken()}",
                 "Nav-Consumer-Id" to "Sykepenger",
                 "Nav-Callid" to callId
             ).second
-            sikkerlogg.info("Hentet $ytelse fra Abakus for {} med {}. Response:\n\t$response",
-                keyValue("fødselsnummer", fnr), keyValue("callId", callId))
+        } catch (exception: Exception) {
+            sikkerlogg.error("Feil ved henting av $ytelse fra Abakus for {} med {}.",
+                keyValue("fødselsnummer", fnr), keyValue("callId", callId), exception)
+            throw IllegalStateException("Feil ved henting fra Abakus")
+        }
+
+        sikkerlogg.info("Hentet $ytelse fra Abakus for {} med {}. Response:\n\t$response",
+            keyValue("fødselsnummer", fnr), keyValue("callId", callId))
+
+        return try {
             response.abakusResponseTilStønadsperioder(fom, tom)
         } catch (exception: Exception) {
-            sikkerlogg.error("Feil ved henting av $ytelse fra Abakus for {} med {}. Response:\n\t$response",
+            sikkerlogg.error("Feil ved mapping av $ytelse fra Abakus-response for {} med {}.",
                 keyValue("fødselsnummer", fnr), keyValue("callId", callId), exception)
-            emptySet()
+            throw throw IllegalStateException("Feil ved mapping av response fra Abakus")
         }
-    }
-
-    private fun Set<Stønadsperiode>.håndter(ytelse: String): Set<Stønadsperiode> {
-        if (enabled || isEmpty()) return this
-        sikkerlogg.info("Hentet $size stønadsperioder for $ytelse fra Abakus. Blir ikke lagt til i løsningen på behovet enda:\n$this")
-        return emptySet()
     }
 
     internal companion object {

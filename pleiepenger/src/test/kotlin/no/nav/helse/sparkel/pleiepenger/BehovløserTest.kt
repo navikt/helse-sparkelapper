@@ -91,8 +91,7 @@ internal class BehovløserTest {
                 tokenEndpoint = wireMockServer.stsTokenEndpoint(),
                 clientId = "foo",
                 clientSecret = "bar"
-            ),
-            enabled = true
+            )
         )
         PleiepengerløserV2(rapid, infotrygdClient, abakusClient)
         OmsorgspengerløserV2(rapid, infotrygdClient, abakusClient)
