@@ -37,9 +37,12 @@ internal class AbakusClient(
                 "Nav-Consumer-Id" to "Sykepenger",
                 "Nav-Callid" to callId
             ).second
+            sikkerlogg.info("Hentet $ytelse fra Abakus for {} med {}. Response:\n\t$response",
+                keyValue("fødselsnummer", fnr), keyValue("callId", callId))
             response.abakusResponseTilStønadsperioder(fom, tom)
         } catch (exception: Exception) {
-            sikkerlogg.error("Feil ved henting fra Abakus med {}. Response:\n$response", keyValue("callId", callId), exception)
+            sikkerlogg.error("Feil ved henting av $ytelse fra Abakus for {} med {}. Response:\n\t$response",
+                keyValue("fødselsnummer", fnr), keyValue("callId", callId), exception)
             emptySet()
         }
     }
