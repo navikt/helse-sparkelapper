@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.MappingBuilder
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.configureFor
 import com.github.tomakehurst.wiremock.client.WireMock.create
@@ -15,6 +16,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlMatching
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import java.time.LocalDate
 import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -294,6 +296,13 @@ internal class BehovløserTest {
         }
         """
 
+    private fun MappingBuilder.withInfotrygdHeaders() = apply {
+        withHeader("Accept", equalTo("application/json"))
+        withHeader("Content-Type", equalTo("application/json"))
+        withHeader("Nav-Consumer-Id", equalTo("Sykepenger"))
+        withHeader("Nav-CallId", AnythingPattern())
+    }
+
     private fun stubEksterneEndepunkt() {
         stubFor(
             post(urlMatching("/token"))
@@ -312,8 +321,7 @@ internal class BehovløserTest {
         )
         stubFor(
             post(urlPathEqualTo("/vedtak/pleiepenger"))
-                .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Content-Type", equalTo("application/json"))
+                .withInfotrygdHeaders()
                 .withRequestBody(matchingJsonPath("identitetsnummer", equalTo("fnr")))
                 .willReturn(
                     aResponse()
@@ -334,8 +342,7 @@ internal class BehovløserTest {
         )
         stubFor(
             post(urlPathEqualTo("/vedtak/pleiepenger"))
-                .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Content-Type", equalTo("application/json"))
+                .withInfotrygdHeaders()
                 .withRequestBody(matchingJsonPath("identitetsnummer", equalTo("ikkeTilgang")))
                 .willReturn(
                     aResponse()
@@ -344,8 +351,7 @@ internal class BehovløserTest {
         )
         stubFor(
             post(urlPathEqualTo("/vedtak/pleiepenger"))
-                .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Content-Type", equalTo("application/json"))
+                .withInfotrygdHeaders()
                 .withRequestBody(matchingJsonPath("identitetsnummer", equalTo("feilITjenesten")))
                 .willReturn(
                     aResponse()
@@ -354,8 +360,7 @@ internal class BehovløserTest {
         )
         stubFor(
             post(urlPathEqualTo("/vedtak/omsorgspenger"))
-                .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Content-Type", equalTo("application/json"))
+                .withInfotrygdHeaders()
                 .withRequestBody(matchingJsonPath("identitetsnummer", equalTo("fnr")))
                 .willReturn(
                     aResponse()
@@ -376,8 +381,7 @@ internal class BehovløserTest {
         )
         stubFor(
             post(urlPathEqualTo("/vedtak/omsorgspenger"))
-                .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Content-Type", equalTo("application/json"))
+                .withInfotrygdHeaders()
                 .withRequestBody(matchingJsonPath("identitetsnummer", equalTo("ikkeTilgang")))
                 .willReturn(
                     aResponse()
@@ -386,8 +390,7 @@ internal class BehovløserTest {
         )
         stubFor(
             post(urlPathEqualTo("/vedtak/opplaeringspenger"))
-                .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Content-Type", equalTo("application/json"))
+                .withInfotrygdHeaders()
                 .withRequestBody(matchingJsonPath("identitetsnummer", equalTo("fnr")))
                 .willReturn(
                     aResponse()
@@ -408,8 +411,7 @@ internal class BehovløserTest {
         )
         stubFor(
             post(urlPathEqualTo("/vedtak/opplaeringspenger"))
-                .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Content-Type", equalTo("application/json"))
+                .withInfotrygdHeaders()
                 .withRequestBody(matchingJsonPath("identitetsnummer", equalTo("ikkeTilgang")))
                 .willReturn(
                     aResponse()

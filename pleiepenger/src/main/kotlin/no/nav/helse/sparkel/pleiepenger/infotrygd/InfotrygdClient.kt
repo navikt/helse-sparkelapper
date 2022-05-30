@@ -6,6 +6,7 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDate
+import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.pleiepenger.Stønadsperiode
 import no.nav.helse.sparkel.pleiepenger.SyktBarnKilde
@@ -14,13 +15,13 @@ import no.nav.helse.sparkel.pleiepenger.infotrygd.Stønadstype.OPPLAERINGSPENGER
 import no.nav.helse.sparkel.pleiepenger.infotrygd.Stønadstype.PLEIEPENGER
 import org.slf4j.LoggerFactory
 
-class InfotrygdClient(
+internal class InfotrygdClient(
     private val baseUrl: String,
     private val accesstokenScope: String,
     private val azureClient: AzureClient
 ): SyktBarnKilde {
 
-    internal companion object {
+    private companion object {
         private val objectMapper = ObjectMapper()
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private val log = LoggerFactory.getLogger(InfotrygdClient::class.java)
@@ -31,11 +32,11 @@ class InfotrygdClient(
             grad = path("grad").intValue()
         )
 
-        internal fun JsonNode.infotrygdResponseSomStønadsperioder() =
+        private fun JsonNode.infotrygdResponseSomStønadsperioder() =
             get("vedtak").map { it.infotrygdVedtakSomStønadsperiode() }
     }
 
-    internal fun hent(
+    private fun hent(
         stønadstype: Stønadstype,
         fnr: String,
         fom: LocalDate,
@@ -46,6 +47,7 @@ class InfotrygdClient(
             put("fom", fom.toString())
             put("tom", tom.toString())
         }
+        val callId = "${UUID.randomUUID()}"
 
         val url = "$baseUrl${stønadstype.url}"
         val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
@@ -55,6 +57,8 @@ class InfotrygdClient(
             setRequestProperty("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
             setRequestProperty("Accept", "application/json")
             setRequestProperty("Content-Type", "application/json")
+            setRequestProperty("Nav-Consumer-Id", "Sykepenger")
+            setRequestProperty("Nav-CallId", callId)
 
             doOutput = true
             objectMapper.writeValue(outputStream, requestBody)
@@ -64,8 +68,11 @@ class InfotrygdClient(
         }
 
         if (responseCode >= 300 || responseBody == null) {
-            sikkerlogg.error("Kunne ikke hente pleiepenger responseCode=$responseCode, url=$url:\nBody:\n$responseBody", keyValue("fødselsnummer", fnr))
-            log.error("Kunne ikke hente pleiepenger responseCode=$responseCode, url=$url (se sikkerlogg for detaljer)")
+            sikkerlogg.error("Kunne ikke hente ${stønadstype.name} for {} med {}. Mottok responseCode=$responseCode, url=$url:\nBody:\n$responseBody",
+                keyValue("fødselsnummer", fnr),
+                keyValue("callId", callId))
+            log.error("Kunne ikke hente ${stønadstype.name} med {}. Mottok responseCode=$responseCode, url=$url (se sikkerlogg for detaljer)",
+                keyValue("callId", callId))
             return null
         }
 
