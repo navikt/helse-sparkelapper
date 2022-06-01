@@ -33,7 +33,7 @@ internal class InfotrygdClient(
         )
 
         private fun JsonNode.infotrygdResponseSomStønadsperioder() =
-            get("vedtak").map { it.infotrygdVedtakSomStønadsperiode() }
+            get("vedtak").map { it.infotrygdVedtakSomStønadsperiode() }.toSet()
     }
 
     private fun hent(
@@ -76,15 +76,20 @@ internal class InfotrygdClient(
             return null
         }
 
-        return objectMapper.readTree(responseBody)
+        val response = objectMapper.readTree(responseBody)
+
+        sikkerlogg.info("Hentet ${stønadstype.name} fra Infotrygd for {} med {}. Response:\n\t$response",
+            keyValue("fødselsnummer", fnr), keyValue("callId", callId))
+
+        return response
     }
 
     override fun pleiepenger(fnr: String, fom: LocalDate, tom: LocalDate) =
-        hent(PLEIEPENGER, fnr, fom, tom)?.infotrygdResponseSomStønadsperioder()?.toSet() ?: throw IllegalStateException("Feil ved henting av pleiepenger fra Infotrygd")
+        hent(PLEIEPENGER, fnr, fom, tom)?.infotrygdResponseSomStønadsperioder() ?: throw IllegalStateException("Feil ved henting av pleiepenger fra Infotrygd")
 
     override fun omsorgspenger(fnr: String, fom: LocalDate, tom: LocalDate) =
-        hent(OMSORGSPENGER, fnr, fom, tom)?.infotrygdResponseSomStønadsperioder()?.toSet() ?: throw IllegalStateException("Feil ved henting av omsorgspenger fra Infotrygd")
+        hent(OMSORGSPENGER, fnr, fom, tom)?.infotrygdResponseSomStønadsperioder() ?: throw IllegalStateException("Feil ved henting av omsorgspenger fra Infotrygd")
 
     override fun opplæringspenger(fnr: String, fom: LocalDate, tom: LocalDate) =
-        hent(OPPLAERINGSPENGER, fnr, fom, tom)?.infotrygdResponseSomStønadsperioder()?.toSet() ?: throw IllegalStateException("Feil ved henting av opplæringspenger fra Infotrygd")
+        hent(OPPLAERINGSPENGER, fnr, fom, tom)?.infotrygdResponseSomStønadsperioder() ?: throw IllegalStateException("Feil ved henting av opplæringspenger fra Infotrygd")
 }

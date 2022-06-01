@@ -6,9 +6,9 @@ azure:
   enabled: true
 env:
 - name: INFOTRYGD_SCOPE
-  value: api://fadafa61-0d49-43d4-b256-8a589b215da5/.default
+  value: api://fb60234c-4d2a-4b2d-b5af-0ecbe7740944/.default
 - name: INFOTRYGD_URL
-  value: http://infotrygd-grunnlag-paaroerende-sykdom.infotrygd.svc.nais.local
+  value: https://k9-infotrygd.intern.nav.no
 - name: STS_TOKEN_ENDPOINT
   value: http://security-token-service.default.svc.nais.local/rest/v1/sts/token
 - name: ABAKUS_URL
