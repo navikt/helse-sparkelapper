@@ -8,6 +8,9 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
+import no.nav.helse.sparkel.personinfo.FantIkkeIdenter
+import no.nav.helse.sparkel.personinfo.Identer
+import no.nav.helse.sparkel.personinfo.IdenterResultat
 
 internal class PersonhendelseRiver(
     private val rapidsConnection: RapidsConnection,
@@ -26,19 +29,24 @@ internal class PersonhendelseRiver(
         val ident = (record.get("personidenter") as List<Any?>).first().toString()
         if (throttle(ident)) return
 
-        val hendelseId = UUID.randomUUID().toString()
-        val identer = pdlClient.hentIdenter(ident, hendelseId)
+        when (val identer: IdenterResultat = pdlClient.hentIdenter(ident, UUID.randomUUID().toString())) {
+            is Identer -> sendMelding(identer)
+            is FantIkkeIdenter -> sikkerlogg.info("Kan ikke registrere addressebeskyttelse-endring på $ident pga manglende fnr")
+        }
+    }
 
-        val packet: JsonMessage = JsonMessage.newMessage(mapOf(
-            "@event_name" to "adressebeskyttelse_endret",
-            "@id" to UUID.randomUUID(),
-            "@opprettet" to LocalDateTime.now(),
-            "fødselsnummer" to identer.fødselsnummer,
-            "aktørId" to identer.aktørId
-        ))
+    private fun sendMelding(identer: Identer) {
+        val packet: JsonMessage = JsonMessage.newMessage(
+            mapOf(
+                "@event_name" to "adressebeskyttelse_endret",
+                "@id" to UUID.randomUUID(),
+                "@opprettet" to LocalDateTime.now(),
+                "fødselsnummer" to identer.fødselsnummer,
+                "aktørId" to identer.aktørId
+            )
+        )
 
         rapidsConnection.publish(identer.fødselsnummer, packet.toJson())
-
     }
 
     private fun throttle(ident: String): Boolean {

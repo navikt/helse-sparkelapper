@@ -1,12 +1,14 @@
 package no.nav.helse.sparkel.personinfo
 
 import kotlinx.coroutines.runBlocking
-import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.rapids_rivers.*
+import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
+import no.nav.helse.rapids_rivers.MessageProblems
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.withMDC
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
-import java.util.*
 
 internal class HentIdenterLøser(
     rapidsConnection: RapidsConnection,
@@ -30,19 +32,31 @@ internal class HentIdenterLøser(
             "id" to hendelseId
         )) {
             try {
-                val identer = pdlClient.hentIdenter(packet["ident"].asText(), hendelseId)
-                packet["@løsning"] = mapOf(
-                    "HentIdenter" to mapOf(
-                        "fødselsnummer" to identer.fødselsnummer,
-                        "aktørId" to identer.aktørId
-                    )
-                )
-                sikkerLogg.info("løser behov=HentIdenter melding:\n${packet.toJson()}")
-                context.publish(identer.fødselsnummer, packet.toJson())
+                val kildeIdent = packet["ident"].asText()
+                when (val identer: IdenterResultat = pdlClient.hentIdenter(kildeIdent, hendelseId)) {
+                    is Identer -> sendSvar(packet, identer, context)
+                    is FantIkkeIdenter -> sikkerLogg.warn("klarte ikke finne identer: $kildeIdent behov=HentIdenter melding:\n${packet.toJson()}")
+                }
+
             } catch (err: Exception) {
                 sikkerLogg.warn("klarte ikke finne identer: ${err.message} behov=HentIdenter melding:\n${packet.toJson()}", err)
             }
         }
+    }
+
+    private fun sendSvar(
+        packet: JsonMessage,
+        identer: Identer,
+        context: MessageContext
+    ) {
+        packet["@løsning"] = mapOf(
+            "HentIdenter" to mapOf(
+                "fødselsnummer" to identer.fødselsnummer,
+                "aktørId" to identer.aktørId
+            )
+        )
+        sikkerLogg.info("løser behov=HentIdenter melding:\n${packet.toJson()}")
+        context.publish(identer.fødselsnummer, packet.toJson())
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {

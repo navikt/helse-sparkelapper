@@ -15,7 +15,7 @@ import no.nav.helse.sparkel.personinfo.Vergemålløser.Vergemål
 import no.nav.helse.sparkel.personinfo.Vergemålløser.VergemålType
 import org.slf4j.LoggerFactory
 
-object PdlOversetter {
+internal object PdlOversetter {
     private val log = LoggerFactory.getLogger("pdl-oversetter")
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
@@ -48,7 +48,7 @@ object PdlOversetter {
             .put("adressebeskyttelse", pdlPerson["adressebeskyttelse"].firstOrNull().somAdressebeskyttelse().name)
     }
 
-    fun oversetterIdenter(pdlReply: JsonNode): Identer {
+    fun oversetterIdenter(pdlReply: JsonNode): IdenterResultat {
         håndterErrors(pdlReply)
         val pdlPerson = pdlReply["data"]["hentIdenter"]["identer"]
         fun identAvType(type: String): String {
@@ -59,7 +59,11 @@ object PdlOversetter {
                 }
             return identgruppe["ident"].asText()
         }
-        return Identer(identAvType("FOLKEREGISTERIDENT"), identAvType("AKTORID"))
+        return try {
+            Identer(identAvType("FOLKEREGISTERIDENT"), identAvType("AKTORID"))
+        } catch (e: NoSuchElementException) {
+            FantIkkeIdenter()
+        }
     }
 
     internal fun oversetterVergemålOgFullmakt(pdlReply: JsonNode): Resultat {
@@ -106,11 +110,6 @@ object PdlOversetter {
         }.path("doedsdato").asText()
     }
 
-    data class Identer(
-        val fødselsnummer: String,
-        val aktørId: String
-    )
-
     private enum class Adressebeskyttelse {
         Fortrolig,
         StrengtFortrolig,
@@ -150,3 +149,9 @@ object PdlOversetter {
 
 }
 
+internal interface IdenterResultat
+internal data class Identer(
+    val fødselsnummer: String,
+    val aktørId: String
+): IdenterResultat
+internal class FantIkkeIdenter: IdenterResultat

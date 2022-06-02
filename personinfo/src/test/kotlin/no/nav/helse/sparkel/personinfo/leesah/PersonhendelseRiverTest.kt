@@ -8,7 +8,6 @@ import io.mockk.mockk
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.personinfo.PdlClient
-import no.nav.helse.sparkel.personinfo.PdlOversetter
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.adressebeskyttelseV1
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.serialize
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -19,6 +18,8 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
+import no.nav.helse.sparkel.personinfo.FantIkkeIdenter
+import no.nav.helse.sparkel.personinfo.Identer
 
 class PersonhendelseRiverTest {
     private val FNR = "20046913337"
@@ -45,7 +46,7 @@ class PersonhendelseRiverTest {
 
     @Test
     fun `logger kun informasjon om endring av adressebeskyttelse`() {
-        every { pdlClient.hentIdenter(FNR, any()) } returns PdlOversetter.Identer(
+        every { pdlClient.hentIdenter(FNR, any()) } returns Identer(
             fødselsnummer = FNR,
             aktørId = AKTØRID
         )
@@ -61,7 +62,7 @@ class PersonhendelseRiverTest {
 
     @Test
     fun `slår opp i pdl og legger adressebeskyttelse_endret på rapid`() {
-        every { pdlClient.hentIdenter(FNR, any()) } returns PdlOversetter.Identer(
+        every { pdlClient.hentIdenter(FNR, any()) } returns Identer(
             fødselsnummer = FNR,
             aktørId = AKTØRID
         )
@@ -82,7 +83,7 @@ class PersonhendelseRiverTest {
 
     @Test
     fun `klarer å lese en avro melding som er deserialisert`() {
-        every { pdlClient.hentIdenter(FNR, any()) } returns PdlOversetter.Identer(
+        every { pdlClient.hentIdenter(FNR, any()) } returns Identer(
             fødselsnummer = FNR,
             aktørId = AKTØRID
         )
@@ -96,7 +97,7 @@ class PersonhendelseRiverTest {
 
     @Test
     fun `throttler meldinger fra PDL på samme ident som kommer inn tilnærmet samtidig`() {
-        every { pdlClient.hentIdenter(FNR, any()) } returns PdlOversetter.Identer(
+        every { pdlClient.hentIdenter(FNR, any()) } returns Identer(
             fødselsnummer = FNR,
             aktørId = AKTØRID
         )
@@ -113,7 +114,7 @@ class PersonhendelseRiverTest {
 
     @Test
     fun `throttler ikke når cacheTimeout er utløpt`() {
-        every { pdlClient.hentIdenter(FNR, any()) } returns PdlOversetter.Identer(
+        every { pdlClient.hentIdenter(FNR, any()) } returns Identer(
             fødselsnummer = FNR,
             aktørId = AKTØRID
         )
@@ -133,6 +134,25 @@ class PersonhendelseRiverTest {
             )
         )
         assertEquals(2, testRapid.inspektør.size)
+    }
+
+    /**
+     * Vi regner med at vi ikke trenger å vite om adressebeskyttelse til personer uten fnr (eller dnr),
+     * da disse uansett ikke kan opprette sak i Spleis.
+     *
+     * I fremtiden vil vi måtte støtte disse både i Spleis og i resten av stacken.
+     */
+    @Test
+    fun `Foreløpig støtter vi ikke personer som ikke har fnr`() {
+        every { pdlClient.hentIdenter(FNR, any()) } returns FantIkkeIdenter()
+        personhendelseRiver.onPackage(
+            adressebeskyttelseV1(
+                FNR,
+                gradering = PersonhendelseOversetter.Gradering.FORTROLIG
+            )
+        )
+        assertEquals(listOf("mottok endring på adressebeskyttelse", "Kan ikke registrere addressebeskyttelse-endring på $FNR pga manglende fnr"), logCollector.list.map(ILoggingEvent::getMessage))
+        assertEquals(0, testRapid.inspektør.size)
     }
 
 }
