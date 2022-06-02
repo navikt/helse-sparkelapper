@@ -11,6 +11,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import net.logstash.logback.argument.StructuredArguments.keyValue
 
 private const val dollar = '$'
 
@@ -78,7 +79,16 @@ class PDL(
                 throw RuntimeException("errors from PDL: ${responseBody["errors"].errorMsgs()}")
             }
             sikkerLogg.info("Svar fra PDL for behov $behovId")
-            responseMapper(responseBody)
+            try {
+                responseMapper(responseBody)
+            } catch (exception: Exception) {
+                sikkerLogg.error("Feil ved mapping av response fra PDL. Response:\n\t$responseBody",
+                    keyValue("behovId", behovId),
+                    keyValue("fødselsnummer", fødselsnummer),
+                    exception
+                )
+                throw exception
+            }
         }
 }
 
