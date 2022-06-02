@@ -1,0 +1,4 @@
+kafkaPool: nav-dev
+azure:
+  enabled: true
+  tenant: trygdeetaten.no
