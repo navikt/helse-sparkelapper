@@ -2,9 +2,10 @@ package no.nav.helse.sparkel.oppgaveendret.oppgave
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import java.time.Clock
 import java.time.Duration
 import java.time.LocalTime
-import java.time.LocalTime.now
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveEndretProducer
@@ -15,7 +16,8 @@ internal class OppgaveEndretConsumer(
     private val rapidConnection: RapidsConnection,
     private val kafkaConsumer: KafkaConsumer<String, String>,
     private val gosysOppgaveEndretProducer: GosysOppgaveEndretProducer,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val clock: Clock,
 ) : AutoCloseable, Runnable {
     private var konsumerer = true
     private val logger = LoggerFactory.getLogger(this::class.java)
@@ -52,7 +54,9 @@ internal class OppgaveEndretConsumer(
     Gosys-oppgaver kan lukkes som et resultat av utbetaling i Infotrygd, og per i dag klarer ikke spleis/spesialist å
     fange opp disse utbetalingene raskt nok. Når det er på plass kan dette vinduet fjernes.
      */
-    private fun åpentVindu() = LocalTime.of(6, 15) < now() && now() < LocalTime.of(6, 45)
+    private fun åpentVindu() = clock.instant().atZone(ZoneId.systemDefault()).toLocalTime().let { now ->
+        now.isAfter(LocalTime.of(6, 15)) && now.isBefore(LocalTime.of(6, 45))
+    }
 
     override fun close() {
         konsumerer = false

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.io.File
+import java.time.Clock
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.oppgaveendret.kafka.KafkaConfig
@@ -53,7 +54,13 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
 
     return RapidApplication.create(env).apply {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(this)
-        val oppgaveEndretConsumer = OppgaveEndretConsumer(this, kafkaConsumerOppgaveEndret, gosysOppgaveEndretProducer, objectMapper)
+        val oppgaveEndretConsumer = OppgaveEndretConsumer(
+            this,
+            kafkaConsumerOppgaveEndret,
+            gosysOppgaveEndretProducer,
+            objectMapper,
+            Clock.systemDefaultZone(),
+        )
         Thread(oppgaveEndretConsumer).start()
         this.register(object : RapidsConnection.StatusListener {
             override fun onShutdown(rapidsConnection: RapidsConnection) {

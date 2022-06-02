@@ -10,7 +10,16 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.io.IOException
+import java.time.Clock
 import java.time.Duration
+import java.time.Instant
+import java.time.Instant.now
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.temporal.ChronoField
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveEndretProducer
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -34,7 +43,13 @@ class OppgaveEndretConsumerTest {
     fun `happy case`() {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapidApplication)
         val oppgaveEndretConsumer =
-            OppgaveEndretConsumer(rapidApplication, kafkaConsumer, gosysOppgaveEndretProducer, objectMapper)
+            OppgaveEndretConsumer(
+                rapidApplication,
+                kafkaConsumer,
+                gosysOppgaveEndretProducer,
+                objectMapper,
+                fixedClock(time = 6, minutt = 15),
+            )
         queueMessages(
             oppgaveEndretConsumer,
             listOf(null, null)
@@ -47,11 +62,44 @@ class OppgaveEndretConsumerTest {
     fun `kaller close på rapidapplication når vi får en exception`() {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapidApplication)
         val oppgaveEndretConsumer =
-            OppgaveEndretConsumer(rapidApplication, kafkaConsumer, gosysOppgaveEndretProducer, objectMapper)
+            OppgaveEndretConsumer(
+                rapidApplication,
+                kafkaConsumer,
+                gosysOppgaveEndretProducer,
+                objectMapper,
+                fixedClock(time = 6, minutt = 15),
+            )
         every { kafkaConsumer.poll(any<Duration>()) } throws IOException()
         oppgaveEndretConsumer.run()
         verify(exactly = 1) { rapidApplication.stop() }
+    }
 
+    @Test
+    fun `poller bare i gitt tidsrom`() {
+        val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapidApplication)
+        val manipulerbarKlokke = MutableClock(fixedClock(time = 6, minutt = 14).instant())
+        val oppgaveEndretConsumer =
+            OppgaveEndretConsumer(
+                rapidApplication,
+                kafkaConsumer,
+                gosysOppgaveEndretProducer,
+                objectMapper,
+                manipulerbarKlokke,
+            )
+
+        val scope = CoroutineScope(Dispatchers.Default)
+        scope.launch {
+            oppgaveEndretConsumer.run()
+        }
+        verify(exactly = 0) { kafkaConsumer.poll(any<Duration>()) }
+
+        manipulerbarKlokke.instant = fixedClock(time = 6, minutt = 16).instant()
+
+        // Må starte run på nytt pga den forrige er i dvale
+        scope.launch {
+            oppgaveEndretConsumer.run()
+        }
+        verify(atLeast = 1) { kafkaConsumer.poll(any<Duration>()) }
     }
 
     @Test
@@ -87,5 +135,19 @@ class OppgaveEndretConsumerTest {
                 } ?: ConsumerRecords.empty()
         }
     }
-    fun String.loadFromResources() = ClassLoader.getSystemResource(this).readText()
+
+    private fun String.loadFromResources() = ClassLoader.getSystemResource(this).readText()
+
+    private fun fixedClock(time: Int, minutt: Int) = Clock.fixed(
+        LocalDateTime.now()
+            .with(ChronoField.HOUR_OF_DAY, time.toLong())
+            .with(ChronoField.MINUTE_OF_HOUR, minutt.toLong())
+            .toInstant(ZoneId.of("Europe/Oslo").rules.getOffset(now())),
+        ZoneId.systemDefault()
+    )
 }
+
+class MutableClock(var instant: Instant) : Clock() {
+    override fun instant() = instant
+    override fun getZone(): ZoneId = throw UnsupportedOperationException()
+    override fun withZone(zoneId: ZoneId): Clock = throw UnsupportedOperationException() }
