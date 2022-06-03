@@ -22,13 +22,13 @@ fun main() {
     app.start()
 }
 
-internal fun createApp(env: Map<String, String>): RapidsConnection {
+internal val objectMapper: ObjectMapper = ObjectMapper()
+    .registerModule(JavaTimeModule())
+    .registerKotlinModule()
+    .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
-    val objectMapper: ObjectMapper = ObjectMapper()
-        .registerModule(JavaTimeModule())
-        .registerKotlinModule()
-        .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+internal fun createApp(env: Map<String, String>): RapidsConnection {
 
     val serviceUser = "/var/run/secrets/nais.io/service_user".let {
         ServiceUser(
