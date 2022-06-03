@@ -91,11 +91,12 @@ class OppgaveEndretConsumerTest {
         scope.launch {
             oppgaveEndretConsumer.run()
         }
+        while (manipulerbarKlokke.count == 0) { Thread.sleep(1)}
         verify(exactly = 0) { kafkaConsumer.poll(any<Duration>()) }
 
         manipulerbarKlokke.instant = fixedClock(time = 6, minutt = 16).instant()
 
-        // Må starte run på nytt pga den forrige er i dvale
+        // Må starte run på nytt pga den forrige har tenkt å sove i fem minutter
         scope.launch {
             oppgaveEndretConsumer.run()
         }
@@ -148,6 +149,11 @@ class OppgaveEndretConsumerTest {
 }
 
 class MutableClock(var instant: Instant) : Clock() {
-    override fun instant() = instant
+    var count: Int = 0
+    override fun instant() = instant.also {
+        count++
+    }
+
     override fun getZone(): ZoneId = throw UnsupportedOperationException()
-    override fun withZone(zoneId: ZoneId): Clock = throw UnsupportedOperationException() }
+    override fun withZone(zoneId: ZoneId): Clock = throw UnsupportedOperationException()
+}
