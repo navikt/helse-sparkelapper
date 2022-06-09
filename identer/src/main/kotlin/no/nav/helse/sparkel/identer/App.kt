@@ -10,7 +10,17 @@ fun main() {
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
 
+    val kafkaConsumer = createConsumer()
+    kafkaConsumer.subscribe(listOf("aapen-person-pdl-aktor-v1"))
+
     return RapidApplication.create(env).apply {
+        val aktørConsumer = AktørConsumer(this, kafkaConsumer)
+        Thread(aktørConsumer).start()
+        this.register(object : RapidsConnection.StatusListener {
+            override fun onShutdown(rapidsConnection: RapidsConnection) {
+                aktørConsumer.close()
+            }
+        })
     }
 }
 
