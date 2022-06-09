@@ -35,6 +35,6 @@ class AktørAvroDeserializer : Deserializer<GenericRecord> {
     companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private val schema =
-            Schema.Parser().parse(AktørAvroDeserializer::class.java.getResourceAsStream("/pdl/AktorV2.avsc"))
+            Schema.Parser().parse(AktørAvroDeserializer::class.java.getResourceAsStream("/AktorV2.avsc"))
     }
 }
