@@ -15,7 +15,9 @@ class AktørAvroDeserializer : Deserializer<GenericRecord> {
         try {
             return deserialize(data, schema)
         } catch (exception: Exception) {
-            sikkerlogg.warn("Klarte ikke å deserialisere melding. Base64='${Base64.getEncoder().encodeToString(data)}'", exception)
+            sikkerlogg.warn(
+                "Klarte ikke å deserialisere melding. Base64='${Base64.getEncoder().encodeToString(data)}'",
+                exception)
             throw exception
         }
     }
@@ -34,7 +36,7 @@ class AktørAvroDeserializer : Deserializer<GenericRecord> {
 
     companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-        private val schema =
+        val schema =
             Schema.Parser().parse(AktørAvroDeserializer::class.java.getResourceAsStream("/AktorV2.avsc"))
     }
 }

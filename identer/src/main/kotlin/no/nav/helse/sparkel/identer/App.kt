@@ -3,18 +3,19 @@ package no.nav.helse.sparkel.identer
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 
+val PDL_AKTØR_TOPIC = "aapen-person-pdl-aktor-v1"
+
 fun main() {
     val app = createApp(System.getenv())
     app.start()
 }
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
-
     val kafkaConsumer = createConsumer()
-    kafkaConsumer.subscribe(listOf("aapen-person-pdl-aktor-v1"))
+    kafkaConsumer.subscribe(listOf(PDL_AKTØR_TOPIC))
 
     return RapidApplication.create(env).apply {
-        val aktørConsumer = AktørConsumer(this, kafkaConsumer)
+        val aktørConsumer = AktørConsumer(this, kafkaConsumer, IdenthendelseHandler())
         Thread(aktørConsumer).start()
         this.register(object : RapidsConnection.StatusListener {
             override fun onShutdown(rapidsConnection: RapidsConnection) {
