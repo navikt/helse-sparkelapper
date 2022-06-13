@@ -2,17 +2,17 @@ package no.nav.helse.sparkel.aareg.kodeverk
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
-import io.ktor.client.request.prepareGet
-import kotlinx.coroutines.runBlocking
-import no.nav.helse.sparkel.aareg.objectMapper
-import org.slf4j.LoggerFactory
+import java.io.InputStream
+import java.net.HttpURLConnection
+import java.net.URL
 import java.time.LocalDate
 import java.util.UUID
+import no.nav.helse.sparkel.aareg.objectMapper
 import no.nav.helse.sparkel.aareg.sikkerlogg
+import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("sparkel-aareg")
 
@@ -37,14 +37,13 @@ class KodeverkClient(
     }
 
     private fun hentFraKodeverk(path: String): String {
-        return runBlocking {
-            val response = httpClient.prepareGet("$kodeverkBaseUrl$path") {
-                setup(UUID.randomUUID().toString())
-            }.execute()
-            val body = response.body<String>()
-            log.info("Kodeverk status ${response.status} for path $path. Body\n$body")
-            return@runBlocking body
-        }
+        val (responseCode, body) = URL("$kodeverkBaseUrl/$path?spraak=nb&ekskluderUgyldige=true&oppslagsdato=${LocalDate.now()}").get(
+            "Nav-Call-Id" to "${UUID.randomUUID()}",
+            "Nav-Consumer-Id" to appName,
+
+        )
+        log.info("Kodeverk status $responseCode for path $path. Body\n$body")
+        return body
     }
 
     private fun HttpRequestBuilder.setup(callId: String) {
@@ -53,6 +52,27 @@ class KodeverkClient(
         parameter("spraak", "nb")
         parameter("ekskluderUgyldige", true)
         parameter("oppslagsdato", LocalDate.now())
+    }
+
+    private companion object {
+        private fun URL.get(
+            vararg headers: Pair<String, String>
+        ) = with(openConnection() as HttpURLConnection) {
+            requestMethod = "GET"
+            connectTimeout = 10000
+            readTimeout = 10000
+            doOutput = true
+            headers.forEach { (key, value) ->
+                setRequestProperty(key, value)
+            }
+            val stream: InputStream? = if (responseCode < 300) this.inputStream else this.errorStream
+            val responseBody = stream?.use { it.bufferedReader().readText() }
+            if (responseBody == null || responseCode >= 300) {
+                sikkerlogg.error("Mottok responseCode=$responseCode, url=$url:\nBody:\n$responseBody")
+                throw IllegalStateException("Mottok responseCode=$responseCode, url=$url")
+            }
+            responseCode to responseBody
+        }
     }
 }
 
