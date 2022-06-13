@@ -1,10 +1,7 @@
 package no.nav.helse.sparkel.aareg.kodeverk
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.ktor.client.HttpClient
-import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.header
-import io.ktor.client.request.parameter
+import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
@@ -17,15 +14,21 @@ import org.slf4j.LoggerFactory
 private val log = LoggerFactory.getLogger("sparkel-aareg")
 
 class KodeverkClient(
-    private val httpClient: HttpClient,
     private val kodeverkBaseUrl: String,
     private val appName: String
 ) {
+    private fun ObjectMapper.readTreeLogError(response: String) = try {
+        readTree(response)
+    } catch (throwable: Throwable) {
+        log.error("Klarte ikke å parse response fra Kodeverk som JSON\n$response", throwable)
+        throw throwable
+    }
+
     private val næringer: JsonNode by lazy {
-        objectMapper.readTree(hentFraKodeverk("/v1/kodeverk/Næringskoder/koder/betydninger"))
+        objectMapper.readTreeLogError(hentFraKodeverk("/v1/kodeverk/Næringskoder/koder/betydninger"))
     }
     private val yrker: JsonNode by lazy {
-        objectMapper.readTree(hentFraKodeverk("/v1/kodeverk/Yrker/koder/betydninger"))
+        objectMapper.readTreeLogError(hentFraKodeverk("/v1/kodeverk/Yrker/koder/betydninger"))
     }
 
     fun getNæring(kode: String): String {
@@ -41,16 +44,8 @@ class KodeverkClient(
             "Nav-Call-Id" to "${UUID.randomUUID()}",
             "Nav-Consumer-Id" to appName
         )
-        log.info("Kodeverk status $responseCode for path $path. Body\n$body")
+        log.info("Kodeverk status $responseCode for path $path")
         return body
-    }
-
-    private fun HttpRequestBuilder.setup(callId: String) {
-        header("Nav-Call-Id", callId)
-        header("Nav-Consumer-Id", appName)
-        parameter("spraak", "nb")
-        parameter("ekskluderUgyldige", true)
-        parameter("oppslagsdato", LocalDate.now())
     }
 
     private companion object {

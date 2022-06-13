@@ -1,22 +1,38 @@
 package no.nav.helse.sparkel.aareg.util
 
-import io.ktor.client.*
-import io.ktor.client.engine.mock.*
+import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.WireMock
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.kodeverk.hentTekst
 import no.nav.helse.sparkel.aareg.objectMapper
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.fail
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 
 private const val kodeverkverdi = "Engroshandel med innsatsvarer ikke nevnt annet sted"
 private const val kodeverkRef = "46.769"
 private const val yrkeverdi = "Gaming, men for folk som er boomers"
 private const val yrkeRef = "1337"
 
-@Disabled
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class KodeverkClientTest {
+    private lateinit var server: WireMockServer
+
+    @BeforeAll
+    fun beforeAll() {
+        server = WireMockServer(WireMockConfiguration.options().dynamicPort())
+        server.start()
+        WireMock.configureFor(server.port())
+        mock("/api/v1/kodeverk/Næringskoder/koder/betydninger", næringRespons)
+        mock("/api/v1/kodeverk/Yrker/koder/betydninger", yrkeRespons)
+    }
+
+    @AfterAll
+    fun afterAll() = server.stop()
 
     @Test
     fun `henter tekst fra kodeverksrespons`() {
@@ -25,19 +41,8 @@ internal class KodeverkClientTest {
 
     @Test
     fun `henter næring`() {
-        val httpClient = HttpClient(MockEngine) {
-            engine {
-                addHandler { request ->
-                    when (request.url.encodedPath) {
-                        "/v1/kodeverk/Næringskoder/koder/betydninger" -> respond(næringRespons)
-                        else -> respondBadRequest()
-                    }
-                }
-            }
-        }
         val kodeverkClient = KodeverkClient(
-            httpClient = httpClient,
-            kodeverkBaseUrl = "http://base.url",
+            kodeverkBaseUrl = "${server.baseUrl()}/api",
             appName = "sparkel-aareg"
         )
 
@@ -46,19 +51,8 @@ internal class KodeverkClientTest {
 
     @Test
     fun `henter yrke`() {
-        val httpClient = HttpClient(MockEngine) {
-            engine {
-                addHandler { request ->
-                    when (request.url.encodedPath) {
-                        "/v1/kodeverk/Yrker/koder/betydninger" -> respond(yrkeRespons)
-                        else -> respondBadRequest()
-                    }
-                }
-            }
-        }
         val kodeverkClient = KodeverkClient(
-            httpClient = httpClient,
-            kodeverkBaseUrl = "http://base.url",
+            kodeverkBaseUrl = "${server.baseUrl()}/api",
             appName = "sparkel-aareg"
         )
 
@@ -67,27 +61,26 @@ internal class KodeverkClientTest {
 
     @Test
     fun `cacher responsen`() {
-        val httpClient = HttpClient(MockEngine) {
-            engine {
-                addHandler { request ->
-                    when (request.url.encodedPath) {
-                        "/v1/kodeverk/Næringskoder/koder/betydninger" -> respond(næringRespons)
-                        else -> respondBadRequest()
-                    }
-                }
-                addHandler {
-                    fail("skulle ha brukt cachet verdi")
-                }
-            }
-        }
         val kodeverkClient = KodeverkClient(
-            httpClient = httpClient,
-            kodeverkBaseUrl = "http://base.url",
+            kodeverkBaseUrl = "${server.baseUrl()}/api",
             appName = "sparkel-aareg"
         )
 
         assertEquals(kodeverkverdi, kodeverkClient.getNæring(kodeverkRef))
+        mock("/api/v1/kodeverk/Næringskoder/koder/betydninger", "TEXT/PLAIN", 503)
         assertEquals(kodeverkverdi, kodeverkClient.getNæring(kodeverkRef))
+    }
+
+    private fun mock(path: String, response: String, status: Int = 200) {
+        WireMock.stubFor(
+            WireMock.get(WireMock.urlPathMatching("$path.*"))
+                .withHeader("Nav-Consumer-Id", WireMock.equalTo("sparkel-aareg"))
+                .withHeader("Nav-Call-Id", AnythingPattern())
+                .withQueryParam("spraak", WireMock.equalTo("nb"))
+                .withQueryParam("ekskluderUgyldige", WireMock.equalTo("true"))
+                .withQueryParam("oppslagsdato", WireMock.matching("\\d{4}-\\d{2}-\\d{2}"))
+                .willReturn(WireMock.aResponse().withStatus(status).withBody(response))
+        )
     }
 
     private val næringRespons = """
