@@ -37,10 +37,9 @@ class KodeverkClient(
     }
 
     private fun hentFraKodeverk(path: String): String {
-        val (responseCode, body) = URL("$kodeverkBaseUrl/$path?spraak=nb&ekskluderUgyldige=true&oppslagsdato=${LocalDate.now()}").get(
+        val (responseCode, body) = URL("$kodeverkBaseUrl$path?spraak=nb&ekskluderUgyldige=true&oppslagsdato=${LocalDate.now()}").get(
             "Nav-Call-Id" to "${UUID.randomUUID()}",
-            "Nav-Consumer-Id" to appName,
-
+            "Nav-Consumer-Id" to appName
         )
         log.info("Kodeverk status $responseCode for path $path. Body\n$body")
         return body
