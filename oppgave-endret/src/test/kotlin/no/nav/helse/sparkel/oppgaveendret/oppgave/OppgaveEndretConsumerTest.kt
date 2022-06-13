@@ -79,7 +79,7 @@ class OppgaveEndretConsumerTest {
         scope.launch {
             oppgaveEndretConsumer.run()
         }
-        while (manipulerbarKlokke.count == 0) { Thread.sleep(1)}
+        while (manipulerbarKlokke.count == 0) { Thread.sleep(100)}
         verify(exactly = 0) { kafkaConsumer.poll(any<Duration>()) }
 
         manipulerbarKlokke.instant = fixedClock(time = 6, minutt = 16).instant()
@@ -88,7 +88,7 @@ class OppgaveEndretConsumerTest {
         scope.launch {
             oppgaveEndretConsumer.run()
         }
-        while (manipulerbarKlokke.count == 1) { Thread.sleep(1)}
+        while (manipulerbarKlokke.count == 1) { Thread.sleep(100)}
         verify(atLeast = 1) { kafkaConsumer.poll(any<Duration>()) }
     }
 
