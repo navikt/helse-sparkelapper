@@ -21,7 +21,7 @@ internal class AktørConsumer(
             while (konsumerer) {
                 val records = kafkaConsumer.poll(Duration.ofMillis(100))
                 records.forEach {
-                    log.info("Mottok melding, parser...")
+                    log.info("Mottok melding, key=${String(it.key())}")
                     val aktørV2 = parseAktørMessage(it.value())
                     sikkerlogg.info("Mottok melding der gjeldende FNR/DNR=${aktørV2.gjeldendeFolkeregisterident()}")
                     identhendelseHandler.håndterIdenthendelse(aktørV2)
