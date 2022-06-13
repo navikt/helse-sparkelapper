@@ -41,8 +41,9 @@ class KodeverkClient(
             val response = httpClient.prepareGet("$kodeverkBaseUrl$path") {
                 setup(UUID.randomUUID().toString())
             }.execute()
-            sikkerlogg.info("Kodeverk status: " + response.status + " for path: " + path)
-            return@runBlocking response.body()
+            val body = response.body<String>()
+            sikkerlogg.info("Kodeverk status ${response.status} for path $path. Body\n$body")
+            return@runBlocking body
         }
     }
 
