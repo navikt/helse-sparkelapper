@@ -23,12 +23,17 @@ internal class AktørConsumer(
                 records.forEach {
                     log.info("Mottok melding, key=${String(it.key())}")
                     val aktørV2 = parseAktørMessage(it.value())
-                    sikkerlogg.info("Mottok melding der gjeldende FNR/DNR=${aktørV2.gjeldendeFolkeregisterident()}")
-                    identhendelseHandler.håndterIdenthendelse(aktørV2)
+                    aktørV2.gjeldendeFolkeregisterident()?.also {
+                        sikkerlogg.info("Mottok melding der gjeldende FNR/DNR=$it")
+                        identhendelseHandler.håndterIdenthendelse(aktørV2)
+                    } ?: run {
+                        log.info("Fant ikke FNR/DNR på melding, ignorerer melding.")
+                    }
                 }
             }
         } catch (e: Exception) {
             log.error("Feilet under konsumering av aktørhendelse", e)
+            throw e
         } finally {
             close()
             rapidConnection.stop()

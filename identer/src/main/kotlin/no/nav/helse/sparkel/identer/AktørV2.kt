@@ -3,9 +3,9 @@ package no.nav.helse.sparkel.identer
 data class AktørV2 (
     val identifikatorer: List<Identifikator>
 ) {
-    fun gjeldendeFolkeregisterident() = identifikatorer.single {
+    fun gjeldendeFolkeregisterident() = identifikatorer.singleOrNull {
         it.gjeldende && it.type == Type.FOLKEREGISTERIDENT
-    }.idnummer
+    }?.idnummer
 }
 
 data class Identifikator(

@@ -23,8 +23,7 @@ internal class AktørConsumerTest {
     private val identhendelseHandler = mockk<IdenthendelseHandler>(relaxed = true)
 
     @Test
-    fun testSenderMeldingTilVidereHåndtering() {
-
+    fun `sender melding til videre håndtering`() {
         val aktørConsumer = AktørConsumer(rapidApplication, kafkaConsumer, identhendelseHandler)
         queueMessages(
             aktørConsumer,
@@ -40,7 +39,21 @@ internal class AktørConsumerTest {
     }
 
     @Test
-    fun testParseRecord() {
+    fun `ignorerer melding uten folkeregisterident`() {
+        val aktørConsumer = AktørConsumer(rapidApplication, kafkaConsumer, identhendelseHandler)
+        queueMessages(
+            aktørConsumer,
+            listOf(genericRecord(type = Type.AKTORID))
+        )
+        aktørConsumer.run()
+
+        verify(exactly = 0) {
+            identhendelseHandler.håndterIdenthendelse(any())
+        }
+    }
+
+    @Test
+    fun `parser record`() {
         val aktørRecord = parseAktørMessage(genericRecord())
         assertEquals(2, aktørRecord.identifikatorer.size)
 
@@ -52,18 +65,18 @@ internal class AktørConsumerTest {
         assertEquals("456", historisk.idnummer)
     }
 
-    private fun genericRecord(): GenericRecord =
+    private fun genericRecord(type: Type = Type.FOLKEREGISTERIDENT): GenericRecord =
         GenericData.Record(AktørAvroDeserializer.schema).apply {
             val foo = AktørAvroDeserializer.schema.getField("identifikatorer").schema().elementType
             val identer = listOf(
                 GenericData.Record(foo).apply {
                     put("idnummer", "123")
-                    put("type", GenericData.EnumSymbol(foo, Type.FOLKEREGISTERIDENT))
+                    put("type", GenericData.EnumSymbol(foo, type))
                     put("gjeldende", true)
                 },
                 GenericData.Record(foo).apply {
                     put("idnummer", "456")
-                    put("type", GenericData.EnumSymbol(foo, Type.FOLKEREGISTERIDENT))
+                    put("type", GenericData.EnumSymbol(foo, type))
                     put("gjeldende", false)
                 })
             put("identifikatorer", identer)
