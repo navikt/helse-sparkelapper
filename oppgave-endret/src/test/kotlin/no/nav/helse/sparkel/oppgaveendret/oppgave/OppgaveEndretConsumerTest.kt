@@ -88,6 +88,7 @@ class OppgaveEndretConsumerTest {
         scope.launch {
             oppgaveEndretConsumer.run()
         }
+        while (manipulerbarKlokke.count == 1) { Thread.sleep(1)}
         verify(atLeast = 1) { kafkaConsumer.poll(any<Duration>()) }
     }
 
