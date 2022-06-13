@@ -4,13 +4,13 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val jvmTarget = "17"
 
 plugins {
-    kotlin("jvm") version "1.6.21"
+    kotlin("jvm") version "1.7.0"
 }
 
 val gradleWrapperVersion = "7.4.2"
 val junitJupiterVersion = "5.8.2"
-val rapidsAndRiversVersion = "2022.04.21-09.34.08966130226f"
-val ktorVersion = "2.0.0"
+val rapidsAndRiversVersion = "2022061213251655033125.cc27254b1735"
+val ktorVersion = "2.0.2"
 val cxfVersion = "3.4.2"
 val mockkVersion = "1.12.0"
 val wiremockVersion = "2.27.2"
