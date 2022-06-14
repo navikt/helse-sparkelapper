@@ -27,7 +27,7 @@ internal class AktørConsumerTest {
         val aktørConsumer = AktørConsumer(rapidApplication, kafkaConsumer, identhendelseHandler)
         queueMessages(
             aktørConsumer,
-            listOf(genericRecord())
+            listOf(null, genericRecord())
         )
         aktørConsumer.run()
 
@@ -91,10 +91,10 @@ internal class AktørConsumerTest {
             }
             mutableRecords
                 .removeAt(0)
-                ?.let {
+                .let {
                     val record = ConsumerRecord(PDL_AKTØR_TOPIC, 0, 0, byteArrayOf(), it)
                     ConsumerRecords(mapOf(TopicPartition(PDL_AKTØR_TOPIC, 0) to mutableListOf(record)))
-                } ?: ConsumerRecords.empty()
+                }
         }
     }
 }
