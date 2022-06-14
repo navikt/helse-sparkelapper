@@ -12,8 +12,8 @@ import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 
 private fun loadBaseConfig(): Properties = Properties().also {
-    val username = Files.readString(Paths.get("/var/run/secrets/nais.io/service_user/username"))
-    val password = Files.readString(Paths.get("/var/run/secrets/nais.io/service_user/password"))
+    val username = System.getenv("srvsparkelidenter-username")
+    val password = System.getenv("srvsparkelidenter-password")
     it["sasl.jaas.config"] = "org.apache.kafka.common.security.plain.PlainLoginModule required " +
             "username=\"$username\" password=\"$password\";"
     it["bootstrap.servers"] = System.getenv("KAFKA_BOOTSTRAP_SERVERS")
