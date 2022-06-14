@@ -12,7 +12,7 @@ fun main() {
 }
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
-    private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+    val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     val kafkaConsumer = createConsumer()
     kafkaConsumer.subscribe(listOf(PDL_AKTØR_TOPIC))
 
