@@ -17,7 +17,10 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     kafkaConsumer.subscribe(listOf(PDL_AKTØR_TOPIC))
 
     return RapidApplication.create(env).apply {
-        sikkerlogg.info("gcp-srvsparkelidenter-credentials=${System.getenv("gcp-srvsparkelidenter-credentials")}")
+        sikkerlogg.info("env-vars:")
+        System.getenv().keys.forEach {
+            sikkerlogg.info(it)
+        }
         sikkerlogg.info("srvsparkelidenter-username=${System.getenv("srvsparkelidenter-username")}")
         val aktørConsumer = AktørConsumer(this, kafkaConsumer, IdenthendelseHandler())
         Thread(aktørConsumer).start()
