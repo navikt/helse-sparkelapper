@@ -21,7 +21,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         System.getenv().keys.forEach {
             sikkerlogg.info(it)
         }
-        sikkerlogg.info("srvsparkelidenter-username=${System.getenv("srvsparkelidenter-username")}")
+        sikkerlogg.info("srvsparkelidenter_username=${System.getenv("srvsparkelidenter_username")}")
         val aktørConsumer = AktørConsumer(this, kafkaConsumer, IdenthendelseHandler())
         Thread(aktørConsumer).start()
         this.register(object : RapidsConnection.StatusListener {
