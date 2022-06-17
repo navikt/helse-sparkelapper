@@ -23,7 +23,6 @@ internal class AktørConsumer(
                 records.forEach {
                     val key = String(it.key())
                     sikkerlogg.info("Mottok melding, key=$key")
-                    sikkerlogg.info("Mottok melding, key=${it.key()}")
                     it.value()?.also { genericRecord ->
                         val aktørV2 = parseAktørMessage(genericRecord)
                         aktørV2.gjeldendeFolkeregisterident()?.also { folkeregisterident ->
