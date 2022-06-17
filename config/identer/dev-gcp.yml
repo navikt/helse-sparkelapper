@@ -9,7 +9,7 @@ env:
     value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
 envFrom:
   - gcp-srvsparkelidenter-credentials
-gcpSqlInstances:
-  - type: POSTGRES_14
-    name: sparkelidenter
-    envVarPrefix: DATABASE
+gcp:
+  type: POSTGRES_14
+  name: sparkelidenter
+  envVarPrefix: DATABASE

@@ -22,14 +22,15 @@ internal class AktørConsumer(
                 val records = kafkaConsumer.poll(Duration.ofMillis(100))
                 records.forEach {
                     val key = String(it.key())
-                    log.info("Mottok melding, key=$key")
+                    sikkerlogg.info("Mottok melding, key=$key")
+                    sikkerlogg.info("Mottok melding, key=${it.key()}")
                     it.value()?.also { genericRecord ->
                         val aktørV2 = parseAktørMessage(genericRecord)
                         aktørV2.gjeldendeFolkeregisterident()?.also { folkeregisterident ->
                             sikkerlogg.info("Mottok melding der gjeldende FNR/DNR=$folkeregisterident")
                             identhendelseHandler.håndterIdenthendelse(aktørV2)
-                        } ?: log.info("Fant ikke FNR/DNR på melding med key=$key, ignorerer melding.")
-                    } ?: log.info("Value var null på melding med key=$key, ignorerer melding.")
+                        } ?: sikkerlogg.info("Fant ikke FNR/DNR på melding med key=$key, ignorerer melding.")
+                    } ?: sikkerlogg.info("Value var null på melding med key=$key, ignorerer melding.")
                 }
             }
         } catch (e: Exception) {

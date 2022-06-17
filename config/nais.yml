@@ -75,13 +75,11 @@ spec:
   - name: {{ item.name }}
     value: "{{ item.value }}"
   {{/each }}{{/if}}
-  {{#if gcpSqlInstances}}
+  {{#if gcp}}
   gcp:
-    {{# each gcpSqlInstances as |item| }}
     sqlInstances:
-      - type: {{ item.type }}
+      - type: {{ gcp.type }}
         databases:
-          - name: {{ item.name }}
-            envVarPrefix: {{ item.envVarPrefix }}
-    {{/each }}
+          - name: {{ gcp.name }}
+            envVarPrefix: {{ gcp.envVarPrefix }}
   {{/if}}
