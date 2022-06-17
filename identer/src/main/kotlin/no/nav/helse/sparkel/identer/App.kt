@@ -14,6 +14,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
 
     val dataSourceBuilder = DataSourceBuilder(env)
     val dataSource = dataSourceBuilder.getDataSource()
+    dataSourceBuilder.migrate()
 
     val kafkaConsumer = createConsumer()
     kafkaConsumer.subscribe(listOf(PDL_AKTØR_TOPIC))
@@ -22,9 +23,6 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         val aktørConsumer = AktørConsumer(this, kafkaConsumer, IdenthendelseHandler())
         Thread(aktørConsumer).start()
         this.register(object : RapidsConnection.StatusListener {
-            override fun onStartup(rapidsConnection: RapidsConnection) {
-                dataSourceBuilder.migrate()
-            }
             override fun onShutdown(rapidsConnection: RapidsConnection) {
                 dataSource.close()
                 aktørConsumer.close()
