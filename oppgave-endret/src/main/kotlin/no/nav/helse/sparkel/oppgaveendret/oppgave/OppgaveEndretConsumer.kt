@@ -7,6 +7,7 @@ import java.time.Duration
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
+import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveEndretProducer
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -34,7 +35,7 @@ internal class OppgaveEndretConsumer(
                 kafkaConsumer.poll(Duration.ofMillis(100)).forEach { consumerRecord ->
                     val record = consumerRecord.value()
                     val oppgave: Oppgave = objectMapper.readValue(record)
-                    logger.info("Mottatt oppgave_endret {}", oppgave.id)
+                    logger.info("Mottatt oppgave_endret med {}", keyValue("oppaveId", oppgave.id))
 
                     gosysOppgaveEndretProducer.onPacket(oppgave)
                 }

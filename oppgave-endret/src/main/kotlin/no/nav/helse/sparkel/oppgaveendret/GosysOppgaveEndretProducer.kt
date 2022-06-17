@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.oppgaveendret
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.UUID
+import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.oppgaveendret.oppgave.IdentType
@@ -30,20 +31,27 @@ class GosysOppgaveEndretProducer(
             logger.info("Har folkeregisterident og aktorId på oppgaven " + oppgave.id)
             packetAndPublish(oppgave.ident.folkeregisterident, oppgave.ident.verdi)
         } else {
-            sikkerlogg.info("Oppgave: " + oppgave)
-            logger.error("Mangler folkeregisterident og/eller aktorId på oppgaven " + oppgave.id)
+            sikkerlogg.info("Oppgave: $oppgave")
+            logger.error("Mangler folkeregisterident og/eller aktorId på oppgaven ${oppgave.id}")
         }
     }
 
     private fun packetAndPublish(fødselsnummer: String, aktørId: String) {
+        val meldingId = UUID.randomUUID()
         val packet: JsonMessage = JsonMessage.newMessage(
             mapOf(
                 "@event_name" to "gosys_oppgave_endret",
-                "@id" to UUID.randomUUID(),
+                "@id" to meldingId,
                 "@opprettet" to LocalDateTime.now(),
                 "fødselsnummer" to fødselsnummer,
                 "aktørId" to aktørId
             )
+        )
+        sikkerlogg.info(
+            "Publiserer gosys_oppgave_endret for {}, {}, {}",
+            keyValue("@id", meldingId),
+            keyValue("fødselsnummer", fødselsnummer),
+            keyValue("aktørId", aktørId)
         )
         rapidsConnection.publish(fødselsnummer, packet.toJson())
     }
