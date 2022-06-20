@@ -5,6 +5,5 @@ CREATE TABLE aktor
     type         VARCHAR NOT NULL,
     gjeldende    BOOLEAN NOT NULL,
     person_key   VARCHAR NOT NULL,
-    melding_lest TIMESTAMP NOT NULL,
-    PRIMARY KEY (id)
+    melding_lest TIMESTAMP NOT NULL
 );
