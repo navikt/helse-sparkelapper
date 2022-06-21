@@ -10,7 +10,7 @@ internal class AktørConsumer(
     private val rapidConnection: RapidsConnection,
     private val kafkaConsumer: KafkaConsumer<ByteArray, GenericRecord>,
     private val identhendelseHandler: IdenthendelseHandler,
-): AutoCloseable, Runnable {
+) : AutoCloseable, Runnable {
     private val log = LoggerFactory.getLogger(this::class.java)
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     private var konsumerer = true
@@ -24,7 +24,7 @@ internal class AktørConsumer(
                     val key = String(it.key())
                     sikkerlogg.info("Mottok melding, key=$key")
                     it.value()?.also { genericRecord ->
-                        val aktørV2 = parseAktørMessage(genericRecord)
+                        val aktørV2 = parseAktørMessage(genericRecord, key)
                         aktørV2.gjeldendeFolkeregisterident()?.also { folkeregisterident ->
                             sikkerlogg.info("Mottok melding der gjeldende FNR/DNR=$folkeregisterident")
                             identhendelseHandler.håndterIdenthendelse(aktørV2)
@@ -46,13 +46,16 @@ internal class AktørConsumer(
     }
 }
 
-fun parseAktørMessage(record: GenericRecord): AktørV2 {
+fun parseAktørMessage(record: GenericRecord, key: String): AktørV2 {
     val identifikatorRecords = record.get("identifikatorer") as List<GenericRecord>
-    return AktørV2(identifikatorer = identifikatorRecords.map {
-        Identifikator(
-            idnummer = it.get("idnummer").toString(),
-            type = Type.valueOf(it.get("type").toString()),
-            gjeldende = it.get("gjeldende").toString().toBoolean()
-        )
-    }.toList())
+    return AktørV2(
+        identifikatorer = identifikatorRecords.map {
+            Identifikator(
+                idnummer = it.get("idnummer").toString(),
+                type = Type.valueOf(it.get("type").toString()),
+                gjeldende = it.get("gjeldende").toString().toBoolean()
+            )
+        }.toList(),
+        key = key
+    )
 }

@@ -1,0 +1,1 @@
+ALTER TABLE aktor RENAME TO identifikator;

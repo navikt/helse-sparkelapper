@@ -54,8 +54,9 @@ internal class AktørConsumerTest {
 
     @Test
     fun `parser record`() {
-        val aktørRecord = parseAktørMessage(genericRecord())
+        val aktørRecord = parseAktørMessage(genericRecord(), "123")
         assertEquals(2, aktørRecord.identifikatorer.size)
+        assertEquals("123", aktørRecord.key)
 
         val gjeldende = aktørRecord.identifikatorer.single { it.gjeldende }
         val historisk = aktørRecord.identifikatorer.single { !it.gjeldende }
