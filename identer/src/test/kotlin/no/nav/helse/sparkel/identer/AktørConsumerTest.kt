@@ -20,11 +20,11 @@ internal class AktørConsumerTest {
 
     private val rapidApplication = mockk<RapidApplication>(relaxed = true)
     private val kafkaConsumer = mockk<KafkaConsumer<ByteArray, GenericRecord>>(relaxed = true)
-    private val identhendelseHandler = mockk<IdenthendelseHandler>(relaxed = true)
+    private val identifikatorDao = mockk<IdentifikatorDao>(relaxed = true)
 
     @Test
     fun `sender melding til videre håndtering`() {
-        val aktørConsumer = AktørConsumer(rapidApplication, kafkaConsumer, identhendelseHandler)
+        val aktørConsumer = AktørConsumer(rapidApplication, kafkaConsumer, identifikatorDao)
         queueMessages(
             aktørConsumer,
             listOf(null, genericRecord())
@@ -33,14 +33,14 @@ internal class AktørConsumerTest {
 
         val slot = slot<AktørV2>()
         verify(exactly = 1) {
-            identhendelseHandler.håndterIdenthendelse(capture(slot))
+            identifikatorDao.lagreAktør(capture(slot))
         }
         assertTrue(slot.captured.identifikatorer.map { it.idnummer }.containsAll(listOf("123", "456")))
     }
 
     @Test
     fun `ignorerer melding uten folkeregisterident`() {
-        val aktørConsumer = AktørConsumer(rapidApplication, kafkaConsumer, identhendelseHandler)
+        val aktørConsumer = AktørConsumer(rapidApplication, kafkaConsumer, identifikatorDao)
         queueMessages(
             aktørConsumer,
             listOf(genericRecord(type = Type.AKTORID))
@@ -48,7 +48,7 @@ internal class AktørConsumerTest {
         aktørConsumer.run()
 
         verify(exactly = 0) {
-            identhendelseHandler.håndterIdenthendelse(any())
+            identifikatorDao.lagreAktør(any())
         }
     }
 

@@ -8,9 +8,9 @@ import kotliquery.sessionOf
 import org.intellij.lang.annotations.Language
 
 class IdentifikatorDao(
-    private val datasource: DataSource
+    private val dataSource: DataSource
 ) {
-    fun lagreAktør(aktorV2: AktørV2) = sessionOf(datasource).use { session ->
+    fun lagreAktør(aktorV2: AktørV2) = sessionOf(dataSource).use { session ->
 
         val idnumre =
             aktorV2.identifikatorer.map { it.idnummer }.joinToString(separator = "','", prefix = "'", postfix = "'")
@@ -58,12 +58,12 @@ class IdentifikatorDao(
         }
     }
 
-    fun hentIdenterForFødselsnummer(fnr: String): AktørV2? = sessionOf(datasource).use { session ->
+    fun hentIdenterForFødselsnummer(fnr: String): AktørV2? = sessionOf(dataSource).use { session ->
         val personKey = hentKeyForIdent(fnr, Type.FOLKEREGISTERIDENT) ?: return null
         hentIdenter(personKey, session)
     }
 
-    fun hentIdenterForAktørid(fnr: String): AktørV2? = sessionOf(datasource).use { session ->
+    fun hentIdenterForAktørid(fnr: String): AktørV2? = sessionOf(dataSource).use { session ->
         val personKey = hentKeyForIdent(fnr, Type.AKTORID) ?: return null
         hentIdenter(personKey, session)
     }
@@ -83,7 +83,7 @@ class IdentifikatorDao(
         return AktørV2(identifikatorer = identifikatorer, key = personKey)
     }
 
-    private fun hentKeyForIdent(ident: String, type: Type) = sessionOf(datasource).use { session ->
+    private fun hentKeyForIdent(ident: String, type: Type) = sessionOf(dataSource).use { session ->
         @Language("PostgreSQL")
         val query = "SELECT person_key FROM identifikator where type = ? AND idnummer = ?"
         session.run(

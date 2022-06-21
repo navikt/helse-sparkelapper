@@ -9,7 +9,7 @@ import java.time.Duration
 internal class AktørConsumer(
     private val rapidConnection: RapidsConnection,
     private val kafkaConsumer: KafkaConsumer<ByteArray, GenericRecord>,
-    private val identhendelseHandler: IdenthendelseHandler,
+    private val identifikatorDao: IdentifikatorDao,
 ) : AutoCloseable, Runnable {
     private val log = LoggerFactory.getLogger(this::class.java)
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -27,7 +27,7 @@ internal class AktørConsumer(
                         val aktørV2 = parseAktørMessage(genericRecord, key)
                         aktørV2.gjeldendeFolkeregisterident()?.also { folkeregisterident ->
                             sikkerlogg.info("Mottok melding der gjeldende FNR/DNR=$folkeregisterident")
-                            identhendelseHandler.håndterIdenthendelse(aktørV2)
+                            identifikatorDao.lagreAktør(aktørV2)
                         } ?: sikkerlogg.info("Fant ikke FNR/DNR på melding med key=$key, ignorerer melding.")
                     } ?: sikkerlogg.info("Value var null på melding med key=$key, ignorerer melding.")
                 }

@@ -116,6 +116,8 @@ class IdentifikatorDaoTest : AbstractDatabaseTest() {
     @Test
     @Order(7)
     fun `sjekk at kolonnen melding_lest er blitt populert`() {
+        // Denne kolonnen er i utgangspunktet ikke eksponert i appen, men tiltenkt som kjekk å ha ved oppslag
+        // direkte mot databasen ved f.eks feilsøk og uthenting av statistikk.
         val meldingLestVerdier = meldingLestVerdier()
         assertTrue(meldingLestVerdier.size > 0)
         assertTrue(meldingLestVerdier.all { it.isAfter(timestampFørTestkjøring)})

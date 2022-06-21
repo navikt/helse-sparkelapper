@@ -20,7 +20,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     kafkaConsumer.subscribe(listOf(PDL_AKTØR_TOPIC))
 
     return RapidApplication.create(env).apply {
-        val aktørConsumer = AktørConsumer(this, kafkaConsumer, IdenthendelseHandler())
+        val aktørConsumer = AktørConsumer(this, kafkaConsumer, IdentifikatorDao(dataSource))
         Thread(aktørConsumer).start()
         this.register(object : RapidsConnection.StatusListener {
             override fun onShutdown(rapidsConnection: RapidsConnection) {
