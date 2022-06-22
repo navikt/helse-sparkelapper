@@ -66,18 +66,26 @@ internal class AktørConsumerTest {
         assertEquals("456", historisk.idnummer)
     }
 
+    @Test
+    fun `fjerner nullbytes og andre spesialtegn`() {
+        // Av en eller annen grunn kommer key-feltet fra PDL prepended med et sett spesialtegn, bl.a nullbytes, som
+        // vil feile dersom de brukes mot postgres. De må derfor trimmes vekk.
+        val aktørRecord = parseAktørMessage(genericRecord(), "\u0000\u0000\u0000\u0000\u003e\u001a123")
+        assertEquals("123", aktørRecord.key)
+    }
+
     private fun genericRecord(type: Type = Type.FOLKEREGISTERIDENT): GenericRecord =
         GenericData.Record(AktørAvroDeserializer.schema).apply {
-            val foo = AktørAvroDeserializer.schema.getField("identifikatorer").schema().elementType
+            val identifikatorSchema = AktørAvroDeserializer.schema.getField("identifikatorer").schema().elementType
             val identer = listOf(
-                GenericData.Record(foo).apply {
+                GenericData.Record(identifikatorSchema).apply {
                     put("idnummer", "123")
-                    put("type", GenericData.EnumSymbol(foo, type))
+                    put("type", GenericData.EnumSymbol(identifikatorSchema, type))
                     put("gjeldende", true)
                 },
-                GenericData.Record(foo).apply {
+                GenericData.Record(identifikatorSchema).apply {
                     put("idnummer", "456")
-                    put("type", GenericData.EnumSymbol(foo, type))
+                    put("type", GenericData.EnumSymbol(identifikatorSchema, type))
                     put("gjeldende", false)
                 })
             put("identifikatorer", identer)

@@ -57,5 +57,8 @@ fun parseAktørMessage(record: GenericRecord, key: String): AktørV2 {
             )
         }.toList(),
         key = key
+            .replace("\u0000", "")
+            .replace("\u003e", "")
+            .replace("\u001a", "")
     )
 }
