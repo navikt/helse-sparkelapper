@@ -39,7 +39,9 @@ class IdentifikatorDao(
 
             tx.run(
                 queryOf(queryPersonKeyExists, aktorV2.key).map { it.int(1) }.asSingle
-            )?.also { throw RuntimeException("Duplikat personKey ${aktorV2.key} funnet, kan ikke persistere innholdet i meldingen") }
+            )?.also {
+                throw RuntimeException("Duplikat personKey ${aktorV2.key} funnet, kan ikke persistere innholdet i meldingen")
+            }
 
             val key = aktorV2.key
             val meldingLest = LocalDateTime.now()
