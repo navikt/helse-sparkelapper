@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.identer
+package no.nav.helse.sparkel.identer.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource

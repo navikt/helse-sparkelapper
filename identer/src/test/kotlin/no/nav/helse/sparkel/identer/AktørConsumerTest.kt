@@ -6,6 +6,7 @@ import io.mockk.slot
 import io.mockk.verify
 import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidApplication
+import no.nav.helse.sparkel.identer.db.IdentifikatorDao
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -13,6 +14,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -23,7 +25,7 @@ internal class AktørConsumerTest {
     private val identifikatorDao = mockk<IdentifikatorDao>(relaxed = true)
 
     @Test
-    fun `sender melding til videre håndtering`() {
+    fun `sender melding til videre håndtering, uten NPID-ident`() {
         val aktørConsumer = AktørConsumer(rapidApplication, kafkaConsumer, identifikatorDao)
         queueMessages(
             aktørConsumer,
@@ -36,6 +38,7 @@ internal class AktørConsumerTest {
             identifikatorDao.lagreAktør(capture(slot))
         }
         assertTrue(slot.captured.identifikatorer.map { it.idnummer }.containsAll(listOf("123", "456")))
+        assertNull(slot.captured.identifikatorer.singleOrNull { it.type == Type.NPID })
     }
 
     @Test
@@ -87,6 +90,11 @@ internal class AktørConsumerTest {
                     put("idnummer", "456")
                     put("type", GenericData.EnumSymbol(identifikatorSchema, type))
                     put("gjeldende", false)
+                },
+                GenericData.Record(identifikatorSchema).apply {
+                    put("idnummer", "ET_ELLER_ANNET_IDNUMMER")
+                    put("type", GenericData.EnumSymbol(identifikatorSchema, Type.NPID))
+                    put("gjeldende", true)
                 })
             put("identifikatorer", identer)
         }

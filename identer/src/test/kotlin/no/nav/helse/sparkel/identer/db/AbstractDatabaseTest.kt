@@ -36,6 +36,5 @@ abstract class AbstractDatabaseTest {
                 .migrate()
         }
     }
-
 }
 

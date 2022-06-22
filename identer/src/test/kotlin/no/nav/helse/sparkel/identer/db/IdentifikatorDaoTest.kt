@@ -5,7 +5,6 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.helse.sparkel.identer.AktørV2
 import no.nav.helse.sparkel.identer.Identifikator
-import no.nav.helse.sparkel.identer.IdentifikatorDao
 import no.nav.helse.sparkel.identer.Type
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
