@@ -9,10 +9,13 @@ import no.nav.helse.sparkel.identer.AktørV2
 import no.nav.helse.sparkel.identer.Identifikator
 import no.nav.helse.sparkel.identer.Type
 import org.intellij.lang.annotations.Language
+import org.slf4j.LoggerFactory
 
 class IdentifikatorDao(
     private val dataSource: DataSource
 ) {
+    private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+
     fun lagreAktør(aktorV2: AktørV2) = sessionOf(dataSource).use { session ->
 
         val idnumre =
@@ -43,7 +46,8 @@ class IdentifikatorDao(
             tx.run(
                 queryOf(queryPersonKeyExists, aktorV2.key).map { it.int(1) }.asSingle
             )?.also {
-                throw RuntimeException("Duplikat personKey ${aktorV2.key} funnet, kan ikke persistere innholdet i meldingen")
+                sikkerlogg.error("Duplikat personKey ${aktorV2.key} funnet, kan ikke persistere innholdet i meldingen")
+                throw RuntimeException("Duplikat personKey funnet, kan ikke persistere innholdet i meldingen")
             }
 
             val key = aktorV2.key

@@ -9,7 +9,6 @@ import io.prometheus.client.CollectorRegistry
 import java.time.Duration
 import javax.sql.DataSource
 import org.flywaydb.core.Flyway
-import org.slf4j.LoggerFactory
 
 internal class DataSourceBuilder(env: Map<String, String>) {
     private val databaseHost: String = requireNotNull(env["DATABASE_HOST"]) { "host må settes" }
@@ -17,8 +16,6 @@ internal class DataSourceBuilder(env: Map<String, String>) {
     private val databaseName: String = requireNotNull(env["DATABASE_DATABASE"]) { "databasenavn må settes" }
     private val databaseUsername: String = requireNotNull(env["DATABASE_USERNAME"]) { "brukernavn må settes" }
     private val databasePassword: String = requireNotNull(env["DATABASE_PASSWORD"]) { "passord må settes" }
-
-    private val log = LoggerFactory.getLogger(this::class.java)
 
     private val dbUrl = String.format(
         "jdbc:postgresql://%s:%s/%s", databaseHost, databasePort, databaseName
@@ -62,7 +59,6 @@ internal class DataSourceBuilder(env: Map<String, String>) {
     }
 
     internal fun migrate() {
-        log.info("Starter db-migration...")
         val dataSource = HikariDataSource(hikariMigrationConfig)
         runMigration(dataSource)
         dataSource.close()

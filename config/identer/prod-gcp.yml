@@ -1,0 +1,15 @@
+kafkaPool: nav-dev
+mountPaths:
+  - mountPath: /var/run/secrets/nais.io/service_user
+    kvPath: /serviceuser/data/prod/srvsparkelidenter
+env:
+  - name: STS_BASE_URL
+    value: http://security-token-service.default.svc.nais.local
+  - name: KAFKA_BOOTSTRAP_SERVERS
+    value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443,SASL_SSL://a01apvl00150.adeo.no:8443
+envFrom:
+  - gcp-srvsparkelidenter-credentials
+gcp:
+  type: POSTGRES_14
+  name: sparkelidenter
+  envVarPrefix: DATABASE
