@@ -1,4 +1,4 @@
-kafkaPool: nav-dev
+kafkaPool: nav-prod
 env:
   - name: STS_BASE_URL
     value: http://security-token-service.default.svc.nais.local
