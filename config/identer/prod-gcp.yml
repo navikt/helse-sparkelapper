@@ -10,5 +10,3 @@ gcp:
   type: POSTGRES_14
   name: sparkelidenter
   envVarPrefix: DATABASE
-secureLogs:
-  enabled: true

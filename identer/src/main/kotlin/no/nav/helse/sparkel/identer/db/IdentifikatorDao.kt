@@ -18,6 +18,8 @@ class IdentifikatorDao(
 
     fun lagreAktør(aktorV2: AktørV2) = sessionOf(dataSource).use { session ->
 
+        // Vi kan spørre på idnummer uten å ta hensyn til type ettersom DNR/FNR er 11 siffer mens aktørid er 13, slik
+        // at de vil aldri matche mot hverandre.
         val idnumre =
             aktorV2.identifikatorer.map { it.idnummer }.joinToString(separator = "','", prefix = "'", postfix = "'")
 
