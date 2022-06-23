@@ -23,6 +23,7 @@ internal class AktørConsumer(
                 val records = kafkaConsumer.poll(Duration.ofMillis(100))
                 records.forEach {
                     val key = String(it.key())
+                    sikkerlogg.info("Mottok melding, key=$key, unicodes=${it.key().map { String.format("u+%04x", Char(it.toInt()).code) }.joinToString("|")}")
                     it.value()?.also { genericRecord ->
                         val aktørV2 = parseAktørMessage(genericRecord, key)
                         aktørV2.gjeldendeFolkeregisterident()?.also {
