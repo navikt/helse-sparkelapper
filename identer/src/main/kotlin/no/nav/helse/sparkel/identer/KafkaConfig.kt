@@ -1,7 +1,5 @@
 package no.nav.helse.sparkel.identer
 
-import java.nio.file.Files
-import java.nio.file.Paths
 import java.util.Properties
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.CommonClientConfigs
