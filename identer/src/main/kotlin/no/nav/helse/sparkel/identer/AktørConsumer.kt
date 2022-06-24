@@ -31,9 +31,9 @@ internal class AktørConsumer(
                     } ?: sikkerlogg.info("Value var null på melding med key=$key, ignorerer melding.")
                 }
             }
-        } catch (e: Exception) {
-            log.error("Feilet under konsumering av aktørhendelse", e)
-            throw e
+        } catch (exception: Exception) {
+            log.error("Feilet under konsumering av aktørhendelse", exception)
+            throw exception
         } finally {
             close()
             rapidConnection.stop()

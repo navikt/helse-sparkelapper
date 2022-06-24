@@ -5,7 +5,7 @@ env:
   - name: KAFKA_BOOTSTRAP_SERVERS
     value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
 envFrom:
-  - gcp-srvsparkelidenter-credentials
+  - gcp-sparkelidenter-credentials
 gcp:
   type: POSTGRES_14
   name: sparkelidenter
