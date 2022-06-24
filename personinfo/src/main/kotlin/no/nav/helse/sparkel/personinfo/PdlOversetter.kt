@@ -97,7 +97,7 @@ internal object PdlOversetter {
         )
     }
 
-    private fun håndterErrors(pdlReply: JsonNode) {
+    internal fun håndterErrors(pdlReply: JsonNode) {
         if (pdlReply["errors"] != null && pdlReply["errors"].isArray && !pdlReply["errors"].isEmpty) {
             val errors = pdlReply["errors"].map { it["message"]?.textValue() ?: "no message" }
             throw RuntimeException(errors.joinToString())
