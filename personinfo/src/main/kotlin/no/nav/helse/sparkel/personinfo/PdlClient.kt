@@ -10,7 +10,7 @@ import java.net.http.HttpResponse
 internal class PdlClient(
     private val baseUrl: String,
     private val stsClient: StsRestClient
-) {
+): HentPersoninfoV3PDLClient {
 
     companion object {
         private val objectMapper = ObjectMapper()
@@ -19,6 +19,7 @@ internal class PdlClient(
         private val personinfoQuery = this::class.java.getResource("/pdl/hentPersoninfo.graphql").readText().replace(Regex("[\n\r]"), "")
         private val hentIdenterQuery = this::class.java.getResource("/pdl/hentIdenter.graphql").readText().replace(Regex("[\n\r]"), "")
         private val hentVergemålQuery = this::class.java.getResource("/pdl/hentVergemål.graphql").readText().replace(Regex("[\n\r]"), "")
+        private val personinfoQueryV3 = this::class.java.getResource("/pdl/HentPersoninfoV3.graphql").readText().replace(Regex("[\n\r]"), "")
     }
 
     private fun request(
@@ -68,4 +69,6 @@ internal class PdlClient(
         ident: String,
         callId: String
     ) = request(ident, callId, hentVergemålQuery)
+
+    override fun hentPersoninfoV3(ident: String, callId: String) = request(ident, callId, personinfoQueryV3)
 }

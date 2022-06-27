@@ -46,6 +46,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         })
         Dødsinfoløser(this, personinfoService)
         HentPersoninfoV2Løser(this, personinfoService)
+        HentPersoninfoV3Løser(this, pdlClient)
         HentIdenterLøser(this, pdlClient)
         Vergemålløser(this, personinfoService)
     }
