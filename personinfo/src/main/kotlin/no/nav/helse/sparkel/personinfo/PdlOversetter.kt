@@ -1,7 +1,7 @@
 package no.nav.helse.sparkel.personinfo
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Adressebeskyttelse.Companion.somAdressebeskyttelse
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Kjønn.Companion.somKjønn
@@ -16,36 +16,39 @@ import no.nav.helse.sparkel.personinfo.Vergemålløser.VergemålType
 import org.slf4j.LoggerFactory
 
 internal object PdlOversetter {
+    private val objectMapper = jacksonObjectMapper()
     private val log = LoggerFactory.getLogger("pdl-oversetter")
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
+    internal fun fiskUtDødsdato(pdlReply: JsonNode) = pdlReply["data"]["hentPerson"].let { hentPerson ->
+        hentPerson["doedsfall"]?.let { dødsfall ->
+            when (dødsfall.size()) {
+                0 -> null
+                1 -> dødsfall[0]["doedsdato"].asText()
+                else -> håndterFlereMastere(dødsfall)
+            }
+        }
+    }
 
     fun oversettDødsdato(pdlReply: JsonNode): JsonNode {
         håndterErrors(pdlReply)
-
-        val dødsfall = pdlReply["data"]["hentPerson"].let { hentPerson ->
-            hentPerson["doedsfall"]?.let { dødsfall ->
-                when (dødsfall.size()) {
-                    0 -> null
-                    1 -> dødsfall[0]["doedsdato"].asText()
-                    else -> håndterFlereMastere(dødsfall)
-                }
-            }
-        }
-        return ObjectMapper().createObjectNode().put("dødsdato", dødsfall)
+        return objectMapper.createObjectNode().put("dødsdato", fiskUtDødsdato(pdlReply))
     }
+
+    internal fun fiskUtKjønn(pdlReply: JsonNode) = pdlReply["data"]["hentPerson"]["kjoenn"].first()["kjoenn"].somKjønn().name
+    internal fun fiskUtAdressebeskyttelse(pdlReply: JsonNode) = pdlReply["data"]["hentPerson"]["adressebeskyttelse"].firstOrNull().somAdressebeskyttelse().name
 
     fun oversettPersoninfo(ident: String, pdlReply: JsonNode): JsonNode {
         håndterErrors(pdlReply)
         val pdlPerson = pdlReply["data"]["hentPerson"]
-        return ObjectMapper().createObjectNode()
+        return objectMapper.createObjectNode()
             .put("ident", ident)
             .put("fornavn", pdlPerson["navn"].first()["fornavn"].asText())
             .put("mellomnavn", pdlPerson["navn"].first()["mellomnavn"]?.textValue())
             .put("etternavn", pdlPerson["navn"].first()["etternavn"].asText())
             .put("fødselsdato", pdlPerson["foedsel"].first()["foedselsdato"].asText())
-            .put("kjønn", pdlPerson["kjoenn"].first()["kjoenn"].somKjønn().name)
-            .put("adressebeskyttelse", pdlPerson["adressebeskyttelse"].firstOrNull().somAdressebeskyttelse().name)
+            .put("kjønn", fiskUtKjønn(pdlReply))
+            .put("adressebeskyttelse", fiskUtAdressebeskyttelse(pdlReply))
     }
 
     fun oversetterIdenter(pdlReply: JsonNode): IdenterResultat {

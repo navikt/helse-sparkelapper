@@ -7,7 +7,6 @@ import org.junit.jupiter.api.assertThrows
 import org.skyscreamer.jsonassert.JSONAssert
 
 internal class PdlReplyOversetterTest {
-    private val objectMapper = jacksonObjectMapper()
 
     @Test
     fun `response fra pdl inneholder alle etterspurte attributter`() {
@@ -83,150 +82,199 @@ internal class PdlReplyOversetterTest {
     }
 
     @Test
+    fun `navn på person med mellomnavn`() {
+        val løsning = PdlReplyOversetter.oversett(navn("mellomnavnsen"), setOf(Attributt.navn))
+        @Language("JSON")
+        val forventet = """
+            {
+              "fornavn": "LITEN",
+              "mellomnavn": "mellomnavnsen",
+              "etternavn": "TRANFLASKE"
+            }
+        """
+        JSONAssert.assertEquals(forventet, "$løsning", true)
+    }
+
+    @Test
+    fun `navn på person uten mellomnavn`() {
+        val løsning = PdlReplyOversetter.oversett(navn(null), setOf(Attributt.navn))
+        @Language("JSON")
+        val forventet = """
+            {
+              "fornavn": "LITEN",
+              "mellomnavn": null,
+              "etternavn": "TRANFLASKE"
+            }
+        """
+        JSONAssert.assertEquals(forventet, "$løsning", true)
+    }
+
+    @Test
     fun `error response fra pdl`() {
         assertThrows<RuntimeException> { PdlReplyOversetter.oversett(error, setOf(Attributt.folkeregisterident, Attributt.fødselsdato, Attributt.aktørId)) }
     }
 
-    @Language("JSON")
-    private val komplettSvar = """
-    {
-      "data": {
-        "hentIdenter": {
-          "identer": [
-            {
-              "ident": "12345678901",
-              "gruppe": "FOLKEREGISTERIDENT",
-              "historisk": false
-            },
-            {
-              "ident": "1234567890123",
-              "gruppe": "AKTORID",
-              "historisk": false
-            }
-          ]
-        },
-        "hentPerson": {
-          "foedsel": [
-            {
-              "foedselsdato": "1980-04-09"
-            }
-          ]
-        }
-      }
-    }
-    """.let { objectMapper.readTree(it) }
+    internal companion object {
+        private val objectMapper = jacksonObjectMapper()
 
-    @Language("JSON")
-    private val manglerFødselsdato = """
-    {
-      "data": {
-        "hentIdenter": {
-          "identer": [
-            {
-              "ident": "12345678901",
-              "gruppe": "FOLKEREGISTERIDENT",
-              "historisk": false
+        @Language("JSON")
+        internal val komplettSvar = """
+        {
+          "data": {
+            "hentIdenter": {
+              "identer": [
+                {
+                  "ident": "12345678901",
+                  "gruppe": "FOLKEREGISTERIDENT",
+                  "historisk": false
+                },
+                {
+                  "ident": "1234567890123",
+                  "gruppe": "AKTORID",
+                  "historisk": false
+                }
+              ]
             },
-            {
-              "ident": "1234567890123",
-              "gruppe": "AKTORID",
-              "historisk": false
+            "hentPerson": {
+              "foedsel": [
+                {
+                  "foedselsdato": "1980-04-09"
+                }
+              ]
             }
-          ]
+          }
         }
-      }
-    }
-    """.let { objectMapper.readTree(it) }
+        """.let { objectMapper.readTree(it) }
 
-    @Language("JSON")
-    private val manglerAktørId = """
-    {
-      "data": {
-        "hentIdenter": {
-          "identer": [
-            {
-              "ident": "12345678901",
-              "gruppe": "FOLKEREGISTERIDENT",
-              "historisk": false
+        @Language("JSON")
+        private val manglerFødselsdato = """
+        {
+          "data": {
+            "hentIdenter": {
+              "identer": [
+                {
+                  "ident": "12345678901",
+                  "gruppe": "FOLKEREGISTERIDENT",
+                  "historisk": false
+                },
+                {
+                  "ident": "1234567890123",
+                  "gruppe": "AKTORID",
+                  "historisk": false
+                }
+              ]
             }
-          ]
-        },
-        "hentPerson": {
-          "foedsel": [
-            {
-              "foedselsdato": "1980-04-09"
-            }
-          ]
+          }
         }
-      }
-    }
-    """.let { objectMapper.readTree(it) }
+        """.let { objectMapper.readTree(it) }
 
-    @Language("JSON")
-    private val manglerFolkeregisterident = """
-    {
-      "data": {
-        "hentIdenter": {
-          "identer": [
-            {
-              "ident": "1234567890123",
-              "gruppe": "AKTORID",
-              "historisk": false
+        @Language("JSON")
+        private val manglerAktørId = """
+        {
+          "data": {
+            "hentIdenter": {
+              "identer": [
+                {
+                  "ident": "12345678901",
+                  "gruppe": "FOLKEREGISTERIDENT",
+                  "historisk": false
+                }
+              ]
+            },
+            "hentPerson": {
+              "foedsel": [
+                {
+                  "foedselsdato": "1980-04-09"
+                }
+              ]
             }
-          ]
-        },
-        "hentPerson": {
-          "foedsel": [
-            {
-              "foedselsdato": "1980-04-09"
-            }
-          ]
+          }
         }
-      }
-    }
-    """.let { objectMapper.readTree(it) }
+        """.let { objectMapper.readTree(it) }
 
-    @Language("JSON")
-    private val historiskeIdenter = """
-    {
-      "data": {
-        "hentIdenter": {
-          "identer": [
-            {
-              "ident": "12345678901",
-              "gruppe": "FOLKEREGISTERIDENT",
-              "historisk": true
+        @Language("JSON")
+        private val manglerFolkeregisterident = """
+        {
+          "data": {
+            "hentIdenter": {
+              "identer": [
+                {
+                  "ident": "1234567890123",
+                  "gruppe": "AKTORID",
+                  "historisk": false
+                }
+              ]
             },
-                        {
-              "ident": "22345678901",
-              "gruppe": "FOLKEREGISTERIDENT",
-              "historisk": true
-            },
-            {
-              "ident": "1234567890123",
-              "gruppe": "AKTORID",
-              "historisk": true
-            },
-            {
-              "ident": "32345678901",
-              "gruppe": "FOLKEREGISTERIDENT",
-              "historisk": false
-            },
-            {
-              "ident": "2234567890123",
-              "gruppe": "AKTORID",
-              "historisk": false
+            "hentPerson": {
+              "foedsel": [
+                {
+                  "foedselsdato": "1980-04-09"
+                }
+              ]
             }
-          ]
+          }
         }
-      }
-    }
-    """.let { objectMapper.readTree(it) }
+        """.let { objectMapper.readTree(it) }
 
-    @Language("JSON")
-    private val error = """
-    {
-      "errors": ["noe er gæli"]
+        @Language("JSON")
+        private val historiskeIdenter = """
+        {
+          "data": {
+            "hentIdenter": {
+              "identer": [
+                {
+                  "ident": "12345678901",
+                  "gruppe": "FOLKEREGISTERIDENT",
+                  "historisk": true
+                },
+                            {
+                  "ident": "22345678901",
+                  "gruppe": "FOLKEREGISTERIDENT",
+                  "historisk": true
+                },
+                {
+                  "ident": "1234567890123",
+                  "gruppe": "AKTORID",
+                  "historisk": true
+                },
+                {
+                  "ident": "32345678901",
+                  "gruppe": "FOLKEREGISTERIDENT",
+                  "historisk": false
+                },
+                {
+                  "ident": "2234567890123",
+                  "gruppe": "AKTORID",
+                  "historisk": false
+                }
+              ]
+            }
+          }
+        }
+        """.let { objectMapper.readTree(it) }
+
+        @Language("JSON")
+        private fun navn(mellomnavn: String?) = """
+        {
+          "data": {
+            "hentPerson": {
+              "navn": [
+                {
+                  "fornavn": "LITEN",
+                  "mellomnavn": ${mellomnavn?.let { "\"$it\""}}, 
+                  "etternavn": "TRANFLASKE"
+                }
+              ]
+            }
+          }
+        }
+        """.let { objectMapper.readTree(it) }
+
+        @Language("JSON")
+        private val error = """
+        {
+          "errors": ["noe er gæli"]
+        }
+        """.let { objectMapper.readTree(it) }
     }
-    """.let { objectMapper.readTree(it) }
 }
