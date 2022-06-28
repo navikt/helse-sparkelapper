@@ -15,7 +15,7 @@ internal class HentPersoninfoV3LøserTest {
     @Test
     fun `henter aktørid og fødselsdato`() {
         val pdl = object : HentPersoninfoV3PDLClient {
-            override fun hentPersoninfoV3(ident: String, callId: String) = komplettSvar
+            override fun hent(ident: String, callId: String, attributter: Set<Attributt>) = komplettSvar
         }
         HentPersoninfoV3Løser(rapid, pdl)
         rapid.sendTestMessage(behov)

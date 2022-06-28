@@ -8,5 +8,9 @@ internal enum class Attributt {
     navn,
     adressebeskyttelse,
     kjønn,
-    dødsdato
+    dødsdato;
+
+    internal companion object {
+        internal fun fromString(name: String) = values().firstOrNull { it.name == name }
+    }
 }

@@ -11,7 +11,7 @@ internal class PdlReplyOversetterTest {
 
     @Test
     fun `response fra pdl inneholder alle etterspurte attributter`() {
-        val løsning = PdlReplyOversetter.oversett(komplettSvar, setOf("aktørId", "folkeregisterident", "fødselsdato"))
+        val løsning = PdlReplyOversetter.oversett(komplettSvar, setOf(Attributt.aktørId, Attributt.fødselsdato, Attributt.folkeregisterident))
         @Language("JSON")
         val forventet = """
             {
@@ -25,8 +25,8 @@ internal class PdlReplyOversetterTest {
 
     @Test
     fun `response fra pdl som mangler fødselsdato`() {
-        assertThrows<IllegalStateException> { PdlReplyOversetter.oversett(manglerFødselsdato, setOf("fødselsdato")) }
-        val løsning = PdlReplyOversetter.oversett(manglerFødselsdato, setOf("aktørId", "folkeregisterident"))
+        assertThrows<IllegalStateException> { PdlReplyOversetter.oversett(manglerFødselsdato, setOf(Attributt.fødselsdato)) }
+        val løsning = PdlReplyOversetter.oversett(manglerFødselsdato, setOf(Attributt.aktørId, Attributt.folkeregisterident))
         @Language("JSON")
         val forventet = """
             {
@@ -39,8 +39,8 @@ internal class PdlReplyOversetterTest {
 
     @Test
     fun `response fra pdl som mangler aktørId`() {
-        assertThrows<IllegalStateException> { PdlReplyOversetter.oversett(manglerAktørId, setOf("aktørId")) }
-        val løsning = PdlReplyOversetter.oversett(manglerAktørId, setOf("fødselsdato", "folkeregisterident"))
+        assertThrows<IllegalStateException> { PdlReplyOversetter.oversett(manglerAktørId, setOf(Attributt.aktørId)) }
+        val løsning = PdlReplyOversetter.oversett(manglerAktørId, setOf(Attributt.fødselsdato, Attributt.folkeregisterident))
         @Language("JSON")
         val forventet = """
             {
@@ -53,8 +53,8 @@ internal class PdlReplyOversetterTest {
 
     @Test
     fun `response fra pdl som mangler folkeregisterident`() {
-        assertThrows<IllegalStateException> { PdlReplyOversetter.oversett(manglerFolkeregisterident, setOf("folkeregisterident")) }
-        val løsning = PdlReplyOversetter.oversett(manglerFolkeregisterident, setOf("fødselsdato", "aktørId"))
+        assertThrows<IllegalStateException> { PdlReplyOversetter.oversett(manglerFolkeregisterident, setOf(Attributt.folkeregisterident)) }
+        val løsning = PdlReplyOversetter.oversett(manglerFolkeregisterident, setOf(Attributt.fødselsdato, Attributt.aktørId))
         @Language("JSON")
         val forventet = """
             {
@@ -67,7 +67,7 @@ internal class PdlReplyOversetterTest {
 
     @Test
     fun `error response fra pdl`() {
-        assertThrows<RuntimeException> { PdlReplyOversetter.oversett(error, setOf("folkeregisterident", "aktørId", "fødsesldato")) }
+        assertThrows<RuntimeException> { PdlReplyOversetter.oversett(error, setOf(Attributt.folkeregisterident, Attributt.fødselsdato, Attributt.aktørId)) }
     }
 
     @Language("JSON")

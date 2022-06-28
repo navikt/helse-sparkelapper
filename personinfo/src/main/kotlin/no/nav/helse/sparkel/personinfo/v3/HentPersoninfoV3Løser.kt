@@ -6,16 +6,15 @@ import no.nav.helse.rapids_rivers.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-interface HentPersoninfoV3PDLClient {
-    fun hentPersoninfoV3(ident: String, callId: String): JsonNode
+internal interface HentPersoninfoV3PDLClient {
+    fun hent(ident: String, callId: String, attributter: Set<Attributt>): JsonNode
 }
 
 internal class HentPersoninfoV3Løser(
     rapidsConnection: RapidsConnection,
     private val pdl: HentPersoninfoV3PDLClient
 ) : River.PacketListener {
-    private val log: Logger = LoggerFactory.getLogger(this::class.java)
-    private val sikkerLogg: Logger = LoggerFactory.getLogger("tjenestekall")
+
 
     init {
         River(rapidsConnection).apply {
@@ -38,11 +37,9 @@ internal class HentPersoninfoV3Løser(
 
             try {
                 val ident = packet["HentPersoninfoV3.ident"].asText()
-                val attributter = packet["HentPersoninfoV3.attributter"].map { node ->
-                    node.asText()
-                }
-                val personInfo = pdl.hentPersoninfoV3(ident = ident, callId = behovId)
-                val løsning = PdlReplyOversetter.oversett(personInfo, attributter.toSet())
+                val attributter = packet["HentPersoninfoV3.attributter"].somAttributter()
+                val pdlReply = pdl.hent(ident = ident, callId = behovId, attributter = attributter)
+                val løsning = PdlReplyOversetter.oversett(pdlReply, attributter)
 
                 packet["@løsning"] = mapOf("HentPersoninfoV3" to løsning)
                 sikkerLogg.info("Løsning for HentPersoninfoV3:\n${packet.toJson()}")
@@ -57,5 +54,11 @@ internal class HentPersoninfoV3Løser(
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
         sikkerLogg.error("Forstod ikke HentPersoninfoV3:\n${problems.toExtendedReport()}")
+    }
+
+    private companion object {
+        private val log: Logger = LoggerFactory.getLogger(HentPersoninfoV3Løser::class.java)
+        private val sikkerLogg: Logger = LoggerFactory.getLogger("tjenestekall")
+        private fun JsonNode.somAttributter() = mapNotNull { Attributt.fromString(it.asText()) }.toSet()
     }
 }

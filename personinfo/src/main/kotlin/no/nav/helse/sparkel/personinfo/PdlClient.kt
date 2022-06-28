@@ -6,7 +6,9 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import no.nav.helse.sparkel.personinfo.v3.Attributt
 import no.nav.helse.sparkel.personinfo.v3.HentPersoninfoV3PDLClient
+import no.nav.helse.sparkel.personinfo.v3.PdlQueryBuilder
 
 internal class PdlClient(
     private val baseUrl: String,
@@ -20,7 +22,6 @@ internal class PdlClient(
         private val personinfoQuery = this::class.java.getResource("/pdl/hentPersoninfo.graphql").readText().replace(Regex("[\n\r]"), "")
         private val hentIdenterQuery = this::class.java.getResource("/pdl/hentIdenter.graphql").readText().replace(Regex("[\n\r]"), "")
         private val hentVergemålQuery = this::class.java.getResource("/pdl/hentVergemål.graphql").readText().replace(Regex("[\n\r]"), "")
-        private val personinfoQueryV3 = this::class.java.getResource("/pdl/HentPersoninfoV3.graphql").readText().replace(Regex("[\n\r]"), "")
     }
 
     private fun request(
@@ -71,5 +72,6 @@ internal class PdlClient(
         callId: String
     ) = request(ident, callId, hentVergemålQuery)
 
-    override fun hentPersoninfoV3(ident: String, callId: String) = request(ident, callId, personinfoQueryV3)
+    override fun hent(ident: String, callId: String, attributter: Set<Attributt>) =
+        request(ident, callId, PdlQueryBuilder(attributter).build())
 }

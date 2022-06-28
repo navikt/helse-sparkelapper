@@ -10,12 +10,12 @@ internal object PdlReplyOversetter {
     private val objectMapper = jacksonObjectMapper()
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
-    internal fun oversett(pdlReply: JsonNode, attributter: Set<String>) =
+    internal fun oversett(pdlReply: JsonNode, attributter: Set<Attributt>) =
         objectMapper.createObjectNode().apply {
             håndterErrors(pdlReply)
-            if (attributter.contains("aktørId")) put("aktørId", pdlReply.ident("AKTORID"))
-            if (attributter.contains("folkeregisterident")) put("folkeregisterident", pdlReply.ident("FOLKEREGISTERIDENT"))
-            if (attributter.contains("fødselsdato")) put("fødselsdato", "${pdlReply.fødselsdato()}")
+            if (attributter.contains(Attributt.aktørId)) put("aktørId", pdlReply.ident("AKTORID"))
+            if (attributter.contains(Attributt.folkeregisterident)) put("folkeregisterident", pdlReply.ident("FOLKEREGISTERIDENT"))
+            if (attributter.contains(Attributt.fødselsdato)) put("fødselsdato", "${pdlReply.fødselsdato()}")
         }
 
     private fun JsonNode.ident(type: String) = path("data")
