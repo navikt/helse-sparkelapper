@@ -21,7 +21,7 @@ private fun loadBaseConfig(): Properties = Properties().also {
     it[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = System.getenv("NAV_TRUSTSTORE_PATH")
     it[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = System.getenv("NAV_TRUSTSTORE_PASSWORD")
     // consumer specifics:
-    it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
+    it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
     it[ConsumerConfig.GROUP_ID_CONFIG] = "sparkel-identer"
     it[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = ByteArrayDeserializer::class.java
     it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = AktørAvroDeserializer::class.java
