@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.personinfo
+package no.nav.helse.sparkel.personinfo.v3
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -6,7 +6,7 @@ import java.time.LocalDate
 import no.nav.helse.sparkel.personinfo.PdlOversetter.håndterErrors
 import org.slf4j.LoggerFactory
 
-internal object HentPersoninfoV3 {
+internal object PdlReplyOversetter {
     private val objectMapper = jacksonObjectMapper()
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 

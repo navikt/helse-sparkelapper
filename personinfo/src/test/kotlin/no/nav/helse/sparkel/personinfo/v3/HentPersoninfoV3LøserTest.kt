@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.personinfo
+package no.nav.helse.sparkel.personinfo.v3
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.util.UUID
@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 
 private val objectMapper = jacksonObjectMapper()
 
-class HentPersoninfoV3LøserTest {
+internal class HentPersoninfoV3LøserTest {
     private val rapid = TestRapid()
 
     @Test

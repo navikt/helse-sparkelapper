@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.personinfo
+package no.nav.helse.sparkel.personinfo.v3
 
 import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.runBlocking
@@ -42,7 +42,7 @@ internal class HentPersoninfoV3Løser(
                     node.asText()
                 }
                 val personInfo = pdl.hentPersoninfoV3(ident = ident, callId = behovId)
-                val løsning = HentPersoninfoV3.oversett(personInfo, attributter.toSet())
+                val løsning = PdlReplyOversetter.oversett(personInfo, attributter.toSet())
 
                 packet["@løsning"] = mapOf("HentPersoninfoV3" to løsning)
                 sikkerLogg.info("Løsning for HentPersoninfoV3:\n${packet.toJson()}")

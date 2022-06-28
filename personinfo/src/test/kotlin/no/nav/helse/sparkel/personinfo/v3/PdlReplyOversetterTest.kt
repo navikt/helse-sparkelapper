@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.personinfo
+package no.nav.helse.sparkel.personinfo.v3
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.intellij.lang.annotations.Language
@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.skyscreamer.jsonassert.JSONAssert
 
-internal class HentPersoninfoV3Test {
+internal class PdlReplyOversetterTest {
     private val objectMapper = jacksonObjectMapper()
 
     @Test
     fun `response fra pdl inneholder alle etterspurte attributter`() {
-        val løsning = HentPersoninfoV3.oversett(komplettSvar, setOf("aktørId", "folkeregisterident", "fødselsdato"))
+        val løsning = PdlReplyOversetter.oversett(komplettSvar, setOf("aktørId", "folkeregisterident", "fødselsdato"))
         @Language("JSON")
         val forventet = """
             {
@@ -25,8 +25,8 @@ internal class HentPersoninfoV3Test {
 
     @Test
     fun `response fra pdl som mangler fødselsdato`() {
-        assertThrows<IllegalStateException> { HentPersoninfoV3.oversett(manglerFødselsdato, setOf("fødselsdato")) }
-        val løsning = HentPersoninfoV3.oversett(manglerFødselsdato, setOf("aktørId", "folkeregisterident"))
+        assertThrows<IllegalStateException> { PdlReplyOversetter.oversett(manglerFødselsdato, setOf("fødselsdato")) }
+        val løsning = PdlReplyOversetter.oversett(manglerFødselsdato, setOf("aktørId", "folkeregisterident"))
         @Language("JSON")
         val forventet = """
             {
@@ -39,8 +39,8 @@ internal class HentPersoninfoV3Test {
 
     @Test
     fun `response fra pdl som mangler aktørId`() {
-        assertThrows<IllegalStateException> { HentPersoninfoV3.oversett(manglerAktørId, setOf("aktørId")) }
-        val løsning = HentPersoninfoV3.oversett(manglerAktørId, setOf("fødselsdato", "folkeregisterident"))
+        assertThrows<IllegalStateException> { PdlReplyOversetter.oversett(manglerAktørId, setOf("aktørId")) }
+        val løsning = PdlReplyOversetter.oversett(manglerAktørId, setOf("fødselsdato", "folkeregisterident"))
         @Language("JSON")
         val forventet = """
             {
@@ -53,8 +53,8 @@ internal class HentPersoninfoV3Test {
 
     @Test
     fun `response fra pdl som mangler folkeregisterident`() {
-        assertThrows<IllegalStateException> { HentPersoninfoV3.oversett(manglerFolkeregisterident, setOf("folkeregisterident")) }
-        val løsning = HentPersoninfoV3.oversett(manglerFolkeregisterident, setOf("fødselsdato", "aktørId"))
+        assertThrows<IllegalStateException> { PdlReplyOversetter.oversett(manglerFolkeregisterident, setOf("folkeregisterident")) }
+        val løsning = PdlReplyOversetter.oversett(manglerFolkeregisterident, setOf("fødselsdato", "aktørId"))
         @Language("JSON")
         val forventet = """
             {
@@ -67,7 +67,7 @@ internal class HentPersoninfoV3Test {
 
     @Test
     fun `error response fra pdl`() {
-        assertThrows<RuntimeException> { HentPersoninfoV3.oversett(error, setOf("folkeregisterident", "aktørId", "fødsesldato")) }
+        assertThrows<RuntimeException> { PdlReplyOversetter.oversett(error, setOf("folkeregisterident", "aktørId", "fødsesldato")) }
     }
 
     @Language("JSON")

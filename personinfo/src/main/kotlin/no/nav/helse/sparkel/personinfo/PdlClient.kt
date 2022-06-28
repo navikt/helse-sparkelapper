@@ -6,6 +6,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import no.nav.helse.sparkel.personinfo.v3.HentPersoninfoV3PDLClient
 
 internal class PdlClient(
     private val baseUrl: String,

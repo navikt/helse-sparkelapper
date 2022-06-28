@@ -7,6 +7,7 @@ import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseRiver
 import no.nav.helse.sparkel.personinfo.leesah.createConsumer
 import java.io.File
 import java.time.Duration
+import no.nav.helse.sparkel.personinfo.v3.HentPersoninfoV3Løser
 
 fun main() {
     val app = createApp(System.getenv())
