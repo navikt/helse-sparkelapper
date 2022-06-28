@@ -66,6 +66,23 @@ internal class PdlReplyOversetterTest {
     }
 
     @Test
+    fun `response fra pdl med historiske identer`() {
+        val løsning = PdlReplyOversetter.oversett(historiskeIdenter, setOf(Attributt.aktørId, Attributt.folkeregisterident, Attributt.historiskeFolkeregisteridenter))
+        @Language("JSON")
+        val forventet = """
+            {
+              "aktørId": "2234567890123",
+              "folkeregisterident": "32345678901",
+              "historiskeFolkeregisteridenter": [
+                "12345678901",
+                "22345678901"
+              ]
+            }
+        """
+        JSONAssert.assertEquals(forventet, "$løsning", true)
+    }
+
+    @Test
     fun `error response fra pdl`() {
         assertThrows<RuntimeException> { PdlReplyOversetter.oversett(error, setOf(Attributt.folkeregisterident, Attributt.fødselsdato, Attributt.aktørId)) }
     }
@@ -78,11 +95,13 @@ internal class PdlReplyOversetterTest {
           "identer": [
             {
               "ident": "12345678901",
-              "gruppe": "FOLKEREGISTERIDENT"
+              "gruppe": "FOLKEREGISTERIDENT",
+              "historisk": false
             },
             {
               "ident": "1234567890123",
-              "gruppe": "AKTORID"
+              "gruppe": "AKTORID",
+              "historisk": false
             }
           ]
         },
@@ -105,11 +124,13 @@ internal class PdlReplyOversetterTest {
           "identer": [
             {
               "ident": "12345678901",
-              "gruppe": "FOLKEREGISTERIDENT"
+              "gruppe": "FOLKEREGISTERIDENT",
+              "historisk": false
             },
             {
               "ident": "1234567890123",
-              "gruppe": "AKTORID"
+              "gruppe": "AKTORID",
+              "historisk": false
             }
           ]
         }
@@ -125,7 +146,8 @@ internal class PdlReplyOversetterTest {
           "identer": [
             {
               "ident": "12345678901",
-              "gruppe": "FOLKEREGISTERIDENT"
+              "gruppe": "FOLKEREGISTERIDENT",
+              "historisk": false
             }
           ]
         },
@@ -148,7 +170,8 @@ internal class PdlReplyOversetterTest {
           "identer": [
             {
               "ident": "1234567890123",
-              "gruppe": "AKTORID"
+              "gruppe": "AKTORID",
+              "historisk": false
             }
           ]
         },
@@ -156,6 +179,43 @@ internal class PdlReplyOversetterTest {
           "foedsel": [
             {
               "foedselsdato": "1980-04-09"
+            }
+          ]
+        }
+      }
+    }
+    """.let { objectMapper.readTree(it) }
+
+    @Language("JSON")
+    private val historiskeIdenter = """
+    {
+      "data": {
+        "hentIdenter": {
+          "identer": [
+            {
+              "ident": "12345678901",
+              "gruppe": "FOLKEREGISTERIDENT",
+              "historisk": true
+            },
+                        {
+              "ident": "22345678901",
+              "gruppe": "FOLKEREGISTERIDENT",
+              "historisk": true
+            },
+            {
+              "ident": "1234567890123",
+              "gruppe": "AKTORID",
+              "historisk": true
+            },
+            {
+              "ident": "32345678901",
+              "gruppe": "FOLKEREGISTERIDENT",
+              "historisk": false
+            },
+            {
+              "ident": "2234567890123",
+              "gruppe": "AKTORID",
+              "historisk": false
             }
           ]
         }
