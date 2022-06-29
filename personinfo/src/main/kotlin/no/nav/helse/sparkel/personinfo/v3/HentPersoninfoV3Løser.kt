@@ -30,20 +30,28 @@ internal class HentPersoninfoV3Løser(
         val behovId = packet["@behovId"].asText()
         val id = packet["@id"].asText()
         withMDC(mapOf(
-                "id" to id,
-                "behovId" to behovId
+            "id" to id,
+            "behovId" to behovId
         )) {
-            sikkerLogg.info("mottok HentPersoninfoV3-melding:\n${packet.toJson()}")
+            sikkerLogg.info("Mottok HentPersoninfoV3:\n${packet.toJson()}")
 
             try {
                 val ident = packet["HentPersoninfoV3.ident"].asText()
                 val attributter = packet["HentPersoninfoV3.attributter"].somAttributter()
-                val pdlReply = pdl.hent(ident = ident, callId = behovId, attributter = attributter)
+
+                val pdlReply = pdl.hent(
+                    ident = ident,
+                    callId = behovId,
+                    // 'folkeregisterident' må alltid hentes selv om det hverken er etterspurt eller mappes ut i 'løsning'.
+                    // Løsningen på kafka skal keyes på 'folkeregisterident' som ikke nødvendigvis == 'HentPersoninfoV3.ident'
+                    attributter = attributter.plus(Attributt.folkeregisterident)
+                )
+                val folkeregisterident = PdlReplyOversetter.fiskUtFolkeregisterident(pdlReply)
                 val løsning = PdlReplyOversetter.oversett(pdlReply, attributter)
 
                 packet["@løsning"] = mapOf("HentPersoninfoV3" to løsning)
                 sikkerLogg.info("Løsning for HentPersoninfoV3:\n${packet.toJson()}")
-                context.publish(packet.toJson())
+                context.publish(folkeregisterident, packet.toJson())
 
             } catch (e: Exception) {
                 sikkerLogg.warn("Feil under løsing av HentPersoninfoV3: ${e.message}", e)
