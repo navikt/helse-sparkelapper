@@ -27,7 +27,7 @@ private fun loadBaseConfig(): Properties = Properties().also {
     it[ConsumerConfig.GROUP_ID_CONFIG] = "sparkel-personinfo"
     it[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = ByteArrayDeserializer::class.java
     it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = PersonhendelseAvroDeserializer::class.java
-    it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "1"
+    it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "200"
 }
 
 fun createConsumer() = KafkaConsumer<ByteArray, GenericRecord>(loadBaseConfig())
