@@ -21,6 +21,7 @@ internal class AktørConsumer(
         try {
             while (konsumerer) {
                 val records = kafkaConsumer.poll(Duration.ofMillis(100))
+                log.info("Pollet og mottok ${records.count()} meldinger.")
                 records.forEach {
                     val key = String(it.key())
                     it.value()?.also { genericRecord ->
