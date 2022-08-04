@@ -89,4 +89,5 @@ spec:
         databases:
           - name: {{ gcp.name }}
             envVarPrefix: {{ gcp.envVarPrefix }}
+        tier: {{ gcp.tier }}
   {{/if}}
