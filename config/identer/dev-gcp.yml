@@ -10,4 +10,4 @@ gcp:
   type: POSTGRES_14
   name: sparkelidenter
   envVarPrefix: DATABASE
-  tier: db-custom-2-7680
+  tier: db-custom-1-3840
