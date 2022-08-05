@@ -27,7 +27,12 @@ internal class AktørConsumer(
                     it.value()?.also { genericRecord ->
                         val aktørV2 = parseAktørMessage(genericRecord, key)
                         aktørV2.gjeldendeFolkeregisterident()?.also {
-                            identifikatorDao.lagreAktør(aktørV2)
+                            try {
+                                identifikatorDao.lagreAktør(aktørV2)
+                            } catch (exception: Exception) {
+                                sikkerlogg.error("Feilet ved forsøk på å lagre aktør: $aktørV2", exception)
+                                throw exception
+                            }
                         } ?: sikkerlogg.info("Fant ikke FNR/DNR på melding med key=$key, ignorerer melding.")
                     } ?: sikkerlogg.info("Value var null på melding med key=$key, ignorerer melding.")
                 }
