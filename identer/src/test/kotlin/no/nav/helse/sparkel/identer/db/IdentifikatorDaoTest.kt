@@ -87,20 +87,25 @@ class IdentifikatorDaoTest : AbstractDatabaseTest() {
     @Test
     @Order(6)
     fun `lagring for eksisterende ident skal erstatte alle tidligere identer for tilhørende person`() {
+        val identMedAnnenPersonKey = Identifikator("666", Type.FOLKEREGISTERIDENT, true)
+        identifikatorDao.lagreAktør(AktørV2(identifikatorer = listOf(identMedAnnenPersonKey), key = "003"))
+
         // Gjør en sjekk på at noe allerede er lagret i tabellen.
-        // Dette vil være data på samme person som nye data skal lagres for, testen vil feile i senere steg om dette
+        // Dette vil inkludere data på samme person som nye data skal lagres for, testen vil feile i senere steg om dette
         // ikke er tilfelle.
-        assertEquals(3L, count())
+        assertEquals(4L, count())
         val nyIdentifikator = Identifikator("333", Type.FOLKEREGISTERIDENT, true)
 
-
+        // Her slås identer fra to ulike aktører som allerede er lagret sammen som identer tilhørende en ny aktør.
+        // Kan virke noe søkt, men testen er uvidet slik etter feil som oppsto i prod der dette forekom. Kan kanskje
+        // ha vært merge av aktørid?
         val nyeIdentifikatorer = identifikatorer.map {
             if (it.type == Type.FOLKEREGISTERIDENT) {
                 // Setter alle fnr/dnr som ikke gjeldende slik at det kun er en ident, den nye, som vil være den gjeldende.
                 // Mest for å gi testcaset et logisk innhold, kunne vært droppet.
                 it.copy(gjeldende = false)
             } else it
-        }.plus(nyIdentifikator)
+        }.plus(nyIdentifikator).plus(identMedAnnenPersonKey.copy(gjeldende = false))
 
         val aktørV2 = AktørV2(identifikatorer = nyeIdentifikatorer, key = "001")
         identifikatorDao.lagreAktør(aktørV2)
@@ -108,7 +113,7 @@ class IdentifikatorDaoTest : AbstractDatabaseTest() {
 
         val lagretAktør = identifikatorDao.hentIdenterForFødselsnummer("333")
         assertEquals("001", lagretAktør!!.key)
-        assertEquals(4, lagretAktør.identifikatorer.size)
+        assertEquals(5, lagretAktør.identifikatorer.size)
         assertTrue(lagretAktør.identifikatorer.containsAll(nyeIdentifikatorer))
     }
 

@@ -28,7 +28,7 @@ class IdentifikatorDao(
             "SELECT 1 FROM identifikator WHERE person_key = ?"
         @Language("PostgreSQL")
         val queryPersonKey =
-            "SELECT person_key FROM identifikator WHERE idnummer IN ($idnumre) LIMIT 1"
+            "SELECT DISTINCT person_key FROM identifikator WHERE idnummer IN ($idnumre)"
         @Language("PostgreSQL")
         val deleteSQL =
             "DELETE FROM identifikator WHERE person_key = ?"
@@ -40,9 +40,13 @@ class IdentifikatorDao(
             tx.run(
                 queryOf(queryPersonKey)
                     .map { it.string("person_key") }
-                    .asSingle
-            )?.also {
-                tx.run(queryOf(deleteSQL, it).asUpdate)
+                    .asList
+            ).takeIf {
+                it.isNotEmpty()
+            }?.also { personKeys ->
+                personKeys.forEach {
+                    tx.run(queryOf(deleteSQL, it).asUpdate)
+                }
             }
 
             tx.run(
