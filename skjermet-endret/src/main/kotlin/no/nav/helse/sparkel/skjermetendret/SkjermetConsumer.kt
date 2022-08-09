@@ -1,0 +1,43 @@
+package no.nav.helse.sparkel.skjermetendret
+
+import java.time.Duration
+import no.nav.helse.rapids_rivers.RapidsConnection
+import org.apache.avro.generic.GenericRecord
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.slf4j.LoggerFactory
+
+internal class SkjermetConsumer(
+    private val rapidConnection: RapidsConnection,
+    private val kafkaConsumer: KafkaConsumer<ByteArray, GenericRecord>
+) : AutoCloseable, Runnable {
+    private val log = LoggerFactory.getLogger(this::class.java)
+    private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+    private var konsumerer = true
+
+    override fun run() {
+        log.info("SkjermetConsumer starter opp")
+        try {
+            while (konsumerer) {
+                val records = kafkaConsumer.poll(Duration.ofMillis(100))
+                log.info("Pollet og mottok ${records.count()} meldinger.")
+                records.forEach {
+                    val fnr = String(it.key())
+                    val maskedFnr = fnr.first() + "#".repeat(9) + fnr.last()
+                    val skjermet = it.value().toString().toBoolean()
+
+                    sikkerlogg.info("Leste inn melding for skjermet-status for ${maskedFnr}: Skjermet=$skjermet")
+                }
+            }
+        } catch (exception: Exception) {
+            sikkerlogg.error("Feilet under konsumering av skjermethendelse", exception)
+            throw exception
+        } finally {
+            close()
+            rapidConnection.stop()
+        }
+    }
+
+    override fun close() {
+        konsumerer = false
+    }
+}
