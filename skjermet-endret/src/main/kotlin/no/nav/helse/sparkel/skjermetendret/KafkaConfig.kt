@@ -8,6 +8,8 @@ import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.security.auth.SecurityProtocol
 import org.apache.kafka.common.serialization.StringDeserializer
 
+val SKJERMET_TOPIC = "nom.skjermede-personer-status-v1"
+
 private fun loadBaseConfig(): Properties = Properties().also {
     it[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = System.getenv("KAFKA_BROKERS")
     it[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = SecurityProtocol.SSL.name
@@ -28,4 +30,6 @@ private fun loadBaseConfig(): Properties = Properties().also {
     it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
 }
 
-fun createConsumer() = KafkaConsumer<String, String>(loadBaseConfig())
+fun createConsumer() = KafkaConsumer<String, String>(loadBaseConfig()).also {
+    it.subscribe(listOf(SKJERMET_TOPIC))
+}
