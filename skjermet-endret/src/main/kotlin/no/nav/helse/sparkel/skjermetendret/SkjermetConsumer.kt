@@ -2,13 +2,12 @@ package no.nav.helse.sparkel.skjermetendret
 
 import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidsConnection
-import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 
 internal class SkjermetConsumer(
     private val rapidConnection: RapidsConnection,
-    private val kafkaConsumer: KafkaConsumer<ByteArray, GenericRecord>
+    private val kafkaConsumer: KafkaConsumer<String, String>
 ) : AutoCloseable, Runnable {
     private val log = LoggerFactory.getLogger(this::class.java)
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -21,9 +20,9 @@ internal class SkjermetConsumer(
                 val records = kafkaConsumer.poll(Duration.ofMillis(100))
                 log.info("Pollet og mottok ${records.count()} meldinger.")
                 records.forEach {
-                    val fnr = String(it.key())
+                    val fnr = it.key()
                     val maskedFnr = fnr.first() + "#".repeat(9) + fnr.last()
-                    val skjermet = it.value().toString().toBoolean()
+                    val skjermet = it.value().toBoolean()
 
                     sikkerlogg.info("Leste inn melding for skjermet-status for ${maskedFnr}: Skjermet=$skjermet")
                 }

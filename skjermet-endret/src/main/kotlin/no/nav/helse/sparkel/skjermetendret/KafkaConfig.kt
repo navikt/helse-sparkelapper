@@ -1,7 +1,6 @@
 package no.nav.helse.sparkel.skjermetendret
 
 import java.util.Properties
-import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -29,4 +28,4 @@ private fun loadBaseConfig(): Properties = Properties().also {
     it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
 }
 
-fun createConsumer() = KafkaConsumer<ByteArray, GenericRecord>(loadBaseConfig())
+fun createConsumer() = KafkaConsumer<String, String>(loadBaseConfig())
