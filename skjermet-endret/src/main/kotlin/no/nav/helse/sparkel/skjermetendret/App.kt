@@ -7,7 +7,8 @@ fun main() {
     val env = System.getenv()
     val kafkaConsumer = createConsumer()
     RapidApplication.create(env).apply {
-        val skjermetConsumer = SkjermetConsumer(this, kafkaConsumer)
+        val skjermetEndretPubliserer = SkjermetEndretPubliserer(this)
+        val skjermetConsumer = SkjermetConsumer(this, kafkaConsumer, skjermetEndretPubliserer)
         Thread(skjermetConsumer).start()
         this.register(object : RapidsConnection.StatusListener {
             override fun onShutdown(rapidsConnection: RapidsConnection) {

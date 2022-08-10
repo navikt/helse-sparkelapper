@@ -7,8 +7,9 @@ import org.slf4j.LoggerFactory
 
 internal class SkjermetConsumer(
     private val rapidConnection: RapidsConnection,
-    private val kafkaConsumer: KafkaConsumer<String, String>
-) : AutoCloseable, Runnable {
+    private val kafkaConsumer: KafkaConsumer<String, String>,
+    private val skjermetEndretPubliserer: SkjermetEndretPubliserer,
+    ) : AutoCloseable, Runnable {
     private val log = LoggerFactory.getLogger(this::class.java)
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     private var konsumerer = true
@@ -25,10 +26,11 @@ internal class SkjermetConsumer(
                     val skjermet = it.value().toBoolean()
 
                     sikkerlogg.info("Leste inn melding for skjermet-status for ${maskedFnr}: Skjermet=$skjermet")
+                    skjermetEndretPubliserer.publiserSkjermetEndring(fnr, skjermet)
                 }
             }
         } catch (exception: Exception) {
-            sikkerlogg.error("Feilet under konsumering av skjermethendelse", exception)
+            sikkerlogg.error("Feilet under håndtering av skjermethendelse", exception)
             throw exception
         } finally {
             close()
