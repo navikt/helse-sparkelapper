@@ -2,7 +2,12 @@ package no.nav.helse.sparkel.personinfo.v3
 
 import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.runBlocking
-import no.nav.helse.rapids_rivers.*
+import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
+import no.nav.helse.rapids_rivers.MessageProblems
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.withMDC
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -51,11 +56,7 @@ internal class HentPersoninfoV3Løser(
 
                 packet["@løsning"] = mapOf("HentPersoninfoV3" to løsning)
                 sikkerLogg.info("Løsning for HentPersoninfoV3:\n${packet.toJson()}")
-                if ("dev-fss" == System.getenv("NAIS_CLUSTER_NAME")) {
-                    log.warn("Sender ikke ut løsning på HentPersoninfoV3")
-                } else {
-                    context.publish(folkeregisterident, packet.toJson())
-                }
+                context.publish(folkeregisterident, packet.toJson())
             } catch (e: Exception) {
                 sikkerLogg.warn("Feil under løsing av HentPersoninfoV3: ${e.message}", e)
                 log.warn("Feil under løsing av HentPersoninfoV3: ${e.message}", e)
