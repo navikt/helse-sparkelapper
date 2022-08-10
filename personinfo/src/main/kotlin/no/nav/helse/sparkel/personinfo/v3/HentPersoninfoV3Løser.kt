@@ -51,8 +51,11 @@ internal class HentPersoninfoV3Løser(
 
                 packet["@løsning"] = mapOf("HentPersoninfoV3" to løsning)
                 sikkerLogg.info("Løsning for HentPersoninfoV3:\n${packet.toJson()}")
-                context.publish(folkeregisterident, packet.toJson())
-
+                if ("dev-fss" == System.getenv("NAIS_CLUSTER_NAME")) {
+                    log.warn("Sender ikke ut løsning på HentPersoninfoV3")
+                } else {
+                    context.publish(folkeregisterident, packet.toJson())
+                }
             } catch (e: Exception) {
                 sikkerLogg.warn("Feil under løsing av HentPersoninfoV3: ${e.message}", e)
                 log.warn("Feil under løsing av HentPersoninfoV3: ${e.message}", e)
