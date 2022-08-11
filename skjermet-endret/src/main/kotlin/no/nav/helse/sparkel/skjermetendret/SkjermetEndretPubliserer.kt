@@ -16,7 +16,7 @@ class SkjermetEndretPubliserer(
 
         val packet: JsonMessage = JsonMessage.newMessage(
             mapOf(
-                "@event_name" to "innhent_skjermetinfo",
+                "@event_name" to "endret_skjermetinfo",
                 "@id" to UUID.randomUUID(),
                 "@opprettet" to LocalDateTime.now(),
                 "fødselsnummer" to fnr,
