@@ -298,8 +298,7 @@ internal class AbakusClientTest {
                     .withRequestBody(matchingJsonPath("$.person.ident", equalTo(fnr)))
                     .withRequestBody(matchingJsonPath("$.periode.fom", equalTo("$fom")))
                     .withRequestBody(matchingJsonPath("$.periode.tom", equalTo("$tom")))
-                    .withRequestBody(matchingJsonPath("$.ytelser[0].kode", equalTo(ytelse)))
-                    .withRequestBody(matchingJsonPath("$.ytelser[0].kodeverk", equalTo("FAGSAK_YTELSE_TYPE")))
+                    .withRequestBody(matchingJsonPath("$.ytelser[0]", equalTo(ytelse)))
                     .willReturn(
                         WireMock.aResponse()
                             .withStatus(status)

@@ -74,10 +74,7 @@ internal class AbakusClient(
                 "fom": "$fom",
                 "tom": "$tom"
             },
-            "ytelser": [{
-                "kode": "$ytelse",
-                "kodeverk": "FAGSAK_YTELSE_TYPE"
-            }]
+            "ytelser": ["$ytelse"]
         }
         """
 
