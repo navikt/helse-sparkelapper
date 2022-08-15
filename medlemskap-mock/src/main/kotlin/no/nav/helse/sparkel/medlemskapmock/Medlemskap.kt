@@ -38,7 +38,7 @@ internal class Medlemskap(
             )
         )
         context.publish(packet.toJson()).also {
-            sikkerlogg.info("sender {} som {}", keyValue("id", packet["@id"].asText()), packet.toJson())
+            sikkerlogg.info("Sender hardkodet svar for behov {}:\n{}", keyValue("id", packet["@id"].asText()), packet.toJson())
         }
     }
 }
