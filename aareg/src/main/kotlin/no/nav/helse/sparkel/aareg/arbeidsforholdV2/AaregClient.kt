@@ -32,7 +32,12 @@ class AaregClient(
 
         sikkerlogg.info("AaregResponse status: " + response.status)
 
-        return objectMapper.readValue(response.bodyAsText())
+        val node = objectMapper.readTree(response.bodyAsText())
+        if (!node.isArray) {
+            sikkerlogg.info("respons var ikke forventet, returnerer tomt array:\n\t$node")
+            return objectMapper.createArrayNode()
+        }
+        return node as ArrayNode
     }
 }
 
