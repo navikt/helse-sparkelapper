@@ -18,6 +18,7 @@ import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretConsumer
 import no.nav.helse.sparkel.oppgaveendret.util.ServiceUser
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
+import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.common.TopicPartition
@@ -84,7 +85,6 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         this.register(object : RapidsConnection.StatusListener {
             override fun onShutdown(rapidsConnection: RapidsConnection) {
                 oppgaveEndretConsumer.close()
-                kafkaConsumerForSniffing.close()
             }
         })
     }
@@ -100,28 +100,35 @@ private fun lagSnifferConsumer(
 fun spolSniffernTilStart(consumer: KafkaConsumer<String, String>, topic: String) {
     val log = LoggerFactory.getLogger("sniffespoler")
     log.info("Initiating seek")
-    consumer.subscribe(listOf(topic), object : ConsumerRebalanceListener {
-        override fun onPartitionsRevoked(partitions: Collection<TopicPartition>) {}
-        override fun onPartitionsAssigned(partitions: Collection<TopicPartition>) {
-            log.info("partitions assigned")
-            val topicAndOffsets = consumer.committed(partitions.toSet())
-            for ((topicPartition, offset) in topicAndOffsets) {
-                log.info("Current offset for partition ${topicPartition.partition()} is $offset")
-            }
-
-            log.info("Partitions assigned: $partitions")
-            for (tp in partitions) {
-                val oam: OffsetAndMetadata? = consumer.committed(tp)
-                if (oam != null) {
-                    log.info("Current offset for ${oam.metadata()} is ${oam.offset()}")
-                } else {
-                    log.info("No committed offsets")
+    consumer.use { consumer ->
+        consumer.subscribe(listOf(topic), object : ConsumerRebalanceListener {
+            override fun onPartitionsRevoked(partitions: Collection<TopicPartition>) {}
+            override fun onPartitionsAssigned(partitions: Collection<TopicPartition>) {
+                log.info("partitions assigned")
+                val topicAndOffsets = consumer.committed(partitions.toSet())
+                for ((topicPartition, offset) in topicAndOffsets) {
+                    log.info("Current offset for partition ${topicPartition.partition()} is $offset")
                 }
+
+                log.info("Partitions assigned: $partitions")
+                for (tp in partitions) {
+                    val oam: OffsetAndMetadata? = consumer.committed(tp)
+                    if (oam != null) {
+                        log.info("Current offset for ${oam.metadata()} is ${oam.offset()}")
+                    } else {
+                        log.info("No committed offsets")
+                    }
+                }
+                consumer.seekToBeginning(partitions)
             }
-            consumer.seekToBeginning(partitions)
-        }
-    })
+        })
+    }
     consumer.poll(Duration.ofSeconds(1))
+    val records: ConsumerRecords<String, String> = consumer.poll(Duration.ofMillis(100L))
+    for (r in records) {
+        log.info("record from " + r.topic() + "-" + r.partition() + " at offset " + r.offset())
+    }
+
 }
 
 private fun getEnvVar(env: Map<String, String>, varName: String) =
