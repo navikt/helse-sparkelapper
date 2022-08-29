@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.io.File
 import java.time.Clock
+import java.time.Duration
 import java.util.Properties
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -120,6 +121,7 @@ fun spolSniffernTilStart(consumer: KafkaConsumer<String, String>, topic: String)
             consumer.seekToBeginning(partitions)
         }
     })
+    consumer.poll(Duration.ofSeconds(1))
 }
 
 private fun getEnvVar(env: Map<String, String>, varName: String) =
