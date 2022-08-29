@@ -122,7 +122,9 @@ fun spolSniffernTilStart(consumer: KafkaConsumer<String, String>, topic: String)
                 consumer.seekToBeginning(partitions)
             }
         })
-        val records: ConsumerRecords<String, String> = consumer.poll(Duration.ofMillis(100L))
+        log.info("starting poll")
+        val records: ConsumerRecords<String, String> = consumer.poll(Duration.ofSeconds(10L))
+        log.info("poll received ${records.count()} records")
         for (r in records) {
             log.info("record from " + r.topic() + "-" + r.partition() + " at offset " + r.offset())
         }
