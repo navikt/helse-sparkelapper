@@ -12,6 +12,7 @@ internal class OppgaveEndretSniffer(
 ) : AutoCloseable, Runnable {
     private var konsumerer = true
     private val logger = LoggerFactory.getLogger(this::class.java)
+    private val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
 
     override fun run() {
         logger.info("OppgaveEndretSniffer starter opp")
@@ -25,7 +26,14 @@ internal class OppgaveEndretSniffer(
                     val record = consumerRecord.value()
                     val oppgave: Oppgave = objectMapper.readValue(record)
                     if (oppgave.tema == "SYK") relevante++ else irrelevante++
-                    if (totalt % 10_000 == 0) logger.info("$totalt oppgaver behandlet til nå")
+                    if (totalt % 10_000 == 0) {
+                        logger.info("$totalt oppgaver behandlet til nå, nyeste $oppgave.")
+                        try {
+                            sikkerLogg.info("Opprettet-tidspunkt for nyeste record: ${objectMapper.readTree(record)["opprettetTidspunkt"]}")
+                        } catch (e: Exception) {
+                            sikkerLogg.info("Konvertering til JSON-node feilet, så her er strengen: $record")
+                        }
+                    }
                 }
             }
         } catch (exception: Exception) {

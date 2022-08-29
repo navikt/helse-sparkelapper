@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.io.File
 import java.time.Clock
-import java.time.Duration
 import java.util.Properties
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -15,15 +14,11 @@ import no.nav.helse.sparkel.oppgaveendret.kafka.KafkaConfig
 import no.nav.helse.sparkel.oppgaveendret.kafka.loadBaseConfig
 import no.nav.helse.sparkel.oppgaveendret.kafka.toConsumerConfig
 import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretConsumer
+import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretSniffer
 import no.nav.helse.sparkel.oppgaveendret.util.ServiceUser
 import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
-import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.clients.consumer.OffsetAndMetadata
-import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.slf4j.LoggerFactory
 
 
 fun main() {
@@ -62,9 +57,8 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     kafkaConsumerOppgaveEndret.subscribe(listOf(consumeTopic))
 
     val kafkaConsumerForSniffing = lagSnifferConsumer(properties)
+    kafkaConsumerForSniffing.subscribe(listOf(consumeTopic))
 
-    val log = LoggerFactory.getLogger("sniffespoler")
-    log.info("starter rapid-app")
     return RapidApplication.create(env).apply {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(this)
         val oppgaveEndretConsumer = OppgaveEndretConsumer(
@@ -75,16 +69,13 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
             Clock.systemDefaultZone(),
         )
         Thread(oppgaveEndretConsumer).start()
-        log.info("har startet vanlig consumer")
 
-        spolSniffernTilStart(kafkaConsumerForSniffing, consumeTopic)
-        log.info("har seeket")
-        //     snifferKafkaConsumer.subscribe(listOf(consumeTopic))
-//        val oppgaveEndretSniffer = OppgaveEndretSniffer(kafkaConsumerForSniffing, objectMapper)
-//        Thread(oppgaveEndretSniffer).start()
+        val oppgaveEndretSniffer = OppgaveEndretSniffer(kafkaConsumerForSniffing, objectMapper)
+        Thread(oppgaveEndretSniffer).start()
         this.register(object : RapidsConnection.StatusListener {
             override fun onShutdown(rapidsConnection: RapidsConnection) {
                 oppgaveEndretConsumer.close()
+                oppgaveEndretSniffer.close()
             }
         })
     }
@@ -96,40 +87,6 @@ private fun lagSnifferConsumer(
     properties.toConsumerConfig("oppgave-endret-sniffer", valueDeserializer = StringDeserializer::class).also {
         it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
     })
-
-fun spolSniffernTilStart(consumer: KafkaConsumer<String, String>, topic: String) {
-    val log = LoggerFactory.getLogger("sniffespoler")
-    log.info("Initiating seek")
-    consumer.use { consumer ->
-        consumer.subscribe(listOf(topic), object : ConsumerRebalanceListener {
-            override fun onPartitionsRevoked(partitions: Collection<TopicPartition>) {}
-            override fun onPartitionsAssigned(partitions: Collection<TopicPartition>) {
-                log.info("partitions assigned")
-                val topicAndOffsets = consumer.committed(partitions.toSet())
-                for ((topicPartition, offset) in topicAndOffsets) {
-                    log.info("Current offset for partition ${topicPartition.partition()} is $offset")
-                }
-
-                log.info("Partitions assigned: $partitions")
-                for (tp in partitions) {
-                    val oam: OffsetAndMetadata? = consumer.committed(tp)
-                    if (oam != null) {
-                        log.info("Current offset for ${oam.metadata()} is ${oam.offset()}")
-                    } else {
-                        log.info("No committed offsets")
-                    }
-                }
-                consumer.seekToBeginning(partitions)
-            }
-        })
-        log.info("starting poll")
-        val records: ConsumerRecords<String, String> = consumer.poll(Duration.ofSeconds(10L))
-        log.info("poll received ${records.count()} records")
-        for (r in records) {
-            log.info("record from " + r.topic() + "-" + r.partition() + " at offset " + r.offset())
-        }
-    }
-}
 
 private fun getEnvVar(env: Map<String, String>, varName: String) =
     env[varName] ?: throw RuntimeException("Missing required variable \"$varName\"")
