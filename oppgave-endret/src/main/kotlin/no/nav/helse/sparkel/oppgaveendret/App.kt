@@ -61,6 +61,8 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
 
     val kafkaConsumerForSniffing = lagSnifferConsumer(properties)
 
+    val log = LoggerFactory.getLogger("sniffespoler")
+    log.info("starter rapid-app")
     return RapidApplication.create(env).apply {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(this)
         val oppgaveEndretConsumer = OppgaveEndretConsumer(
@@ -71,7 +73,10 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
             Clock.systemDefaultZone(),
         )
         Thread(oppgaveEndretConsumer).start()
+        log.info("har startet vanlig consumer")
+
         spolSniffernTilStart(kafkaConsumerForSniffing, consumeTopic)
+        log.info("har seeket")
         //     snifferKafkaConsumer.subscribe(listOf(consumeTopic))
 //        val oppgaveEndretSniffer = OppgaveEndretSniffer(kafkaConsumerForSniffing, objectMapper)
 //        Thread(oppgaveEndretSniffer).start()
@@ -93,9 +98,11 @@ private fun lagSnifferConsumer(
 
 fun spolSniffernTilStart(consumer: KafkaConsumer<String, String>, topic: String) {
     val log = LoggerFactory.getLogger("sniffespoler")
+    log.info("Initiating seek")
     consumer.subscribe(listOf(topic), object : ConsumerRebalanceListener {
         override fun onPartitionsRevoked(partitions: Collection<TopicPartition>) {}
         override fun onPartitionsAssigned(partitions: Collection<TopicPartition>) {
+            log.info("partitions assigned")
             val topicAndOffsets = consumer.committed(partitions.toSet())
             for ((topicPartition, offset) in topicAndOffsets) {
                 log.info("Current offset for partition ${topicPartition.partition()} is $offset")
