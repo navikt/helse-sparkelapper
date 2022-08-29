@@ -122,13 +122,11 @@ fun spolSniffernTilStart(consumer: KafkaConsumer<String, String>, topic: String)
                 consumer.seekToBeginning(partitions)
             }
         })
+        val records: ConsumerRecords<String, String> = consumer.poll(Duration.ofMillis(100L))
+        for (r in records) {
+            log.info("record from " + r.topic() + "-" + r.partition() + " at offset " + r.offset())
+        }
     }
-    consumer.poll(Duration.ofSeconds(1))
-    val records: ConsumerRecords<String, String> = consumer.poll(Duration.ofMillis(100L))
-    for (r in records) {
-        log.info("record from " + r.topic() + "-" + r.partition() + " at offset " + r.offset())
-    }
-
 }
 
 private fun getEnvVar(env: Map<String, String>, varName: String) =
