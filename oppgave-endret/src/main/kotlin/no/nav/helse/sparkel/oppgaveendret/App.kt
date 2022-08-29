@@ -14,7 +14,6 @@ import no.nav.helse.sparkel.oppgaveendret.kafka.KafkaConfig
 import no.nav.helse.sparkel.oppgaveendret.kafka.loadBaseConfig
 import no.nav.helse.sparkel.oppgaveendret.kafka.toConsumerConfig
 import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretConsumer
-import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretSniffer
 import no.nav.helse.sparkel.oppgaveendret.util.ServiceUser
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
@@ -60,7 +59,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     val kafkaConsumerOppgaveEndret = KafkaConsumer<String, String>(consumerProperties)
     kafkaConsumerOppgaveEndret.subscribe(listOf(consumeTopic))
 
-    val kafkaConsumerForSniffing = lagSnifferConsumer(properties, consumeTopic)
+    val kafkaConsumerForSniffing = lagSnifferConsumer(properties)
 
     return RapidApplication.create(env).apply {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(this)
@@ -73,6 +72,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         )
         Thread(oppgaveEndretConsumer).start()
         spolSniffernTilStart(kafkaConsumerForSniffing, consumeTopic)
+        //     snifferKafkaConsumer.subscribe(listOf(consumeTopic))
 //        val oppgaveEndretSniffer = OppgaveEndretSniffer(kafkaConsumerForSniffing, objectMapper)
 //        Thread(oppgaveEndretSniffer).start()
         this.register(object : RapidsConnection.StatusListener {
@@ -85,16 +85,11 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
 }
 
 private fun lagSnifferConsumer(
-    properties: Properties,
-    consumeTopic: String
-): KafkaConsumer<String, String> {
-    val snifferKafkaConsumer = KafkaConsumer<String, String>(
-        properties.toConsumerConfig("oppgave-endret-sniffer", valueDeserializer = StringDeserializer::class).also {
-            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-        })
-    snifferKafkaConsumer.subscribe(listOf(consumeTopic))
-    return snifferKafkaConsumer
-}
+    properties: Properties
+) = KafkaConsumer<String, String>(
+    properties.toConsumerConfig("oppgave-endret-sniffer", valueDeserializer = StringDeserializer::class).also {
+        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+    })
 
 fun spolSniffernTilStart(consumer: KafkaConsumer<String, String>, topic: String) {
     val log = LoggerFactory.getLogger("sniffespoler")
