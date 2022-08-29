@@ -17,10 +17,13 @@ import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretConsumer
 import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretSniffer
 import no.nav.helse.sparkel.oppgaveendret.util.ServiceUser
 import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.LoggerFactory
+
 
 fun main() {
     val app = createApp(System.getenv())
@@ -69,7 +72,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
             Clock.systemDefaultZone(),
         )
         Thread(oppgaveEndretConsumer).start()
-        spolSnifferTilStart(kafkaConsumerForSniffing, consumeTopic)
+        spolSniffernTilStart(kafkaConsumerForSniffing, consumeTopic)
         val oppgaveEndretSniffer = OppgaveEndretSniffer(kafkaConsumerForSniffing, objectMapper)
         Thread(oppgaveEndretSniffer).start()
         this.register(object : RapidsConnection.StatusListener {
@@ -93,14 +96,30 @@ private fun lagSnifferConsumer(
     return snifferKafkaConsumer
 }
 
-private fun spolSnifferTilStart(consumer: KafkaConsumer<String, String>, topic: String) {
+fun spolSniffernTilStart(consumers: KafkaConsumer<String, String>, topic: String) {
     val log = LoggerFactory.getLogger("sniffespoler")
-    consumer.partitionsFor(topic)
-        .map { TopicPartition(topic, it.partition()) }
-        .let { consumer.seekToBeginning(it) }
-    consumer.commitSync()
-    log.info("Offsets er satt til begynnelsen for sniffeconsumer")
-    consumer.close()
+    consumers.use { consumer ->
+        consumer.subscribe(listOf(topic), object : ConsumerRebalanceListener {
+            override fun onPartitionsRevoked(partitions: Collection<TopicPartition>) {}
+            override fun onPartitionsAssigned(partitions: Collection<TopicPartition>) {
+                val topicAndOffsets = consumer.committed(partitions.toSet())
+                for ((topicPartition, offset) in topicAndOffsets) {
+                    log.info("Current offset for partition ${topicPartition.partition()} is $offset")
+                }
+
+                log.info("Partitions assigned: $partitions")
+                for (tp in partitions) {
+                    val oam: OffsetAndMetadata? = consumer.committed(tp)
+                    if (oam != null) {
+                        log.info("Current offset for ${oam.metadata()} is ${oam.offset()}")
+                    } else {
+                        log.info("No committed offsets")
+                    }
+                }
+                consumer.seekToBeginning(partitions)
+            }
+        })
+    }
 }
 
 private fun getEnvVar(env: Map<String, String>, varName: String) =
