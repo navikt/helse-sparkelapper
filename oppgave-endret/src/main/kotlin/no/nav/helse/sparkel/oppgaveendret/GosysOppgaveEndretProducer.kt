@@ -20,12 +20,11 @@ class GosysOppgaveEndretProducer(
     private var forrigeOppdatering = LocalDateTime.MIN
     private val throttleDuration = Duration.ofSeconds(30)
 
-    private val GOSYS = "FS22"
-
     fun onPacket(oppgave: Oppgave) {
-        if (oppgave.behandlesAvApplikasjon != GOSYS || oppgave.tema != "SYK") return
-        logger.info("Mottok endring på gosysoppgave på tema SYK oppgaven " + oppgave.id)
-        if (oppgave.ident == null) return
+        if (oppgave.ident == null) {
+            logger.info("Oppgave uten ident, {}" + keyValue("oppgaveId", oppgave.id))
+            return
+        }
         if (!oppgave.ident.folkeregisterident.isNullOrEmpty() && oppgave.ident.identType == IdentType.AKTOERID) {
             if (throttle(oppgave.ident.folkeregisterident)) return
             logger.info("Har folkeregisterident og aktorId på oppgaven " + oppgave.id)

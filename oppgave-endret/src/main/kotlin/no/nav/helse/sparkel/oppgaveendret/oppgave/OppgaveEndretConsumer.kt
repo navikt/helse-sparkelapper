@@ -35,8 +35,8 @@ internal class OppgaveEndretConsumer(
                 kafkaConsumer.poll(Duration.ofMillis(100)).forEach { consumerRecord ->
                     val record = consumerRecord.value()
                     val oppgave: Oppgave = objectMapper.readValue(record)
+                    if (oppgave.tema != "SYK") return
                     logger.info("Mottatt oppgave_endret med {}", keyValue("oppaveId", oppgave.id))
-
                     gosysOppgaveEndretProducer.onPacket(oppgave)
                 }
             }
