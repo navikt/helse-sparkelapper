@@ -18,7 +18,9 @@ import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretSniffer
 import no.nav.helse.sparkel.oppgaveendret.util.ServiceUser
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
+import org.slf4j.LoggerFactory
 
 fun main() {
     val app = createApp(System.getenv())
@@ -67,6 +69,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
             Clock.systemDefaultZone(),
         )
         Thread(oppgaveEndretConsumer).start()
+        spolSnifferTilStart(kafkaConsumerForSniffing, consumeTopic)
         val oppgaveEndretSniffer = OppgaveEndretSniffer(kafkaConsumerForSniffing, objectMapper)
         Thread(oppgaveEndretSniffer).start()
         this.register(object : RapidsConnection.StatusListener {
@@ -88,6 +91,16 @@ private fun lagSnifferConsumer(
         })
     snifferKafkaConsumer.subscribe(listOf(consumeTopic))
     return snifferKafkaConsumer
+}
+
+private fun spolSnifferTilStart(consumer: KafkaConsumer<String, String>, topic: String) {
+    val log = LoggerFactory.getLogger("sniffespoler")
+    consumer.partitionsFor(topic)
+        .map { TopicPartition(topic, it.partition()) }
+        .let { consumer.seekToBeginning(it) }
+    consumer.commitSync()
+    log.info("Offsets er satt til begynnelsen for sniffeconsumer")
+    consumer.close()
 }
 
 private fun getEnvVar(env: Map<String, String>, varName: String) =
