@@ -64,7 +64,6 @@ class OppgaveEndretConsumerTest {
     }
 
     @Test
-    @Disabled("Skal sjekke at seekToBeginning fungerer")
     fun `poller bare i gitt tidsrom`() {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapidApplication)
         val manipulerbarKlokke = MutableClock(fixedClock(time = 6, minutt = 14).instant())
