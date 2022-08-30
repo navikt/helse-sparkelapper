@@ -20,7 +20,7 @@ internal class AktørConsumer(
         log.info("AktørConsumer starter opp")
         try {
             while (konsumerer) {
-                val records = kafkaConsumer.poll(Duration.ofMillis(100))
+                val records = kafkaConsumer.poll(Duration.ofSeconds(10))
                 log.info("Pollet og mottok ${records.count()} meldinger.")
                 records.forEach {
                     val key = String(it.key())
