@@ -27,17 +27,19 @@ internal class OppgaveEndretConsumer(
         logger.info("OppgaveEndretConsumer starter opp")
         try {
             while (konsumerer) {
-                // sorry my dudes
-                if (!åpentVindu()) {
-                    Thread.sleep(Duration.of(5, ChronoUnit.MINUTES).toMillis())
-                    continue
-                }
+//                // sorry my dudes
+//                if (!åpentVindu()) {
+//                    Thread.sleep(Duration.of(5, ChronoUnit.MINUTES).toMillis())
+//                    continue
+//                }
                 kafkaConsumer.poll(Duration.ofMillis(100)).forEach { consumerRecord ->
                     val record = consumerRecord.value()
                     val oppgave: Oppgave = objectMapper.readValue(record)
                     if (oppgave.tema != "SYK") return
                     logger.info("Mottatt oppgave_endret med {}", keyValue("oppaveId", oppgave.id))
-                    gosysOppgaveEndretProducer.onPacket(oppgave)
+                    logger.info("offset for oppgave: ${consumerRecord.offset()}, timestamp for oppgave: ${consumerRecord.timestamp()} (${consumerRecord.timestampType()})")
+                    Thread.sleep(Duration.ofHours(3).toMillis())
+//                    gosysOppgaveEndretProducer.onPacket(oppgave)
                 }
             }
         } catch (exception: Exception) {

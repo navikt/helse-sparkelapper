@@ -14,8 +14,11 @@ import no.nav.helse.sparkel.oppgaveendret.kafka.loadBaseConfig
 import no.nav.helse.sparkel.oppgaveendret.kafka.toConsumerConfig
 import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretConsumer
 import no.nav.helse.sparkel.oppgaveendret.util.ServiceUser
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.StringDeserializer
+import org.slf4j.LoggerFactory
 
 
 fun main() {
@@ -51,7 +54,16 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     val consumeTopic = getEnvVar(env,"OPPGAVE_ENDRET_TOPIC")
 
     val kafkaConsumerOppgaveEndret = KafkaConsumer<String, String>(consumerProperties)
-    kafkaConsumerOppgaveEndret.subscribe(listOf(consumeTopic))
+    kafkaConsumerOppgaveEndret.subscribe(listOf(consumeTopic), object : ConsumerRebalanceListener {
+        override fun onPartitionsRevoked(partitions: MutableCollection<TopicPartition>) {}
+
+        override fun onPartitionsAssigned(partitions: MutableCollection<TopicPartition>) {
+            val log = LoggerFactory.getLogger("oppgave-endret-app")
+            log.info("Spoler til tidligste offset for $partitions")
+            kafkaConsumerOppgaveEndret.seekToBeginning(partitions)
+            log.info("Ferdig med å spole for $partitions")
+        }
+    })
 
     return RapidApplication.create(env).apply {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(this)

@@ -21,6 +21,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class OppgaveEndretConsumerTest {
@@ -63,6 +64,7 @@ class OppgaveEndretConsumerTest {
     }
 
     @Test
+    @Disabled("Skal sjekke at seekToBeginning fungerer")
     fun `poller bare i gitt tidsrom`() {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapidApplication)
         val manipulerbarKlokke = MutableClock(fixedClock(time = 6, minutt = 14).instant())
