@@ -32,12 +32,16 @@ internal class OppgaveEndretConsumer(
                     Thread.sleep(Duration.of(5, ChronoUnit.MINUTES).toMillis())
                     continue
                 }
-                kafkaConsumer.poll(Duration.ofMillis(100)).forEach { consumerRecord ->
+                kafkaConsumer.poll(Duration.ofMillis(100)).onEach { consumerRecord ->
                     val record = consumerRecord.value()
                     val oppgave: Oppgave = objectMapper.readValue(record)
                     if (oppgave.tema != "SYK") return
                     logger.info("Mottatt oppgave_endret med {}", keyValue("oppaveId", oppgave.id))
                     gosysOppgaveEndretProducer.onPacket(oppgave)
+                }.also {
+                    if (it.isEmpty) {
+                        vinduslukking = now()
+                    }
                 }
             }
         } catch (exception: Exception) {
@@ -48,6 +52,9 @@ internal class OppgaveEndretConsumer(
         }
     }
 
+    private val vindusåpning = LocalTime.of(6, 15)
+    private var vinduslukking = LocalTime.of(6, 45)
+
     /*
     Pga risiko for dobbeltutbetaling med Infotrygd sjekker vi bare endringer i Gosys-oppgaver etter at spleis har stått
     hele natten og oppfrisket historikk fra Infotrygd.
@@ -55,9 +62,11 @@ internal class OppgaveEndretConsumer(
     Gosys-oppgaver kan lukkes som et resultat av utbetaling i Infotrygd, og per i dag klarer ikke spleis/spesialist å
     fange opp disse utbetalingene raskt nok. Når det er på plass kan dette vinduet fjernes.
      */
-    private fun åpentVindu() = clock.instant().atZone(ZoneId.systemDefault()).toLocalTime().let { now ->
-        now.isAfter(LocalTime.of(6, 15)) && now.isBefore(LocalTime.of(6, 45))
+    internal fun åpentVindu() = now().let {
+        vindusåpning < it && it < vinduslukking
     }
+
+    private fun now() = clock.instant().atZone(ZoneId.systemDefault()).toLocalTime()
 
     override fun close() {
         konsumerer = false

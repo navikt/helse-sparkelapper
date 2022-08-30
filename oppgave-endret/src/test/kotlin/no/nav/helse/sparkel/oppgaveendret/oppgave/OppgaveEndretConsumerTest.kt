@@ -21,7 +21,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class OppgaveEndretConsumerTest {
@@ -31,20 +32,34 @@ class OppgaveEndretConsumerTest {
     @Test
     fun `happy case`() {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapidApplication)
+        val manipulerbarKlokke = MutableClock(fixedClock(time = 6, minutt = 15).instant())
         val oppgaveEndretConsumer =
             OppgaveEndretConsumer(
                 rapidApplication,
                 kafkaConsumer,
                 gosysOppgaveEndretProducer,
                 objectMapper,
-                fixedClock(time = 6, minutt = 15),
+                manipulerbarKlokke,
             )
+
+        assertTrue(oppgaveEndretConsumer.åpentVindu())
+
         queueMessages(
             oppgaveEndretConsumer,
             listOf(null, null)
         )
-        oppgaveEndretConsumer.run()
-        verify(exactly = 1) { rapidApplication.stop() }
+
+        // Vent til consumeren vår har sjekka klokka
+        while (manipulerbarKlokke.count == 0) { Thread.sleep(100)}
+
+        val scope = CoroutineScope(Dispatchers.Default)
+        scope.launch {
+            oppgaveEndretConsumer.run()
+        }
+
+        // Vent til alle records er behandlet
+        while (manipulerbarKlokke.count < 2) { Thread.sleep(100)}
+        assertFalse(oppgaveEndretConsumer.åpentVindu())
     }
 
     @Test
