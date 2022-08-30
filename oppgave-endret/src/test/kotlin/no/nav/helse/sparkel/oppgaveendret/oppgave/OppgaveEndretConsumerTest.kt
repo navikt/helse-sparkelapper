@@ -36,7 +36,7 @@ class OppgaveEndretConsumerTest {
                 kafkaConsumer,
                 gosysOppgaveEndretProducer,
                 objectMapper,
-                fixedClock(time = 8, minutt = 15),
+                fixedClock(time = 6, minutt = 15),
             )
         queueMessages(
             oppgaveEndretConsumer,
@@ -55,7 +55,7 @@ class OppgaveEndretConsumerTest {
                 kafkaConsumer,
                 gosysOppgaveEndretProducer,
                 objectMapper,
-                fixedClock(time = 8, minutt = 15),
+                fixedClock(time = 6, minutt = 15),
             )
         every { kafkaConsumer.poll(any<Duration>()) } throws IOException()
         oppgaveEndretConsumer.run()
@@ -65,7 +65,7 @@ class OppgaveEndretConsumerTest {
     @Test
     fun `poller bare i gitt tidsrom`() {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapidApplication)
-        val manipulerbarKlokke = MutableClock(fixedClock(time = 8, minutt = 14).instant())
+        val manipulerbarKlokke = MutableClock(fixedClock(time = 6, minutt = 14).instant())
         val oppgaveEndretConsumer =
             OppgaveEndretConsumer(
                 rapidApplication,
@@ -82,7 +82,7 @@ class OppgaveEndretConsumerTest {
         while (manipulerbarKlokke.count == 0) { Thread.sleep(100)}
         verify(exactly = 0) { kafkaConsumer.poll(any<Duration>()) }
 
-        manipulerbarKlokke.instant = fixedClock(time = 8, minutt = 16).instant()
+        manipulerbarKlokke.instant = fixedClock(time = 6, minutt = 16).instant()
 
         // Må starte run på nytt pga den forrige har tenkt å sove i fem minutter
         scope.launch {

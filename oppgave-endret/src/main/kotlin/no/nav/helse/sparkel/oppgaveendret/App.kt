@@ -63,7 +63,6 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
             Clock.systemDefaultZone(),
         )
         Thread(oppgaveEndretConsumer).start()
-
         this.register(object : RapidsConnection.StatusListener {
             override fun onShutdown(rapidsConnection: RapidsConnection) {
                 oppgaveEndretConsumer.close()
