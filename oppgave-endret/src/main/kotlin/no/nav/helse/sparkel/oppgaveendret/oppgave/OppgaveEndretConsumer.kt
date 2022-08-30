@@ -56,7 +56,7 @@ internal class OppgaveEndretConsumer(
     fange opp disse utbetalingene raskt nok. Når det er på plass kan dette vinduet fjernes.
      */
     private fun åpentVindu() = clock.instant().atZone(ZoneId.systemDefault()).toLocalTime().let { now ->
-        now.isAfter(LocalTime.of(6, 15)) && now.isBefore(LocalTime.of(6, 45))
+        now.isAfter(LocalTime.of(8, 15)) && now.isBefore(LocalTime.of(9, 15))
     }
 
     override fun close() {

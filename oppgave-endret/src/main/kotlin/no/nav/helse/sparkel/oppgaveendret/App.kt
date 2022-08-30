@@ -7,16 +7,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.io.File
 import java.time.Clock
-import java.util.Properties
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.oppgaveendret.kafka.KafkaConfig
 import no.nav.helse.sparkel.oppgaveendret.kafka.loadBaseConfig
 import no.nav.helse.sparkel.oppgaveendret.kafka.toConsumerConfig
 import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretConsumer
-import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretSniffer
 import no.nav.helse.sparkel.oppgaveendret.util.ServiceUser
-import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
 
@@ -56,9 +53,6 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     val kafkaConsumerOppgaveEndret = KafkaConsumer<String, String>(consumerProperties)
     kafkaConsumerOppgaveEndret.subscribe(listOf(consumeTopic))
 
-    val kafkaConsumerForSniffing = lagSnifferConsumer(properties)
-    kafkaConsumerForSniffing.subscribe(listOf(consumeTopic))
-
     return RapidApplication.create(env).apply {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(this)
         val oppgaveEndretConsumer = OppgaveEndretConsumer(
@@ -70,23 +64,13 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         )
         Thread(oppgaveEndretConsumer).start()
 
-        val oppgaveEndretSniffer = OppgaveEndretSniffer(kafkaConsumerForSniffing, objectMapper)
-        Thread(oppgaveEndretSniffer).start()
         this.register(object : RapidsConnection.StatusListener {
             override fun onShutdown(rapidsConnection: RapidsConnection) {
                 oppgaveEndretConsumer.close()
-                oppgaveEndretSniffer.close()
             }
         })
     }
 }
-
-private fun lagSnifferConsumer(
-    properties: Properties
-) = KafkaConsumer<String, String>(
-    properties.toConsumerConfig("oppgave-endret-sniffer", valueDeserializer = StringDeserializer::class).also {
-        it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
-    })
 
 private fun getEnvVar(env: Map<String, String>, varName: String) =
     env[varName] ?: throw RuntimeException("Missing required variable \"$varName\"")
