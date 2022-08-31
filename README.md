@@ -3,6 +3,8 @@ Sparkel [![Build](https://github.com/navikt/helse-sparkelapper/actions/workflows
 
 Mikrotjenester som svarer ut behov ved å hente data fra ulike registre.
 
+Dette er for øvrig et skikkelig bra sted å skrive navnene på hver tjeneste og en one-liner om hva de er ment å gjøre. Og så kan man bruke README for hver tjeneste for å beskrive nøyere.
+
 ## Legge til en ny gradlemodul
 
 1. Lag en mappe og sørg for at det finnes en `build.gradle.kts` der
