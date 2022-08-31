@@ -146,7 +146,7 @@ jobs:
           command: monitor
 
   deploy:
-    needs: [generate_vars, snyk, build]
+    needs: [generate_vars, build]
     name: deploy
     if: always() && needs.generate_vars.outputs.emptyDeployMatrix == 'false'
     strategy:

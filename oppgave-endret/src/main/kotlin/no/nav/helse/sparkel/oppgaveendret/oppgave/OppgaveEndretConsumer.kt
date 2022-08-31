@@ -29,9 +29,11 @@ internal class OppgaveEndretConsumer(
             while (konsumerer) {
                 // sorry my dudes
                 if (!åpentVindu()) {
+                    logger.info("Vinduet er lukket, sover i fem minutter.")
                     Thread.sleep(Duration.of(5, ChronoUnit.MINUTES).toMillis())
                     continue
                 }
+                logger.info("Poller topic")
                 kafkaConsumer.poll(Duration.ofMillis(100)).onEach { consumerRecord ->
                     val record = consumerRecord.value()
                     val oppgave: Oppgave = objectMapper.readValue(record)
@@ -40,6 +42,7 @@ internal class OppgaveEndretConsumer(
                     gosysOppgaveEndretProducer.onPacket(oppgave)
                 }.also {
                     if (it.isEmpty) {
+                        logger.info("Ingen flere records, lukker vinduet.")
                         vinduslukking = now()
                     }
                 }
@@ -53,7 +56,7 @@ internal class OppgaveEndretConsumer(
     }
 
     private val vindusåpning = LocalTime.of(6, 15)
-    private var vinduslukking = LocalTime.of(6, 45)
+    private var vinduslukking = LocalTime.of(7, 15)
 
     /*
     Pga risiko for dobbeltutbetaling med Infotrygd sjekker vi bare endringer i Gosys-oppgaver etter at spleis har stått
@@ -69,6 +72,7 @@ internal class OppgaveEndretConsumer(
     private fun now() = clock.instant().atZone(ZoneId.systemDefault()).toLocalTime()
 
     override fun close() {
+        logger.info("close er kalt, avslutter konsumering")
         konsumerer = false
     }
 
