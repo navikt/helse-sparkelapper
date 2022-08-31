@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 class MappingTest {
     @Test
     fun `Verifiser at objectMapper mapper riktig fra consumer record`() {
-        val gosys = "FS22"
         val temaSyk = "SYK"
 
         val record = "oppgave-endret-record.json".loadFromResources()
@@ -16,7 +15,6 @@ class MappingTest {
 
         assertEquals(34333333, oppgave.id)
         assertEquals(IdentType.AKTOERID, oppgave.ident!!.identType)
-        assertEquals(gosys, oppgave.behandlesAvApplikasjon)
         assertEquals(temaSyk, oppgave.tema)
         assertEquals("100001231333", oppgave.ident!!.verdi)
         assertEquals("21312434234", oppgave.ident!!.folkeregisterident)

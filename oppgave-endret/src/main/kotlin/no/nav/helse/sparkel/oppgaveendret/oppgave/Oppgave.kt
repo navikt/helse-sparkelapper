@@ -5,7 +5,6 @@ package no.nav.helse.sparkel.oppgaveendret.oppgave
 data class Oppgave(
     val id: Long,
     val tema: String? = null,
-    val behandlesAvApplikasjon: String? = null,
     val ident: Ident? = null
 )
 
