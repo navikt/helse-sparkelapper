@@ -39,7 +39,7 @@ internal class OppgaveEndretConsumer(
                     .onEach { consumerRecord ->
                         val record = consumerRecord.value()
                         val oppgave: Oppgave = objectMapper.readValue(record)
-                        logger.info("Oppgave-endret oppgave tema: {}", oppgave.tema);
+                        logger.info("Oppgave-endret oppgave tema: {}", oppgave.tema)
                         if (oppgave.tema != "SYK") return
                         logger.info("Mottatt oppgave_endret med {}", keyValue("oppgaveId", oppgave.id))
                         gosysOppgaveEndretProducer.onPacket(oppgave)
@@ -70,7 +70,7 @@ internal class OppgaveEndretConsumer(
     private fun now() = clock.instant().atZone(ZoneId.systemDefault()).toLocalTime()
 
     override fun close() {
-        logger.info("close er kalt, avslutter konsumering")
+        logger.info("close er kalt, avslutter konsumering", RuntimeException("Stack trace for debugging-formål"))
         konsumerer = false
     }
 

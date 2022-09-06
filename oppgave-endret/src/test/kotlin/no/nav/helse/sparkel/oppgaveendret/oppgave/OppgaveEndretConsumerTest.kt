@@ -26,11 +26,11 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-@Disabled
 class OppgaveEndretConsumerTest {
     private val rapidApplication = mockk<RapidApplication>(relaxed = true)
     private val kafkaConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
 
+    @Disabled
     @Test
     fun `happy case`() {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapidApplication)
