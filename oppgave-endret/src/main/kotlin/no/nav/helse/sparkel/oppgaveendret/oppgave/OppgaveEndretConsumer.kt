@@ -34,13 +34,16 @@ internal class OppgaveEndretConsumer(
                     continue
                 }
                 logger.info("Poller topic")
-                kafkaConsumer.poll(Duration.ofSeconds(5)).onEach { consumerRecord ->
-                    val record = consumerRecord.value()
-                    val oppgave: Oppgave = objectMapper.readValue(record)
-                    if (oppgave.tema != "SYK") return
-                    logger.info("Mottatt oppgave_endret med {}", keyValue("oppgaveId", oppgave.id))
-                    gosysOppgaveEndretProducer.onPacket(oppgave)
-                }
+                kafkaConsumer.poll(Duration.ofSeconds(5))
+                    .apply { logger.info("Oppgave-endret record count: {}", this.count()) }
+                    .onEach { consumerRecord ->
+                        val record = consumerRecord.value()
+                        val oppgave: Oppgave = objectMapper.readValue(record)
+                        logger.info("Oppgave-endret oppgave tema: {}", oppgave.tema);
+                        if (oppgave.tema != "SYK") return
+                        logger.info("Mottatt oppgave_endret med {}", keyValue("oppgaveId", oppgave.id))
+                        gosysOppgaveEndretProducer.onPacket(oppgave)
+                    }
             }
         } catch (exception: Exception) {
             logger.error("Feilet under konsumering av oppgave_endret", exception)
