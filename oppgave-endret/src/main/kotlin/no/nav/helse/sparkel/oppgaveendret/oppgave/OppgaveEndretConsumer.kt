@@ -40,7 +40,7 @@ internal class OppgaveEndretConsumer(
                         val record = consumerRecord.value()
                         val oppgave: Oppgave = objectMapper.readValue(record)
                         logger.info("Oppgave-endret oppgave tema: {}", oppgave.tema)
-                        if (oppgave.tema != "SYK") return
+                        if (oppgave.tema != "SYK") return@onEach
                         logger.info("Mottatt oppgave_endret med {}", keyValue("oppgaveId", oppgave.id))
                         gosysOppgaveEndretProducer.onPacket(oppgave)
                     }
