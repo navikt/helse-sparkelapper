@@ -4,6 +4,6 @@ azure:
   tenant: trygdeetaten.no
 env:
 - name: MEDLEMSKAP_SCOPE
-  value: api://2719da58-489e-4185-9ee6-74b7e93763d2/.default
+  value: api://ee472fd1-3621-4600-a6ac-69d3662e993f/.default
 - name: MEDLEMSKAP_BASE_URL
   value: https://medlemskap-vurdering-sykepenger.dev.intern.nav.no/vurdering
