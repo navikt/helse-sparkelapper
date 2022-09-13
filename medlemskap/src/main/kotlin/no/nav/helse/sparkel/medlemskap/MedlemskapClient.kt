@@ -70,7 +70,7 @@ internal class MedlemskapClient(
              "fnr": "$fnr",
              "periode": {"fom": "$fom", "tom": "$tom" },
              "ytelse": "SYKEPENGER",
-             "førsteDagForYtelse": "$fom"
+             "førsteDagForYtelse": null
             }""".trimMargin()
 }
 
