@@ -1,8 +1,7 @@
-package no.nav.helse.sparkel.medlemskap.no.nav.helse.sparkel.medlemskap
+package no.nav.helse.sparkel.medlemskap
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate.now
-import no.nav.helse.sparkel.medlemskap.MedlemskapClient
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
