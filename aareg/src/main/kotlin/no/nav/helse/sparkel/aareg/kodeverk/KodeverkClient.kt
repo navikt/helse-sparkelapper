@@ -25,7 +25,7 @@ class KodeverkClient(
     }
 
     private val næringer: JsonNode by lazy {
-        objectMapper.readTreeLogError(hentFraKodeverk("/v1/kodeverk/Næringskoder/koder/betydninger"))
+        objectMapper.readTreeLogError(hentFraKodeverk("/v1/kodeverk/N%c3%a6ringskoder/koder/betydninger"))
     }
     private val yrker: JsonNode by lazy {
         objectMapper.readTreeLogError(hentFraKodeverk("/v1/kodeverk/Yrker/koder/betydninger"))

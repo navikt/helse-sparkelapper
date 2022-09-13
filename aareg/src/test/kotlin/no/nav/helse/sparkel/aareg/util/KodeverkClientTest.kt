@@ -27,7 +27,7 @@ internal class KodeverkClientTest {
         server = WireMockServer(WireMockConfiguration.options().dynamicPort())
         server.start()
         WireMock.configureFor(server.port())
-        mock("/api/v1/kodeverk/Næringskoder/koder/betydninger", næringRespons)
+        mock("/api/v1/kodeverk/N%c3%a6ringskoder/koder/betydninger", næringRespons)
         mock("/api/v1/kodeverk/Yrker/koder/betydninger", yrkeRespons)
     }
 
@@ -67,7 +67,7 @@ internal class KodeverkClientTest {
         )
 
         assertEquals(kodeverkverdi, kodeverkClient.getNæring(kodeverkRef))
-        mock("/api/v1/kodeverk/Næringskoder/koder/betydninger", "TEXT/PLAIN", 503)
+        mock("/api/v1/kodeverk/N%c3%a6ringskoder/koder/betydninger", "TEXT/PLAIN", 503)
         assertEquals(kodeverkverdi, kodeverkClient.getNæring(kodeverkRef))
     }
 
