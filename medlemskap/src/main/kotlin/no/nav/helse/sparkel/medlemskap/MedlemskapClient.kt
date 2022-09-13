@@ -15,11 +15,18 @@ internal class MedlemskapClient(
     private val sendBrukerinput: Boolean // fjern når vi går i prod med ny tjeneste
 ) {
 
-    private companion object {
+    internal companion object {
         private val objectMapper = ObjectMapper()
         private val tjenestekallLog = LoggerFactory.getLogger("tjenestekall")
-    }
+        fun oversett(response: JsonNode, fnr: String, fom: LocalDate, tom: LocalDate): JsonNode {
+            if (response.erGradertExceptionMelding()) {
+                return objectMapper.readTree(byggUavklart(fnr, fom, tom))
+            }
+            return response
+        }
 
+        private fun JsonNode.erGradertExceptionMelding() = path("cause").isTextual && path("cause").asText().lowercase().contains("GradertAdresseException".lowercase())
+    }
     internal fun hentMedlemskapsvurdering(
         fnr: String,
         fom: LocalDate,
@@ -50,11 +57,15 @@ internal class MedlemskapClient(
 
         tjenestekallLog.info("svar fra medlemskap: url=$baseUrl responseCode=$responseCode responseBody=$responseBody")
 
-        if (responseCode >= 300 || responseBody == null) {
-            throw MedlemskapException("unknown error (responseCode=$responseCode) from medlemskap", responseCode, responseBody)
+        if (responseBody == null) {
+            throw MedlemskapException("unknown error (responseCode=$responseCode) from medlemskap", responseBody)
+        }
+        val responseJson = objectMapper.readTree(responseBody)
+        if (responseCode >= 300 && !responseJson.erGradertExceptionMelding()) {
+            throw MedlemskapException("unknown error (responseCode=$responseCode) from medlemskap", responseBody)
         }
 
-        return objectMapper.readTree(responseBody)
+        return oversett(responseJson, fnr, fom, tom)
     }
 
     private fun byggRequest(
@@ -74,4 +85,19 @@ internal class MedlemskapClient(
             }""".trimMargin()
 }
 
-internal class MedlemskapException(message: String, val statusCode: Int, val responseBody: String?) : RuntimeException(message)
+internal class MedlemskapException(message: String, val responseBody: String?) : RuntimeException(message)
+
+private fun byggUavklart(fnr: String, fom: LocalDate, tom: LocalDate) = """
+{
+ "resultat": {
+   "datagrunnlag": {
+     "fnr": "$fnr",
+     "periode": {
+       "fom": "$fom",
+       "tom": "$tom"
+     }
+   },
+   "svar": "VetIkke"
+ }
+}
+""".trimIndent()
