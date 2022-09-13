@@ -7,3 +7,5 @@ env:
   value: api://ee472fd1-3621-4600-a6ac-69d3662e993f/.default
 - name: MEDLEMSKAP_BASE_URL
   value: https://medlemskap-vurdering-sykepenger.dev.intern.nav.no/vurdering
+- name: SEND_BRUKERINPUT
+  value: "false"

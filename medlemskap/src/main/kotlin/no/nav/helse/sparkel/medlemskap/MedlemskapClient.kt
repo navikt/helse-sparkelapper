@@ -11,7 +11,8 @@ import java.time.LocalDate
 internal class MedlemskapClient(
     private val baseUrl: String,
     private val azureClient: AzureClient,
-    private val accesstokenScope: String = "??"
+    private val accesstokenScope: String = "??",
+    private val sendBrukerinput: Boolean // fjern når vi går i prod med ny tjeneste
 ) {
 
     private companion object {
@@ -36,7 +37,7 @@ internal class MedlemskapClient(
             doOutput = true
             outputStream.use {
                 it.bufferedWriter().apply {
-                    write("""{"fnr": "$fnr", "periode": {"fom": "$fom", "tom": "$tom" }, "brukerinput": { "arbeidUtenforNorge": ${ if (arbeidUtenforNorge) "true" else "false" } } }""")
+                    write(byggRequest(fnr, fom, tom, arbeidUtenforNorge, sendBrukerinput))
                     flush()
                 }
             }
@@ -53,6 +54,17 @@ internal class MedlemskapClient(
 
         return objectMapper.readTree(responseBody)
     }
+
+    private fun byggRequest(
+        fnr: String,
+        fom: LocalDate,
+        tom: LocalDate,
+        arbeidUtenforNorge: Boolean,
+        sendBrukerinput: Boolean
+    ) = if(sendBrukerinput)
+        """{"fnr": "$fnr", "periode": {"fom": "$fom", "tom": "$tom" }, "brukerinput": { "arbeidUtenforNorge": ${if (arbeidUtenforNorge) "true" else "false"} } }"""
+        else
+        """{"fnr": "$fnr", "periode": {"fom": "$fom", "tom": "$tom" } }"""
 }
 
 internal class MedlemskapException(message: String, val statusCode: Int, val responseBody: String?) : RuntimeException(message)
