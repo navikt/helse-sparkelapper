@@ -64,9 +64,14 @@ internal class MedlemskapClient(
         arbeidUtenforNorge: Boolean,
         sendBrukerinput: Boolean
     ) = if(sendBrukerinput)
-        """{"fnr": "$fnr", "periode": {"fom": "$fom", "tom": "$tom" }, "brukerinput": { "arbeidUtenforNorge": ${if (arbeidUtenforNorge) "true" else "false"} } }"""
+        """{"fnr": "$fnr", "periode": {"fom": "$fom", "tom": "$tom" }, "brukerinput": { "arbeidUtenforNorge": ${if (arbeidUtenforNorge) "true" else "false"} } }""".trimIndent()
         else
-        """{"fnr": "$fnr", "periode": {"fom": "$fom", "tom": "$tom" } }"""
+        """{
+             "fnr": "$fnr",
+             "periode": {"fom": "$fom", "tom": "$tom" },
+             "ytelse": "SYKEPENGER",
+             "førsteDagForYtelse": "$fom"
+            }""".trimMargin()
 }
 
 internal class MedlemskapException(message: String, val statusCode: Int, val responseBody: String?) : RuntimeException(message)
