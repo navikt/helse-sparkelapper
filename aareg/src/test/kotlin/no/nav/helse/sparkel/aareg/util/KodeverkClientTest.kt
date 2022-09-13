@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
+import io.ktor.http.encodeURLPath
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.kodeverk.hentTekst
 import no.nav.helse.sparkel.aareg.objectMapper
@@ -27,7 +28,7 @@ internal class KodeverkClientTest {
         server = WireMockServer(WireMockConfiguration.options().dynamicPort())
         server.start()
         WireMock.configureFor(server.port())
-        mock("/api/v1/kodeverk/N%c3%a6ringskoder/koder/betydninger", næringRespons)
+        mock("/api/v1/kodeverk/Næringskoder/koder/betydninger", næringRespons)
         mock("/api/v1/kodeverk/Yrker/koder/betydninger", yrkeRespons)
     }
 
@@ -73,7 +74,7 @@ internal class KodeverkClientTest {
 
     private fun mock(path: String, response: String, status: Int = 200) {
         WireMock.stubFor(
-            WireMock.get(WireMock.urlPathMatching("$path.*"))
+            WireMock.get(WireMock.urlPathMatching("$path.*".encodeURLPath()))
                 .withHeader("Nav-Consumer-Id", WireMock.equalTo("sparkel-aareg"))
                 .withHeader("Nav-Call-Id", AnythingPattern())
                 .withQueryParam("spraak", WireMock.equalTo("nb"))

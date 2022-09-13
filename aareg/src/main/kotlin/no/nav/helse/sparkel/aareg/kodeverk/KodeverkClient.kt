@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.aareg.kodeverk
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.ktor.http.encodeURLPath
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
@@ -25,7 +26,7 @@ class KodeverkClient(
     }
 
     private val næringer: JsonNode by lazy {
-        objectMapper.readTreeLogError(hentFraKodeverk("/v1/kodeverk/N%c3%a6ringskoder/koder/betydninger"))
+        objectMapper.readTreeLogError(hentFraKodeverk("/v1/kodeverk/Næringskoder/koder/betydninger".encodeURLPath()))
     }
     private val yrker: JsonNode by lazy {
         objectMapper.readTreeLogError(hentFraKodeverk("/v1/kodeverk/Yrker/koder/betydninger"))
