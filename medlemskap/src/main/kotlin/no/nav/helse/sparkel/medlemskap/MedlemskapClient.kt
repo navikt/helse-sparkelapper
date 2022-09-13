@@ -37,7 +37,9 @@ internal class MedlemskapClient(
             doOutput = true
             outputStream.use {
                 it.bufferedWriter().apply {
-                    write(byggRequest(fnr, fom, tom, arbeidUtenforNorge, sendBrukerinput))
+                    val requestBody = byggRequest(fnr, fom, tom, arbeidUtenforNorge, sendBrukerinput)
+                    tjenestekallLog.info("Sender $requestBody")
+                    write(requestBody)
                     flush()
                 }
             }
