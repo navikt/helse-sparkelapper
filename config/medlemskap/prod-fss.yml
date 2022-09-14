@@ -5,6 +5,6 @@ env:
 - name: MEDLEMSKAP_SCOPE
   value: api://60c58925-ad42-45b8-8ce7-0038abfb5dff/.default
 - name: MEDLEMSKAP_BASE_URL
-  value: https://medlemskap-vurdering-sykepenger.intern.nav.no/vurdering
+  value: https://medlemskap-oppslag.intern.nav.no
 - name: SEND_BRUKERINPUT
   value: "false"
