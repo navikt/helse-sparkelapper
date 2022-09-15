@@ -3,6 +3,8 @@ azure:
   enabled: true
 env:
 - name: MEDLEMSKAP_SCOPE
-  value: api://23600ac9-019c-445d-87a4-2df4996e6f63/.default
+  value: api://60c58925-ad42-45b8-8ce7-0038abfb5dff/.default
 - name: MEDLEMSKAP_BASE_URL
-  value: https://medlemskap-oppslag.intern.nav.no
+  value: https://medlemskap-vurdering-sykepenger.intern.nav.no/vurdering
+- name: SEND_BRUKERINPUT
+  value: "false"
