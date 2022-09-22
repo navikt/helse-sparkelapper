@@ -11,13 +11,13 @@ import no.nav.helse.rapids_rivers.withMDC
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-internal interface HentPersoninfoV3PDLClient {
+internal fun interface PDL {
     fun hent(ident: String, callId: String, attributter: Set<Attributt>): JsonNode
 }
 
 internal class HentPersoninfoV3Løser(
     rapidsConnection: RapidsConnection,
-    private val pdl: HentPersoninfoV3PDLClient
+    private val pdl: PDL
 ) : River.PacketListener {
 
 

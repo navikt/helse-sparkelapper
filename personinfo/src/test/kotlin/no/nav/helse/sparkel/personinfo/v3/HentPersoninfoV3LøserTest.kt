@@ -20,9 +20,7 @@ internal class HentPersoninfoV3LøserTest {
 
     @Test
     fun `henter aktørid og fødselsdato`() {
-        val pdl = object : HentPersoninfoV3PDLClient {
-            override fun hent(ident: String, callId: String, attributter: Set<Attributt>) = aktørIdOgFødselsdatoPdlReply
-        }
+        val pdl = PDL { _, _, _ -> aktørIdOgFødselsdatoPdlReply }
         HentPersoninfoV3Løser(rapid, pdl)
         rapid.sendTestMessage(behov("aktørId", "fødselsdato"))
         assertEquals(1, rapid.inspektør.size)
@@ -39,9 +37,7 @@ internal class HentPersoninfoV3LøserTest {
 
     @Test
     fun `henter rubb & stubb`() {
-        val pdl = object : HentPersoninfoV3PDLClient {
-            override fun hent(ident: String, callId: String, attributter: Set<Attributt>) = rubbOgStubbPdlReply
-        }
+        val pdl = PDL { _, _, _ -> rubbOgStubbPdlReply }
         HentPersoninfoV3Løser(rapid, pdl)
         rapid.sendTestMessage(behov(*Attributt.values().map { it.name }.toTypedArray()))
         assertEquals(1, rapid.inspektør.size)

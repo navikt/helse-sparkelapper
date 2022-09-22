@@ -7,21 +7,23 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import no.nav.helse.sparkel.personinfo.v3.Attributt
-import no.nav.helse.sparkel.personinfo.v3.HentPersoninfoV3PDLClient
+import no.nav.helse.sparkel.personinfo.v3.PDL
 import no.nav.helse.sparkel.personinfo.v3.PdlQueryBuilder
+
+private fun query(sti: String) = PdlClient::class.java.getResource(sti)!!.readText().replace(Regex("[\n\r]"), "")
 
 internal class PdlClient(
     private val baseUrl: String,
     private val stsClient: StsRestClient
-): HentPersoninfoV3PDLClient {
+): PDL {
 
     companion object {
         private val objectMapper = ObjectMapper()
         private val httpClient = HttpClient.newHttpClient()
-        private val dødsdatoQuery = this::class.java.getResource("/pdl/hentDødsdato.graphql").readText().replace(Regex("[\n\r]"), "")
-        private val personinfoQuery = this::class.java.getResource("/pdl/hentPersoninfo.graphql").readText().replace(Regex("[\n\r]"), "")
-        private val hentIdenterQuery = this::class.java.getResource("/pdl/hentIdenter.graphql").readText().replace(Regex("[\n\r]"), "")
-        private val hentVergemålQuery = this::class.java.getResource("/pdl/hentVergemål.graphql").readText().replace(Regex("[\n\r]"), "")
+        private val dødsdatoQuery = query("/pdl/hentDødsdato.graphql")
+        private val personinfoQuery = query("/pdl/hentPersoninfo.graphql")
+        private val hentIdenterQuery = query("/pdl/hentIdenter.graphql")
+        private val hentVergemålQuery = query("/pdl/hentVergemål.graphql")
     }
 
     private fun request(
