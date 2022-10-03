@@ -33,7 +33,7 @@ internal class Medlemskap(
         packet["@løsning"] = mapOf<String, Any>(
             behov to mapOf(
                 "resultat" to mapOf(
-                    "svar" to "JA"
+                    "svar" to "UAVKLART"
                 )
             )
         )
