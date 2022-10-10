@@ -22,8 +22,8 @@ internal class ArbeidsgiveropplysningerRiverTest {
     init {
         (LoggerFactory.getLogger(ArbeidsgiveropplysningerRiver::class.java) as Logger).addAppender(logCollector)
         logCollector.start()
-        (LoggerFactory.getLogger("tjenestekall") as Logger).addAppender(logCollector)
-        logCollector.start()
+        (LoggerFactory.getLogger("tjenestekall") as Logger).addAppender(sikkerlogCollector)
+        sikkerlogCollector.start()
     }
 
     @BeforeEach
@@ -45,8 +45,9 @@ internal class ArbeidsgiveropplysningerRiverTest {
     fun `logger ved gyldig behov`() {
         testRapid.sendTestMessage(behovMelding("Arbeidsgiveropplysninger"))
         assertEquals(1, logCollector.list.size)
-        assertTrue(logCollector.list.any { it.message.contains("Mottok Arbeidsgiveropplysninger-behov fra spleis med data") })
-        assertEquals(0, sikkerlogCollector.list.size)
+        assertTrue(logCollector.list.any { it.message.contains("Mottok Arbeidsgiveropplysninger-behov fra spleis") })
+        assertEquals(1, sikkerlogCollector.list.size)
+        assertTrue(sikkerlogCollector.list.any { it.message.contains("Mottok Arbeidsgiveropplysninger-behov fra spleis med data") })
     }
 
     @Test
