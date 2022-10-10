@@ -8,7 +8,7 @@ private val logger: Logger = LoggerFactory.getLogger("sparkel-arbeidsgiver")
 
 fun main() {
     val app = RapidApplication.create(System.getenv()).apply {
-        Arbeidsgiveropplysninger(this)
+        ArbeidsgiveropplysningerRiver(this)
     }
     logger.info("Hei, bro!")
     app.start()
