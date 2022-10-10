@@ -23,11 +23,19 @@ internal class ArbeidsgiveropplysningerRiver(
         }.register(this)
     }
 
+    private fun loggVennligPacket(packet: JsonMessage) {
+        mapOf(
+            "id" to packet.id,
+            "@behov" to packet["@behov"]
+        )
+    }
+
     override fun onError(problems: MessageProblems, context: MessageContext) {
         sikkerlogg.error("forstod ikke $behov:\n${problems.toExtendedReport()}")
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        logg.info("Mottok Arbeidsgiveropplysninger-behov fra spleis med data:\n{}", packet.toJson())
+        logg.info("Mottok Arbeidsgiveropplysninger-behov fra spleis:\n{}", loggVennligPacket(packet))
+        sikkerlogg.info("Mottok Arbeidsgiveropplysninger-behov fra spleis med data:\n{}", packet.toJson())
     }
 }
