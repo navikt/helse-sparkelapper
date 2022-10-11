@@ -5,13 +5,13 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
-import java.util.UUID
 
 internal class ArbeidsgiveropplysningerRiverTest {
     private val objectMapper = jacksonObjectMapper()
@@ -32,34 +32,26 @@ internal class ArbeidsgiveropplysningerRiverTest {
         sikkerlogCollector.list.clear()
     }
 
-    private fun behovMelding(behovType: String, løsning: String? = null): String =
+    private fun eventMelding(eventName: String): String =
         objectMapper.valueToTree<JsonNode>(
             mapOf(
                 "@id" to UUID.randomUUID(),
-                "@behov" to listOf(behovType),
-                "@løsning" to løsning
+                "@event_name" to eventName,
             )
         ).toString()
 
     @Test
-    fun `logger ved gyldig behov`() {
-        testRapid.sendTestMessage(behovMelding("Arbeidsgiveropplysninger"))
+    fun `logger ved gyldig event`() {
+        testRapid.sendTestMessage(eventMelding("trenger_opplysninger_fra_arbeidsgiver"))
         assertEquals(1, logCollector.list.size)
-        assertTrue(logCollector.list.any { it.message.contains("Mottok Arbeidsgiveropplysninger-behov fra spleis") })
+        assertTrue(logCollector.list.any { it.message.contains("Mottok trenger_opplysninger_fra_arbeidsgiver-event fra spleis") })
         assertEquals(1, sikkerlogCollector.list.size)
-        assertTrue(sikkerlogCollector.list.any { it.message.contains("Mottok Arbeidsgiveropplysninger-behov fra spleis med data") })
+        assertTrue(sikkerlogCollector.list.any { it.message.contains("Mottok trenger_opplysninger_fra_arbeidsgiver-event fra spleis med data") })
     }
 
     @Test
-    fun `ignorerer løste behov`() {
-        testRapid.sendTestMessage(behovMelding("Arbeidsgiveropplysninger", "Test Løsning"))
-        assertEquals(0, logCollector.list.size)
-        assertEquals(0, sikkerlogCollector.list.size)
-    }
-
-    @Test
-    fun `logger ikke ved ugyldig behov`() {
-        testRapid.sendTestMessage(behovMelding("Tullebehov"))
+    fun `ignorerer andre eventer`() {
+        testRapid.sendTestMessage(eventMelding("Tullebehov"))
         assertEquals(0, logCollector.list.size)
         assertEquals(0, sikkerlogCollector.list.size)
     }

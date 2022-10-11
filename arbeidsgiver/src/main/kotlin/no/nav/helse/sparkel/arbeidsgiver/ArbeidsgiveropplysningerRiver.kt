@@ -11,30 +11,29 @@ internal class ArbeidsgiveropplysningerRiver(
     rapidsConnection: RapidsConnection
 ) : River.PacketListener {
     private companion object {
-        private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-        private val logg = LoggerFactory.getLogger(this::class.java)
-        private const val behov = "Arbeidsgiveropplysninger"
+        val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+        val logg = LoggerFactory.getLogger(this::class.java)
+        const val eventName = "trenger_opplysninger_fra_arbeidsgiver"
     }
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandAll("@behov", listOf(behov)) }
-            validate { it.rejectKey("@løsning") }
+            validate { it.demandValue("@event_name", eventName) }
         }.register(this)
     }
 
     private fun loggVennligPacket(packet: JsonMessage): Map<String, Any> =
         mapOf(
             "id" to packet.id,
-            "@behov" to packet["@behov"]
+            "@event_name" to packet["@event_name"]
         )
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
-        sikkerlogg.error("forstod ikke $behov:\n${problems.toExtendedReport()}")
+        sikkerlogg.error("forstod ikke $eventName:\n${problems.toExtendedReport()}")
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        logg.info("Mottok Arbeidsgiveropplysninger-behov fra spleis:\n{}", loggVennligPacket(packet))
-        sikkerlogg.info("Mottok Arbeidsgiveropplysninger-behov fra spleis med data:\n{}", packet.toJson())
+        logg.info("Mottok trenger_opplysninger_fra_arbeidsgiver-event fra spleis:\n{}", loggVennligPacket(packet))
+        sikkerlogg.info("Mottok trenger_opplysninger_fra_arbeidsgiver-event fra spleis med data:\n{}", packet.toJson())
     }
 }
