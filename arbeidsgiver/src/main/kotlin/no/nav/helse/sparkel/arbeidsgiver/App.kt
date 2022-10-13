@@ -1,6 +1,9 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import java.util.Properties
 import no.nav.helse.rapids_rivers.RapidApplication
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -11,7 +14,6 @@ import org.apache.kafka.common.serialization.Serializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.Properties
 
 private val logger: Logger = LoggerFactory.getLogger("sparkel-arbeidsgiver")
 
@@ -46,5 +48,8 @@ private fun createAivenProducer(env: Map<String, String>): KafkaProducer<String,
 
 internal class ArbeidsgiveropplysningerDTOSerializer : Serializer<ArbeidsgiveropplysningerDTO> {
     private val objectMapper = jacksonObjectMapper()
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .registerModules(JavaTimeModule())
+
     override fun serialize(topic: String, data: ArbeidsgiveropplysningerDTO): ByteArray = objectMapper.writeValueAsBytes(data)
 }

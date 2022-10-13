@@ -6,7 +6,7 @@ import no.nav.helse.rapids_rivers.asLocalDateTime
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-internal class ArbeidsgiveropplysningerDTO private constructor(
+internal data class ArbeidsgiveropplysningerDTO(
     val type: Meldingstype,
     val organisasjonsnummer: String,
     val fødselsnummer: String,
