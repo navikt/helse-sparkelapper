@@ -1,11 +1,13 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
+import com.fasterxml.jackson.databind.JsonNode
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.helse.sparkel.arbeidsgiver.ArbeidsgiveropplysningerDTO.Companion.tilArbeidsgiveropplysningerDTO
+import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.helse.rapids_rivers.asLocalDateTime
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.internals.RecordHeader
@@ -21,12 +23,13 @@ internal class ArbeidsgiveropplysningerRiver(
         val logg = LoggerFactory.getLogger(this::class.java)
         const val eventName = "trenger_opplysninger_fra_arbeidsgiver"
     }
-
-
-    //TODO: oppdater validering med orgnr etc
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("@event_name", eventName) }
+            validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
+            validate { it.require("fom", JsonNode::asLocalDate) }
+            validate { it.require("tom", JsonNode::asLocalDate) }
+            validate { it.requireKey("organisasjonsnummer", "fødselsnummer") }
         }.register(this)
     }
 
@@ -46,7 +49,7 @@ internal class ArbeidsgiveropplysningerRiver(
             sikkerlogg.info("$it med data:\n{}", packet.toJson())
         }
 
-        val payload = packet.tilArbeidsgiveropplysningerDTO()
+        val payload = ArbeidsgiveropplysningerDTO(packet)
         arbeidsgiverProducer.send(
             ProducerRecord(
                 "arbeidsgiveropplysninger",

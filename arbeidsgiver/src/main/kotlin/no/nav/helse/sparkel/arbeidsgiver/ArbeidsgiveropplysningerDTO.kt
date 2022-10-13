@@ -5,9 +5,8 @@ import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.Locale
 
-internal class ArbeidsgiveropplysningerDTO(
+internal class ArbeidsgiveropplysningerDTO private constructor(
     val type: Meldingstype,
     val organisasjonsnummer: String,
     val fødselsnummer: String,
@@ -16,18 +15,15 @@ internal class ArbeidsgiveropplysningerDTO(
     val opprettet: LocalDateTime = LocalDateTime.now()
 ) {
     val meldingstype get() = type.name.lowercase().toByteArray()
-    internal companion object {
-        internal fun JsonMessage.tilArbeidsgiveropplysningerDTO() = ArbeidsgiveropplysningerDTO(
-            type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER,
-            organisasjonsnummer = this["organisasjonsnummer"].asText(),
-            fødselsnummer = this["fødselsnummer"].asText(),
-            fom = this["fom"].asLocalDate(),
-            tom = this["tom"].asLocalDate(),
-            opprettet = this["@opprettet"].asLocalDateTime()
-        )
-    }
+    constructor(message: JsonMessage) : this(
+        type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER,
+        organisasjonsnummer = message["organisasjonsnummer"].asText(),
+        fødselsnummer = message["fødselsnummer"].asText(),
+        fom = message["fom"].asLocalDate(),
+        tom = message["tom"].asLocalDate(),
+        opprettet = message["@opprettet"].asLocalDateTime()
+    )
 }
-
 internal enum class Meldingstype {
     TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER
 }
