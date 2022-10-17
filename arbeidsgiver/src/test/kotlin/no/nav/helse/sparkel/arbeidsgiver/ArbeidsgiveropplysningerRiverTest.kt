@@ -91,7 +91,7 @@ internal class ArbeidsgiveropplysningerRiverTest {
         verify(exactly = 1) {
             mockproducer.send(
                 ProducerRecord(
-                    "arbeidsgiveropplysninger",
+                    "tbd.arbeidsgiveropplysninger",
                     null,
                     payload.fødselsnummer,
                     payload,

@@ -52,7 +52,7 @@ internal class ArbeidsgiveropplysningerRiver(
         val payload = ArbeidsgiveropplysningerDTO(packet)
         arbeidsgiverProducer.send(
             ProducerRecord(
-                "arbeidsgiveropplysninger",
+                "tbd.arbeidsgiveropplysninger",
                 null,
                 payload.fødselsnummer,
                 payload,
