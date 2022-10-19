@@ -21,6 +21,7 @@ internal class InfotrygdService(
     fun løsningForSykepengehistorikkbehov(
         behovId: String,
         fødselsnummer: Fnr,
+        aktørId: String,
         fom: LocalDate,
         tom: LocalDate
     ): List<Utbetalingshistorikk>? {
@@ -30,6 +31,7 @@ internal class InfotrygdService(
                 fom,
                 tom
             )
+            if (aktørId == "1000042411087") sikkerlogg.info("Data for 1000042411087:\n$perioder")
             val historikk: List<Utbetalingshistorikk> = perioder
                 .sortedByDescending { it.sykemeldtFom }
                 .mapIndexed { index, periode ->

@@ -24,6 +24,7 @@ internal class Sykepengehistorikkløser(
             validate { it.requireKey("@id") }
             validate { it.requireKey("@opprettet") }
             validate { it.requireKey("fødselsnummer") }
+            validate { it.interestedIn("aktørId") }
             validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
             validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
         }.register(this)
@@ -42,6 +43,7 @@ internal class Sykepengehistorikkløser(
         infotrygdService.løsningForSykepengehistorikkbehov(
             packet["@id"].asText(),
             Fnr(packet["fødselsnummer"].asText()),
+            packet["aktørId"].asText(),
             packet["$behov.historikkFom"].asLocalDate(),
             packet["$behov.historikkTom"].asLocalDate()
         )
