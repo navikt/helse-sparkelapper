@@ -21,13 +21,14 @@ fun main() {
     val arbeidsgiverProducer = createAivenProducer(System.getenv())
 
     val app = RapidApplication.create(System.getenv()).apply {
-        ArbeidsgiveropplysningerRiver(this, arbeidsgiverProducer)
+        TrengerArbeidsgiveropplysningerRiver(this, arbeidsgiverProducer)
+        ArbeidsgiveropplysningerRiver(this)
     }
     logger.info("Hei, bro!")
     app.start()
 }
 
-private fun createAivenProducer(env: Map<String, String>): KafkaProducer<String, ArbeidsgiveropplysningerDTO> {
+private fun createAivenProducer(env: Map<String, String>): KafkaProducer<String, TrengerArbeidsgiveropplysningerDTO> {
     val properties = Properties().apply {
         put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, env.getValue("KAFKA_BROKERS"))
         put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SSL.name)
@@ -43,13 +44,13 @@ private fun createAivenProducer(env: Map<String, String>): KafkaProducer<String,
         put(ProducerConfig.LINGER_MS_CONFIG, "0")
         put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "1")
     }
-    return KafkaProducer(properties, StringSerializer(), ArbeidsgiveropplysningerDTOSerializer())
+    return KafkaProducer(properties, StringSerializer(), TrengerArbeidsgiveropplysningerDTOSerializer())
 }
 
-internal class ArbeidsgiveropplysningerDTOSerializer : Serializer<ArbeidsgiveropplysningerDTO> {
+internal class TrengerArbeidsgiveropplysningerDTOSerializer : Serializer<TrengerArbeidsgiveropplysningerDTO> {
     private val objectMapper = jacksonObjectMapper()
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .registerModules(JavaTimeModule())
 
-    override fun serialize(topic: String, data: ArbeidsgiveropplysningerDTO): ByteArray = objectMapper.writeValueAsBytes(data)
+    override fun serialize(topic: String, data: TrengerArbeidsgiveropplysningerDTO): ByteArray = objectMapper.writeValueAsBytes(data)
 }
