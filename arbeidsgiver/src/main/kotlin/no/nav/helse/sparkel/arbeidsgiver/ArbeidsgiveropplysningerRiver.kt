@@ -1,6 +1,9 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
@@ -18,6 +21,9 @@ internal class ArbeidsgiveropplysningerRiver(
         val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         val logg = LoggerFactory.getLogger(this::class.java)
         const val eventName = "opplysninger_fra_arbeidsgiver"
+        val objectMapper = jacksonObjectMapper()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .registerModules(JavaTimeModule())
     }
     init {
         River(rapidsConnection).apply {
@@ -26,6 +32,7 @@ internal class ArbeidsgiveropplysningerRiver(
             validate { it.require("fom", JsonNode::asLocalDate) }
             validate { it.require("tom", JsonNode::asLocalDate) }
             validate { it.requireKey("organisasjonsnummer", "fødselsnummer", "arbeidsgiveropplysninger") }
+            validate { it.interestedIn("arbeidsgiveropplysninger.periode", "arbeidsgiveropplysninger.refusjon", "arbeidsgiveropplysninger.inntekt") }
         }.register(this)
     }
 
@@ -44,5 +51,17 @@ internal class ArbeidsgiveropplysningerRiver(
             logg.info("$it:\n{}", loggVennligPacket(packet))
             sikkerlogg.info("$it med data:\n{}", packet.toJson())
         }
+        val payload = ArbeidsgiveropplysningerDTO(
+            organisasjonsnummer = packet["organisasjonsnummer"].asText(),
+            fødselsnummer = packet["fødselsnummer"].asText(),
+            fom = packet["fom"].asLocalDate(),
+            tom = packet["tom"].asLocalDate(),
+            arbeidsgiveropplysninger = OpplysningerDTO(packet["arbeidsgiveropplysninger"]),
+            opprettet = packet["@opprettet"].asLocalDateTime()
+        )
+
+        rapidsConnection.publish(payload.toJson())
     }
+
+    private fun ArbeidsgiveropplysningerDTO.toJson(): String = objectMapper.writeValueAsString(this)
 }

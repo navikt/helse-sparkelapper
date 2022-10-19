@@ -8,21 +8,19 @@ import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.rapids_rivers.asLocalDateTime
 
 internal data class ArbeidsgiveropplysningerDTO(
-    val type: Meldingstype,
     val organisasjonsnummer: String,
     val fødselsnummer: String,
     val fom: LocalDate,
     val tom: LocalDate,
-    val arbeidgiveropplysninger: OpplysningerDTO,
+    val arbeidsgiveropplysninger: OpplysningerDTO,
     val opprettet: LocalDateTime = LocalDateTime.now()
 ) {
     constructor(message: JsonMessage) : this(
-        type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER,
         organisasjonsnummer = message["organisasjonsnummer"].asText(),
         fødselsnummer = message["fødselsnummer"].asText(),
         fom = message["fom"].asLocalDate(),
         tom = message["tom"].asLocalDate(),
-        arbeidgiveropplysninger = OpplysningerDTO(message["arbeidgiveropplysninger"]),
+        arbeidsgiveropplysninger = OpplysningerDTO(message["arbeidsgiveropplysninger"]),
         opprettet = message["@opprettet"].asLocalDateTime()
     )
 }
