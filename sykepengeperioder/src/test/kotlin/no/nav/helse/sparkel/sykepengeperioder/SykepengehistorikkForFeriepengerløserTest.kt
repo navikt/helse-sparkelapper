@@ -1,6 +1,9 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import com.fasterxml.jackson.databind.JsonNode
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.UUID
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*
@@ -11,12 +14,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.UUID
 
 @TestInstance(Lifecycle.PER_CLASS)
-internal class SykepengehistorikkløserMk2Test : H2Database() {
+internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
 
     private lateinit var infotrygdService: InfotrygdService
     private val rapid = TestRapid()
@@ -33,7 +33,7 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
             FeriepengeDAO(dataSource)
         )
         rapid.apply {
-            SykepengehistorikkløserMK2(this, infotrygdService)
+            SykepengehistorikkForFeriepengerløser(this, infotrygdService)
         }
     }
 
@@ -56,12 +56,6 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         assertEquals(0, sykepengehistorikk.inntektshistorikk.size)
         assertFalse(sykepengehistorikk.harStatslønn)
         assertFalse(sykepengehistorikk.feriepengerSkalBeregnesManuelt)
-    }
-
-    @Test
-    fun `ignorerer behov som er mer enn 30 minutter gamle`() {
-        rapid.sendTestMessage(behov(opprettet = LocalDateTime.now().minusMinutes(35)))
-        assertEquals(0, rapid.inspektør.size)
     }
 
     @Test
@@ -322,7 +316,7 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
         rapid.sendTestMessage(behov())
 
         assertTrue(sisteSendtMelding.has("@løsning"))
-        assertTrue(sisteSendtMelding.path("@løsning").has(SykepengehistorikkløserMK2.behov))
+        assertTrue(sisteSendtMelding.path("@løsning").has(SykepengehistorikkForFeriepengerløser.behov))
     }
 
     @Test
@@ -489,7 +483,7 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
     }
 
     private fun JsonNode.løsning() =
-        this.path("@løsning").path(SykepengehistorikkløserMK2.behov).let {
+        this.path("@løsning").path(SykepengehistorikkForFeriepengerløser.behov).let {
             Sykepengehistorikk(it)
         }
 
@@ -571,13 +565,14 @@ internal class SykepengehistorikkløserMk2Test : H2Database() {
             "@id": "${UUID.randomUUID()}", 
             "@opprettet":"$opprettet",
             "@behov":[
-                "${SykepengehistorikkløserMK2.behov}"], 
-                "${SykepengehistorikkløserMK2.behov}": { 
-                    "historikkFom": "$fom", 
-                    "historikkTom": "$tom"
-                }, 
-                "fødselsnummer": "$fnr", 
-                "vedtaksperiodeId": "id"
+                "${SykepengehistorikkForFeriepengerløser.behov}"
+            ], 
+            "${SykepengehistorikkForFeriepengerløser.behov}": { 
+                "historikkFom": "$fom", 
+                "historikkTom": "$tom"
+            }, 
+            "fødselsnummer": "$fnr", 
+            "vedtaksperiodeId": "id"
             }
         """
 }

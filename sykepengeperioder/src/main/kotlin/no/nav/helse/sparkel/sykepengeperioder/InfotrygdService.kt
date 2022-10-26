@@ -64,7 +64,7 @@ internal class InfotrygdService(
         }
     }
 
-    fun løsningForSykepengehistorikkMk2behov(
+    fun løsningForSykepengehistorikkForFeriepenger(
         behovId: String,
         fødselsnummer: Fnr,
         fom: LocalDate,

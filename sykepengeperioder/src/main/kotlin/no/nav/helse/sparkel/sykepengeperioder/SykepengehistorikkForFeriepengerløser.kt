@@ -34,7 +34,7 @@ internal class SykepengehistorikkForFeriepengerløser(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
-        infotrygdService.løsningForSykepengehistorikkMk2behov(
+        infotrygdService.løsningForSykepengehistorikkForFeriepenger(
             packet["@id"].asText(),
             Fnr(packet["fødselsnummer"].asText()),
             packet["$behov.historikkFom"].asLocalDate(),
