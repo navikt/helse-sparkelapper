@@ -56,8 +56,9 @@ internal class InfotrygdService(
             return historikk
         } catch (err: Exception) {
             sikkerlogg.warn(
-                "feil ved henting av infotrygd-data: ${err.message} for {}",
+                "feil ved henting av infotrygd-data: ${err.message} for {}, {}",
                 keyValue("id", behovId),
+                keyValue("fødselsnummer", fødselsnummer),
                 err
             )
             return null
