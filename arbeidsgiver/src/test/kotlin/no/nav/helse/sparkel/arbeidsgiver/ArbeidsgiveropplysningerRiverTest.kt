@@ -14,7 +14,7 @@ import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -41,6 +41,7 @@ internal class ArbeidsgiveropplysningerRiverTest {
         val ORGNUMMER = "4321"
         val FOM = LocalDate.MIN
         val TOM = LocalDate.MAX
+        val EVENT_ID = UUID.randomUUID()
     }
 
     @BeforeEach
@@ -52,7 +53,7 @@ internal class ArbeidsgiveropplysningerRiverTest {
     private fun eventMelding(eventName: String): String =
         objectMapper.valueToTree<JsonNode>(
             mapOf(
-                "@id" to UUID.randomUUID(),
+                "@id" to EVENT_ID,
                 "@event_name" to eventName,
                 "@opprettet" to LocalDateTime.MAX,
                 "fom" to FOM,
@@ -70,10 +71,12 @@ internal class ArbeidsgiveropplysningerRiverTest {
     @Test
     fun `logger ved gyldig event`() {
         testRapid.sendTestMessage(eventMelding("opplysninger_fra_arbeidsgiver"))
-        assertEquals(1, logCollector.list.size)
-        assertTrue(logCollector.list.any { it.message.contains("Mottok opplysninger_fra_arbeidsgiver-event fra helsearbeidsgiver-bro-sykepenger") })
-        assertEquals(1, sikkerlogCollector.list.size)
-        assertTrue(sikkerlogCollector.list.any { it.message.contains("Mottok opplysninger_fra_arbeidsgiver-event fra helsearbeidsgiver-bro-sykepenger med data") })
+        assertEquals(2, logCollector.list.size)
+        assertNotNull(logCollector.list.single { it.message.contains("Mottok opplysninger_fra_arbeidsgiver-event fra helsearbeidsgiver-bro-sykepenger") })
+        assertNotNull(logCollector.list.single { it.message.contains("Publiserte opplysninger_fra_arbeidsgiver-event til Spleis") })
+        assertEquals(2, sikkerlogCollector.list.size)
+        assertNotNull(sikkerlogCollector.list.single { it.message.contains("Mottok opplysninger_fra_arbeidsgiver-event fra helsearbeidsgiver-bro-sykepenger med data") })
+        assertNotNull(sikkerlogCollector.list.single { it.message.contains("Publiserte opplysninger_fra_arbeidsgiver-event til Spleis med data") })
     }
 
     @Test
@@ -102,22 +105,15 @@ internal class ArbeidsgiveropplysningerRiverTest {
 
         assertEquals(1, testRapid.inspektør.size)
         val opplysningerSomSendesTilSpleis = testRapid.inspektør.message(0)
+        assertEquals("opplysninger_fra_arbeidsgiver", opplysningerSomSendesTilSpleis.path("@event_name").asText())
+        assertEquals(EVENT_ID, UUID.fromString(opplysningerSomSendesTilSpleis.path("@id").asText()))
         assertEquals(payload.organisasjonsnummer, opplysningerSomSendesTilSpleis.path("organisasjonsnummer").asText())
         assertEquals(payload.fødselsnummer, opplysningerSomSendesTilSpleis.path("fødselsnummer").asText())
         assertEquals(payload.fom, opplysningerSomSendesTilSpleis.path("fom").asLocalDate())
         assertEquals(payload.tom, opplysningerSomSendesTilSpleis.path("tom").asLocalDate())
-        assertEquals(
-            payload.arbeidsgiveropplysninger.periode,
-            opplysningerSomSendesTilSpleis.path("arbeidsgiveropplysninger").path("periode").asText()
-        )
-        assertEquals(
-            payload.arbeidsgiveropplysninger.refusjon,
-            opplysningerSomSendesTilSpleis.path("arbeidsgiveropplysninger").path("refusjon").asText()
-        )
-        assertEquals(
-            payload.arbeidsgiveropplysninger.inntekt,
-            opplysningerSomSendesTilSpleis.path("arbeidsgiveropplysninger").path("inntekt").asText()
-        )
-        assertEquals(payload.opprettet, opplysningerSomSendesTilSpleis.path("opprettet").asLocalDateTime())
+        assertEquals(payload.arbeidsgiveropplysninger.periode, opplysningerSomSendesTilSpleis.path("arbeidsgiveropplysninger").path("periode").asText())
+        assertEquals(payload.arbeidsgiveropplysninger.refusjon, opplysningerSomSendesTilSpleis.path("arbeidsgiveropplysninger").path("refusjon").asText())
+        assertEquals(payload.arbeidsgiveropplysninger.inntekt, opplysningerSomSendesTilSpleis.path("arbeidsgiveropplysninger").path("inntekt").asText())
+        assertEquals(payload.opprettet, opplysningerSomSendesTilSpleis.path("@opprettet").asLocalDateTime())
     }
 }

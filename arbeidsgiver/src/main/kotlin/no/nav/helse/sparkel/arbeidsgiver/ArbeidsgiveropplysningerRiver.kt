@@ -25,14 +25,21 @@ internal class ArbeidsgiveropplysningerRiver(
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .registerModules(JavaTimeModule())
     }
+
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("@event_name", eventName) }
             validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
             validate { it.require("fom", JsonNode::asLocalDate) }
             validate { it.require("tom", JsonNode::asLocalDate) }
-            validate { it.requireKey("organisasjonsnummer", "fødselsnummer", "arbeidsgiveropplysninger") }
-            validate { it.interestedIn("arbeidsgiveropplysninger.periode", "arbeidsgiveropplysninger.refusjon", "arbeidsgiveropplysninger.inntekt") }
+            validate { it.requireKey("@id", "organisasjonsnummer", "fødselsnummer", "arbeidsgiveropplysninger") }
+            validate {
+                it.interestedIn(
+                    "arbeidsgiveropplysninger.periode",
+                    "arbeidsgiveropplysninger.refusjon",
+                    "arbeidsgiveropplysninger.inntekt"
+                )
+            }
         }.register(this)
     }
 
@@ -58,10 +65,28 @@ internal class ArbeidsgiveropplysningerRiver(
             tom = packet["tom"].asLocalDate(),
             arbeidsgiveropplysninger = OpplysningerDTO(packet["arbeidsgiveropplysninger"]),
             opprettet = packet["@opprettet"].asLocalDateTime()
-        )
+        ).toMap().also {
+            it["@id"] = packet["@id"]
+            it["@event_name"] = packet["@event_name"]
+        }
 
         rapidsConnection.publish(payload.toJson())
+        "Publiserte $eventName-event til Spleis".let {
+            logg.info("$it:\n{}", loggVennligPacket(packet))
+            sikkerlogg.info("$it med data:\n{}", packet.toJson())
+        }
+
     }
 
-    private fun ArbeidsgiveropplysningerDTO.toJson(): String = objectMapper.writeValueAsString(this)
+    private fun Map<String, Any>.toJson(): String = objectMapper.valueToTree<JsonNode>(this).toString()
+
+    private fun ArbeidsgiveropplysningerDTO.toMap(): MutableMap<String, Any> = mutableMapOf(
+        "organisasjonsnummer" to organisasjonsnummer,
+        "fødselsnummer" to fødselsnummer,
+        "fom" to fom,
+        "tom" to tom,
+        "arbeidsgiveropplysninger" to arbeidsgiveropplysninger,
+        "@opprettet" to opprettet
+    )
+
 }
