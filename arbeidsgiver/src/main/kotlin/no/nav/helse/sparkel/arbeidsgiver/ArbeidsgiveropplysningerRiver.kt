@@ -20,7 +20,8 @@ internal class ArbeidsgiveropplysningerRiver(
     private companion object {
         val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         val logg = LoggerFactory.getLogger(this::class.java)
-        const val eventName = "opplysninger_fra_arbeidsgiver"
+        const val innkommendeEventName = "opplysninger_fra_arbeidsgiver"
+        const val utgåendeEventName = "mottok_opplysninger_fra_arbeidsgiver"
         val objectMapper = jacksonObjectMapper()
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .registerModules(JavaTimeModule())
@@ -28,7 +29,7 @@ internal class ArbeidsgiveropplysningerRiver(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@event_name", eventName) }
+            validate { it.demandValue("@event_name", innkommendeEventName) }
             validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
             validate { it.require("fom", JsonNode::asLocalDate) }
             validate { it.require("tom", JsonNode::asLocalDate) }
@@ -50,11 +51,11 @@ internal class ArbeidsgiveropplysningerRiver(
         )
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
-        sikkerlogg.error("forstod ikke $eventName:\n${problems.toExtendedReport()}")
+        sikkerlogg.error("forstod ikke $innkommendeEventName:\n${problems.toExtendedReport()}")
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        "Mottok $eventName-event fra helsearbeidsgiver-bro-sykepenger".let {
+        "Mottok $innkommendeEventName-event fra helsearbeidsgiver-bro-sykepenger".let {
             logg.info("$it:\n{}", loggVennligPacket(packet))
             sikkerlogg.info("$it med data:\n{}", packet.toJson())
         }
@@ -67,11 +68,11 @@ internal class ArbeidsgiveropplysningerRiver(
             opprettet = packet["@opprettet"].asLocalDateTime()
         ).toMap().also {
             it["@id"] = packet["@id"]
-            it["@event_name"] = "opplysninger_fra_arbeidsgiver_2"
+            it["@event_name"] = utgåendeEventName
         }
 
         rapidsConnection.publish(payload.toJson())
-        "Publiserte $eventName-event til Spleis".let {
+        "Publiserte $utgåendeEventName-event til Spleis".let {
             logg.info("$it:\n{}", loggVennligPacket(packet))
             sikkerlogg.info("$it med data:\n{}", packet.toJson())
         }

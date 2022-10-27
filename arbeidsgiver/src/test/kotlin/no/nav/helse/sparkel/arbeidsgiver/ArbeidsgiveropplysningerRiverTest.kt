@@ -73,10 +73,10 @@ internal class ArbeidsgiveropplysningerRiverTest {
         testRapid.sendTestMessage(eventMelding("opplysninger_fra_arbeidsgiver"))
         assertEquals(2, logCollector.list.size)
         assertNotNull(logCollector.list.single { it.message.contains("Mottok opplysninger_fra_arbeidsgiver-event fra helsearbeidsgiver-bro-sykepenger") })
-        assertNotNull(logCollector.list.single { it.message.contains("Publiserte opplysninger_fra_arbeidsgiver-event til Spleis") })
+        assertNotNull(logCollector.list.single { it.message.contains("Publiserte mottok_opplysninger_fra_arbeidsgiver-event til Spleis") })
         assertEquals(2, sikkerlogCollector.list.size)
         assertNotNull(sikkerlogCollector.list.single { it.message.contains("Mottok opplysninger_fra_arbeidsgiver-event fra helsearbeidsgiver-bro-sykepenger med data") })
-        assertNotNull(sikkerlogCollector.list.single { it.message.contains("Publiserte opplysninger_fra_arbeidsgiver-event til Spleis med data") })
+        assertNotNull(sikkerlogCollector.list.single { it.message.contains("Publiserte mottok_opplysninger_fra_arbeidsgiver-event til Spleis med data") })
     }
 
     @Test
@@ -105,7 +105,7 @@ internal class ArbeidsgiveropplysningerRiverTest {
 
         assertEquals(1, testRapid.inspektør.size)
         val opplysningerSomSendesTilSpleis = testRapid.inspektør.message(0)
-        assertEquals("opplysninger_fra_arbeidsgiver_2", opplysningerSomSendesTilSpleis.path("@event_name").asText())
+        assertEquals("mottok_opplysninger_fra_arbeidsgiver", opplysningerSomSendesTilSpleis.path("@event_name").asText())
         assertEquals(EVENT_ID, UUID.fromString(opplysningerSomSendesTilSpleis.path("@id").asText()))
         assertEquals(payload.organisasjonsnummer, opplysningerSomSendesTilSpleis.path("organisasjonsnummer").asText())
         assertEquals(payload.fødselsnummer, opplysningerSomSendesTilSpleis.path("fødselsnummer").asText())
