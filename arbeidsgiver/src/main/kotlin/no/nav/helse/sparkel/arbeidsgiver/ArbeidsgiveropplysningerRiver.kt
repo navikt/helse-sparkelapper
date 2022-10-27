@@ -73,8 +73,11 @@ internal class ArbeidsgiveropplysningerRiver(
 
         rapidsConnection.publish(payload.toJson())
         "Publiserte $utgåendeEventName-event til Spleis".let {
-            logg.info("$it:\n{}", loggVennligPacket(packet))
-            sikkerlogg.info("$it med data:\n{}", packet.toJson())
+            logg.info("$it:\n{}", mapOf(
+                "id" to payload["@id"],
+                "@event_name" to payload["@event_name"]
+            ))
+            sikkerlogg.info("$it med data:\n{}", payload.toJson())
         }
 
     }
