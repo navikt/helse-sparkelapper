@@ -105,7 +105,7 @@ internal class ArbeidsgiveropplysningerRiverTest {
 
         assertEquals(1, testRapid.inspektør.size)
         val opplysningerSomSendesTilSpleis = testRapid.inspektør.message(0)
-        assertEquals("opplysninger_fra_arbeidsgiver", opplysningerSomSendesTilSpleis.path("@event_name").asText())
+        assertEquals("opplysninger_fra_arbeidsgiver_2", opplysningerSomSendesTilSpleis.path("@event_name").asText())
         assertEquals(EVENT_ID, UUID.fromString(opplysningerSomSendesTilSpleis.path("@id").asText()))
         assertEquals(payload.organisasjonsnummer, opplysningerSomSendesTilSpleis.path("organisasjonsnummer").asText())
         assertEquals(payload.fødselsnummer, opplysningerSomSendesTilSpleis.path("fødselsnummer").asText())

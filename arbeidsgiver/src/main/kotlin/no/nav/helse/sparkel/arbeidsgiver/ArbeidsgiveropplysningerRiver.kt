@@ -67,7 +67,7 @@ internal class ArbeidsgiveropplysningerRiver(
             opprettet = packet["@opprettet"].asLocalDateTime()
         ).toMap().also {
             it["@id"] = packet["@id"]
-            it["@event_name"] = packet["@event_name"]
+            it["@event_name"] = "opplysninger_fra_arbeidsgiver_2"
         }
 
         rapidsConnection.publish(payload.toJson())
