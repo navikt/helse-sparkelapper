@@ -67,8 +67,7 @@ internal class Medlemskap(
             behov to client.hentMedlemskapsvurdering(
                 fnr = packet["fødselsnummer"].asText(),
                 fom = packet["$behov.medlemskapPeriodeFom"].asLocalDate(),
-                tom = packet["$behov.medlemskapPeriodeTom"].asLocalDate(),
-                arbeidUtenforNorge = false
+                tom = packet["$behov.medlemskapPeriodeTom"].asLocalDate()
             )
         )
         context.publish(packet.toJson()).also {

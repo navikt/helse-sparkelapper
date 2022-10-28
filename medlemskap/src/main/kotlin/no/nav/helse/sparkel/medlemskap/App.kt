@@ -12,8 +12,7 @@ fun main() {
                 clientId = env.getValue("AZURE_APP_CLIENT_ID"),
                 clientSecret = env.getValue("AZURE_APP_CLIENT_SECRET")
             ),
-            accesstokenScope = env.getValue("MEDLEMSKAP_SCOPE"),
-            sendBrukerinput = env.getOrDefault("SEND_BRUKERINPUT", "true") != "false"
+            accesstokenScope = env.getValue("MEDLEMSKAP_SCOPE")
         )
         Medlemskap(this, client)
     }.start()

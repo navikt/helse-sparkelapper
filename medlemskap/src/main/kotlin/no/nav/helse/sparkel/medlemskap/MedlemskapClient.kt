@@ -7,12 +7,12 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDate
+import org.intellij.lang.annotations.Language
 
 internal class MedlemskapClient(
     private val baseUrl: String,
     private val azureClient: AzureClient,
-    private val accesstokenScope: String = "??",
-    private val sendBrukerinput: Boolean // fjern når vi går i prod med ny tjeneste
+    private val accesstokenScope: String = "??"
 ) {
 
     internal companion object {
@@ -27,12 +27,7 @@ internal class MedlemskapClient(
 
         private fun JsonNode.erGradertExceptionMelding() = path("cause").isTextual && path("cause").asText().lowercase().contains("GradertAdresseException".lowercase())
     }
-    internal fun hentMedlemskapsvurdering(
-        fnr: String,
-        fom: LocalDate,
-        tom: LocalDate,
-        arbeidUtenforNorge: Boolean
-    ): JsonNode {
+    internal fun hentMedlemskapsvurdering(fnr: String, fom: LocalDate, tom: LocalDate): JsonNode {
         val (responseCode, responseBody) = with(URL(baseUrl).openConnection() as HttpURLConnection) {
             requestMethod = "POST"
 
@@ -44,7 +39,7 @@ internal class MedlemskapClient(
             doOutput = true
             outputStream.use {
                 it.bufferedWriter().apply {
-                    val requestBody = byggRequest(fnr, fom, tom, arbeidUtenforNorge, sendBrukerinput)
+                    val requestBody = byggRequest(fnr, fom, tom)
                     tjenestekallLog.info("Sender $requestBody")
                     write(requestBody)
                     flush()
@@ -68,25 +63,18 @@ internal class MedlemskapClient(
         return oversett(responseJson, fnr, fom, tom)
     }
 
-    private fun byggRequest(
-        fnr: String,
-        fom: LocalDate,
-        tom: LocalDate,
-        arbeidUtenforNorge: Boolean,
-        sendBrukerinput: Boolean
-    ) = if(sendBrukerinput)
-        """{"fnr": "$fnr", "periode": {"fom": "$fom", "tom": "$tom" }, "brukerinput": { "arbeidUtenforNorge": ${if (arbeidUtenforNorge) "true" else "false"} } }""".trimIndent()
-        else
-        """{
-             "fnr": "$fnr",
-             "periode": {"fom": "$fom", "tom": "$tom" },
-             "ytelse": "SYKEPENGER",
-             "førsteDagForYtelse": "$fom"
-            }""".trimMargin()
+    @Language("JSON")
+    private fun byggRequest(fnr: String, fom: LocalDate, tom: LocalDate) = """{
+            "fnr": "$fnr",
+            "periode": {"fom": "$fom", "tom": "$tom" },
+            "ytelse": "SYKEPENGER",
+            "førsteDagForYtelse": "$fom"
+        }""".trimIndent()
 }
 
 internal class MedlemskapException(message: String, val responseBody: String?) : RuntimeException(message)
 
+@Language("JSON")
 private fun byggUavklart(fnr: String, fom: LocalDate, tom: LocalDate) = """
 {
  "resultat": {
