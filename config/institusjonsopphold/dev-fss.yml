@@ -9,5 +9,5 @@ env:
 - name: STS_BASE_URL
   value: http://security-token-service.default.svc.nais.local
 - name: INSTITUSJONSOPPHOLD_URL
-  value: https://inst2-q1.dev.adeo.no
+  value: https://inst2.intern.nav.no
 
