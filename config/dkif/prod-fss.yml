@@ -6,4 +6,4 @@ env:
 - name: STS_BASE_URL
   value: http://security-token-service.default.svc.nais.local
 - name: DKIF_URL
-  value: http://dkif.default.svc.nais.local
+  value: http://dkif.team-rocket.svc.nais.local
