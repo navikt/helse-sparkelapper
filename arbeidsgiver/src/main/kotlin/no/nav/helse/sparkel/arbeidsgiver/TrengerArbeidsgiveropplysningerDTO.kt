@@ -14,7 +14,7 @@ internal data class TrengerArbeidsgiveropplysningerDto(
     val vedtaksperiodeId: UUID,
     val fom: LocalDate,
     val tom: LocalDate,
-    val forespurteOpplysninger: List<ForespurtOpplysning>,
+    val forespurtData: List<ForespurtOpplysning>,
     val opprettet: LocalDateTime = LocalDateTime.now()
 ) {
     val meldingstype get() = type.name.lowercase().toByteArray()
@@ -27,7 +27,7 @@ internal fun JsonMessage.toTrengerArbeidsgiverDto(): TrengerArbeidsgiveropplysni
     vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
     fom = this["fom"].asLocalDate(),
     tom = this["tom"].asLocalDate(),
-    forespurteOpplysninger = this["forespurteOpplysninger"].asForespurteOpplysninger(),
+    forespurtData = this["forespurteOpplysninger"].asForespurteOpplysninger(),
     opprettet = this["@opprettet"].asLocalDateTime()
 )
 
