@@ -59,12 +59,12 @@ internal class ArbeidsgiveropplysningerRiver(
             logg.info("$it:\n{}", loggVennligPacket(packet))
             sikkerlogg.info("$it med data:\n{}", packet.toJson())
         }
-        val payload = ArbeidsgiveropplysningerDTO(
+        val payload = ArbeidsgiveropplysningerDto(
             organisasjonsnummer = packet["organisasjonsnummer"].asText(),
             fødselsnummer = packet["fødselsnummer"].asText(),
             fom = packet["fom"].asLocalDate(),
             tom = packet["tom"].asLocalDate(),
-            arbeidsgiveropplysninger = OpplysningerDTO(packet["arbeidsgiveropplysninger"]),
+            arbeidsgiveropplysninger = OpplysningerDto(packet["arbeidsgiveropplysninger"]),
             opprettet = packet["@opprettet"].asLocalDateTime()
         ).toMap().also {
             it["@id"] = packet["@id"]
@@ -84,7 +84,7 @@ internal class ArbeidsgiveropplysningerRiver(
 
     private fun Map<String, Any>.toJson(): String = objectMapper.valueToTree<JsonNode>(this).toString()
 
-    private fun ArbeidsgiveropplysningerDTO.toMap(): MutableMap<String, Any> = mutableMapOf(
+    private fun ArbeidsgiveropplysningerDto.toMap(): MutableMap<String, Any> = mutableMapOf(
         "organisasjonsnummer" to organisasjonsnummer,
         "fødselsnummer" to fødselsnummer,
         "fom" to fom,

@@ -28,7 +28,7 @@ fun main() {
     app.start()
 }
 
-private fun createAivenProducer(env: Map<String, String>): KafkaProducer<String, TrengerArbeidsgiveropplysningerDTO> {
+private fun createAivenProducer(env: Map<String, String>): KafkaProducer<String, TrengerArbeidsgiveropplysningerDto> {
     val properties = Properties().apply {
         put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, env.getValue("KAFKA_BROKERS"))
         put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SSL.name)
@@ -47,10 +47,10 @@ private fun createAivenProducer(env: Map<String, String>): KafkaProducer<String,
     return KafkaProducer(properties, StringSerializer(), TrengerArbeidsgiveropplysningerDTOSerializer())
 }
 
-internal class TrengerArbeidsgiveropplysningerDTOSerializer : Serializer<TrengerArbeidsgiveropplysningerDTO> {
+internal class TrengerArbeidsgiveropplysningerDTOSerializer : Serializer<TrengerArbeidsgiveropplysningerDto> {
     private val objectMapper = jacksonObjectMapper()
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .registerModules(JavaTimeModule())
 
-    override fun serialize(topic: String, data: TrengerArbeidsgiveropplysningerDTO): ByteArray = objectMapper.writeValueAsBytes(data)
+    override fun serialize(topic: String, data: TrengerArbeidsgiveropplysningerDto): ByteArray = objectMapper.writeValueAsBytes(data)
 }

@@ -2,28 +2,34 @@ package no.nav.helse.sparkel.arbeidsgiver
 
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.rapids_rivers.asLocalDateTime
 
-internal data class TrengerArbeidsgiveropplysningerDTO(
+internal data class TrengerArbeidsgiveropplysningerDto(
     val type: Meldingstype,
-    val organisasjonsnummer: String,
     val fødselsnummer: String,
+    val organisasjonsnummer: String,
+    val vedtaksperiodeId: UUID,
     val fom: LocalDate,
     val tom: LocalDate,
+    val forespurteOpplysninger: List<ForespurtOpplysning>,
     val opprettet: LocalDateTime = LocalDateTime.now()
 ) {
     val meldingstype get() = type.name.lowercase().toByteArray()
-    constructor(message: JsonMessage) : this(
-        type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER,
-        organisasjonsnummer = message["organisasjonsnummer"].asText(),
-        fødselsnummer = message["fødselsnummer"].asText(),
-        fom = message["fom"].asLocalDate(),
-        tom = message["tom"].asLocalDate(),
-        opprettet = message["@opprettet"].asLocalDateTime()
-    )
 }
+
+internal fun JsonMessage.toTrengerArbeidsgiverDto(): TrengerArbeidsgiveropplysningerDto = TrengerArbeidsgiveropplysningerDto(
+    type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER,
+    fødselsnummer = this["fødselsnummer"].asText(),
+    organisasjonsnummer = this["organisasjonsnummer"].asText(),
+    vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
+    fom = this["fom"].asLocalDate(),
+    tom = this["tom"].asLocalDate(),
+    forespurteOpplysninger = this["forespurteOpplysninger"].asForespurteOpplysninger(),
+    opprettet = this["@opprettet"].asLocalDateTime()
+)
 
 internal enum class Meldingstype {
     TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER

@@ -60,7 +60,7 @@ internal class ArbeidsgiveropplysningerRiverTest {
                 "tom" to TOM,
                 "organisasjonsnummer" to ORGNUMMER,
                 "fødselsnummer" to FNR,
-                "arbeidsgiveropplysninger" to OpplysningerDTO(
+                "arbeidsgiveropplysninger" to OpplysningerDto(
                     periode = "periode",
                     refusjon = "refusjon",
                     inntekt = "inntekt"
@@ -90,12 +90,12 @@ internal class ArbeidsgiveropplysningerRiverTest {
     fun `publiserer forespørsel om arbeidsgiveropplysninger`() {
         testRapid.sendTestMessage(eventMelding("opplysninger_fra_arbeidsgiver"))
 
-        val payload = ArbeidsgiveropplysningerDTO(
+        val payload = ArbeidsgiveropplysningerDto(
             organisasjonsnummer = ORGNUMMER,
             fødselsnummer = FNR,
             fom = FOM,
             tom = TOM,
-            arbeidsgiveropplysninger = OpplysningerDTO(
+            arbeidsgiveropplysninger = OpplysningerDto(
                 periode = "periode",
                 refusjon = "refusjon",
                 inntekt = "inntekt"

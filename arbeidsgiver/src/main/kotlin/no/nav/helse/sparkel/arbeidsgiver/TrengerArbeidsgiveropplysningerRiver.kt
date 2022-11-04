@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory
 
 internal class TrengerArbeidsgiveropplysningerRiver(
     private val rapidsConnection: RapidsConnection,
-    private val arbeidsgiverProducer: KafkaProducer<String, TrengerArbeidsgiveropplysningerDTO>
+    private val arbeidsgiverProducer: KafkaProducer<String, TrengerArbeidsgiveropplysningerDto>
 ) : River.PacketListener {
     private companion object {
         val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -29,7 +29,7 @@ internal class TrengerArbeidsgiveropplysningerRiver(
             validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
             validate { it.require("fom", JsonNode::asLocalDate) }
             validate { it.require("tom", JsonNode::asLocalDate) }
-            validate { it.requireKey("organisasjonsnummer", "fødselsnummer") }
+            validate { it.requireKey("organisasjonsnummer", "fødselsnummer", "vedtaksperiodeId", "forespurteOpplysninger") }
         }.register(this)
     }
 
@@ -49,7 +49,7 @@ internal class TrengerArbeidsgiveropplysningerRiver(
             sikkerlogg.info("$it med data:\n{}", packet.toJson())
         }
 
-        val payload = TrengerArbeidsgiveropplysningerDTO(packet)
+        val payload = packet.toTrengerArbeidsgiverDto()
         arbeidsgiverProducer.send(
             ProducerRecord(
                 "tbd.arbeidsgiveropplysninger",

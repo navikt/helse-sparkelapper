@@ -7,15 +7,13 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.header.internals.RecordHeader
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -23,11 +21,16 @@ import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 
 internal class TrengerArbeidsgiveropplysningerRiverTest {
+    private val FNR = "1111111111"
+    private val ORGNUMMER = "222222222"
+
     private val objectMapper = jacksonObjectMapper()
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .registerModules(JavaTimeModule())
+
     private val testRapid = TestRapid()
-    private val mockproducer: KafkaProducer<String, TrengerArbeidsgiveropplysningerDTO> = mockk(relaxed = true)
+    private val mockproducer: KafkaProducer<String, TrengerArbeidsgiveropplysningerDto> = mockk(relaxed = true)
+
     private val logCollector = ListAppender<ILoggingEvent>()
     private val sikkerlogCollector = ListAppender<ILoggingEvent>()
 
@@ -51,10 +54,19 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "@id" to UUID.randomUUID(),
                 "@event_name" to eventName,
                 "@opprettet" to LocalDateTime.MAX,
+                "fødselsnummer" to FNR,
+                "organisasjonsnummer" to ORGNUMMER,
+                "vedtaksperiodeId" to UUID.randomUUID(),
                 "fom" to LocalDate.MIN,
                 "tom" to LocalDate.MAX,
-                "organisasjonsnummer" to "4321",
-                "fødselsnummer" to "123"
+                "forespurteOpplysninger" to listOf(
+                    mapOf("opplysningstype" to "Inntekt"),
+                    mapOf("opplysningstype" to "Refusjon"),
+                    mapOf(
+                        "opplysningstype" to "Arbeidsgiverperiode",
+                        "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+                    )
+                )
             )
         ).toString()
 
@@ -78,27 +90,9 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
 
     @Test
     fun `publiserer forespørsel om arbeidsgiveropplysninger`() {
+        every { mockproducer.send(any()) } answers { callOriginal() }
         testRapid.sendTestMessage(eventMelding("trenger_opplysninger_fra_arbeidsgiver"))
 
-        val payload = TrengerArbeidsgiveropplysningerDTO(
-            type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER,
-            organisasjonsnummer = "4321",
-            fødselsnummer = "123",
-            fom = LocalDate.MIN,
-            tom = LocalDate.MAX,
-            opprettet = LocalDateTime.MAX
-        )
-        verify(exactly = 1) {
-            mockproducer.send(
-                ProducerRecord(
-                    "tbd.arbeidsgiveropplysninger",
-                    null,
-                    payload.fødselsnummer,
-                    payload,
-                    listOf(RecordHeader("type", payload.meldingstype))
-                )
-            )
-        }
         assertEquals(1, testRapid.inspektør.size)
     }
 }
