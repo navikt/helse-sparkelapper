@@ -25,12 +25,8 @@ internal sealed class ForespurtOpplysning() {
     }
 }
 
-internal object Inntekt : ForespurtOpplysning() {
-    override fun toString(): String = this.javaClass.simpleName
-}
-internal object Refusjon : ForespurtOpplysning() {
-    override fun toString(): String = this.javaClass.simpleName
-}
+internal object Inntekt : ForespurtOpplysning()
+internal object Refusjon : ForespurtOpplysning()
 internal data class Arbeidsgiverperiode(val forslag: List<Map<String, LocalDate>>) : ForespurtOpplysning()
 
 internal fun JsonNode.asForespurteOpplysninger(): List<ForespurtOpplysning> =
