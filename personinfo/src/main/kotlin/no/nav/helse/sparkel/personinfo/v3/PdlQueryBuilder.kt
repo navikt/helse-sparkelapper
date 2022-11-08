@@ -22,7 +22,7 @@ internal class PdlQueryBuilder(
     @Language("GraphQL")
     private fun hentPerson() = """
         hentPerson(ident: ${DOLLAR}ident) {
-            ${attributter.mapNotNull { hentPersonElementer[it] }.joinToString()}
+            ${attributter.mapNotNull { hentPersonElementer[it] }.toSet().joinToString()}
         }
     """.takeIf { attributter.trengerHentPerson() }
 
@@ -52,6 +52,7 @@ internal class PdlQueryBuilder(
             Attributt.fødselsdato to "foedsel { foedselsdato }",
             Attributt.navn to "navn(historikk: false) { fornavn, mellomnavn, etternavn }",
             Attributt.adressebeskyttelse to "adressebeskyttelse(historikk: false) { gradering }",
+            Attributt.støttes to "adressebeskyttelse(historikk: false) { gradering }",
             Attributt.kjønn to "kjoenn(historikk: false) { kjoenn }",
             Attributt.dødsdato to "doedsfall { doedsdato, metadata { master } }"
         )

@@ -88,4 +88,18 @@ internal class PdlQueryBuilderTest {
             PdlQueryBuilder(emptySet())
         }
     }
+
+    @Test
+    fun `etterspør støttes`() {
+        val query = PdlQueryBuilder(setOf(Attributt.støttes)).build()
+        @Language("GraphQL")
+        val forventet = """
+            query(${'$'}ident: ID!) {
+                hentPerson(ident: ${'$'}ident) { 
+                    adressebeskyttelse(historikk: false) { gradering }
+                } 
+            }
+        """.formaterQuery()
+        assertEquals(forventet, query)
+    }
 }
