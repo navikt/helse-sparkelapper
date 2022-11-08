@@ -25,6 +25,7 @@ internal object PdlReplyOversetter {
             if (attributter.contains(Attributt.dødsdato)) put("dødsdato", PdlOversetter.fiskUtDødsdato(pdlReply))
             if (attributter.contains(Attributt.kjønn)) put("kjønn", PdlOversetter.fiskUtKjønn(pdlReply))
             if (attributter.contains(Attributt.adressebeskyttelse)) put("adressebeskyttelse", PdlOversetter.fiskUtAdressebeskyttelse(pdlReply))
+            if (attributter.contains(Attributt.støttes)) put("støttes", PdlOversetter.fiskUtStøttes(pdlReply))
             if (attributter.contains(Attributt.navn)) {
                 val navn = pdlReply["data"]["hentPerson"]["navn"].first()
                 put("fornavn", navn["fornavn"].asText())

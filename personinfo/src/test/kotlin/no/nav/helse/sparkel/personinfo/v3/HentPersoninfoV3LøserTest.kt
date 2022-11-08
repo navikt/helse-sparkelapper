@@ -25,6 +25,7 @@ internal class HentPersoninfoV3LøserTest {
         rapid.sendTestMessage(behov("aktørId", "fødselsdato"))
         assertEquals(1, rapid.inspektør.size)
         val løsning = rapid.inspektør.message(0).path("@løsning").path("HentPersoninfoV3")
+
         @Language("JSON")
         val forventet = """
             {
@@ -42,6 +43,7 @@ internal class HentPersoninfoV3LøserTest {
         rapid.sendTestMessage(behov(*Attributt.values().map { it.name }.toTypedArray()))
         assertEquals(1, rapid.inspektør.size)
         val løsning = rapid.inspektør.message(0).path("@løsning").path("HentPersoninfoV3")
+
         @Language("JSON")
         val forventet = """
             {
@@ -54,9 +56,68 @@ internal class HentPersoninfoV3LøserTest {
               "etternavn": "TRANFLASKE",
               "kjønn": "Kvinne",
               "adressebeskyttelse": "Fortrolig",
+              "støttes": true,
               "dødsdato": "2001-07-08"
             }
         """
+        JSONAssert.assertEquals(forventet, "$løsning", true)
+    }
+
+    @Test
+    fun `henter adressebeskyttelse når man forespør adressebeskyttelse`() {
+        val pdl = PDL { _, _, _ -> adresseBeskyttelseReply("STRENGT_FORTROLIG") }
+        HentPersoninfoV3Løser(rapid, pdl)
+        rapid.sendTestMessage(behov("adressebeskyttelse"))
+        assertEquals(1, rapid.inspektør.size)
+        val løsning = rapid.inspektør.message(0).path("@løsning").path("HentPersoninfoV3")
+
+        @Language("JSON")
+        val forventet = """
+            {
+              "adressebeskyttelse": "StrengtFortrolig"
+            }
+        """
+        JSONAssert.assertEquals(forventet, "$løsning", true)
+    }
+
+    @Test
+    fun `støtter ikke personer med adressebeskyttelse strengt_fortrolig_utland`() {
+        testStøtteAvAdressebeskyttelse("STRENGT_FORTROLIG_UTLAND", false)
+    }
+
+    @Test
+    fun `støtter ikke personer med adressebeskyttelse strengt_fortrolig`() {
+        testStøtteAvAdressebeskyttelse("STRENGT_FORTROLIG", false)
+    }
+
+    @Test
+    fun `støtter personer med adressebeskyttelse fortrolig`() {
+        testStøtteAvAdressebeskyttelse("FORTROLIG", true)
+    }
+
+    @Test
+    fun `støtter personer med adressebeskyttelse ugradert`() {
+        testStøtteAvAdressebeskyttelse("UGRADERT", true)
+    }
+
+    @Test
+    fun `støtter personer med adressebeskyttelse ukjent`() {
+        testStøtteAvAdressebeskyttelse("UKJENT", true)
+    }
+
+    private fun testStøtteAvAdressebeskyttelse(adressebeskyttelse: String, støttes: Boolean) {
+        val pdl = PDL { _, _, _ -> adresseBeskyttelseReply(adressebeskyttelse) }
+        HentPersoninfoV3Løser(rapid, pdl)
+        rapid.sendTestMessage(behov("støttes"))
+        assertEquals(1, rapid.inspektør.size)
+        val løsning = rapid.inspektør.message(0).path("@løsning").path("HentPersoninfoV3")
+
+        @Language("JSON")
+        val forventet = """
+                {
+                  "støttes": $støttes
+                }
+            """
         JSONAssert.assertEquals(forventet, "$løsning", true)
     }
 
@@ -155,6 +216,40 @@ internal class HentPersoninfoV3LøserTest {
                   "metadata": {
                     "master": "Freg"
                   }
+                }
+              ]
+            }
+          }
+        }
+        """.let { objectMapper.readTree(it) }
+
+        @Language("JSON")
+        private fun adresseBeskyttelseReply(adressebeskyttelse: String) = """
+        {
+          "data": {
+            "hentIdenter": {
+              "identer": [
+                {
+                  "ident": "12345678901",
+                  "gruppe": "FOLKEREGISTERIDENT",
+                  "historisk": false
+                },
+                {
+                  "ident": "02345678901",
+                  "gruppe": "FOLKEREGISTERIDENT",
+                  "historisk": true
+                },
+                {
+                  "ident": "1234567890123",
+                  "gruppe": "AKTORID",
+                  "historisk": false
+                }
+              ]
+            },
+            "hentPerson": {
+              "adressebeskyttelse": [
+                {
+                  "gradering": "$adressebeskyttelse"
                 }
               ]
             }

@@ -7,6 +7,7 @@ internal enum class Attributt {
     historiskeFolkeregisteridenter,
     navn,
     adressebeskyttelse,
+    støttes,
     kjønn,
     dødsdato;
 

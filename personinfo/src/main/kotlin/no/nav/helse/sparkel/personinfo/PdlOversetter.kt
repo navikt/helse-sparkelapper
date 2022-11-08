@@ -38,6 +38,11 @@ internal object PdlOversetter {
     internal fun fiskUtKjønn(pdlReply: JsonNode) = pdlReply["data"]["hentPerson"]["kjoenn"].first()["kjoenn"].somKjønn().name
     internal fun fiskUtAdressebeskyttelse(pdlReply: JsonNode) = pdlReply["data"]["hentPerson"]["adressebeskyttelse"].firstOrNull().somAdressebeskyttelse().name
 
+    internal fun fiskUtStøttes(pdlReply: JsonNode) =
+        fiskUtAdressebeskyttelse(pdlReply) !in listOf(
+            Adressebeskyttelse.StrengtFortrolig.name,
+            Adressebeskyttelse.StrengtFortroligUtland.name
+        )
     fun oversettPersoninfo(ident: String, pdlReply: JsonNode): JsonNode {
         håndterErrors(pdlReply)
         val pdlPerson = pdlReply["data"]["hentPerson"]
