@@ -20,7 +20,7 @@ internal class PersonhendelseConsumer(
             while (konsumerer) {
                 val records = kafkaConsumer.poll(Duration.ofMillis(100))
                 records.forEach {
-                    log.info("Behandler hendelse med offset ${it.offset()} på partisjon ${it.partition()}")
+                    log.info("Behandler hendelse med offset ${it.offset()} på partisjon ${it.partition()} med klokkeslett ${it.timestamp()} (${it.timestampType()}")
                     val record = it.value()
                     personhendelseRiver.onPackage(record)
                 }
