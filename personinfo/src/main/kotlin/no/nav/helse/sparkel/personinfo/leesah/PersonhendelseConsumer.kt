@@ -5,6 +5,7 @@ import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import org.apache.kafka.clients.consumer.ConsumerRecord
 
 internal class PersonhendelseConsumer(
     private val rapidConnection: RapidsConnection,
@@ -20,7 +21,15 @@ internal class PersonhendelseConsumer(
             while (konsumerer) {
                 val records = kafkaConsumer.poll(Duration.ofMillis(100))
                 records.forEach {
-                    log.info("Behandler hendelse med offset ${it.offset()} på partisjon ${it.partition()} med klokkeslett ${it.timestamp()} (${it.timestampType()}")
+                    try {
+                        if (meldingSkalIgnoreres(it)) {
+                            log.info("Ignorerer melding i dev som mangler personidenter")
+                            return@forEach
+                        }
+                    } catch (e: Exception) {
+                        throw RuntimeException("Noe gikk galt ifm. spesialhåndtering av dårlige data i dev", e)
+                    }
+
                     val record = it.value()
                     personhendelseRiver.onPackage(record)
                 }
@@ -32,6 +41,12 @@ internal class PersonhendelseConsumer(
             rapidConnection.stop()
         }
     }
+
+    private fun meldingSkalIgnoreres(record: ConsumerRecord<ByteArray, GenericRecord>) =
+        ("dev-fss" == System.getenv("NAIS_CLUSTER_NAME")
+                && (record.value().get("personidenter") as List<Any?>).isEmpty()
+                && record.timestamp() >= 1668188207619
+                && record.timestamp() <= 1668456606000)
 
     override fun close() {
         konsumerer = false

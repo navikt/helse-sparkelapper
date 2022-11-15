@@ -26,11 +26,7 @@ internal class PersonhendelseRiver(
         if (record.get("opplysningstype").toString() != "ADRESSEBESKYTTELSE_V1") return
         sikkerlogg.info("mottok endring på adressebeskyttelse")
 
-            val ident: String = (record.get("personidenter") as List<Any?>).firstOrNull().takeIf { it != null }?.toString()
-            ?: run {
-                sikkerlogg.warn("Forventet feltet personidenter i meldingen\n$record")
-                throw RuntimeException("no gæernt")
-            }
+        val ident = (record.get("personidenter") as List<Any?>).first().toString()
         if (throttle(ident)) return
 
         when (val identer: IdenterResultat = pdlClient.hentIdenter(ident, UUID.randomUUID().toString())) {
