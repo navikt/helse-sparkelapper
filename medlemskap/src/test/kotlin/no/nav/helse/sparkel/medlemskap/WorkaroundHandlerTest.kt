@@ -22,7 +22,7 @@ internal class WorkaroundHandlerTest {
         // Går bra andre gang
         val (responseCode, responseBody) = workaroundHandler.handle("fnr", now(), now()) { request() }
         assertEquals(200, responseCode)
-        assertEquals("VetIkke", objectMapper.readTree(responseBody).path("resultat").path("svar").asText())
+        assertEquals("UAVKLART", objectMapper.readTree(responseBody).path("resultat").path("svar").asText())
 
         // Feiler igjen neste gang
         assertThrows<SocketTimeoutException> {
@@ -71,7 +71,7 @@ internal class WorkaroundHandlerTest {
         val request: () -> Pair<Int, String?> = { 503 to response }
         val (responseCode, responseBody) = workaroundHandler.handle("fnr", now(), now()) { request() }
         assertEquals(200, responseCode)
-        assertEquals("VetIkke", objectMapper.readTree(responseBody).path("resultat").path("svar").asText())
+        assertEquals("UAVKLART", objectMapper.readTree(responseBody).path("resultat").path("svar").asText())
     }
 
     @Test
@@ -102,20 +102,20 @@ internal class WorkaroundHandlerTest {
         assertEquals("JA", objectMapper.readTree(responseBody).path("resultat").path("svar").asText())
     }
     @Test
-    fun `VetIkke fra Lovme`() {
+    fun `UAVKLART fra Lovme`() {
         val workaroundHandler = WorkaroundHandler()
         @Language("JSON")
         val response = """
         {
           "resultat" : {
-            "svar" : "VetIkke"
+            "svar" : "UAVKLART"
           }
         }
         """
         val request: () -> Pair<Int, String?> = { 200 to response }
         val (responseCode, responseBody) = workaroundHandler.handle("fnr", now(), now()) { request() }
         assertEquals(200, responseCode)
-        assertEquals("VetIkke", objectMapper.readTree(responseBody).path("resultat").path("svar").asText())
+        assertEquals("UAVKLART", objectMapper.readTree(responseBody).path("resultat").path("svar").asText())
     }
 
     private companion object {

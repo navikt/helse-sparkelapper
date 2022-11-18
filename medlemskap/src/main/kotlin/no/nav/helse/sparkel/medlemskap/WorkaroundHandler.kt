@@ -55,7 +55,7 @@ internal class WorkaroundHandler {
                         "tom": "$tom"
                     }
                 },
-                "svar": "VetIkke"
+                "svar": "UAVKLART"
             }
         }
         """
