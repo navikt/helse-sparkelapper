@@ -20,15 +20,16 @@ internal class WorkaroundHandler {
                 false -> responseCode to responseBody
             }
         } catch (ste: SocketTimeoutException) {
-            if (ste.message == ReadTimeout && readTimedOutPersoner.contains(fnr)) {
-                readTimedOutPersoner.remove(fnr)
-                sikkerlogg.info("Svarer uavklart medlemskap etter gjentatte $ReadTimeout mot Lovme for {}", keyValue("fødselsnummer", fnr))
-                return 200 to byggUavklart(fnr, fom, tom)
+            if (ste.message == ReadTimeout) {
+                if (readTimedOutPersoner.contains(fnr)) {
+                    readTimedOutPersoner.remove(fnr)
+                    sikkerlogg.info("Svarer uavklart medlemskap etter gjentatte $ReadTimeout mot Lovme for {}", keyValue("fødselsnummer", fnr))
+                    return 200 to byggUavklart(fnr, fom, tom)
+                } else {
+                    readTimedOutPersoner.add(fnr)
+                }
             }
-            else {
-                readTimedOutPersoner.add(fnr)
-                throw ste
-            }
+            throw ste
         }
     }
 
