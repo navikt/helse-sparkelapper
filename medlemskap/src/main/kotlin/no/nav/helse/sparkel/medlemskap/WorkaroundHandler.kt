@@ -14,6 +14,7 @@ internal class WorkaroundHandler {
     internal fun handle(fnr: String, fom: LocalDate, tom: LocalDate, block: () -> Pair<Int, String?>): Pair<Int, String?> {
         try {
             val (responseCode, responseBody) = block()
+            sikkerlogg.info("Svar fra Lovme: responseCode=$responseCode responseBody=$responseBody", keyValue("fødselsnummer", fnr))
             return when (responseBody.jsonNode().erGradertExceptionMelding()) {
                 true -> 200 to byggUavklart(fnr, fom, tom)
                 false -> responseCode to responseBody

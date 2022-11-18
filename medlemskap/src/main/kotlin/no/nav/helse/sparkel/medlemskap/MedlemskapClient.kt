@@ -7,6 +7,7 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDate
+import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.intellij.lang.annotations.Language
 
 internal class MedlemskapClient(
@@ -29,7 +30,7 @@ internal class MedlemskapClient(
                 outputStream.use {
                     it.bufferedWriter().apply {
                         val requestBody = byggRequest(fnr, fom, tom)
-                        tjenestekallLog.info("Sender $requestBody")
+                        sikkerlogg.info("Sender $requestBody", keyValue("fødselsnummer", fnr))
                         write(requestBody)
                         flush()
                     }
@@ -39,8 +40,6 @@ internal class MedlemskapClient(
                 responseCode to stream?.bufferedReader()?.readText()
             }
         }
-
-        tjenestekallLog.info("svar fra medlemskap: url=$baseUrl responseCode=$responseCode responseBody=$responseBody")
 
         if (responseBody == null) {
             throw MedlemskapException("unknown error (responseCode=$responseCode) from medlemskap", responseBody)
@@ -55,7 +54,7 @@ internal class MedlemskapClient(
 
     private companion object {
         private val objectMapper = jacksonObjectMapper()
-        private val tjenestekallLog = LoggerFactory.getLogger("tjenestekall")
+        private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         @Language("JSON")
         private fun byggRequest(fnr: String, fom: LocalDate, tom: LocalDate) = """
         {
