@@ -11,6 +11,7 @@ import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlag
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import java.time.YearMonth
+import java.util.UUID
 
 class Inntekter(
     rapidsConnection: RapidsConnection,
@@ -36,7 +37,8 @@ class Inntekter(
         init {
             River(rapidsConnection).apply {
                 validate { it.demandAll("@behov", listOf(InntekterForSykepengegrunnlag.name)) }
-                validate { it.requireKey("@id", "fødselsnummer", "vedtaksperiodeId") }
+                validate { it.requireKey("@id", "fødselsnummer") }
+                validate { it.interestedIn("vedtaksperiodeId") }
                 validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
                 validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
                 validate { it.rejectKey("@løsning") }
@@ -58,7 +60,8 @@ class Inntekter(
         init {
             River(rapidsConnection).apply {
                 validate { it.demandAll("@behov", listOf(InntekterForSammenligningsgrunnlag.name)) }
-                validate { it.requireKey("@id", "fødselsnummer", "vedtaksperiodeId") }
+                validate { it.requireKey("@id", "fødselsnummer") }
+                validate { it.interestedIn("vedtaksperiodeId") }
                 validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
                 validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
                 validate { it.rejectKey("@løsning") }
@@ -116,13 +119,17 @@ class Inntekter(
         context: MessageContext
     ) {
         try {
+            val callId = if (packet["vedtaksperiodeId"].isMissingOrNull()) UUID.randomUUID().toString().also {
+                log.info("Genererer en ny callId: $it i hentInntekter")
+            } else packet["vedtaksperiodeId"].asText()
+
             packet["@løsning"] = mapOf<String, Any>(
                 type.name to inntektsRestClient.hentInntektsliste(
                     fnr = packet["fødselsnummer"].asText(),
                     fom = beregningStart,
                     tom = beregningSlutt,
                     filter = type.ainntektfilter,
-                    callId = "${packet["vedtaksperiodeId"].asText()}-${packet["@id"].asText()}"
+                    callId = "$callId-${packet["@id"].asText()}"
                 )
             )
             context.publish(packet.toJson().also {
