@@ -58,12 +58,23 @@ class Arbeidsforholdbehovløser(
         return try {
             log.info("løser behov={}", keyValue("id", id))
             runBlocking {
-                aaregClient.hentFraAareg(fnr, id)
+                val arbeidsforholdFraAareg = aaregClient.hentFraAareg(fnr, id)
+                val arbeidsforholdPåOrganisasjonsnummer = arbeidsforholdFraAareg
                     .filter { arbeidsforhold ->
                         arbeidsforhold["arbeidsgiver"].path("organisasjonsnummer").asText() == organisasjonsnummer
                     }
+
+                val innrapportertEtterAOrdningen = arbeidsforholdPåOrganisasjonsnummer
                     .filter { it.path("innrapportertEtterAOrdningen").asBoolean() }
-                    .also {
+
+                val arbeidsforholdTilLøsning = if (arbeidsforholdPåOrganisasjonsnummer.isNotEmpty() &&
+                    innrapportertEtterAOrdningen.isEmpty()) {
+                    sikkerlogg.warn("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg der innrapportertEtterAOrdningen=true, ignorerer filtrering og returnerer alle")
+                    arbeidsforholdPåOrganisasjonsnummer
+                } else innrapportertEtterAOrdningen
+
+                // TODO: returnere arbeidsforholdTilLøsning hvis dette er ok
+                val løsning = innrapportertEtterAOrdningen.also {
                         if (it.any { arbeidsforhold ->
                                 !arbeidsforhold.path("arbeidsavtaler").any { arbeidsavtale ->
                                     arbeidsavtale.path("gyldighetsperiode").path("tom")
@@ -74,6 +85,11 @@ class Arbeidsforholdbehovløser(
                         }
                     }
                     .toLøsningDto()
+                if (løsning.isEmpty()) {
+                    sikkerlogg.error("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg, fikk svar:\n$arbeidsforholdFraAareg")
+                }
+
+                løsning
             }
         } catch (err: ClientRequestException) {
             log.warn(
