@@ -25,10 +25,14 @@ class GosysOppgaveEndretProducer(
             logger.info("Oppgave uten ident, {}" + keyValue("oppgaveId", oppgave.id))
             return
         }
-        if (!oppgave.ident.folkeregisterident.isNullOrEmpty() && oppgave.ident.identType == IdentType.AKTOERID) {
-            if (throttle(oppgave.ident.folkeregisterident)) return
+        val folkeregisterident = oppgave.ident.folkeregisterident
+        if (!folkeregisterident.isNullOrEmpty() && oppgave.ident.identType == IdentType.AKTOERID) {
+            if (harNettoppSendtMeldingForIdent(folkeregisterident)) {
+                sikkerlogg.info("Sender ikke duplikat melding for $folkeregisterident")
+                return
+            }
             logger.info("Har folkeregisterident og aktorId på oppgaven " + oppgave.id)
-            packetAndPublish(oppgave.ident.folkeregisterident, oppgave.ident.verdi)
+            packetAndPublish(folkeregisterident, oppgave.ident.verdi)
         } else {
             sikkerlogg.info("Oppgave: $oppgave")
             logger.error("Mangler folkeregisterident og/eller aktorId på oppgaven ${oppgave.id}")
@@ -55,9 +59,9 @@ class GosysOppgaveEndretProducer(
         rapidsConnection.publish(fødselsnummer, packet.toJson())
     }
 
-    private fun throttle(fnr: String): Boolean {
+    private fun harNettoppSendtMeldingForIdent(fnr: String): Boolean {
         if (fnr == forrigeFnr && forrigeOppdatering.plusNanos(throttleDuration.toNanos()) > LocalDateTime.now()) return true
-        forrigeFnr = fnr
+        forrigeFnr = fnr // burde kanskje ha vært en collection (som tømmer seg selv over tid)
         forrigeOppdatering = LocalDateTime.now()
         return false
     }
