@@ -21,17 +21,18 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.slf4j.LoggerFactory
 
 class OppgaveEndretConsumerTest {
     private val rapidApplication = mockk<RapidApplication>(relaxed = true)
-    private val kafkaConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
+    private val kafkaConsumer = mockk<KafkaConsumer<String, String>>()
+    private val logger = LoggerFactory.getLogger(this::class.java)
 
     @Test
     fun `happy case`() {
-        val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapidApplication)
+        val gosysOppgaveEndretProducer = mockk<GosysOppgaveEndretProducer>(relaxed = true)
         val manipulerbarKlokke = MutableClock(fixedClock(time = 6, minutt = 15).instant())
         val oppgaveEndretConsumer =
             OppgaveEndretConsumer(
@@ -44,22 +45,25 @@ class OppgaveEndretConsumerTest {
 
         assertTrue(oppgaveEndretConsumer.åpentVindu())
 
+        logger.info("Køer opp noen testmeldinger")
         queueMessages(
             oppgaveEndretConsumer,
-            listOf(null, null)
+            listOf("""{"tema": "SYK"}""", """{"tema": "SYK"}"""),
         )
 
-        // Vent til consumeren vår har sjekka klokka
-        while (manipulerbarKlokke.count == 0) { Thread.sleep(100)}
-
+        logger.info("Starter consumeren")
         val scope = CoroutineScope(Dispatchers.Default)
         scope.launch {
             oppgaveEndretConsumer.run()
         }
 
         // Vent til alle records er behandlet
-        while (manipulerbarKlokke.count < 2) { Thread.sleep(100)}
-        assertFalse(oppgaveEndretConsumer.åpentVindu())
+        logger.info("Venter til minst to meldinger er behandlet")
+        verify(atLeast = 2, timeout = Duration.ofSeconds(2).toMillis()) { kafkaConsumer.poll(any<Duration>()) }
+
+        while (oppgaveEndretConsumer.åpentVindu()) logger.info("venter på at vinduet skal lukkes")
+
+        verify(atLeast = 2) { gosysOppgaveEndretProducer.onPacket(any()) }
     }
 
     @Test
@@ -91,6 +95,11 @@ class OppgaveEndretConsumerTest {
                 manipulerbarKlokke,
             )
 
+        queueMessages(
+            oppgaveEndretConsumer,
+            listOf("""{"tema": "SYK"}"""),
+        )
+
         val scope = CoroutineScope(Dispatchers.Default)
         scope.launch {
             oppgaveEndretConsumer.run()
@@ -110,8 +119,10 @@ class OppgaveEndretConsumerTest {
 
     private fun queueMessages(consumer: OppgaveEndretConsumer, records: List<String?>) {
         val mutableRecords = records.toMutableList()
+        logger.info("setter opp mock for kafka-consumer")
         every { kafkaConsumer.poll(any<Duration>()) } answers {
             if (mutableRecords.isEmpty()) {
+                logger.info("ingen (flere) records å sende, lukker kafka-consumeren")
                 consumer.close()
                 return@answers ConsumerRecords.empty()
             }
@@ -119,6 +130,7 @@ class OppgaveEndretConsumerTest {
                 .removeAt(0)
                 ?.let {
                     val record = ConsumerRecord("Leesah", 0, 0, "", it)
+                    logger.info("sender en record til kafka-consumeren")
                     ConsumerRecords(
                         mapOf(TopicPartition("Leesah", 0) to mutableListOf(record))
                     )

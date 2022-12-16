@@ -68,8 +68,12 @@ internal class OppgaveEndretConsumer(
     Gosys-oppgaver kan lukkes som et resultat av utbetaling i Infotrygd, og per i dag klarer ikke spleis/spesialist å
     fange opp disse utbetalingene raskt nok. Når det er på plass kan dette vinduet fjernes.
      */
-    internal fun åpentVindu() = now().let {
-        vindusåpning < it && it < vinduslukking
+    internal fun åpentVindu(): Boolean {
+        val nå = now()
+        val åpent = vindusåpning < nå && nå < vinduslukking
+
+        logger.info("Vinduet er åpent: $åpent (sjekket om $nå er etter $vindusåpning og før $vinduslukking)")
+        return åpent
     }
 
     private fun now() = clock.instant().atZone(ZoneId.of("Europe/Oslo")).toLocalTime()

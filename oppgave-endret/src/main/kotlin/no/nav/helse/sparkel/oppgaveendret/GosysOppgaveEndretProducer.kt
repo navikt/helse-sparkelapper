@@ -22,7 +22,7 @@ class GosysOppgaveEndretProducer(
 
     fun onPacket(oppgave: Oppgave) {
         if (oppgave.ident == null) {
-            logger.info("Oppgave uten ident, {}" + keyValue("oppgaveId", oppgave.id))
+            logger.info("Oppgave uten ident, {}", keyValue("oppgaveId", oppgave.id))
             return
         }
         val folkeregisterident = oppgave.ident.folkeregisterident
