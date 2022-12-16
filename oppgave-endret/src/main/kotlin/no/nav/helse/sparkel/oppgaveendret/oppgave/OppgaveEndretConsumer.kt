@@ -43,6 +43,11 @@ internal class OppgaveEndretConsumer(
                         if (oppgave.tema != "SYK") return@onEach
                         logger.info("Mottatt oppgave_endret med {}", keyValue("oppgaveId", oppgave.id))
                         gosysOppgaveEndretProducer.onPacket(oppgave)
+                    }.also {
+                        if (it.isEmpty) {
+                            logger.info("Ingen flere records, lukker vinduet.")
+                            vinduslukking = now()
+                        }
                     }
             }
         } catch (exception: Exception) {

@@ -23,14 +23,12 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class OppgaveEndretConsumerTest {
     private val rapidApplication = mockk<RapidApplication>(relaxed = true)
     private val kafkaConsumer = mockk<KafkaConsumer<String, String>>(relaxed = true)
 
-    @Disabled
     @Test
     fun `happy case`() {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapidApplication)
