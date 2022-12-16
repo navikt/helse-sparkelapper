@@ -37,9 +37,8 @@ jobs:
       - id: set-vars
         name: create docker image SHA part
         run: |
-          TAG=$(echo ${{ github.sha }} | cut -c1-7)
-          echo "{team}={$TEAM}" >> $GITHUB_OUTPUT
-          echo "{tag}={$TAG}" >> $GITHUB_OUTPUT
+          echo "team=$TEAM" >> $GITHUB_OUTPUT
+          echo "tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
       - name: skriv ut variabler
         run: |
           echo $TEAM $TAG
