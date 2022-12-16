@@ -116,6 +116,9 @@ allprojects {
             useJUnitPlatform()
             testLogging {
                 events("skipped", "failed")
+                showStackTraces = true
+                showStandardStreams = true
+                exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
             }
         }
     }

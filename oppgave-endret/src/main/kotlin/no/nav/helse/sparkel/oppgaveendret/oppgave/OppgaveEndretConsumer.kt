@@ -72,7 +72,7 @@ internal class OppgaveEndretConsumer(
         vindusåpning < it && it < vinduslukking
     }
 
-    private fun now() = clock.instant().atZone(ZoneId.systemDefault()).toLocalTime()
+    private fun now() = clock.instant().atZone(ZoneId.of("Europe/Oslo")).toLocalTime()
 
     override fun close() {
         logger.info("close er kalt, avslutter konsumering", RuntimeException("Stack trace for debugging-formål"))
