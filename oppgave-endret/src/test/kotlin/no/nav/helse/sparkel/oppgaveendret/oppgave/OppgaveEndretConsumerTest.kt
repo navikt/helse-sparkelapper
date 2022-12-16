@@ -130,8 +130,8 @@ class OppgaveEndretConsumerTest {
         LocalDateTime.now()
             .with(ChronoField.HOUR_OF_DAY, time.toLong())
             .with(ChronoField.MINUTE_OF_HOUR, minutt.toLong())
-            .toInstant(ZoneId.systemDefault().rules.getOffset(now())),
-        ZoneId.systemDefault()
+            .toInstant(ZoneId.of("Europe/Oslo").rules.getOffset(now())),
+        ZoneId.of("Europe/Oslo")
     )
 }
 
