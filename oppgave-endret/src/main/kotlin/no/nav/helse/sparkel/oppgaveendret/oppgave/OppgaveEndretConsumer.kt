@@ -82,5 +82,4 @@ internal class OppgaveEndretConsumer(
         logger.info("close er kalt, avslutter konsumering", RuntimeException("Stack trace for debugging-formål"))
         konsumerer = false
     }
-
 }
