@@ -21,7 +21,7 @@ jobs:
       emptyMatrix: ${{ steps.set-matrix.outputs.emptyMatrix }}
       emptyDeployMatrix: ${{ steps.set-matrix.outputs.emptyDeployMatrix }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v1
       - name: cache gradle wrapper
         uses: actions/cache@v3
         with:
@@ -39,9 +39,6 @@ jobs:
         run: |
           echo "team=$TEAM" >> $GITHUB_OUTPUT
           echo "tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
-      - name: skriv ut variabler
-        run: |
-          echo ${{ steps.set-vars.outputs.team }}" ${{ steps.set-vars.outputs.tag }}"
       - id: set-changed-files
         name: create CHANGED_FILES
         run: |
