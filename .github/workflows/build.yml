@@ -35,16 +35,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-caches-
       - id: set-vars
+        name: create docker image SHA part
         run: |
           TAG=$(echo ${{ github.sha }} | cut -c1-7)
           echo "{team}={$TEAM}" >> $GITHUB_OUTPUT
           echo "{tag}={$TAG}" >> $GITHUB_OUTPUT
-      - id: set-changed-files
+      - name: skriv ut variabler
+        run: |
+          echo $TEAM $TAG
+      - name: set-changed-files
         run: |
           # create a comma-separated list of changed files
           CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | tr '\r\n' ',' | sed -e 's/,$//')
           echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
       - id: set-matrix
+        name: create matrices
         run: |
           MATRIX=$(./gradlew -q buildMatrix --console=plain)
           DEPLOY_MATRIX=$(./gradlew -q deployMatrix --console=plain)
@@ -180,9 +185,6 @@ jobs:
         uses: andstor/file-existence-action@v2
         with:
           files: "${{ env.VARS }}"
-      - name: skriv ut variabler
-        run: |
-          echo $TEAM $TAG ${{ needs.generate_vars.outputs.team }}
       - name: deploy
         if: steps.docker-exists.outputs.exists == 'true' && steps.vars_file.outputs.files_exists == 'true'
         uses: nais/deploy/actions/deploy@v1
