@@ -41,8 +41,9 @@ jobs:
           echo "tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
       - name: skriv ut variabler
         run: |
-          echo $TEAM $TAG
-      - name: set-changed-files
+          echo $tag $team
+      - id: set-changed-files
+        name: create CHANGED_FILES
         run: |
           # create a comma-separated list of changed files
           CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | tr '\r\n' ',' | sed -e 's/,$//')
