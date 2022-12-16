@@ -41,12 +41,13 @@ jobs:
           echo "tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
       - name: skriv ut variabler
         run: |
-          echo $tag $team
+          echo ${{ steps.set-vars.outputs.team }}" ${{ steps.set-vars.outputs.tag }}"
       - id: set-changed-files
         name: create CHANGED_FILES
         run: |
           # create a comma-separated list of changed files
           CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r $GITHUB_SHA | tr '\r\n' ',' | sed -e 's/,$//')
+          echo Endrede filer: $CHANGED_FILES
           echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
       - id: set-matrix
         name: create matrices
