@@ -37,8 +37,8 @@ jobs:
       - id: set-vars
         run: |
           TAG=$(echo ${{ github.sha }} | cut -c1-7)
-          echo "::set-output name=team::$TEAM"
-          echo "::set-output name=tag::$TAG"
+          echo "{team}={$TEAM}" >> $GITHUB_OUTPUT
+          echo "{tag}={$TAG}" >> $GITHUB_OUTPUT
       - id: set-changed-files
         run: |
           # create a comma-separated list of changed files
@@ -180,6 +180,9 @@ jobs:
         uses: andstor/file-existence-action@v2
         with:
           files: "${{ env.VARS }}"
+      - name: skriv ut variabler
+        run: |
+          echo $TEAM $TAG ${{ needs.generate_vars.outputs.team }}
       - name: deploy
         if: steps.docker-exists.outputs.exists == 'true' && steps.vars_file.outputs.files_exists == 'true'
         uses: nais/deploy/actions/deploy@v1
