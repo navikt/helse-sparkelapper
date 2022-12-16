@@ -76,7 +76,7 @@ internal class OppgaveEndretConsumer(
         return åpent
     }
 
-    private fun now() = clock.instant().atZone(ZoneId.of("Europe/Oslo")).toLocalTime()
+    private fun now() = clock.instant().atZone(ZoneId.systemDefault()).toLocalTime()
 
     override fun close() {
         logger.info("close er kalt, avslutter konsumering", RuntimeException("Stack trace for debugging-formål"))
