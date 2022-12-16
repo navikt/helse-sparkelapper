@@ -21,14 +21,14 @@ jobs:
       emptyMatrix: ${{ steps.set-matrix.outputs.emptyMatrix }}
       emptyDeployMatrix: ${{ steps.set-matrix.outputs.emptyDeployMatrix }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: cache gradle wrapper
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
       - name: cache gradle caches
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/build.gradle.kts') }}
@@ -79,17 +79,17 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.generate_vars.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-java@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
         with:
           java-version: '17.x'
       - name: cache gradle wrapper
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
       - name: cache gradle caches
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/build.gradle.kts') }}
@@ -99,7 +99,7 @@ jobs:
         run: ./gradlew ${{ matrix.project }}::test ${{ matrix.project }}::build
       - name: Check app.jar existence
         id: app_jar
-        uses: andstor/file-existence-action@v1
+        uses: andstor/file-existence-action@v2
         with:
           files: "${{ matrix.project }}/build/libs/app.jar"
       - name: create docker tag
@@ -124,14 +124,14 @@ jobs:
     if: needs.generate_vars.outputs.emptyMatrix == 'false'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
       - name: cache gradle wrapper
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /home/runner/work/_temp/_github_home/.gradle/wrapper
           key: ${{ runner.os }}-snyk-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
       - name: cache gradle caches
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /home/runner/work/_temp/_github_home/.gradle/caches
           key: ${{ runner.os }}-snyk-gradle-caches-${{ hashFiles('**/build.gradle.kts') }}
@@ -173,11 +173,11 @@ jobs:
           echo "IMAGE=${CONTAINER_REGISTRY}/${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}" >> $GITHUB_ENV
       - name: Fetch sources
         if: steps.docker-exists.outputs.exists == 'true'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Check for vars yml
         if: steps.docker-exists.outputs.exists == 'true'
         id: vars_file
-        uses: andstor/file-existence-action@v1
+        uses: andstor/file-existence-action@v2
         with:
           files: "${{ env.VARS }}"
       - name: deploy
