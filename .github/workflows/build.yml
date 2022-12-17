@@ -58,21 +58,21 @@ jobs:
 
           if [ "$MATRIX_SIZE" == '0' ]; then
             echo "Empty matrix"
-            echo "::set-output name=matrix::[]" # to prevent error because matrix is empty
-            echo "::set-output name=emptyMatrix::true"
+            echo "matrix=[]" >> $GITHUB_OUTPUT # to prevent error because matrix is empty
+            echo "emptyMatrix=true" >> $GITHUB_OUTPUT
           else
             echo Setting matrix to $MATRIX
-            echo "::set-output name=matrix::$MATRIX"
-            echo "::set-output name=emptyMatrix::false"
+            echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+            echo "emptyMatrix=false" >> $GITHUB_OUTPUT
           fi
           if [ "$DEPLOY_MATRIX_SIZE" == '0' ]; then
             echo "Empty deploy matrix"
-            echo "::set-output name=deployMatrix::[]" # to prevent error because matrix is empty
-            echo "::set-output name=emptyDeployMatrix::true"
+            echo "deployMatrix=[]" >> $GITHUB_OUTPUT # to prevent error because matrix is empty
+            echo "emptyDeployMatrix=true" >> $GITHUB_OUTPUT
           else
             echo Setting deploy matrix to $DEPLOY_MATRIX
-            echo "::set-output name=deployMatrix::$DEPLOY_MATRIX"
-            echo "::set-output name=emptyDeployMatrix::false"
+            echo "deployMatrix=$DEPLOY_MATRIX" >> $GITHUB_OUTPUT
+            echo "emptyDeployMatrix=false" >> $GITHUB_OUTPUT
           fi
 
   build:
