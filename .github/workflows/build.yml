@@ -21,7 +21,9 @@ jobs:
       emptyMatrix: ${{ steps.set-matrix.outputs.emptyMatrix }}
       emptyDeployMatrix: ${{ steps.set-matrix.outputs.emptyDeployMatrix }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
       - name: cache gradle wrapper
         uses: actions/cache@v3
         with:
