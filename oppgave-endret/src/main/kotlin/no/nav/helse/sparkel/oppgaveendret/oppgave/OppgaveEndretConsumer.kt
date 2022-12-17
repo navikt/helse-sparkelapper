@@ -43,13 +43,7 @@ internal class OppgaveEndretConsumer(
                         if (oppgave.tema != "SYK") return@onEach
                         logger.info("Mottatt oppgave_endret med {}", keyValue("oppgaveId", oppgave.id))
                         gosysOppgaveEndretProducer.onPacket(oppgave)
-                    }.also {
-                        if (it.isEmpty) {
-                            logger.info("Ingen flere records, lukker vinduet.")
-                            vinduslukking = now()
-                        }
-                    }
-            }
+                    }            }
         } catch (exception: Exception) {
             logger.error("Feilet under konsumering av oppgave_endret", exception)
         } finally {
@@ -59,7 +53,7 @@ internal class OppgaveEndretConsumer(
     }
 
     private val vindusåpning = LocalTime.of(6, 15)
-    private var vinduslukking = LocalTime.of(7, 15)
+    private val vinduslukking = LocalTime.of(6, 20)
 
     /*
     Pga risiko for dobbeltutbetaling med Infotrygd sjekker vi bare endringer i Gosys-oppgaver etter at spleis har stått

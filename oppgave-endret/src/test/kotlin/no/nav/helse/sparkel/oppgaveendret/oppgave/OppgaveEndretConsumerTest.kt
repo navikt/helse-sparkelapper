@@ -57,12 +57,8 @@ class OppgaveEndretConsumerTest {
             oppgaveEndretConsumer.run()
         }
 
-        // Vent til alle records er behandlet
         logger.info("Venter til minst to meldinger er behandlet")
         verify(atLeast = 2, timeout = Duration.ofSeconds(2).toMillis()) { kafkaConsumer.poll(any<Duration>()) }
-
-        while (oppgaveEndretConsumer.åpentVindu()) logger.info("venter på at vinduet skal lukkes")
-
         verify(atLeast = 2) { gosysOppgaveEndretProducer.onPacket(any()) }
     }
 
