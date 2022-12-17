@@ -47,8 +47,9 @@ class OppgaveEndretConsumerTest {
 
         logger.info("Køer opp noen testmeldinger")
         queueMessages(
-            oppgaveEndretConsumer,
-            listOf("""{"tema": "SYK"}""", """{"tema": "SYK"}"""),
+            consumer = oppgaveEndretConsumer,
+            records = List(7) { """{"tema": "SYK"}""" },
+            pollSize = 3
         )
 
         logger.info("Starter consumeren")
@@ -57,9 +58,9 @@ class OppgaveEndretConsumerTest {
             oppgaveEndretConsumer.run()
         }
 
-        logger.info("Venter til minst to meldinger er behandlet")
-        verify(atLeast = 2, timeout = Duration.ofSeconds(2).toMillis()) { kafkaConsumer.poll(any<Duration>()) }
-        verify(atLeast = 2) { gosysOppgaveEndretProducer.onPacket(any()) }
+        logger.info("Venter til meldingene er behandlet")
+        verify(atLeast = 4, timeout = Duration.ofSeconds(2).toMillis()) { kafkaConsumer.poll(any<Duration>()) }
+        verify(atLeast = 4) { gosysOppgaveEndretProducer.onPacket(any()) }
     }
 
     @Test
@@ -92,8 +93,9 @@ class OppgaveEndretConsumerTest {
             )
 
         queueMessages(
-            oppgaveEndretConsumer,
-            listOf("""{"tema": "SYK"}"""),
+            consumer = oppgaveEndretConsumer,
+            records = listOf("""{"tema": "SYK"}"""),
+            pollSize = 5,
         )
 
         val scope = CoroutineScope(Dispatchers.Default)
@@ -113,8 +115,8 @@ class OppgaveEndretConsumerTest {
         verify(atLeast = 1) { kafkaConsumer.poll(any<Duration>()) }
     }
 
-    private fun queueMessages(consumer: OppgaveEndretConsumer, records: List<String?>) {
-        val mutableRecords = records.toMutableList()
+    private fun queueMessages(consumer: OppgaveEndretConsumer, records: List<String?>, pollSize: Int) {
+        val mutableRecords = records.reversed().toMutableList()
         logger.info("setter opp mock for kafka-consumer")
         every { kafkaConsumer.poll(any<Duration>()) } answers {
             if (mutableRecords.isEmpty()) {
@@ -122,16 +124,23 @@ class OppgaveEndretConsumerTest {
                 consumer.close()
                 return@answers ConsumerRecords.empty()
             }
-            mutableRecords
-                .removeAt(0)
-                ?.let {
-                    val record = ConsumerRecord("Leesah", 0, 0, "", it)
-                    logger.info("sender en record til kafka-consumeren")
-                    ConsumerRecords(
-                        mapOf(TopicPartition("Leesah", 0) to mutableListOf(record))
-                    )
-                } ?: ConsumerRecords.empty()
+            val antallRecords = if (mutableRecords.size > pollSize) pollSize else mutableRecords.size
+            val pollRecords = nesteRecords(mutableRecords, antallRecords)
+            if (pollRecords.isNotEmpty()) {
+                logger.info("sender $antallRecords record{} til kafka-consumeren", if (antallRecords > 1) "(s)" else "")
+                ConsumerRecords(mapOf(TopicPartition("oppgave-endret", 0) to pollRecords))
+            } else ConsumerRecords.empty()
         }
+    }
+
+    private fun nesteRecords(
+        mutableRecords: MutableList<String?>,
+        pollRecordsSize: Int
+    ): List<ConsumerRecord<String, String?>> {
+        val pollResult = mutableRecords.subList(0, pollRecordsSize)
+        return pollResult.map {
+            ConsumerRecord("oppgave-endret", 0, 0, "", it)
+        }.also { pollResult.clear() }
     }
 
     private fun fixedClock(time: Int, minutt: Int) = Clock.fixed(

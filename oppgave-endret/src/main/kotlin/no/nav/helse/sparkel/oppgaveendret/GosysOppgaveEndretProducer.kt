@@ -31,11 +31,11 @@ class GosysOppgaveEndretProducer(
                 sikkerlogg.info("Sender ikke duplikat melding for $folkeregisterident")
                 return
             }
-            logger.info("Har folkeregisterident og aktorId på oppgaven " + oppgave.id)
+            logger.info("Har folkeregisterident og aktorId for oppgave med id: ${oppgave.id}")
             packetAndPublish(folkeregisterident, oppgave.ident.verdi)
         } else {
             sikkerlogg.info("Oppgave: $oppgave")
-            logger.error("Mangler folkeregisterident og/eller aktorId på oppgaven ${oppgave.id}")
+            logger.error("Mangler folkeregisterident og/eller aktorId for oppgave med id: ${oppgave.id}")
         }
     }
 
