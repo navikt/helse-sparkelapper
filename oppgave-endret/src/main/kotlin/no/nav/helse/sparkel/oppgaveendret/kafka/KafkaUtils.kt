@@ -38,4 +38,5 @@ fun Properties.toConsumerConfig(
     it[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = keyDeserializer.java
     it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = valueDeserializer.java
     it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "5000"
+    it[ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG] = "5242880"
 }
