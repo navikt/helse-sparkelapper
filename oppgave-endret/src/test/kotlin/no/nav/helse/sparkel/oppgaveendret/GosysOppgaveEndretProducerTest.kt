@@ -26,12 +26,12 @@ internal class GosysOppgaveEndretProducerTest {
     fun `dedupliserer fødselsnumre`() {
         val oppgave = Oppgave(1, "tema", Ident(42, IdentType.AKTOERID, "aktørId", "folkeregisterident"))
         val enOppgaveTil = Oppgave(2, "tema", Ident(42, IdentType.AKTOERID, "aktørId", "folkeregisterident"))
-        val endaEnOppgave = Oppgave(3, "tema", Ident(42, IdentType.AKTOERID, "aktørId", "folkeregisterident"))
-        val enUrelatertOppgave = Oppgave(4, "tema", Ident(92, IdentType.AKTOERID, "en annen aktørId", "en annen folkeregisterident"))
+        val enUrelatertOppgave = Oppgave(3, "tema", Ident(92, IdentType.AKTOERID, "en annen aktørId", "en annen folkeregisterident"))
+        val endaEnOppgave = Oppgave(4, "tema", Ident(42, IdentType.AKTOERID, "aktørId", "folkeregisterident"))
         oppgaveEndretProducer.onPacket(oppgave)
         oppgaveEndretProducer.onPacket(enOppgaveTil)
-        oppgaveEndretProducer.onPacket(endaEnOppgave)
         oppgaveEndretProducer.onPacket(enUrelatertOppgave)
+        oppgaveEndretProducer.onPacket(endaEnOppgave)
         oppgaveEndretProducer.shipIt()
 
         assertEquals(2, rapid.inspektør.size)

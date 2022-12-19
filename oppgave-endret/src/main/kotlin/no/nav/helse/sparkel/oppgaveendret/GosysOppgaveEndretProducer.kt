@@ -28,9 +28,9 @@ class GosysOppgaveEndretProducer(
             logger.error("Mangler folkeregisterident og/eller aktorId for oppgave med id: ${oppgave.id}")
             return
         }
+        logger.info("Har folkeregisterident og aktorId for oppgave med id: ${oppgave.id}")
         val førsteGang = fødselsnumre.add(folkeregisterident to oppgave.ident.verdi)
         if (!førsteGang) sikkerlogg.info("Sender ikke duplikat melding for $folkeregisterident")
-        logger.info("Har folkeregisterident og aktorId for oppgave med id: ${oppgave.id}")
     }
 
     private fun packetAndPublish(fødselsnummer: String, aktørId: String) {
