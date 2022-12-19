@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.oppgaveendret
 
-import java.time.Duration
 import java.time.LocalDateTime
 import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.keyValue
@@ -16,9 +15,7 @@ class GosysOppgaveEndretProducer(
     private val logger = LoggerFactory.getLogger(this::class.java)
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
-    private var forrigeFnr: String? = null
-    private var forrigeOppdatering = LocalDateTime.MIN
-    private val throttleDuration = Duration.ofSeconds(30)
+    private val fødselsnumre: MutableSet<Pair<String, String>> = mutableSetOf()
 
     fun onPacket(oppgave: Oppgave) {
         if (oppgave.ident == null) {
@@ -26,17 +23,14 @@ class GosysOppgaveEndretProducer(
             return
         }
         val folkeregisterident = oppgave.ident.folkeregisterident
-        if (!folkeregisterident.isNullOrEmpty() && oppgave.ident.identType == IdentType.AKTOERID) {
-            if (harNettoppSendtMeldingForIdent(folkeregisterident)) {
-                sikkerlogg.info("Sender ikke duplikat melding for $folkeregisterident")
-                return
-            }
-            logger.info("Har folkeregisterident og aktorId for oppgave med id: ${oppgave.id}")
-            packetAndPublish(folkeregisterident, oppgave.ident.verdi)
-        } else {
+        if (folkeregisterident.isNullOrEmpty() || oppgave.ident.identType != IdentType.AKTOERID) {
             sikkerlogg.info("Oppgave: $oppgave")
             logger.error("Mangler folkeregisterident og/eller aktorId for oppgave med id: ${oppgave.id}")
+            return
         }
+        val førsteGang = fødselsnumre.add(folkeregisterident to oppgave.ident.verdi)
+        if (!førsteGang) sikkerlogg.info("Sender ikke duplikat melding for $folkeregisterident")
+        logger.info("Har folkeregisterident og aktorId for oppgave med id: ${oppgave.id}")
     }
 
     private fun packetAndPublish(fødselsnummer: String, aktørId: String) {
@@ -59,11 +53,8 @@ class GosysOppgaveEndretProducer(
         rapidsConnection.publish(fødselsnummer, packet.toJson())
     }
 
-    private fun harNettoppSendtMeldingForIdent(fnr: String): Boolean {
-        if (fnr == forrigeFnr && forrigeOppdatering.plusNanos(throttleDuration.toNanos()) > LocalDateTime.now()) return true
-        forrigeFnr = fnr // burde kanskje ha vært en collection (som tømmer seg selv over tid)
-        forrigeOppdatering = LocalDateTime.now()
-        return false
+    fun shipIt() {
+        fødselsnumre.onEach { (fødselsnummer, aktørId) -> packetAndPublish(fødselsnummer, aktørId) }.clear()
     }
 
 }

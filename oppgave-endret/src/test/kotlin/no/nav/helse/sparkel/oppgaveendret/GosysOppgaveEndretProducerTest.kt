@@ -15,11 +15,39 @@ internal class GosysOppgaveEndretProducerTest {
     private val oppgaveEndretProducer: GosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapid)
 
     @Test
-    fun `sender en melding per mottatt oppgave`() {
+    fun `køer opp meldinger og sender dem når det er klart`() {
         val oppgave = Oppgave(1, "tema", Ident(42, IdentType.AKTOERID, "verdi", "folkeregisterident"))
         oppgaveEndretProducer.onPacket(oppgave)
-
+        oppgaveEndretProducer.shipIt()
         assertMeldingsinnhold(forventetMelding, rapid.inspektør.message(0))
+    }
+
+    @Test
+    fun `dedupliserer fødselsnumre`() {
+        val oppgave = Oppgave(1, "tema", Ident(42, IdentType.AKTOERID, "aktørId", "folkeregisterident"))
+        val enOppgaveTil = Oppgave(2, "tema", Ident(42, IdentType.AKTOERID, "aktørId", "folkeregisterident"))
+        val endaEnOppgave = Oppgave(3, "tema", Ident(42, IdentType.AKTOERID, "aktørId", "folkeregisterident"))
+        val enUrelatertOppgave = Oppgave(4, "tema", Ident(92, IdentType.AKTOERID, "en annen aktørId", "en annen folkeregisterident"))
+        oppgaveEndretProducer.onPacket(oppgave)
+        oppgaveEndretProducer.onPacket(enOppgaveTil)
+        oppgaveEndretProducer.onPacket(endaEnOppgave)
+        oppgaveEndretProducer.onPacket(enUrelatertOppgave)
+        oppgaveEndretProducer.shipIt()
+
+        assertEquals(2, rapid.inspektør.size)
+    }
+
+    @Test
+    fun `tømmer duplikatene etter hver sending`() {
+        val oppgave = Oppgave(1, "tema", Ident(42, IdentType.AKTOERID, "aktørId", "folkeregisterident"))
+        oppgaveEndretProducer.onPacket(oppgave)
+        oppgaveEndretProducer.shipIt()
+        assertEquals(1, rapid.inspektør.size)
+        oppgaveEndretProducer.shipIt()
+        assertEquals(1, rapid.inspektør.size)
+        oppgaveEndretProducer.onPacket(oppgave)
+        oppgaveEndretProducer.shipIt()
+        assertEquals(2, rapid.inspektør.size)
     }
 
     private fun assertMeldingsinnhold(forventet: String, faktisk: JsonNode) {

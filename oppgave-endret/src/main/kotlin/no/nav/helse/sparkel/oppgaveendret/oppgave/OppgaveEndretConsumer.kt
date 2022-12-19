@@ -43,7 +43,13 @@ internal class OppgaveEndretConsumer(
                         if (oppgave.tema != "SYK") return@onEach
                         logger.info("Mottatt oppgave_endret med {}", keyValue("oppgaveId", oppgave.id))
                         gosysOppgaveEndretProducer.onPacket(oppgave)
-                    }            }
+                    }.also {
+                        if (it.count() == 0) {
+                            logger.info("Ingen flere oppgavemeldinger å lese, sender meldinger")
+                            gosysOppgaveEndretProducer.shipIt()
+                        }
+                    }
+            }
         } catch (exception: Exception) {
             logger.error("Feilet under konsumering av oppgave_endret", exception)
         } finally {

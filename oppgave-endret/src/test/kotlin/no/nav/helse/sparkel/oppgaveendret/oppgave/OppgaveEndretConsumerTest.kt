@@ -61,6 +61,7 @@ class OppgaveEndretConsumerTest {
         logger.info("Venter til meldingene er behandlet")
         verify(atLeast = 4, timeout = Duration.ofSeconds(2).toMillis()) { kafkaConsumer.poll(any<Duration>()) }
         verify(atLeast = 4) { gosysOppgaveEndretProducer.onPacket(any()) }
+        verify(exactly = 1) { gosysOppgaveEndretProducer.shipIt() }
     }
 
     @Test
