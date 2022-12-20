@@ -58,8 +58,8 @@ internal class OppgaveEndretConsumer(
         }
     }
 
-    private val vindusåpning = LocalTime.of(6, 42)
-    private val vinduslukking = LocalTime.of(6, 52)
+    private val vindusåpning = LocalTime.of(6, 15)
+    private val vinduslukking = LocalTime.of(6, 21)
 
     /*
     Pga risiko for dobbeltutbetaling med Infotrygd sjekker vi bare endringer i Gosys-oppgaver etter at spleis har stått
