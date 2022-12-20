@@ -7,7 +7,6 @@ import java.time.Duration
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
-import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveEndretProducer
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -35,20 +34,16 @@ internal class OppgaveEndretConsumer(
                 }
                 logger.info("Poller topic")
                 kafkaConsumer.poll(Duration.ofSeconds(5))
-                    .apply { logger.info("Oppgave-endret record count: {}", this.count()) }
-                    .onEach { consumerRecord ->
-                        val record = consumerRecord.value()
-                        val oppgave: Oppgave = objectMapper.readValue(record)
-                        logger.info("Oppgave-endret oppgave tema: {}", oppgave.tema)
-                        if (oppgave.tema != "SYK") return@onEach
-                        logger.info("Mottatt oppgave_endret med {}", keyValue("oppgaveId", oppgave.id))
-                        gosysOppgaveEndretProducer.onPacket(oppgave)
-                    }.also {
-                        if (it.count() == 0) {
+                    .apply {
+                        val count = this.count()
+                        if (count == 0) {
                             logger.info("Ingen flere oppgavemeldinger å lese, sender meldinger")
                             gosysOppgaveEndretProducer.shipIt()
-                        }
+                        } else logger.info("Oppgave-endret record count: {}", count)
                     }
+                    .map { objectMapper.readValue<Oppgave>(it.value()) }
+                    .filter { it.tema == "SYK" }
+                    .onEach { gosysOppgaveEndretProducer.onPacket(it) }
             }
         } catch (exception: Exception) {
             logger.error("Feilet under konsumering av oppgave_endret", exception)
