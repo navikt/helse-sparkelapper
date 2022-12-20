@@ -21,7 +21,7 @@ data class KafkaConfig(
 fun loadBaseConfig(env: KafkaConfig, serviceUser: ServiceUser): Properties = Properties().also {
     it[SaslConfigs.SASL_JAAS_CONFIG] = "org.apache.kafka.common.security.plain.PlainLoginModule required " +
             "username=\"${serviceUser.username}\" password=\"${serviceUser.password}\";"
-    it[SaslConfigs.SASL_MECHANISM] = "plain"
+    it[SaslConfigs.SASL_MECHANISM] = "PLAIN"
     it[CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG] = env.kafkaBootstrapServers
     it[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_SSL"
     it[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = File(env.truststore!!).absolutePath
