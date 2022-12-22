@@ -42,19 +42,18 @@ internal data class Inntektsforslag(val beregningsmåneder: List<YearMonth>)
 internal data class Inntekt(val forslag: Inntektsforslag) : ForespurtOpplysning()
 
 internal fun JsonNode.asForespurteOpplysninger(): List<ForespurtOpplysning> =
-    mapNotNull { forespurtOpplysning ->
-        when (val opplysningstype = forespurtOpplysning["opplysningstype"].asText()) {
-            "Inntekt" -> Inntekt(forslag = forespurtOpplysning["forslag"].asInntektsforslag())
-            "Refusjon" -> Refusjon
-            "Arbeidsgiverperiode" -> Arbeidsgiverperiode(forslag = forespurtOpplysning["forslag"].asArbeidsgiverperiodeforslag())
-            "FastsattInntekt" -> FastsattInntekt(fastsattInntekt = forespurtOpplysning["fastsattInntekt"].asDouble())
-            else -> {
-                sikkerlogg.error("Mottok et trenger_opplysninger_fra_arbeidsgiver-event med ukjent opplysningtype: $opplysningstype")
-                null
-            }
-        }
-    }
+    mapNotNull(JsonNode::asForespurtOpplysning)
 
+internal fun JsonNode.asForespurtOpplysning() = when (val opplysningstype = this["opplysningstype"].asText()) {
+    "Inntekt" -> Inntekt(forslag = this["forslag"].asInntektsforslag())
+    "Refusjon" -> Refusjon
+    "Arbeidsgiverperiode" -> Arbeidsgiverperiode(forslag = this["forslag"].asArbeidsgiverperiodeforslag())
+    "FastsattInntekt" -> FastsattInntekt(fastsattInntekt = this["fastsattInntekt"].asDouble())
+    else -> {
+        sikkerlogg.error("Mottok et trenger_opplysninger_fra_arbeidsgiver-event med ukjent opplysningtype: $opplysningstype")
+        null
+    }
+}
 private fun JsonNode.asArbeidsgiverperiodeforslag(): List<Map<String, LocalDate>> = map { periode ->
     mapOf(
         "fom" to periode["fom"].asLocalDate(),

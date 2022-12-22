@@ -117,7 +117,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
     fun `publiserer forespørsel om arbeidsgiveropplysninger - med fastsatt inntekt, refusjon, og agp`() {
         every { mockproducer.send(any()) } answers { callOriginal() }
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(eventMeldingMedFastsattInntekt("trenger_opplysninger_fra_arbeidsgiver", vedtaksperiodeId))
+        testRapid.sendTestMessage(eventMeldingMedFastsattInntekt(vedtaksperiodeId))
 
         assertEquals(1, testRapid.inspektør.size)
         verify {
@@ -152,6 +152,24 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
         }
     }
 
+    @Test
+    fun `vi logger error ved inntekt uten beregningsmåneder`() {
+        testRapid.sendTestMessage(ugyldigInntektEvent())
+        assertTrue(sikkerlogCollector.list.any { it.message.contains("forstod ikke trenger_opplysninger_fra_arbeidsgiver") })
+    }
+
+    @Test
+    fun `vi logger error ved fastsatt inntekt uten fastsatt inntekt`() {
+        testRapid.sendTestMessage(ugyldigFastsattInntektEvent())
+        assertTrue(sikkerlogCollector.list.any { it.message.contains("forstod ikke trenger_opplysninger_fra_arbeidsgiver") })
+    }
+
+    @Test
+    fun `vi logger error ved arbeidsgiverperiode uten forslag`() {
+        testRapid.sendTestMessage(ugyldigArbeidsperiodeEvent())
+        assertTrue(sikkerlogCollector.list.any { it.message.contains("forstod ikke trenger_opplysninger_fra_arbeidsgiver") })
+    }
+
     private fun eventMeldingMedInntekt(eventName: String, vedtaksperiodeId: UUID = UUID.randomUUID()): String =
         objectMapper.valueToTree<JsonNode>(
             mapOf(
@@ -181,11 +199,11 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
             )
         ).toString()
 
-    private fun eventMeldingMedFastsattInntekt(eventName: String, vedtaksperiodeId: UUID = UUID.randomUUID()): String =
+    private fun eventMeldingMedFastsattInntekt(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
         objectMapper.valueToTree<JsonNode>(
             mapOf(
                 "@id" to UUID.randomUUID(),
-                "@event_name" to eventName,
+                "@event_name" to "trenger_opplysninger_fra_arbeidsgiver",
                 "@opprettet" to LocalDateTime.MAX,
                 "fødselsnummer" to FNR,
                 "organisasjonsnummer" to ORGNUMMER,
@@ -205,4 +223,31 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 )
             )
         ).toString()
+
+    private fun ugyldigInntektEvent(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
+        mapUtenForespurteOpplysninger(vedtaksperiodeId)
+            .plus("forespurteOpplysninger" to listOf(mapOf("opplysningstype" to "Inntekt")))
+            .toJson()
+
+    private fun ugyldigFastsattInntektEvent(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
+        mapUtenForespurteOpplysninger(vedtaksperiodeId)
+            .plus("forespurteOpplysninger" to listOf(mapOf("opplysningstype" to "FastsattInntekt")))
+            .toJson()
+    private fun ugyldigArbeidsperiodeEvent(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
+        mapUtenForespurteOpplysninger(vedtaksperiodeId)
+            .plus("forespurteOpplysninger" to listOf(mapOf("opplysningstype" to "Arbeidsgiverperiode")))
+            .toJson()
+
+    private fun Map<String, Any>.toJson() = objectMapper.valueToTree<JsonNode>(this).toString()
+
+    private fun mapUtenForespurteOpplysninger(vedtaksperiodeId: UUID) = mapOf(
+        "@id" to UUID.randomUUID(),
+        "@event_name" to "trenger_opplysninger_fra_arbeidsgiver",
+        "@opprettet" to LocalDateTime.MAX,
+        "fødselsnummer" to FNR,
+        "organisasjonsnummer" to ORGNUMMER,
+        "vedtaksperiodeId" to vedtaksperiodeId,
+        "fom" to LocalDate.MIN,
+        "tom" to LocalDate.MAX,
+    )
 }
