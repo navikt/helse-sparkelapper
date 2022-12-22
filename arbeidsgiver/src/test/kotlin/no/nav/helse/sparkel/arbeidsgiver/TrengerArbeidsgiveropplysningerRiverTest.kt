@@ -9,11 +9,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.header.internals.RecordHeader
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -48,7 +51,102 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
         sikkerlogCollector.list.clear()
     }
 
-    private fun eventMelding(eventName: String): String =
+    @Test
+    fun `logger ved gyldig event`() {
+        testRapid.sendTestMessage(eventMeldingMedInntekt("trenger_opplysninger_fra_arbeidsgiver"))
+        assertEquals(2, logCollector.list.size)
+        assertTrue(logCollector.list.any { it.message.contains("Mottok trenger_opplysninger_fra_arbeidsgiver-event fra spleis") })
+        assertTrue(logCollector.list.any { it.message.contains("Publiserte forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger") })
+        assertEquals(2, sikkerlogCollector.list.size)
+        assertTrue(sikkerlogCollector.list.any { it.message.contains("Mottok trenger_opplysninger_fra_arbeidsgiver-event fra spleis med data") })
+        assertTrue(sikkerlogCollector.list.any { it.message.contains("Publiserte forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger") })
+    }
+
+    @Test
+    fun `ignorerer andre eventer`() {
+        testRapid.sendTestMessage(eventMeldingMedInntekt("Tullebehov"))
+        assertEquals(0, logCollector.list.size)
+        assertEquals(0, sikkerlogCollector.list.size)
+    }
+
+    @Test
+    fun `publiserer forespørsel om arbeidsgiveropplysninger - med inntekt, refusjon, og agp`() {
+        every { mockproducer.send(any()) } answers { callOriginal() }
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(eventMeldingMedInntekt("trenger_opplysninger_fra_arbeidsgiver", vedtaksperiodeId))
+
+        assertEquals(1, testRapid.inspektør.size)
+        verify {
+            val trengerArbeidsgiveropplysningerDto = TrengerArbeidsgiveropplysningerDto(
+                Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER,
+                FNR,
+                ORGNUMMER,
+                vedtaksperiodeId,
+                LocalDate.MIN,
+                LocalDate.MAX,
+                forespurtData = listOf(
+                    mapOf(
+                        "opplysningstype" to "Inntekt"
+                    ),
+                    mapOf("opplysningstype" to "Refusjon"),
+                    mapOf(
+                        "opplysningstype" to "Arbeidsgiverperiode",
+                        "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+                    )
+                ),
+                opprettet = LocalDateTime.MAX
+            )
+            val record = ProducerRecord(
+                "tbd.arbeidsgiveropplysninger",
+                null,
+                FNR,
+                trengerArbeidsgiveropplysningerDto,
+                listOf(RecordHeader("type", trengerArbeidsgiveropplysningerDto.meldingstype))
+            )
+            mockproducer.send(record)
+        }
+    }
+
+    @Test
+    fun `publiserer forespørsel om arbeidsgiveropplysninger - med fastsatt inntekt, refusjon, og agp`() {
+        every { mockproducer.send(any()) } answers { callOriginal() }
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(eventMeldingMedFastsattInntekt("trenger_opplysninger_fra_arbeidsgiver", vedtaksperiodeId))
+
+        assertEquals(1, testRapid.inspektør.size)
+        verify {
+            val trengerArbeidsgiveropplysningerDto = TrengerArbeidsgiveropplysningerDto(
+                Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER,
+                FNR,
+                ORGNUMMER,
+                vedtaksperiodeId,
+                LocalDate.MIN,
+                LocalDate.MAX,
+                forespurtData = listOf(
+                    mapOf(
+                        "opplysningstype" to "FastsattInntekt",
+                        "fastsattInntekt" to 10000.0
+                    ),
+                    mapOf("opplysningstype" to "Refusjon"),
+                    mapOf(
+                        "opplysningstype" to "Arbeidsgiverperiode",
+                        "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+                    )
+                ),
+                opprettet = LocalDateTime.MAX
+            )
+            val record = ProducerRecord(
+                "tbd.arbeidsgiveropplysninger",
+                null,
+                FNR,
+                trengerArbeidsgiveropplysningerDto,
+                listOf(RecordHeader("type", trengerArbeidsgiveropplysningerDto.meldingstype))
+            )
+            mockproducer.send(record)
+        }
+    }
+
+    private fun eventMeldingMedInntekt(eventName: String, vedtaksperiodeId: UUID = UUID.randomUUID()): String =
         objectMapper.valueToTree<JsonNode>(
             mapOf(
                 "@id" to UUID.randomUUID(),
@@ -56,7 +154,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "@opprettet" to LocalDateTime.MAX,
                 "fødselsnummer" to FNR,
                 "organisasjonsnummer" to ORGNUMMER,
-                "vedtaksperiodeId" to UUID.randomUUID(),
+                "vedtaksperiodeId" to vedtaksperiodeId,
                 "fom" to LocalDate.MIN,
                 "tom" to LocalDate.MAX,
                 "forespurteOpplysninger" to listOf(
@@ -70,29 +168,28 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
             )
         ).toString()
 
-    @Test
-    fun `logger ved gyldig event`() {
-        testRapid.sendTestMessage(eventMelding("trenger_opplysninger_fra_arbeidsgiver"))
-        assertEquals(2, logCollector.list.size)
-        assertTrue(logCollector.list.any { it.message.contains("Mottok trenger_opplysninger_fra_arbeidsgiver-event fra spleis") })
-        assertTrue(logCollector.list.any { it.message.contains("Publiserte forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger") })
-        assertEquals(2, sikkerlogCollector.list.size)
-        assertTrue(sikkerlogCollector.list.any { it.message.contains("Mottok trenger_opplysninger_fra_arbeidsgiver-event fra spleis med data") })
-        assertTrue(sikkerlogCollector.list.any { it.message.contains("Publiserte forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger") })
-    }
-
-    @Test
-    fun `ignorerer andre eventer`() {
-        testRapid.sendTestMessage(eventMelding("Tullebehov"))
-        assertEquals(0, logCollector.list.size)
-        assertEquals(0, sikkerlogCollector.list.size)
-    }
-
-    @Test
-    fun `publiserer forespørsel om arbeidsgiveropplysninger`() {
-        every { mockproducer.send(any()) } answers { callOriginal() }
-        testRapid.sendTestMessage(eventMelding("trenger_opplysninger_fra_arbeidsgiver"))
-
-        assertEquals(1, testRapid.inspektør.size)
-    }
+    private fun eventMeldingMedFastsattInntekt(eventName: String, vedtaksperiodeId: UUID = UUID.randomUUID()): String =
+        objectMapper.valueToTree<JsonNode>(
+            mapOf(
+                "@id" to UUID.randomUUID(),
+                "@event_name" to eventName,
+                "@opprettet" to LocalDateTime.MAX,
+                "fødselsnummer" to FNR,
+                "organisasjonsnummer" to ORGNUMMER,
+                "vedtaksperiodeId" to vedtaksperiodeId,
+                "fom" to LocalDate.MIN,
+                "tom" to LocalDate.MAX,
+                "forespurteOpplysninger" to listOf(
+                    mapOf(
+                        "opplysningstype" to "FastsattInntekt",
+                        "fastsattInntekt" to 10000.0
+                    ),
+                    mapOf("opplysningstype" to "Refusjon"),
+                    mapOf(
+                        "opplysningstype" to "Arbeidsgiverperiode",
+                        "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+                    )
+                )
+            )
+        ).toString()
 }
