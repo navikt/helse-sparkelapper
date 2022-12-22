@@ -12,6 +12,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.YearMonth
 import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -86,7 +87,12 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 LocalDate.MAX,
                 forespurtData = listOf(
                     mapOf(
-                        "opplysningstype" to "Inntekt"
+                        "opplysningstype" to "Inntekt",
+                        "forslag" to mapOf("beregningsmåneder" to listOf(
+                            YearMonth.of(2022, 8),
+                            YearMonth.of(2022, 9),
+                            YearMonth.of(2022, 10)
+                        ))
                     ),
                     mapOf("opplysningstype" to "Refusjon"),
                     mapOf(
@@ -158,7 +164,14 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "fom" to LocalDate.MIN,
                 "tom" to LocalDate.MAX,
                 "forespurteOpplysninger" to listOf(
-                    mapOf("opplysningstype" to "Inntekt"),
+                    mapOf(
+                        "opplysningstype" to "Inntekt",
+                        "forslag" to mapOf("beregningsmåneder" to listOf(
+                            YearMonth.of(2022, 8),
+                            YearMonth.of(2022, 9),
+                            YearMonth.of(2022, 10)
+                        ))
+                    ),
                     mapOf("opplysningstype" to "Refusjon"),
                     mapOf(
                         "opplysningstype" to "Arbeidsgiverperiode",

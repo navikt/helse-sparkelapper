@@ -6,7 +6,7 @@ import java.util.UUID
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.rapids_rivers.asLocalDateTime
-import no.nav.helse.sparkel.arbeidsgiver.Inntekt.toJsonMap
+import no.nav.helse.sparkel.arbeidsgiver.Refusjon.toJsonMap
 
 internal data class TrengerArbeidsgiveropplysningerDto(
     val type: Meldingstype,
