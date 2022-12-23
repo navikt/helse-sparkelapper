@@ -103,6 +103,8 @@ jobs:
             ${{ runner.os }}-gradle-caches-
       - name: test and build
         run: ./gradlew ${{ matrix.project }}::test ${{ matrix.project }}::build
+        env:
+          ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
       - name: Check app.jar existence
         id: app_jar
         uses: andstor/file-existence-action@v2

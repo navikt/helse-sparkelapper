@@ -9,7 +9,7 @@ plugins {
 
 val gradleWrapperVersion = "7.4.2"
 val junitJupiterVersion = "5.8.2"
-val rapidsAndRiversVersion = "2022122217191671725962.4c6c2077db70"
+val rapidsAndRiversVersion = "2022122311551671792919.2bdd972d7bdb"
 val ktorVersion = "2.1.1"
 val cxfVersion = "3.5.3"
 val mockkVersion = "1.12.0"
@@ -93,9 +93,17 @@ allprojects {
     }
 
     repositories {
+        val githubPassword: String by project
         maven("https://packages.confluent.io/maven/")
         maven("https://oss.sonatype.org")
         mavenCentral()
+        maven {
+            url = uri("https://maven.pkg.github.com/navikt/*")
+            credentials {
+                username = "x-access-token"
+                password = githubPassword
+            }
+        }
     }
 
     tasks {

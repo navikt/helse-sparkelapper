@@ -1,6 +1,5 @@
 val cxfVersion: String by project
 val tjenestespesifikasjonerVersion = "1.2019.09.25-00.21-49b69f0625e0"
-val rapidsAndRivers = "2022122217191671725962.4c6c2077db70"
 
 dependencies {
     implementation("com.sun.xml.ws:jaxws-ri:2.3.3")
@@ -15,6 +14,4 @@ dependencies {
 
     implementation("no.nav.tjenestespesifikasjoner:ytelseskontrakt-v3-tjenestespesifikasjon:$tjenestespesifikasjonerVersion")
     implementation("no.nav.tjenestespesifikasjoner:nav-meldekortUtbetalingsgrunnlag-v1-tjenestespesifikasjon:$tjenestespesifikasjonerVersion")
-
-    api("com.github.navikt:rapids-and-rivers:$rapidsAndRivers")
 }
