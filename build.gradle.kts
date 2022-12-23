@@ -9,7 +9,7 @@ plugins {
 
 val gradleWrapperVersion = "7.4.2"
 val junitJupiterVersion = "5.8.2"
-val rapidsAndRiversVersion = "2022122311551671792919.2bdd972d7bdb"
+val rapidsAndRiversVersion = "2022122313141671797650.f806f770805a"
 val ktorVersion = "2.1.1"
 val cxfVersion = "3.5.3"
 val mockkVersion = "1.12.0"
