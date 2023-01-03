@@ -5,7 +5,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import java.time.Clock
 import java.time.Duration
 import java.time.LocalTime
-import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveEndretProducer
@@ -71,7 +70,7 @@ internal class OppgaveEndretConsumer(
         return åpent
     }
 
-    private fun now() = clock.instant().atZone(ZoneId.systemDefault()).toLocalTime()
+    private fun now() = LocalTime.now(clock)
 
     override fun close() {
         logger.info("close er kalt, avslutter konsumering", RuntimeException("Stack trace for debugging-formål"))

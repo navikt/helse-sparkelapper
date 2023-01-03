@@ -159,6 +159,6 @@ class MutableClock(var instant: Instant) : Clock() {
         count++
     }
 
-    override fun getZone(): ZoneId = throw UnsupportedOperationException()
+    override fun getZone(): ZoneId = ZoneId.systemDefault()
     override fun withZone(zoneId: ZoneId): Clock = throw UnsupportedOperationException()
 }
