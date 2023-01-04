@@ -22,7 +22,6 @@ fun main() {
 
     val app = RapidApplication.create(System.getenv()).apply {
         TrengerArbeidsgiveropplysningerRiver(this, arbeidsgiverProducer)
-        ArbeidsgiveropplysningerRiver(this)
     }
     logger.info("Hei, bro!")
     app.start()
