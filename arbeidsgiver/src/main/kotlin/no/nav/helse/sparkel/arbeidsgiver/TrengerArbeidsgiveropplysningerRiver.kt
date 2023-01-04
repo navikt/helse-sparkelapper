@@ -27,8 +27,10 @@ internal class TrengerArbeidsgiveropplysningerRiver(
         River(rapidsConnection).apply {
             validate { it.demandValue("@event_name", eventName) }
             validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
-            validate { it.require("fom", JsonNode::asLocalDate) }
-            validate { it.require("tom", JsonNode::asLocalDate) }
+            validate { it.requireArray("sykmeldingsperioder") {
+                require("fom", JsonNode::asLocalDate)
+                require("tom", JsonNode::asLocalDate)
+            }}
             validate { it.require("forespurteOpplysninger", JsonNode::validateForespurteOpplysninger) }
             validate { it.requireKey("organisasjonsnummer", "fødselsnummer", "vedtaksperiodeId", "forespurteOpplysninger") }
         }.register(this)

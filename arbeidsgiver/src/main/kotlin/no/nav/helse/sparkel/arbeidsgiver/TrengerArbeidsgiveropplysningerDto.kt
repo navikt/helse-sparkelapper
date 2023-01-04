@@ -13,24 +13,28 @@ internal data class TrengerArbeidsgiveropplysningerDto(
     val fødselsnummer: String,
     val organisasjonsnummer: String,
     val vedtaksperiodeId: UUID,
-    val fom: LocalDate,
-    val tom: LocalDate,
+    val sykmeldingsperioder: List<Map<String, LocalDate>>,
     val forespurtData: List<Map<String, Any>>,
     val opprettet: LocalDateTime = LocalDateTime.now()
 ) {
     val meldingstype get() = type.name.lowercase().toByteArray()
 }
 
-internal fun JsonMessage.toTrengerArbeidsgiverDto(): TrengerArbeidsgiveropplysningerDto = TrengerArbeidsgiveropplysningerDto(
-    type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER,
-    fødselsnummer = this["fødselsnummer"].asText(),
-    organisasjonsnummer = this["organisasjonsnummer"].asText(),
-    vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
-    fom = this["fom"].asLocalDate(),
-    tom = this["tom"].asLocalDate(),
-    forespurtData = this["forespurteOpplysninger"].asForespurteOpplysninger().toJsonMap(),
-    opprettet = this["@opprettet"].asLocalDateTime()
-)
+internal fun JsonMessage.toTrengerArbeidsgiverDto(): TrengerArbeidsgiveropplysningerDto =
+    TrengerArbeidsgiveropplysningerDto(
+        type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER,
+        fødselsnummer = this["fødselsnummer"].asText(),
+        organisasjonsnummer = this["organisasjonsnummer"].asText(),
+        vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
+        sykmeldingsperioder = this["sykmeldingsperioder"].map {
+            mapOf(
+                "fom" to it["fom"].asLocalDate(),
+                "tom" to it["tom"].asLocalDate()
+            )
+        },
+        forespurtData = this["forespurteOpplysninger"].asForespurteOpplysninger().toJsonMap(),
+        opprettet = this["@opprettet"].asLocalDateTime()
+    )
 
 internal enum class Meldingstype {
     TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER
