@@ -31,9 +31,15 @@ class AaregClient(
         }.execute()
 
         sikkerlogg.info("AaregResponse status: " + response.status)
-
-        return objectMapper.readValue(response.bodyAsText())
+        val responseValue = objectMapper.readTree(response.bodyAsText())
+        if (!responseValue.isArray) throw AaregException(responseValue.path("melding").asText("Ukjent respons fra Aareg"), responseValue)
+        return responseValue as ArrayNode
     }
+}
+
+class AaregException(message: String, private val responseValue: JsonNode) : RuntimeException(message) {
+
+    fun responseValue() = responseValue
 }
 
 data class Arbeidsforhold(

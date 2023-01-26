@@ -36,6 +36,18 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
                     .hentFraAareg(packet["fødselsnummer"].asText(), UUID.fromString(packet["@id"].asText()))
                     .map { it.toArbeidsforhold() }
             }
+        } catch (err: AaregException) {
+            log.error(
+                "Feilmelding for behov={} ved oppslag i AAreg. Ignorerer behov",
+                keyValue("id", packet["@id"].asText())
+            )
+            sikkerlogg.error(
+                "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Ignorerer behov. Response:\n\t{}",
+                keyValue("id", packet["@id"].asText()),
+                err.responseValue().toString(),
+                err
+            )
+            return
         } catch (err: ClientRequestException) {
             log.warn(
                 "Feilmelding for behov={} ved oppslag i AAreg. Svarer med tom liste",
