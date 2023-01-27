@@ -13,10 +13,18 @@ internal class Medlemskap(
     private companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private const val behov = "Medlemskap"
-        private val formatter = DateTimeFormatter.ofPattern("ddMMyy")
     }
 
+    private val medlemskapvurderinger = Medlemskapvurderinger()
+
     init {
+        River(rapidsConnection).apply {
+            validate {
+                it.demandValue("@event_name", "mock_medlemskap_avklaring")
+                it.requireKey("ident", "avklartMedlemskap")
+            }
+        }.register(medlemskapvurderinger)
+
         River(rapidsConnection).apply {
             validate { it.demandAll("@behov", listOf(behov)) }
             validate { it.rejectKey("@løsning") }
@@ -37,20 +45,42 @@ internal class Medlemskap(
         packet["@løsning"] = mapOf<String, Any>(
             behov to mapOf(
                 "resultat" to mapOf(
-                    "svar" to medlemskapSvar(fødselsnummer)
+                    "svar" to medlemskapvurderinger.vurderMedlemskap(fødselsnummer)
                 )
             )
         )
         context.publish(packet.toJson())
         sikkerlogg.info("Sender hardkodet svar for behov {}:\n{}", keyValue("id", packet["@id"].asText()), packet.toJson())
     }
+}
 
-    private fun medlemskapSvar(fødselsnummer: String) : String {
+private class Medlemskapvurderinger : River.PacketListener {
+    private companion object {
+        private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+        private val formatter = DateTimeFormatter.ofPattern("ddMMyy")
+    }
+
+    private val vurderinger = mutableMapOf<String, String>()
+
+    fun vurderMedlemskap(ident: String) = vurderinger.remove(ident) ?: gyldigFødselsnummer(ident)
+
+    private fun gyldigFødselsnummer(fødselsnummer: String) : String {
         return try {
             LocalDate.parse(fødselsnummer.substring(0,6), formatter)
             "JA"
         } catch (e: Exception){
             "UAVKLART"
         }
+    }
+
+    override fun onError(problems: MessageProblems, context: MessageContext) {
+        sikkerlogg.error("forstod ikke mock_medlemskap_avklaring:\n${problems.toExtendedReport()}")
+    }
+
+    override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        val ident = packet["ident"].asText()
+        val svar = if (packet["avklartMedlemskap"].asBoolean()) "JA" else "UAVKLART"
+        sikkerlogg.info("forbereder medlemskapvurdering for $ident=$svar")
+        vurderinger[ident] = svar
     }
 }
