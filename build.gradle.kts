@@ -145,7 +145,7 @@ subprojects {
         testImplementation("io.ktor:ktor-client-mock-jvm:$ktorVersion")
     }
     tasks {
-        if (!project.erFellesmodul()) {
+        if (project.skalLagAppJar()) {
             named<Jar>("jar") {
                 archiveBaseName.set("app")
 
@@ -180,3 +180,4 @@ fun Project.mainClass() =
     "$group.${name.replace("-", "")}.AppKt"
 
 fun Project.erFellesmodul() = name == "felles"
+fun Project.skalLagAppJar() = name !in listOf("felles", "abakus")
