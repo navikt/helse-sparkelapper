@@ -16,9 +16,10 @@ class AbakusClient(
     private val url: URL,
     private val accessTokenClient: AccessTokenClient
 ) {
-    fun hent(fnr: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse): Set<Stønadsperiode> {
+    fun hent(identifiktor: Identifiktor, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse): Set<Stønadsperiode> {
+        check(fom <= tom) { "fom $fom må være før eller lik tom $tom" }
         val callId = "${UUID.randomUUID()}"
-        val requestBody = requestBody(fnr, fom, tom, *ytelser)
+        val requestBody = requestBody(identifiktor, fom, tom, *ytelser)
 
         val response = try {
             url.postJson(requestBody,
@@ -28,18 +29,18 @@ class AbakusClient(
             ).second
         } catch (exception: Exception) {
             sikkerlogg.error("Feil ved henting av $ytelser fra Abakus for {} med {}.",
-                keyValue("fødselsnummer", fnr), keyValue("callId", callId), exception)
+                identifiktor.keyValue, keyValue("callId", callId), exception)
             throw IllegalStateException("Feil ved henting fra Abakus")
         }
 
         sikkerlogg.info("Hentet $ytelser fra Abakus for {} med {}. Response:\n\t$response",
-            keyValue("fødselsnummer", fnr), keyValue("callId", callId))
+            identifiktor.keyValue, keyValue("callId", callId))
 
         return try {
             response.abakusResponseTilStønadsperioder(fom, tom, *ytelser)
         } catch (exception: Exception) {
             sikkerlogg.error("Feil ved mapping av $ytelser fra Abakus-response for {} med {}.",
-                keyValue("fødselsnummer", fnr), keyValue("callId", callId), exception)
+                identifiktor.keyValue, keyValue("callId", callId), exception)
             throw throw IllegalStateException("Feil ved mapping av response fra Abakus")
         }
     }
@@ -50,10 +51,10 @@ class AbakusClient(
         private val aktiveYtelseStatuser = setOf("LØPENDE", "AVSLUTTET")
 
         @Language("JSON")
-        private fun requestBody(fnr: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse) = """
+        private fun requestBody(identifiktor: Identifiktor, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse) = """
         {
             "ident": {
-                "verdi": "$fnr"
+                "verdi": "$identifiktor"
             },
             "periode": {
                 "fom": "$fom",
