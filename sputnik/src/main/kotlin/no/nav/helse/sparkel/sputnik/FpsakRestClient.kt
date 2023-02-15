@@ -30,8 +30,8 @@ class FpsakRestClient(
             .firstOrNull()
 
     override suspend fun hent(aktørId: String, fom: LocalDate, tom: LocalDate) = Foreldrepengerløsning(
-        Foreldrepengeytelse = hentGjeldendeForeldrepengeytelse(aktørId),
-        Svangerskapsytelse = hentGjeldendeSvangerskapsytelse(aktørId)
+        foreldrepengeytelse = hentGjeldendeForeldrepengeytelse(aktørId),
+        svangerskapsytelse = hentGjeldendeSvangerskapsytelse(aktørId)
     )
 
     private suspend fun hentYtelse(aktørId: String, url: String) =
