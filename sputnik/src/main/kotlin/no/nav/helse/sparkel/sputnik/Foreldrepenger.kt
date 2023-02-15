@@ -1,13 +1,15 @@
 package no.nav.helse.sparkel.sputnik
 
+import java.time.LocalDate.MAX
+import java.time.LocalDate.MIN
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
 import org.slf4j.LoggerFactory
 
-class Foreldrepenger(
+internal class Foreldrepenger(
     rapidsConnection: RapidsConnection,
-    private val fpsakRestClient: FpsakRestClient
+    private val foreldrepengerløser: Foreldrepengerløser
 ) : River.PacketListener {
 
     private companion object {
@@ -32,7 +34,7 @@ class Foreldrepenger(
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         try {
-            runBlocking { hentYtelser(packet["aktørId"].asText()) }.also {
+            runBlocking { foreldrepengerløser.hent(packet["aktørId"].asText(), MIN, MAX) }.also {
                 packet["@løsning"] = mapOf(
                     "Foreldrepenger" to it
                 )
@@ -63,16 +65,5 @@ class Foreldrepenger(
             )
         }
     }
-
-    private suspend fun hentYtelser(aktørId: String): Foreldrepengerløsning {
-        val foreldrepengeytelse = fpsakRestClient.hentGjeldendeForeldrepengeytelse(aktørId)
-        val svangerskapsytelse = fpsakRestClient.hentGjeldendeSvangerskapsytelse(aktørId)
-        return Foreldrepengerløsning(foreldrepengeytelse, svangerskapsytelse)
-    }
-
-    class Foreldrepengerløsning(
-        @JvmField val Foreldrepengeytelse: Ytelse? = null,
-        @JvmField val Svangerskapsytelse: Ytelse? = null
-    )
 }
 

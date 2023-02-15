@@ -5,24 +5,20 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.HttpClient
 import io.ktor.client.request.accept
-import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.prepareGet
-import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsText
-import io.ktor.client.statement.readText
 import io.ktor.http.ContentType
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-
 class FpsakRestClient(
     private val baseUrl: String,
     private val httpClient: HttpClient,
     private val stsRestClient: StsRestClient
-) {
+): Foreldrepengerløser {
     suspend fun hentGjeldendeForeldrepengeytelse(aktørId: String): Ytelse? =
         hentYtelse(aktørId, "$baseUrl/fpsak/api/vedtak/gjeldendevedtak-foreldrepenger")
             .map { it.toYtelse() }
@@ -32,6 +28,11 @@ class FpsakRestClient(
         hentYtelse(aktørId, "$baseUrl/fpsak/api/vedtak/gjeldendevedtak-svangerskapspenger")
             .map { it.toYtelse() }
             .firstOrNull()
+
+    override suspend fun hent(aktørId: String, fom: LocalDate, tom: LocalDate) = Foreldrepengerløsning(
+        Foreldrepengeytelse = hentGjeldendeForeldrepengeytelse(aktørId),
+        Svangerskapsytelse = hentGjeldendeSvangerskapsytelse(aktørId)
+    )
 
     private suspend fun hentYtelse(aktørId: String, url: String) =
         httpClient.prepareGet(url) {
@@ -60,16 +61,3 @@ class FpsakRestClient(
         )
     }
 }
-
-data class Ytelse(
-    val aktørId: String,
-    val fom: LocalDate,
-    val tom: LocalDate,
-    val vedtatt: LocalDateTime,
-    val perioder: List<Periode>
-)
-
-data class Periode(
-    val fom: LocalDate,
-    val tom: LocalDate
-)
