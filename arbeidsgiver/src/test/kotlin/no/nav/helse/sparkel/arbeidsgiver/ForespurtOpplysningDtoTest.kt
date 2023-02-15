@@ -21,7 +21,7 @@ internal class ForespurtOpplysningDtoTest {
                 YearMonth.of(2022, 9),
                 YearMonth.of(2022, 10)
             ))),
-            Refusjon,
+            Refusjon(emptyList()),
             Arbeidsgiverperiode(listOf(
                 mapOf(
                     "fom" to LocalDate.of(2022, 11, 1),
@@ -38,7 +38,12 @@ internal class ForespurtOpplysningDtoTest {
     fun `tolker forespurt opplysninger korrekt - med fastsatt inntekt`() {
         val expectedForespurteOpplysninger = listOf(
             FastsattInntekt(10000.0),
-            Refusjon,
+            Refusjon(forslag = listOf(
+                Refusjonsforslag(
+                    fom = LocalDate.of(2022, 11, 1),
+                    tom = null,
+                    beløp = 10000.0
+            ))),
             Arbeidsgiverperiode(listOf(
                 mapOf(
                     "fom" to LocalDate.of(2022, 11, 1),
@@ -58,7 +63,10 @@ internal class ForespurtOpplysningDtoTest {
                     "fastsattInntekt": 10000.0
                 },
                 {
-                    "opplysningstype": "Refusjon"
+                    "opplysningstype": "Refusjon", 
+                    "forslag": [
+                        { "fom": "2022-11-01", "tom": null, "beløp": 10000.0 }
+                    ]
                 },
                 {
                     "opplysningstype": "Arbeidsgiverperiode",
@@ -86,7 +94,8 @@ internal class ForespurtOpplysningDtoTest {
                     }
                 },
                 {
-                    "opplysningstype": "Refusjon"
+                    "opplysningstype": "Refusjon", 
+                    "forslag": []
                 },
                 {
                     "opplysningstype": "Arbeidsgiverperiode",

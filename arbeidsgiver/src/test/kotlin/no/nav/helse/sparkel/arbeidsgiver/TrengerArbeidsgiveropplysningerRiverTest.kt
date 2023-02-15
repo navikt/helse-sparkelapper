@@ -93,7 +93,10 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                             YearMonth.of(2022, 10)
                         ))
                     ),
-                    mapOf("opplysningstype" to "Refusjon"),
+                    mapOf(
+                        "opplysningstype" to "Refusjon",
+                        "forslag" to emptyList<Refusjonsforslag>()
+                    ),
                     mapOf(
                         "opplysningstype" to "Arbeidsgiverperiode",
                         "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
@@ -131,7 +134,21 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                         "opplysningstype" to "FastsattInntekt",
                         "fastsattInntekt" to 10000.0
                     ),
-                    mapOf("opplysningstype" to "Refusjon"),
+                    mapOf(
+                        "opplysningstype" to "Refusjon",
+                        "forslag" to listOf(
+                            mapOf(
+                                "fom" to LocalDate.MIN,
+                                "tom" to LocalDate.MIN.plusDays(10),
+                                "beløp" to 10000.0
+                            ),
+                            mapOf(
+                                "fom" to LocalDate.MIN.plusDays(11),
+                                "tom" to null,
+                                "beløp" to 9000.0
+                            )
+                        )
+                    ),
                     mapOf(
                         "opplysningstype" to "Arbeidsgiverperiode",
                         "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
@@ -187,7 +204,10 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                             YearMonth.of(2022, 10)
                         ))
                     ),
-                    mapOf("opplysningstype" to "Refusjon"),
+                    mapOf(
+                        "opplysningstype" to "Refusjon",
+                        "forslag" to emptyList<Refusjonsforslag>()
+                    ),
                     mapOf(
                         "opplysningstype" to "Arbeidsgiverperiode",
                         "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
@@ -211,7 +231,13 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                         "opplysningstype" to "FastsattInntekt",
                         "fastsattInntekt" to 10000.0
                     ),
-                    mapOf("opplysningstype" to "Refusjon"),
+                    mapOf(
+                        "opplysningstype" to "Refusjon",
+                        "forslag" to listOf(
+                            mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(10), "beløp" to 10000.0),
+                            mapOf("fom" to LocalDate.MIN.plusDays(11), "tom" to null, "beløp" to 9000.0)
+                        )
+                    ),
                     mapOf(
                         "opplysningstype" to "Arbeidsgiverperiode",
                         "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
