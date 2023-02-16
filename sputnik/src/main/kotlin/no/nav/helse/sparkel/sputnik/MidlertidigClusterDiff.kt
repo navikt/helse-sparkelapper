@@ -19,6 +19,9 @@ import io.ktor.server.routing.routing
 import io.prometheus.client.CollectorRegistry
 import io.prometheus.client.Counter
 import io.prometheus.client.exporter.common.TextFormat
+import java.net.URL
+import no.nav.helse.sparkel.abakus.AbakusClient
+import no.nav.helse.sparkel.abakus.ClientSecretBasic
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("MidlertidigClusterDiff")
@@ -31,11 +34,26 @@ private val cluster get() = System.getenv("NAIS_CLUSTER_NAME")?.lowercase() ?: "
 
 internal fun clusterAvhengigStart() = when (cluster) {
     "prod-gcp" -> startSimpleApp()
-    "dev-gcp" -> startSimpleApp()
-    else -> startOnPrem()
+    "dev-gcp" -> startGcpRapidsApp()
+    else -> startOnPremRapidsApp()
 }
 
-private fun startOnPrem() {
+private fun startGcpRapidsApp() {
+    log.info("Starter gcp rapids app for $cluster")
+    val env = System.getenv()
+    val abakusClient = AbakusClient(
+        url = URL(env.getValue("ABAKUS_URL")),
+        accessTokenClient = ClientSecretBasic(
+            tokenEndpoint = env.getValue("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
+            clientId = env.getValue("AZURE_APP_CLIENT_ID"),
+            clientSecret = env.getValue("AZURE_APP_CLIENT_SECRET"),
+            scope = env.getValue("ABAKUS_SCOPE")
+        )
+    )
+    startRapidsApplication(Abakusløser(abakusClient))
+}
+
+private fun startOnPremRapidsApp() {
     log.info("Starter on prem rapids app for $cluster")
     val serviceUser = readServiceUserCredentials()
     val environment = setUpEnvironment()

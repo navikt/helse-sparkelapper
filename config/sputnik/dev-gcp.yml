@@ -1,5 +1,14 @@
+kafkaPool: nav-dev
+replicas:
+  min: 1
+  max: 1
 azure:
   enabled: true
   tenant: trygdeetaten.no
 externalHosts:
   - fpabakus.dev-fss-pub.nais.io
+env:
+  - name: ABAKUS_URL
+    value: https://fpabakus.dev-fss-pub.nais.io/fpabakus/ekstern/api/ytelse/v1/hent-ytelse-vedtak
+  - name: ABAKUS_SCOPE
+    value: api://dev-fss.teamforeldrepenger.fpabakus/.default

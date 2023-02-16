@@ -12,7 +12,7 @@ interface AccessTokenClient {
     fun accessToken(): String
 }
 
-internal class ClientSecretBasic(
+class ClientSecretBasic(
     tokenEndpoint: String,
     clientId: String,
     clientSecret: String,
