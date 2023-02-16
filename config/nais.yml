@@ -91,3 +91,11 @@ spec:
             envVarPrefix: {{ gcp.envVarPrefix }}
         tier: {{ gcp.tier }}
   {{/if}}
+  {{#if externalHosts}}
+  accessPolicy:
+    outbound:
+      external:
+      {{# each externalHosts as |item| }}
+        - host: {{item}}
+      {{/each}}
+  {{/if}}

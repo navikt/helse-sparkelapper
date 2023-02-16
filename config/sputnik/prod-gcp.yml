@@ -1,3 +1,5 @@
 azure:
   enabled: true
   tenant: nav.no
+externalHosts:
+  - fpabakus.prod-fss-pub.nais.io

@@ -1,3 +1,5 @@
 azure:
   enabled: true
   tenant: trygdeetaten.no
+externalHosts:
+  - fpabakus.dev-fss-pub.nais.io
