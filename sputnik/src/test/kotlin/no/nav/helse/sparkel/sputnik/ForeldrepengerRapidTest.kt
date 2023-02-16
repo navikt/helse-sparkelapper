@@ -146,6 +146,10 @@ internal class ForeldrepengerRapidTest {
                 "@id": "${UUID.randomUUID()}",
                 "@event_name":"behov",
                 "@behov": ["Foreldrepenger"],
+                "Foreldrepenger": {
+                    "foreldrepengerFom": "2018-01-01",
+                    "foreldrepengerTom": "2018-01-31"
+                },
                 "aktørId": "$this",
                 "vedtaksperiodeId": "${UUID.randomUUID()}"
             }

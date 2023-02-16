@@ -1,10 +1,14 @@
 package no.nav.helse.sparkel.sputnik
 
-import java.time.LocalDate.MAX
-import java.time.LocalDate.MIN
+import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.rapids_rivers.*
+import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
+import no.nav.helse.rapids_rivers.MessageProblems
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.asLocalDate
 import org.slf4j.LoggerFactory
 
 internal class Foreldrepenger(
@@ -24,6 +28,10 @@ internal class Foreldrepenger(
             validate { it.requireKey("@id") }
             validate { it.requireKey("aktørId") }
             validate { it.requireKey("vedtaksperiodeId") }
+            validate {
+                it.require("Foreldrepenger.foreldrepengerFom", JsonNode::asLocalDate)
+                it.require("Foreldrepenger.foreldrepengerTom", JsonNode::asLocalDate)
+            }
         }.register(this)
     }
 
@@ -34,7 +42,11 @@ internal class Foreldrepenger(
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         try {
-            runBlocking { foreldrepengerløser.hent(packet["aktørId"].asText(), MIN, MAX) }.also {
+            val aktørId = packet["aktørId"].asText()
+            val fom = packet["Foreldrepenger.foreldrepengerFom"].asLocalDate()
+            val tom = packet["Foreldrepenger.foreldrepengerTom"].asLocalDate()
+
+            runBlocking { foreldrepengerløser.hent(aktørId, fom, tom) }.also {
                 packet["@løsning"] = mapOf(
                     "Foreldrepenger" to it
                 )
