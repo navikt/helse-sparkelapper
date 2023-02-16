@@ -29,18 +29,18 @@ class AbakusClient(
                 "Nav-Callid" to callId
             ).second
         } catch (exception: Exception) {
-            sikkerlogg.error("Feil ved henting av $ytelser fra Abakus for {} med {}.",
+            sikkerlogg.error("Feil ved henting av ${ytelser.toSet()} fra Abakus for {} med {}.",
                 identifiktor.keyValue, keyValue("callId", callId), exception)
             throw IllegalStateException("Feil ved henting fra Abakus")
         }
 
-        sikkerlogg.info("Hentet $ytelser fra Abakus for {} med {}. Response:\n\t$response",
+        sikkerlogg.info("Hentet ${ytelser.toSet()} fra Abakus for {} med {}. Response:\n\t$response",
             identifiktor.keyValue, keyValue("callId", callId))
 
         return try {
             response.abakusResponseTilStønadsperioder(fom, tom, *ytelser)
         } catch (exception: Exception) {
-            sikkerlogg.error("Feil ved mapping av $ytelser fra Abakus-response for {} med {}.",
+            sikkerlogg.error("Feil ved mapping av ${ytelser.toSet()} fra Abakus-response for {} med {}.",
                 identifiktor.keyValue, keyValue("callId", callId), exception)
             throw throw IllegalStateException("Feil ved mapping av response fra Abakus")
         }

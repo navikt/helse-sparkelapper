@@ -18,6 +18,7 @@ internal class Abakusløser(
         )
     }
 
+
     private companion object {
         private val Foreldrepenger = AbakusYtelse("FORELDREPENGER")
         private val Svangerskapspenger = AbakusYtelse("SVANGERSKAPSPENGER")
