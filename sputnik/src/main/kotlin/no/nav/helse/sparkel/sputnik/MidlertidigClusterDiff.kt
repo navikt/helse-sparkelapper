@@ -21,7 +21,7 @@ import io.prometheus.client.Counter
 import io.prometheus.client.exporter.common.TextFormat
 import java.net.URL
 import no.nav.helse.sparkel.abakus.AbakusClient
-import no.nav.helse.sparkel.abakus.ClientSecretBasic
+import no.nav.helse.sparkel.abakus.ClientSecretPost
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("MidlertidigClusterDiff")
@@ -43,7 +43,7 @@ private fun startGcpRapidsApp() {
     val env = System.getenv()
     val abakusClient = AbakusClient(
         url = URL(env.getValue("ABAKUS_URL")),
-        accessTokenClient = ClientSecretBasic(
+        accessTokenClient = ClientSecretPost(
             tokenEndpoint = env.getValue("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
             clientId = env.getValue("AZURE_APP_CLIENT_ID"),
             clientSecret = env.getValue("AZURE_APP_CLIENT_SECRET"),

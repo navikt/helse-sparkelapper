@@ -3,35 +3,29 @@ package no.nav.helse.sparkel.abakus
 import java.net.URL
 import java.time.LocalDateTime
 import java.time.LocalDateTime.now
-import java.util.Base64
 import no.nav.helse.rapids_rivers.isMissingOrNull
-import no.nav.helse.sparkel.abakus.HttpRequest.get
+import no.nav.helse.sparkel.abakus.HttpRequest.post
 import org.slf4j.LoggerFactory
 
 interface AccessTokenClient {
     fun accessToken(): String
 }
 
-class ClientSecretBasic(
+class ClientSecretPost(
     tokenEndpoint: String,
     clientId: String,
     clientSecret: String,
-    scope: String = "openid"
+    scope: String
 ) : AccessTokenClient {
-    private val tokenUrl = URL("$tokenEndpoint?grant_type=client_credentials&scope=$scope")
-
-    private val authorizationHeader =
-        "Basic ${Base64.getEncoder().encodeToString("$clientId:$clientSecret".toByteArray())}"
-
+    private val tokenEndpointUrl = URL(tokenEndpoint)
+    private val requestBody = "client_id=$clientId&client_secret=$clientSecret&scope=$scope&grant_type=client_credentials"
     private var cachedAccessToken: Pair<String, LocalDateTime>? = null
 
     override fun accessToken() =
         cachedAccessToken?.takeIf { it.second > now() }?.first ?: hentOgCache()
 
     private fun accessTokenResponse(): Pair<String, Long> {
-        val (_, json) = tokenUrl.get(
-            "Authorization" to authorizationHeader
-        )
+        val (_, json) = tokenEndpointUrl.post(requestBody)
         val accessToken = json.path("access_token")
         val expiresIn = json.path("expires_in")
         if (accessToken.isMissingOrNull())
@@ -42,13 +36,13 @@ class ClientSecretBasic(
     }
 
     private fun hentOgCache(): String {
-        logger.info("Henter nytt access token fra $tokenUrl")
+        logger.info("Henter nytt access token fra $tokenEndpointUrl")
         val (accessToken, expiresIn) = accessTokenResponse()
         cachedAccessToken = accessToken to now().plusSeconds(expiresIn).minusSeconds(30)
         return accessToken
     }
 
     private companion object {
-        private val logger = LoggerFactory.getLogger(ClientSecretBasic::class.java)
+        private val logger = LoggerFactory.getLogger(ClientSecretPost::class.java)
     }
 }

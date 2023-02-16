@@ -31,12 +31,27 @@ internal object HttpRequest {
             sikkerlogg.error("Mottok responseCode=$responseCode, url=$url:\nBody:\n$responseBody")
             throw IllegalStateException("Mottok responseCode=$responseCode, url=$url")
         }
-        responseCode to objectMapper.readTree(responseBody)
+        responseCode to try {
+            objectMapper.readTree(responseBody)
+        } catch (ex: Exception) {
+            sikkerlogg.info("Klarte ikke mappe response til JSON.\nBody:\n $responseBody")
+            throw IllegalStateException("Klarte ikke å mappe response til JSON fra $url")
+        }
     }
 
     internal fun URL.get(
         vararg headers: Pair<String, String>
     ) = request(method = "GET", body = null, *headers)
+
+    internal fun URL.post(
+        requestBody: String,
+        vararg headers: Pair<String, String>
+    ) = request(method = "POST", body = {
+        it.bufferedWriter().apply {
+            write(requestBody)
+            flush()
+        }
+    }, *headers)
 
     internal fun URL.postJson(
         requestBody: String,

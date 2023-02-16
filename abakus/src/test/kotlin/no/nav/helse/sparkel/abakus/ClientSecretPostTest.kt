@@ -11,21 +11,22 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class ClientSecretBasicTest {
+internal class ClientSecretPostTest {
 
     private lateinit var server: WireMockServer
-    private lateinit var client: ClientSecretBasic
+    private lateinit var client: ClientSecretPost
 
     @BeforeAll
     fun beforeAll() {
         server = WireMockServer(WireMockConfiguration.options().dynamicPort())
         server.start()
         WireMock.configureFor(server.port())
-        mockSts()
-        client = ClientSecretBasic(
+        mockTokenEndpoint()
+        client = ClientSecretPost(
             clientId = "foo",
             clientSecret = "bar",
-            tokenEndpoint = server.stsTokenEndpoint()
+            tokenEndpoint = server.tokenEndpoint(),
+            scope = "api://baz/.default"
         )
     }
 
@@ -46,13 +47,11 @@ internal class ClientSecretBasicTest {
           "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ik1uQ19WWmNBVGZNNXBP..."
         }
         """
-        internal fun WireMockServer.stsTokenEndpoint() = "${baseUrl()}/token"
-        internal fun mockSts() {
+        internal fun WireMockServer.tokenEndpoint() = "${baseUrl()}/token"
+        internal fun mockTokenEndpoint() {
             WireMock.stubFor(
-                WireMock.get(WireMock.urlPathMatching("/token"))
-                    .withHeader("Authorization", WireMock.equalTo("Basic Zm9vOmJhcg==")) // foo:bar
-                    .withQueryParam("grant_type", WireMock.equalTo("client_credentials"))
-                    .withQueryParam("scope", WireMock.equalTo("openid"))
+                WireMock.post(WireMock.urlPathMatching("/token"))
+                    .withRequestBody(WireMock.equalTo("client_id=foo&client_secret=bar&scope=api://baz/.default&grant_type=client_credentials"))
                     .willReturn(
                         WireMock.aResponse()
                             .withStatus(200)
