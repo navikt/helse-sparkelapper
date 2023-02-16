@@ -1,8 +1,8 @@
 package no.nav.helse.sparkel.sputnik
 
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit.MILLIS
 import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
@@ -48,7 +48,7 @@ internal class ForeldrepengerRapidTest {
                     "aktørId": "1",
                     "fom": "2001-01-01",
                     "tom": "2001-12-31",
-                    "vedtatt": "$vedtatt",
+                    "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2001-01-01",
                         "tom": "2001-05-01"
@@ -61,7 +61,7 @@ internal class ForeldrepengerRapidTest {
                     "aktørId": "1",
                     "fom": "2001-01-05",
                     "tom": "2001-12-25",
-                    "vedtatt": "$vedtatt",
+                    "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2001-01-05",
                         "tom": "2001-05-01"
@@ -88,7 +88,7 @@ internal class ForeldrepengerRapidTest {
                     "aktørId": "2",
                     "fom": "2002-01-01",
                     "tom": "2002-12-31",
-                    "vedtatt": "$vedtatt",
+                    "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2002-01-01",
                         "tom": "2002-05-01"
@@ -117,7 +117,7 @@ internal class ForeldrepengerRapidTest {
                     "aktørId": "3",
                     "fom": "2003-01-01",
                     "tom": "2003-12-31",
-                    "vedtatt": "$vedtatt",
+                    "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2003-01-01",
                         "tom": "2003-05-01"
@@ -134,7 +134,7 @@ internal class ForeldrepengerRapidTest {
     }
 
     private companion object {
-        private val vedtatt = Instant.ofEpochMilli(System.currentTimeMillis()).atZone(ZoneId.systemDefault()).toLocalDateTime()
+        private val vedtatt = LocalDateTime.parse("2023-02-16T09:52:35.255").truncatedTo(MILLIS)
         private const val BeggeYtelser = "1"
         private const val KunForeldrepenger = "2"
         private const val KunSvangerskapspenger = "3"
