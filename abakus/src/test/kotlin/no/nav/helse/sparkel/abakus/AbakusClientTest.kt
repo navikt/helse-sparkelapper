@@ -9,6 +9,8 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import java.net.URL
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import no.nav.helse.sparkel.abakus.Fødselsnummer.Companion.fødselsnummer
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterAll
@@ -43,16 +45,16 @@ internal class AbakusClientTest {
     @Test
     fun `hente pleiepenger`() {
         assertEquals(setOf(
-            Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-06-01"), grad = 91, ytelse = Pleiepenger),
-            Stønadsperiode(fom = LocalDate.parse("2018-07-01"), tom = LocalDate.parse("2018-12-31"), grad = 50, ytelse = Pleiepenger)
+            Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-06-01"), grad = 91, ytelse = Pleiepenger, vedtatt = vedtatt),
+            Stønadsperiode(fom = LocalDate.parse("2018-07-01"), tom = LocalDate.parse("2018-12-31"), grad = 50, ytelse = Pleiepenger, vedtatt = vedtatt)
         ), client.hent(fnr, fom, tom, Pleiepenger))
     }
 
     @Test
     fun `hente omsorgspenger`() {
         assertEquals(setOf(
-            Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-12-31"), grad = 100, ytelse = Omsorgspenger),
-            Stønadsperiode(fom = LocalDate.parse("2020-01-01"), tom = LocalDate.parse("2020-12-31"), grad = 69, ytelse = Omsorgspenger)
+            Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-12-31"), grad = 100, ytelse = Omsorgspenger, vedtatt = vedtatt),
+            Stønadsperiode(fom = LocalDate.parse("2020-01-01"), tom = LocalDate.parse("2020-12-31"), grad = 69, ytelse = Omsorgspenger, vedtatt = vedtatt)
         ), client.hent(fnr, fom, tom, Omsorgspenger))
 
     }
@@ -60,15 +62,15 @@ internal class AbakusClientTest {
     @Test
     fun `hente opplæringspenger`() {
         assertEquals(setOf(
-            Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-12-31"), grad = 12, ytelse = Opplæringspenger),
+            Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-12-31"), grad = 12, ytelse = Opplæringspenger, vedtatt = vedtatt),
         ), client.hent(fnr, fom, tom, Opplæringspenger))
     }
 
     @Test
     fun `hente foreldrepenger og svangerskapspenger`() {
         assertEquals(setOf(
-            Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-06-01"), grad = 51, ytelse = Foreldrepenger),
-            Stønadsperiode(fom = LocalDate.parse("2018-06-02"), tom = LocalDate.parse("2018-12-31"), grad = 100, ytelse = Svangerskapspenger),
+            Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-06-01"), grad = 51, ytelse = Foreldrepenger, vedtatt = vedtatt),
+            Stønadsperiode(fom = LocalDate.parse("2018-06-02"), tom = LocalDate.parse("2018-12-31"), grad = 100, ytelse = Svangerskapspenger, vedtatt = vedtatt),
         ), client.hent(fnr, fom, tom, Foreldrepenger, Svangerskapspenger))
     }
 
@@ -77,9 +79,9 @@ internal class AbakusClientTest {
         val filterFnr = "2222222224".fødselsnummer
         mock(filterFnr, fom, tom, setOf(Pleiepenger), urelevanteStønadsperioderResponse)
         assertEquals(setOf(
-            Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-01-01"), grad = 100, ytelse = Pleiepenger),
-            Stønadsperiode(fom = LocalDate.parse("2019-05-01"), tom = LocalDate.parse("2019-07-31"), grad = 100, ytelse = Pleiepenger),
-            Stønadsperiode(fom = LocalDate.parse("2020-12-31"), tom = LocalDate.parse("2020-12-31"), grad = 100, ytelse = Pleiepenger),
+            Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-01-01"), grad = 100, ytelse = Pleiepenger, vedtatt = vedtatt),
+            Stønadsperiode(fom = LocalDate.parse("2019-05-01"), tom = LocalDate.parse("2019-07-31"), grad = 100, ytelse = Pleiepenger, vedtatt = vedtatt),
+            Stønadsperiode(fom = LocalDate.parse("2020-12-31"), tom = LocalDate.parse("2020-12-31"), grad = 100, ytelse = Pleiepenger, vedtatt = vedtatt),
         ), client.hent(filterFnr, fom, tom, Pleiepenger))
     }
 
@@ -98,6 +100,7 @@ internal class AbakusClientTest {
     }
 
     internal companion object {
+        private val vedtatt = LocalDateTime.parse("2023-02-16T09:52:35.255").truncatedTo(ChronoUnit.MILLIS)
         private val fnr = "11111111111".fødselsnummer
         private val fom = LocalDate.parse("2018-01-01")
         private val tom = LocalDate.parse("2020-12-31")
@@ -108,6 +111,7 @@ internal class AbakusClientTest {
           {
             "ytelse": "PLEIEPENGER_SYKT_BARN",
             "ytelseStatus": "AVSLUTTET",
+            "vedtattTidspunkt": "2023-02-16T09:52:35.255",
             "anvist": [
               {
                 "periode": {
@@ -123,6 +127,7 @@ internal class AbakusClientTest {
           {
             "ytelse": "PLEIEPENGER_SYKT_BARN",
             "ytelseStatus": "LØPENDE",
+            "vedtattTidspunkt": "2023-02-16T09:52:35.255",
             "anvist": [
               {
                 "periode": {
@@ -138,6 +143,7 @@ internal class AbakusClientTest {
           {
             "ytelse": "PLEIEPENGER_SYKT_BARN",
             "ytelseStatus": "EN_ANNEN_STATUS",
+            "vedtattTidspunkt": "2023-02-16T09:52:35.255",
             "anvist": [
               {
                 "periode": {
@@ -159,6 +165,7 @@ internal class AbakusClientTest {
           {
             "ytelse": "OMSORGSPENGER",
             "ytelseStatus": "AVSLUTTET",
+            "vedtattTidspunkt": "2023-02-16T09:52:35.255",
             "anvist": [
               {
                 "periode": {
@@ -189,6 +196,7 @@ internal class AbakusClientTest {
           {
             "ytelse": "OPPLÆRINGSPENGER",
             "ytelseStatus": "AVSLUTTET",
+            "vedtattTidspunkt": "2023-02-16T09:52:35.255",
             "anvist": [
               {
                 "periode": {
@@ -209,6 +217,7 @@ internal class AbakusClientTest {
         [{
             "ytelse": "FORELDREPENGER",
             "ytelseStatus": "AVSLUTTET",
+            "vedtattTidspunkt": "2023-02-16T09:52:35.255",
             "anvist": [{
                 "periode": {
                     "fom": "2018-01-01",
@@ -222,6 +231,7 @@ internal class AbakusClientTest {
         {
             "ytelse": "SVANGERSKAPSPENGER",
             "ytelseStatus": "LØPENDE",
+            "vedtattTidspunkt": "2023-02-16T09:52:35.255",
             "anvist": [{
                 "periode": {
                     "fom": "2018-06-02",
@@ -251,6 +261,7 @@ internal class AbakusClientTest {
           {
             "ytelse": "PLEIEPENGER_SYKT_BARN",
             "ytelseStatus": "AVSLUTTET",
+            "vedtattTidspunkt": "2023-02-16T09:52:35.255",
             "anvist": [
               {
                 "periode": {
@@ -267,6 +278,7 @@ internal class AbakusClientTest {
           {
             "ytelse": "PLEIEPENGER_SYKT_BARN",
             "ytelseStatus": "AVSLUTTET",
+            "vedtattTidspunkt": "2023-02-16T09:52:35.255",
             "anvist": [
               {
                 "periode": {
@@ -283,6 +295,7 @@ internal class AbakusClientTest {
           {
             "ytelse": "PLEIEPENGER_SYKT_BARN",
             "ytelseStatus": "AVSLUTTET",
+            "vedtattTidspunkt": "2023-02-16T09:52:35.255",
             "anvist": [
               {
                 "periode": {
@@ -299,6 +312,7 @@ internal class AbakusClientTest {
           {
             "ytelse": "PLEIEPENGER_SYKT_BARN",
             "ytelseStatus": "AVSLUTTET",
+            "vedtattTidspunkt": "2023-02-16T09:52:35.255",
             "anvist": [
               {
                 "periode": {
@@ -315,6 +329,7 @@ internal class AbakusClientTest {
           {
             "ytelse": "PLEIEPENGER_SYKT_BARN",
             "ytelseStatus": "AVSLUTTET",
+            "vedtattTidspunkt": "2023-02-16T09:52:35.255",
             "anvist": [
               {
                 "periode": {

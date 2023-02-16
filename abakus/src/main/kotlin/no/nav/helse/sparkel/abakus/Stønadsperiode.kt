@@ -1,14 +1,15 @@
 package no.nav.helse.sparkel.abakus
 
 import java.time.LocalDate
+import java.time.LocalDateTime
 
-class Stønadsperiode(val fom: LocalDate, val tom: LocalDate, val grad: Int, val ytelse: Ytelse) {
+class Stønadsperiode(val fom: LocalDate, val tom: LocalDate, val grad: Int, val ytelse: Ytelse, val vedtatt: LocalDateTime) {
 
     override fun hashCode() =
-        fom.hashCode() + tom.hashCode() + grad.hashCode() + ytelse.hashCode()
+        fom.hashCode() + tom.hashCode() + grad.hashCode() + ytelse.hashCode() + vedtatt.hashCode()
 
     override fun equals(other: Any?) =
-        other is Stønadsperiode && other.fom == fom && other.tom == tom && other.grad == grad && other.ytelse == ytelse
+        other is Stønadsperiode && other.fom == fom && other.tom == tom && other.grad == grad && other.ytelse == ytelse && other.vedtatt == vedtatt
 
-    override fun toString() = "$fom til $tom ($grad%) med $ytelse"
+    override fun toString() = "$fom til $tom ($grad%) med $ytelse vedtatt $vedtatt"
 }

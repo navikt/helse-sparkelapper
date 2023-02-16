@@ -6,6 +6,7 @@ import java.net.URL
 import java.time.LocalDate
 import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.sparkel.abakus.HttpRequest.postJson
 import org.intellij.lang.annotations.Language
@@ -69,6 +70,7 @@ class AbakusClient(
             .map { ytelse -> ytelse.get("anvist").onEach {
                 it as ObjectNode
                 it.put("@ytelse", ytelse.path("ytelse").asText())
+                it.put("@vedtattTidspunkt", ytelse.path("vedtattTidspunkt").asText())
             }}
             .flatten()
             .map { anvisning ->
@@ -79,7 +81,8 @@ class AbakusClient(
                         .takeUnless { it.isMissingOrNull() }
                         ?.asDouble()
                         ?.roundToInt() ?: 100,
-                    ytelse = Ytelse(anvisning.get("@ytelse").asText())
+                    ytelse = Ytelse(anvisning.get("@ytelse").asText()),
+                    vedtatt = anvisning.get("@vedtattTidspunkt").asLocalDateTime()
                 )
             }
             .filter { it.ytelse in ytelser }
