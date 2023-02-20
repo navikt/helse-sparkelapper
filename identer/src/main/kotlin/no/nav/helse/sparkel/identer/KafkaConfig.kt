@@ -5,21 +5,17 @@ import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.common.config.SaslConfigs
 import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 
 private fun loadBaseConfig(): Properties = Properties().also {
-    val username = System.getenv("sparkelidenter_username")
-    val password = System.getenv("sparkelidenter_password")
-    it["sasl.jaas.config"] = "org.apache.kafka.common.security.plain.PlainLoginModule required " +
-            "username=\"$username\" password=\"$password\";"
-    it["bootstrap.servers"] = System.getenv("KAFKA_BOOTSTRAP_SERVERS")
+    it["bootstrap.servers"] = System.getenv("KAFKA_BROKERS")
     it["specific.avro.reader"] = true
-    it[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SASL_SSL"
-    it[SaslConfigs.SASL_MECHANISM] = "PLAIN"
-    it[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = System.getenv("NAV_TRUSTSTORE_PATH")
-    it[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = System.getenv("NAV_TRUSTSTORE_PASSWORD")
+    it[CommonClientConfigs.SECURITY_PROTOCOL_CONFIG] = "SSL"
+    it[SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG] = System.getenv("KAFKA_KEYSTORE_PATH")
+    it[SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG] = System.getenv("KAFKA_CREDSTORE_PASSWORD")
+    it[SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG] = System.getenv("KAFKA_TRUSTSTORE_PATH")
+    it[SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG] = System.getenv("KAFKA_CREDSTORE_PASSWORD")
     // consumer specifics:
     it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
     it[ConsumerConfig.GROUP_ID_CONFIG] = "sparkel-identer-v1"

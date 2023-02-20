@@ -5,7 +5,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.identer.db.DataSourceBuilder
 import no.nav.helse.sparkel.identer.db.IdentifikatorDao
 
-val PDL_AKTØR_TOPIC = "aapen-person-pdl-aktor-v1"
+const val PDL_AKTØR_TOPIC = "pdl.aktor-v2"
 
 fun main() {
     val app = createApp(System.getenv())
