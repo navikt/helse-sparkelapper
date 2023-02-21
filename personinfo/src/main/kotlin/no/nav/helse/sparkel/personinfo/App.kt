@@ -1,12 +1,19 @@
 package no.nav.helse.sparkel.personinfo
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.apache.Apache
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.http.ContentType
+import io.ktor.serialization.jackson.JacksonConverter
+import java.io.File
+import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseConsumer
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseRiver
 import no.nav.helse.sparkel.personinfo.leesah.createConsumer
-import java.io.File
-import java.time.Duration
 import no.nav.helse.sparkel.personinfo.v3.HentPersoninfoV3Løser
 
 fun main() {
@@ -15,18 +22,25 @@ fun main() {
 }
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
-    val stsClient = StsRestClient(
-        baseUrl = env.getValue("STS_BASE_URL"),
-        serviceUser = "/var/run/secrets/nais.io/service_user".let {
-            ServiceUser(
-                "$it/username".readFile(),
-                "$it/password".readFile()
+    val azureAdClient = HttpClient(Apache) {
+        install(ContentNegotiation) {
+            register(
+                ContentType.Application.Json, JacksonConverter(
+                    jacksonObjectMapper()
+                        .registerModule(JavaTimeModule())
+                )
             )
         }
-    )
+    }
+
     val pdlClient = PdlClient(
         baseUrl = env.getValue("PDL_URL"),
-        stsClient = stsClient
+        accessTokenClient = AccessTokenClient(
+            aadAccessTokenUrl = env.getValue("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
+            clientId = env.getValue("AZURE_APP_CLIENT_ID"),
+            clientSecret = env.getValue("AZURE_APP_CLIENT_SECRET"),
+            httpClient = azureAdClient),
+        accessTokenScope = System.getenv("ACCESS_TOKEN_SCOPE"),
     )
     val personinfoService = PersoninfoService(pdlClient)
     val kafkaConsumer = createConsumer()

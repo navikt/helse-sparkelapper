@@ -15,6 +15,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
+import io.mockk.coEvery
+import io.mockk.mockk
 import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.junit.jupiter.api.AfterAll
@@ -61,14 +63,15 @@ internal class DødsinfoløserTest {
     fun setup() {
         wireMockServer.start()
         configureFor(create().port(wireMockServer.port()).build())
-        stubSts()
+
+        val accessTokenClient = mockk<AccessTokenClient>(relaxed = true)
+        coEvery { accessTokenClient.hentAccessToken(any()) } returns "1234abc"
+
         service = PersoninfoService(
             PdlClient(
                 baseUrl = "${wireMockServer.baseUrl()}/graphql",
-                stsClient = StsRestClient(
-                    baseUrl = wireMockServer.baseUrl(),
-                    serviceUser = ServiceUser("", "")
-                )
+                accessTokenClient = accessTokenClient,
+                accessTokenScope = "someScope"
             )
         )
     }

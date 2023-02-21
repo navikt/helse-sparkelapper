@@ -6,6 +6,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import kotlinx.coroutines.runBlocking
 import no.nav.helse.sparkel.personinfo.v3.Attributt
 import no.nav.helse.sparkel.personinfo.v3.PDL
 import no.nav.helse.sparkel.personinfo.v3.PdlQueryBuilder
@@ -14,7 +15,8 @@ private fun query(sti: String) = PdlClient::class.java.getResource(sti)!!.readTe
 
 internal class PdlClient(
     private val baseUrl: String,
-    private val stsClient: StsRestClient
+    private val accessTokenClient: AccessTokenClient,
+    private val accessTokenScope: String,
 ): PDL {
 
     companion object {
@@ -31,14 +33,15 @@ internal class PdlClient(
         callId: String,
         query: String
     ): JsonNode {
-        val stsToken = stsClient.token()
+        val aadToken = runBlocking {
+            accessTokenClient.hentAccessToken(accessTokenScope)
+        }
 
         val body = objectMapper.writeValueAsString(PdlQueryObject(query, Variables(ident)))
 
         val request = HttpRequest.newBuilder(URI.create(baseUrl))
             .header("TEMA", "SYK")
-            .header("Authorization", "Bearer $stsToken")
-            .header("Nav-Consumer-Token", "Bearer $stsToken")
+            .header("Authorization", "Bearer $aadToken")
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
             .header("Nav-Call-Id", callId)

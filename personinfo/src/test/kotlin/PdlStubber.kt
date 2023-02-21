@@ -5,6 +5,8 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
+import io.mockk.coEvery
+import io.mockk.mockk
 import no.nav.helse.sparkel.personinfo.*
 import no.nav.helse.sparkel.personinfo.stubSts
 import org.intellij.lang.annotations.Language
@@ -42,13 +44,15 @@ internal abstract class PdlStubber {
         wireMockServer.start()
         WireMock.configureFor(WireMock.create().port(wireMockServer.port()).build())
         stubSts()
+
+        val accessTokenClient = mockk<AccessTokenClient>(relaxed = true)
+        coEvery { accessTokenClient.hentAccessToken(any()) } returns "1234abc"
+
         personinfoService = PersoninfoService(
             PdlClient(
                 baseUrl = "${wireMockServer.baseUrl()}/graphql",
-                stsClient = StsRestClient(
-                    baseUrl = wireMockServer.baseUrl(),
-                    serviceUser = ServiceUser("", "")
-                )
+                accessTokenClient = accessTokenClient,
+                accessTokenScope = "someScope"
             )
         )
     }
