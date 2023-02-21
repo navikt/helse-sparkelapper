@@ -1,7 +1,7 @@
 kafkaPool: nav-prod
 replicas:
-  min: 0
-  max: 0
+  min: "0"
+  max: "0"
 mountPaths:
 - mountPath: /var/run/secrets/nais.io/service_user
   kvPath: /serviceuser/data/prod/srvsparkelpersoninfo
@@ -10,7 +10,5 @@ env:
   value: http://security-token-service.default.svc.nais.local
 - name: PDL_URL
   value: https://pdl-api.nais.adeo.no/graphql
-- name: KAFKA_BOOTSTRAP_SERVERS
-  value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443,SASL_SSL://a01apvl00150.adeo.no:8443
 - name: ACCESS_TOKEN_SCOPE
   value: api://prod-fss.pdl.pdl-api/.default
