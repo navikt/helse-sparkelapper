@@ -7,7 +7,7 @@ azure:
   claims:
     extra:
       - azp_name
-  tenant: nav.no
+  tenant: trygdeetaten.no
 externalHosts:
   - pdl-api.dev-fss-pub.nais.io
 env:
