@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import java.io.File
 import java.time.Clock
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -31,12 +30,10 @@ internal val objectMapper: ObjectMapper = ObjectMapper()
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
 
-    val serviceUser = "/var/run/secrets/nais.io/service_user".let {
-        ServiceUser(
-            "$it/username".readFile(),
-            "$it/password".readFile()
-        )
-    }
+    val serviceUser = ServiceUser(
+        username = getEnvVar(env, "oppgave_endret_username"),
+        password = getEnvVar(env, "oppgave_endret_password"),
+    )
 
     val kafkaConfig = KafkaConfig(
         kafkaBootstrapServers = getEnvVar(env,"KAFKA_BOOTSTRAP_SERVERS_URL"),
@@ -73,6 +70,3 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
 
 private fun getEnvVar(env: Map<String, String>, varName: String) =
     env[varName] ?: throw RuntimeException("Missing required variable \"$varName\"")
-
-
-private fun String.readFile() = File(this).readText(Charsets.UTF_8)
