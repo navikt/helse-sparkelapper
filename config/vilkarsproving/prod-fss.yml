@@ -6,4 +6,4 @@ env:
 - name: SKJERMEDE_BASE_URL
   value: https://skjermede-personer-pip.intern.nav.no
 - name: SKJERMEDE_OAUTH_SCOPE
-  value: api://prod-gcp.nom.skjermede-personer-pip/.default
+  value: api://prod-gcp.yml.nom.skjermede-personer-pip/.default
