@@ -2,9 +2,6 @@ kafkaPool: nav-prod
 replicas:
   min: "0"
   max: "0"
-env:
-  - name: STS_BASE_URL
-    value: http://security-token-service.default.svc.nais.local
 gcp:
   type: POSTGRES_14
   name: sparkelidenter
