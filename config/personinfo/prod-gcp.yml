@@ -1,0 +1,17 @@
+kafkaPool: nav-prod
+replicas:
+  min: "0"
+  max: "0"
+azure:
+  enabled: true
+  claims:
+    extra:
+      - azp_name
+  tenant: nav.no
+externalHosts:
+  - pdl-api.prod-fss-pub.nais.io
+env:
+  - name: PDL_URL
+    value: https://pdl-api.prod-fss-pub.nais.io/graphql
+  - name: ACCESS_TOKEN_SCOPE
+    value: api://prod-fss.pdl.pdl-api/.default
