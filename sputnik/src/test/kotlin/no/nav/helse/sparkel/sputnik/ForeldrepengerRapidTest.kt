@@ -165,12 +165,12 @@ internal class ForeldrepengerRapidTest {
                 KunSvangerskapspenger -> Foreldrepengerløsning(foreldrepengeytelse = null, svangerskapsytelse = KunSvangerskapspenger.ytelse())
                 else -> Foreldrepengerløsning(foreldrepengeytelse = null, svangerskapsytelse = null)
             }
-            private fun String.ytelse(fomDag: String = "01", tomDag: String = "31"):Ytelse {
+            private fun String.ytelse(fomDag: String = "01", tomDag: String = "31"):YtelseDto {
                 val perioder = listOf(
                     Periode(LocalDate.parse("200$this-01-$fomDag"), LocalDate.parse("200$this-05-01")),
                     Periode(LocalDate.parse("200$this-06-01"), LocalDate.parse("200$this-12-$tomDag")),
                 )
-                return Ytelse(
+                return YtelseDto(
                     aktørId = this,
                     fom = perioder.minOf { it.fom },
                     tom = perioder.maxOf { it.tom },
