@@ -49,12 +49,12 @@ internal class Stønad private constructor(
             abakusYtelser = setOf(ForeldrepengerAbakusYtelse, SvangerskapspengerAbakusYtelse)
         ) { stønadsperioder ->
             mapOf(
-                "Foreldrepengeytelse" to stønadsperioder.ytelseLøsning(ForeldrepengerAbakusYtelse),
-                "Svangerskapsytelse" to stønadsperioder.ytelseLøsning(SvangerskapspengerAbakusYtelse)
+                "Foreldrepengeytelse" to stønadsperioder.foreldrepengerOgSvangerskapspengerYtelse(ForeldrepengerAbakusYtelse),
+                "Svangerskapsytelse" to stønadsperioder.foreldrepengerOgSvangerskapspengerYtelse(SvangerskapspengerAbakusYtelse)
             )
         }
 
-        private fun Set<Stønadsperiode>.ytelseLøsning(ytelse: Ytelse): Any? {
+        private fun Set<Stønadsperiode>.foreldrepengerOgSvangerskapspengerYtelse(ytelse: Ytelse): Any? {
             val aktuelle = filter { it.ytelse == ytelse }.takeUnless { it.isEmpty() } ?: return null
             return mapOf(
                 "fom" to "${aktuelle.minOf { it.fom }}",
@@ -72,25 +72,27 @@ internal class Stønad private constructor(
             fomKey = "pleiepengerFom",
             tomKey = "pleiepengerTom",
             abakusYtelser = setOf(Ytelse("PLEIEPENGER"))
-        ) { stønadsperioder ->
-            mapOf<String, String>()
-        }
+        ) { stønadsperioder -> stønadsperioder.barnSykdomLøsning() }
+
         private val Omsorgspenger = Stønad(
             behov = "Omsorgspenger",
             fomKey = "omsorgspengerFom",
             tomKey = "omsorgspengerTom",
             abakusYtelser = setOf(Ytelse("OMSORGSPENGER"))
-        ) { stønadsperioder ->
-            mapOf<String, String>()
-        }
+        ) { stønadsperioder -> stønadsperioder.barnSykdomLøsning() }
+
         private val Opplæringspenger = Stønad(
             behov = "Opplæringspenger",
             fomKey = "opplæringspengerFom",
             tomKey = "opplæringspengerTom",
             abakusYtelser = setOf(Ytelse("OPPLÆRINGSPENGER"))
-        ) { stønadsperioder ->
-            mapOf<String, String>()
-        }
+        ) { stønadsperioder -> stønadsperioder.barnSykdomLøsning() }
+
+        private fun Set<Stønadsperiode>.barnSykdomLøsning() = map { mapOf(
+            "fom" to "${it.fom}",
+            "tom" to "${it.tom}",
+            "grad" to it.grad
+        )}
 
         private val AlleStønader = setOf(Foreldrepenger, Pleiepenger, Omsorgspenger, Opplæringspenger)
         private val JsonMessage.behov get() = get("@behov").map { it.asText() }

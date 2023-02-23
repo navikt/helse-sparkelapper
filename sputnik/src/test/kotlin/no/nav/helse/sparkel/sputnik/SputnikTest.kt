@@ -37,6 +37,9 @@ internal class SputnikTest {
                     "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2018-01-01",
+                        "tom": "2018-01-16"
+                    }, {
+                        "fom": "2018-01-17",
                         "tom": "2018-01-31"
                     }]
                 },
@@ -61,6 +64,9 @@ internal class SputnikTest {
                     "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2018-01-01",
+                        "tom": "2018-01-16"
+                    },{
+                        "fom": "2018-01-17",
                         "tom": "2018-01-31"
                     }]
                 }
@@ -83,6 +89,9 @@ internal class SputnikTest {
                     "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2018-01-01",
+                        "tom": "2018-01-16"
+                    }, {
+                        "fom": "2018-01-17",
                         "tom": "2018-01-31"
                     }]
                 },
@@ -92,6 +101,9 @@ internal class SputnikTest {
                     "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2018-01-01",
+                        "tom": "2018-01-16"
+                    }, {
+                        "fom": "2018-01-17",
                         "tom": "2018-01-31"
                     }]
                 }
@@ -128,20 +140,20 @@ internal class SputnikTest {
             "Foreldrepenger": {
                 "Foreldrepengeytelse": {
                     "fom": "2018-01-01",
-                    "tom": "2018-07-31",
+                    "tom": "2018-07-16",
                     "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2018-01-01",
-                        "tom": "2018-07-31"
+                        "tom": "2018-07-16"
                     }]
                 },
                 "Svangerskapsytelse": {
                     "fom": "2018-01-01",
-                    "tom": "2018-07-31",
+                    "tom": "2018-07-16",
                     "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2018-01-01",
-                        "tom": "2018-07-31"
+                        "tom": "2018-07-16"
                     }]
                 }
             }
@@ -151,21 +163,37 @@ internal class SputnikTest {
         @Language("JSON")
         val forventetPleiepenger = """
         {
-            "Pleiepenger": {}
+            "Pleiepenger": [{
+                "fom": "2018-01-01",
+                "tom": "2018-07-16",
+                "grad": 100
+            }]
         }
         """
         assertJsonEquals(forventetPleiepenger, løsninger.single { it.contains("Pleiepenger") })
         @Language("JSON")
         val forventetOmsorgspenger = """
         {
-            "Omsorgspenger": {}
+            "Omsorgspenger": [{
+                "fom": "2018-01-01",
+                "tom": "2018-07-16",
+                "grad": 100
+            }]
         }
         """
         assertJsonEquals(forventetOmsorgspenger, løsninger.single { it.contains("Omsorgspenger") })
         @Language("JSON")
         val forventetOpplæringspenger = """
         {
-            "Opplæringspenger": {}
+            "Opplæringspenger": [{
+                "fom": "2018-01-01",
+                "tom": "2018-07-16",
+                "grad": 100
+            }, {
+                "fom": "2018-07-17",
+                "tom": "2018-07-31",
+                "grad": 50
+            }]
         }
         """
         assertJsonEquals(forventetOpplæringspenger, løsninger.single { it.contains("Opplæringspenger") })
@@ -190,21 +218,21 @@ internal class SputnikTest {
         @Language("JSON")
         val forventetPleiepenger = """
         {
-            "Pleiepenger": {}
+            "Pleiepenger": []
         }
         """
         assertJsonEquals(forventetPleiepenger, løsninger.single { it.contains("Pleiepenger") })
         @Language("JSON")
         val forventetOmsorgspenger = """
         {
-            "Omsorgspenger": {}
+            "Omsorgspenger": []
         }
         """
         assertJsonEquals(forventetOmsorgspenger, løsninger.single { it.contains("Omsorgspenger") })
         @Language("JSON")
         val forventetOpplæringspenger = """
         {
-            "Opplæringspenger": {}
+            "Opplæringspenger": []
         }
         """
         assertJsonEquals(forventetOpplæringspenger, løsninger.single { it.contains("Opplæringspenger") })
@@ -273,7 +301,8 @@ internal class SputnikTest {
                 val (haleFom, haleTom) = tom.plusDays(1) to tom.plusMonths(1)
                 return medILøsning.map { Ytelse(it) }.flatMap { listOf(
                     Stønadsperiode(snuteFom, snuteTom, 100, it, vedtatt),
-                    Stønadsperiode(fom, tom, 100, it, vedtatt),
+                    Stønadsperiode(fom, tom.minusDays(15), 100, it, vedtatt),
+                    Stønadsperiode(tom.minusDays(14), tom, 50, it, vedtatt),
                     Stønadsperiode(haleFom, haleTom, 100, it, vedtatt),
                 )}.toSet()
             }
