@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.oppgaveendret.oppgave
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -16,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveEndretProducer
+import no.nav.helse.sparkel.oppgaveendret.Hendelsetype
 import no.nav.helse.sparkel.oppgaveendret.objectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
@@ -49,7 +51,7 @@ class OppgaveEndretConsumerTest {
         logger.info("Køer opp noen testmeldinger")
         queueMessages(
             consumer = oppgaveEndretConsumer,
-            records = List(7) { testJson },
+            records = List(7) { testJson.toString() },
             pollSize = 3
         )
 
@@ -62,6 +64,45 @@ class OppgaveEndretConsumerTest {
         logger.info("Venter til meldingene er behandlet")
         verify(atLeast = 4, timeout = Duration.ofSeconds(2).toMillis()) { kafkaConsumer.poll(any<Duration>()) }
         verify(atLeast = 4) { gosysOppgaveEndretProducer.onPacket(any()) }
+        verify(exactly = 1) { gosysOppgaveEndretProducer.shipIt() }
+    }
+
+    @Test
+    fun `ignorerer hendelser av typen OPPGAVE_ENDRET`() {
+        val gosysOppgaveEndretProducer = mockk<GosysOppgaveEndretProducer>(relaxed = true)
+        val manipulerbarKlokke = MutableClock(fixedClock(time = 6, minutt = 15).instant())
+        val oppgaveEndretConsumer =
+            OppgaveEndretConsumer(
+                rapidApplication,
+                kafkaConsumer,
+                gosysOppgaveEndretProducer,
+                objectMapper,
+                manipulerbarKlokke,
+            )
+
+        assertTrue(oppgaveEndretConsumer.åpentVindu())
+
+        val json = testJson.apply {
+            this as ObjectNode
+            val hendelseNode = this.path("hendelse") as ObjectNode
+            hendelseNode.put("hendelsestype", Hendelsetype.OPPGAVE_ENDRET.name)
+        }
+
+        logger.info("Køer opp noen testmeldinger")
+        queueMessages(
+            consumer = oppgaveEndretConsumer,
+            records = listOf(json.toString()),
+            pollSize = 3
+        )
+
+        logger.info("Starter consumeren")
+        val scope = CoroutineScope(Dispatchers.Default)
+        scope.launch {
+            oppgaveEndretConsumer.run()
+        }
+
+        logger.info("Venter til meldingene er behandlet")
+        verify(exactly = 0) { gosysOppgaveEndretProducer.onPacket(any()) }
         verify(exactly = 1) { gosysOppgaveEndretProducer.shipIt() }
     }
 
@@ -96,7 +137,7 @@ class OppgaveEndretConsumerTest {
 
         queueMessages(
             consumer = oppgaveEndretConsumer,
-            records = listOf(testJson),
+            records = listOf(testJson.toString()),
             pollSize = 5,
         )
 
@@ -152,7 +193,7 @@ class OppgaveEndretConsumerTest {
                 }
             }
         } 
-        """
+        """.let { objectMapper.readTree(it) }
 
     private fun nesteRecords(
         mutableRecords: MutableList<String?>,

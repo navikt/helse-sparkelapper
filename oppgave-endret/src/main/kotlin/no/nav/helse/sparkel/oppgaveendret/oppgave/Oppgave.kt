@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.oppgaveendret.oppgave
 
 import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.kv
+import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.sparkel.oppgaveendret.oppgave.Identtype.FOLKEREGISTERIDENT
 import org.slf4j.LoggerFactory
 
@@ -27,7 +28,9 @@ data class Oppgave(
 
         fun fromJson(jsonNode: JsonNode): Oppgave? {
             val oppgaveId = jsonNode.path("oppgave").path("oppgaveId").asLong()
-            val brukerJson = jsonNode.path("oppgave").path("bruker") ?: kotlin.run {
+            val brukerJson = jsonNode.path("oppgave").path("bruker").let {
+                if (it.isMissingOrNull()) null else it
+            } ?: kotlin.run {
                 logg.info("Mangler bruker for oppgave med {}", kv("oppgaveId", oppgaveId))
                 return null
             }
