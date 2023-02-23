@@ -17,7 +17,7 @@ class GosysOppgaveEndretProducer(
     private val identer: MutableSet<String> = mutableSetOf()
 
     fun onPacket(oppgave: Oppgave) {
-        logger.info("Har folkeregisterident og aktorId for oppgave med id: ${oppgave.id}")
+        logger.info("Har folkeregisterident for oppgave med id: ${oppgave.id}")
         val førsteGang = identer.add(oppgave.ident)
         if (!førsteGang) sikkerlogg.info("Sender ikke duplikat melding for ${oppgave.ident}")
     }
