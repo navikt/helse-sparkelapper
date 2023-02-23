@@ -21,6 +21,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -48,7 +49,7 @@ class OppgaveEndretConsumerTest {
         logger.info("Køer opp noen testmeldinger")
         queueMessages(
             consumer = oppgaveEndretConsumer,
-            records = List(7) { """{"tema": "SYK"}""" },
+            records = List(7) { testJson },
             pollSize = 3
         )
 
@@ -95,7 +96,7 @@ class OppgaveEndretConsumerTest {
 
         queueMessages(
             consumer = oppgaveEndretConsumer,
-            records = listOf("""{"tema": "SYK"}"""),
+            records = listOf(testJson),
             pollSize = 5,
         )
 
@@ -133,6 +134,25 @@ class OppgaveEndretConsumerTest {
             } else ConsumerRecords.empty()
         }
     }
+
+    @Language("JSON")
+    private val testJson = """
+        {
+            "hendelse": {
+                "hendelsestype": "OPPGAVE_OPPRETTET"
+            },
+            "oppgave": {
+                "oppgaveId": 123,
+                "kategorisering": {
+                    "tema": "SYK"
+                },
+                "bruker": {
+                    "ident": "12345678911",
+                    "identType": "FOLKEREGISTERIDENT"
+                }
+            }
+        } 
+        """
 
     private fun nesteRecords(
         mutableRecords: MutableList<String?>,

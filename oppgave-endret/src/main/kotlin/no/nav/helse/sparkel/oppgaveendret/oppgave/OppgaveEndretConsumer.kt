@@ -1,13 +1,13 @@
 package no.nav.helse.sparkel.oppgaveendret.oppgave
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import java.time.Clock
 import java.time.Duration
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveEndretProducer
+import no.nav.helse.sparkel.oppgaveendret.Hendelse
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 
@@ -42,8 +42,15 @@ internal class OppgaveEndretConsumer(
                             gosysOppgaveEndretProducer.shipIt()
                         } else logger.info("Oppgave-endret record count: {}", count)
                     }
-                    .map { objectMapper.readValue<Oppgave>(it.value()) }
-                    .filter { it.tema == "SYK" }
+                    .filter {
+                        val hendelseJson = objectMapper.readTree(it.value())
+                        Hendelse.fromJson(hendelseJson).erRelevant()
+                    }
+                    .mapNotNull {
+                        val jsonNode = objectMapper.readTree(it.value())
+                        Oppgave.fromJson(jsonNode)
+                    }
+                    .filter { it.erRelevant() }
                     .onEach { gosysOppgaveEndretProducer.onPacket(it) }
             }
         } catch (exception: Exception) {
