@@ -17,8 +17,8 @@ private fun loadBaseConfig(): Properties = Properties().also {
     // consumer specifics:
     it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "latest"
     it[ConsumerConfig.GROUP_ID_CONFIG] = "sparkel-oppgave-endret-v1"
-    it[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class
-    it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class
+    it[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
+    it[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
     it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "5000"
     it[ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG] = "5242880"
     it[ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG] = 86400000
