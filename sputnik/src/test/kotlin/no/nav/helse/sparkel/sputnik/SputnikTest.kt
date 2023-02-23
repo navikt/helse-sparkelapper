@@ -8,6 +8,7 @@ import no.nav.helse.sparkel.sputnik.abakus.AbakusClient
 import no.nav.helse.sparkel.sputnik.abakus.Stønadsperiode
 import no.nav.helse.sparkel.sputnik.abakus.Ytelse
 import org.intellij.lang.annotations.Language
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
@@ -102,7 +103,7 @@ internal class SputnikTest {
 
     @Test
     fun `Behov for Foreldrepenger - Har hverken foreldrepenger eller svangerskapspenger`() {
-        testRapid.sendTestMessage(foreldrepengerBehov(IngenYtelserFødselsnummer))
+        testRapid.sendTestMessage(foreldrepengerBehov(IngenStønadstyperFødselsnummer))
         @Language("JSON")
         val forventet = """
         {
@@ -115,7 +116,101 @@ internal class SputnikTest {
         assertJsonEquals(forventet, testRapid.løsning())
     }
 
-    private fun TestRapid.løsning() = inspektør.message(0).path("@løsning").toString()
+    @Test
+    fun `Behov for alle stønadstyper - har alle`() {
+        testRapid.sendTestMessage(behovForAlleStønadstyper())
+        val løsninger = (0 until testRapid.inspektør.size).map { testRapid.løsning(it) }
+        assertEquals(4, løsninger.size)
+
+        @Language("JSON")
+        val forventetForeldrepenger = """
+        {
+            "Foreldrepenger": {
+                "Foreldrepengeytelse": {
+                    "fom": "2018-01-01",
+                    "tom": "2018-07-31",
+                    "vedtatt": "2023-02-16T09:52:35.255",
+                    "perioder": [{
+                        "fom": "2018-01-01",
+                        "tom": "2018-07-31"
+                    }]
+                },
+                "Svangerskapsytelse": {
+                    "fom": "2018-01-01",
+                    "tom": "2018-07-31",
+                    "vedtatt": "2023-02-16T09:52:35.255",
+                    "perioder": [{
+                        "fom": "2018-01-01",
+                        "tom": "2018-07-31"
+                    }]
+                }
+            }
+        }
+        """
+        assertJsonEquals(forventetForeldrepenger, løsninger.single { it.contains("Foreldrepenger") })
+        @Language("JSON")
+        val forventetPleiepenger = """
+        {
+            "Pleiepenger": {}
+        }
+        """
+        assertJsonEquals(forventetPleiepenger, løsninger.single { it.contains("Pleiepenger") })
+        @Language("JSON")
+        val forventetOmsorgspenger = """
+        {
+            "Omsorgspenger": {}
+        }
+        """
+        assertJsonEquals(forventetOmsorgspenger, løsninger.single { it.contains("Omsorgspenger") })
+        @Language("JSON")
+        val forventetOpplæringspenger = """
+        {
+            "Opplæringspenger": {}
+        }
+        """
+        assertJsonEquals(forventetOpplæringspenger, løsninger.single { it.contains("Opplæringspenger") })
+    }
+
+    @Test
+    fun `Behov for alle stønadstyper - har ingen`() {
+        testRapid.sendTestMessage(behovForAlleStønadstyper(IngenStønadstyperFødselsnummer))
+        val løsninger = (0 until testRapid.inspektør.size).map { testRapid.løsning(it) }
+        assertEquals(4, løsninger.size)
+
+        @Language("JSON")
+        val forventetForeldrepenger = """
+        {
+            "Foreldrepenger": {
+                "Foreldrepengeytelse": null,
+                "Svangerskapsytelse": null
+            }
+        }
+        """
+        assertJsonEquals(forventetForeldrepenger, løsninger.single { it.contains("Foreldrepenger") })
+        @Language("JSON")
+        val forventetPleiepenger = """
+        {
+            "Pleiepenger": {}
+        }
+        """
+        assertJsonEquals(forventetPleiepenger, løsninger.single { it.contains("Pleiepenger") })
+        @Language("JSON")
+        val forventetOmsorgspenger = """
+        {
+            "Omsorgspenger": {}
+        }
+        """
+        assertJsonEquals(forventetOmsorgspenger, løsninger.single { it.contains("Omsorgspenger") })
+        @Language("JSON")
+        val forventetOpplæringspenger = """
+        {
+            "Opplæringspenger": {}
+        }
+        """
+        assertJsonEquals(forventetOpplæringspenger, løsninger.single { it.contains("Opplæringspenger") })
+    }
+
+    private fun TestRapid.løsning(index: Int = 0) = inspektør.message(index).path("@løsning").toString()
 
     private companion object {
         private val vedtatt = LocalDateTime.parse("2023-02-16T09:52:35.255").truncatedTo(ChronoUnit.MILLIS)
@@ -132,10 +227,35 @@ internal class SputnikTest {
         }
         """
 
+        @Language("JSON")
+        private fun behovForAlleStønadstyper(fødselsnummer: String = "fødselsnummer") = """
+        {
+            "@event_name":"behov",
+            "@behov": ["Foreldrepenger", "Pleiepenger", "Omsorgspenger", "Opplæringspenger"],
+            "Foreldrepenger": {
+                "foreldrepengerFom": "2018-01-01",
+                "foreldrepengerTom": "2018-01-31"
+            },
+            "Pleiepenger": {
+                "pleiepengerFom": "2018-03-01",
+                "pleiepengerTom": "2018-03-31"
+            },
+            "Omsorgspenger": {
+                "omsorgspengerFom": "2018-05-01",
+                "omsorgspengerTom": "2018-05-31"
+            },
+            "Opplæringspenger": {
+                "opplæringspengerFom": "2018-07-01",
+                "opplæringspengerTom": "2018-07-31"
+            },
+            "fødselsnummer": "$fødselsnummer"
+        }
+        """
+
         private fun assertJsonEquals(forventet: String, faktisk: String) = JSONAssert.assertEquals(forventet, faktisk, true)
 
 
-        private const val IngenYtelserFødselsnummer = "0"
+        private const val IngenStønadstyperFødselsnummer = "0"
         private const val AltUntattSvangerskapspengerFødselsnummer = "1"
         private const val AltUntattForeldrepengerFødselsnummer = "2"
 
@@ -143,7 +263,7 @@ internal class SputnikTest {
             private val AlleYtelser = setOf("FORELDREPENGER", "SVANGERSKAPSPENGER", "PLEIEPENGER", "OMSORGSPENGER", "OPPLÆRINGSPENGER")
             override fun hent(fødselsnummer: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse): Set<Stønadsperiode> {
                val medILøsning = when (fødselsnummer) {
-                   IngenYtelserFødselsnummer -> emptySet()
+                   IngenStønadstyperFødselsnummer -> emptySet()
                    AltUntattSvangerskapspengerFødselsnummer -> AlleYtelser.minus("SVANGERSKAPSPENGER")
                    AltUntattForeldrepengerFødselsnummer -> AlleYtelser.minus("FORELDREPENGER")
                    else -> AlleYtelser
