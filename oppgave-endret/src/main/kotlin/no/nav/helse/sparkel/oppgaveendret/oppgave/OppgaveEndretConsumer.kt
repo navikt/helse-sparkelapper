@@ -21,12 +21,14 @@ internal class OppgaveEndretConsumer(
     private var konsumerer = true
     private val logger = LoggerFactory.getLogger(this::class.java)
 
+    private fun erDev() = "dev-gcp" == System.getenv("NAIS_CLUSTER_NAME")
+
     override fun run() {
         logger.info("OppgaveEndretConsumer starter opp")
         try {
             while (konsumerer) {
                 // sorry my dudes
-                if (!åpentVindu()) {
+                if (!erDev() && !åpentVindu()) {
                     logger.info("Vinduet er lukket, sover i fem minutter.")
                     Thread.sleep(Duration.of(5, ChronoUnit.MINUTES).toMillis())
                     continue
