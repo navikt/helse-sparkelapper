@@ -238,6 +238,24 @@ internal class SputnikTest {
         assertJsonEquals(forventetOpplæringspenger, løsninger.single { it.contains("Opplæringspenger") })
     }
 
+    @Test
+    fun `Ignorerer andre behov`() {
+        @Language("JSON")
+        val behov =  """
+        {
+            "@event_name":"behov",
+            "@behov": ["Dagpenger"],
+            "Dagpenger": {
+                "periodeFom": "2018-01-01",
+                "periodeTom": "2018-01-31"
+            },
+            "fødselsnummer": "fødselsnummer"
+        }
+        """
+        testRapid.sendTestMessage(behov)
+        assertEquals(0, testRapid.inspektør.size)
+    }
+
     private fun TestRapid.løsning(index: Int = 0) = inspektør.message(index).path("@løsning").toString()
 
     private companion object {
@@ -259,7 +277,7 @@ internal class SputnikTest {
         private fun behovForAlleStønadstyper(fødselsnummer: String = "fødselsnummer") = """
         {
             "@event_name":"behov",
-            "@behov": ["Foreldrepenger", "Pleiepenger", "Omsorgspenger", "Opplæringspenger"],
+            "@behov": ["Foreldrepenger", "Pleiepenger", "Omsorgspenger", "Opplæringspenger", "Dagpenger"],
             "Foreldrepenger": {
                 "foreldrepengerFom": "2018-01-01",
                 "foreldrepengerTom": "2018-01-31"
@@ -275,6 +293,10 @@ internal class SputnikTest {
             "Opplæringspenger": {
                 "opplæringspengerFom": "2018-07-01",
                 "opplæringspengerTom": "2018-07-31"
+            },
+            "Dagpenger": {
+                "periodeFom": "2018-09-01",
+                "periodeTom": "2018-09-31"
             },
             "fødselsnummer": "$fødselsnummer"
         }
