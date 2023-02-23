@@ -9,5 +9,3 @@ env:
     value: https://fpabakus.prod-fss-pub.nais.io/fpabakus/ekstern/api/ytelse/v1/hent-ytelse-vedtak
   - name: ABAKUS_SCOPE
     value: api://prod-fss.teamforeldrepenger.fpabakus/.default
-  - name: MULTI_RIVER_TOGGLE
-    value: false
