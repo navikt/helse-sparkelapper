@@ -67,7 +67,32 @@ internal class Stønad private constructor(
             )
         }
 
-        private val AlleStønader = setOf(Foreldrepenger)
+        private val Pleiepenger = Stønad(
+            behov = "Pleiepenger",
+            fomKey = "pleiepengerFom",
+            tomKey = "pleiepengerTom",
+            abakusYtelser = setOf(Ytelse("PLEIEPENGER"))
+        ) { stønadsperioder ->
+            mapOf<String, String>()
+        }
+        private val Omsorgspenger = Stønad(
+            behov = "Omsorgspenger",
+            fomKey = "omsorgspengerFom",
+            tomKey = "omsorgspengerTom",
+            abakusYtelser = setOf(Ytelse("OMSORGSPENGER"))
+        ) { stønadsperioder ->
+            mapOf<String, String>()
+        }
+        private val Opplæringspenger = Stønad(
+            behov = "Opplæringspenger",
+            fomKey = "opplæringspengerFom",
+            tomKey = "opplæringspengerTom",
+            abakusYtelser = setOf(Ytelse("OPPLÆRINGSPENGER"))
+        ) { stønadsperioder ->
+            mapOf<String, String>()
+        }
+
+        private val AlleStønader = setOf(Foreldrepenger, Pleiepenger, Omsorgspenger, Opplæringspenger)
         private val JsonMessage.behov get() = get("@behov").map { it.asText() }
 
         internal fun stønaderSomSkalLøses(packet: JsonMessage) = AlleStønader.filter { it.skalLøses(packet) }
