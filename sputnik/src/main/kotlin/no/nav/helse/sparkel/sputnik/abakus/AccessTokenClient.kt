@@ -1,17 +1,17 @@
-package no.nav.helse.sparkel.abakus
+package no.nav.helse.sparkel.sputnik.abakus
 
 import java.net.URL
 import java.time.LocalDateTime
 import java.time.LocalDateTime.now
 import no.nav.helse.rapids_rivers.isMissingOrNull
-import no.nav.helse.sparkel.abakus.HttpRequest.post
+import no.nav.helse.sparkel.sputnik.abakus.HttpRequest.post
 import org.slf4j.LoggerFactory
 
-interface AccessTokenClient {
+internal interface AccessTokenClient {
     fun accessToken(): String
 }
 
-class ClientSecretPost(
+internal class ClientSecretPost(
     tokenEndpoint: String,
     clientId: String,
     clientSecret: String,

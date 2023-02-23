@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.abakus
+package no.nav.helse.sparkel.sputnik.abakus
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
@@ -11,7 +11,6 @@ import java.net.URL
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import no.nav.helse.sparkel.abakus.Fødselsnummer.Companion.fødselsnummer
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -21,9 +20,9 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class AbakusClientTest {
+internal class RestAbakusClientTest {
     private lateinit var server: WireMockServer
-    private lateinit var client: AbakusClient
+    private lateinit var client: RestAbakusClient
 
     @BeforeAll
     fun beforeAll() {
@@ -31,7 +30,7 @@ internal class AbakusClientTest {
         server.start()
         WireMock.configureFor(server.port())
         mockAbakus(fnr, fom, tom)
-        client = AbakusClient(
+        client = RestAbakusClient(
             url = server.abakusUrl(),
             accessTokenClient = object : AccessTokenClient {
                 override fun accessToken() = "ey-abakus-access-token"
@@ -76,7 +75,7 @@ internal class AbakusClientTest {
 
     @Test
     fun `filtrerer bort urelevante stønadsperioder`() {
-        val filterFnr = "2222222224".fødselsnummer
+        val filterFnr = "2222222224"
         mock(filterFnr, fom, tom, setOf(Pleiepenger), urelevanteStønadsperioderResponse)
         assertEquals(setOf(
             Stønadsperiode(fom = LocalDate.parse("2018-01-01"), tom = LocalDate.parse("2018-01-01"), grad = 100, ytelse = Pleiepenger, vedtatt = vedtatt),
@@ -87,21 +86,21 @@ internal class AbakusClientTest {
 
     @Test
     fun `kaster feil om vi får error-response fra Abakus`() {
-        val feilFnr = "2222222222".fødselsnummer
+        val feilFnr = "2222222222"
         mock(feilFnr, fom, tom, setOf(Pleiepenger), errorResponse, status = 500)
         assertThrows<IllegalStateException> { client.hent(feilFnr, fom, tom, Pleiepenger) }
     }
 
     @Test
     fun `kaster feil om vi får response vi ikke klarer å mappe til stønadsperioder`() {
-        val feilFnr = "2222222223".fødselsnummer
+        val feilFnr = "2222222223"
         mock(feilFnr, fom, tom, setOf(Pleiepenger), errorResponse)
         assertThrows<IllegalStateException> { client.hent(feilFnr, fom, tom) }
     }
 
     internal companion object {
         private val vedtatt = LocalDateTime.parse("2023-02-16T09:52:35.255").truncatedTo(ChronoUnit.MILLIS)
-        private val fnr = "11111111111".fødselsnummer
+        private val fnr = "11111111111"
         private val fom = LocalDate.parse("2018-01-01")
         private val tom = LocalDate.parse("2020-12-31")
 
@@ -346,7 +345,7 @@ internal class AbakusClientTest {
         ]
         """
 
-        private fun mock(fnr: Fødselsnummer, fom: LocalDate, tom: LocalDate, ytelser: Set<Ytelse>, response: String, status: Int = 200) {
+        private fun mock(fnr: String, fom: LocalDate, tom: LocalDate, ytelser: Set<Ytelse>, response: String, status: Int = 200) {
             WireMock.stubFor(
                 WireMock.post(WireMock.urlEqualTo("/abakus"))
                     .withHeader("Authorization", matching("Bearer ey.*"))
@@ -354,7 +353,7 @@ internal class AbakusClientTest {
                     .withHeader("Content-Type", equalTo("application/json"))
                     .withHeader("Nav-Consumer-Id", equalTo("Sykepenger"))
                     .withHeader("Nav-Callid", AnythingPattern())
-                    .withRequestBody(matchingJsonPath("$.ident.verdi", equalTo("$fnr")))
+                    .withRequestBody(matchingJsonPath("$.ident.verdi", equalTo(fnr)))
                     .withRequestBody(matchingJsonPath("$.periode.fom", equalTo("$fom")))
                     .withRequestBody(matchingJsonPath("$.periode.tom", equalTo("$tom")))
                     .withRequestBody(matchingJsonPath("$.ytelser", equalTo(ytelser.joinToString(", ", prefix = "[ ", postfix = " ]") { "\"$it\"" })))
@@ -367,7 +366,7 @@ internal class AbakusClientTest {
         }
 
         internal fun WireMockServer.abakusUrl() = URL("${baseUrl()}/abakus")
-        internal fun mockAbakus(fnr: Fødselsnummer, fom: LocalDate, tom: LocalDate) {
+        internal fun mockAbakus(fnr: String, fom: LocalDate, tom: LocalDate) {
             mock(fnr, fom, tom, setOf(Pleiepenger), pleiepengerResponse)
             mock(fnr, fom, tom, setOf(Omsorgspenger), omsorgspengerResponse)
             mock(fnr, fom, tom, setOf(Opplæringspenger), opplæringspengerResponse)

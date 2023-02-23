@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.abakus
+package no.nav.helse.sparkel.sputnik.abakus
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -8,19 +8,23 @@ import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.helse.rapids_rivers.isMissingOrNull
-import no.nav.helse.sparkel.abakus.HttpRequest.postJson
+import no.nav.helse.sparkel.sputnik.abakus.HttpRequest.postJson
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
 import kotlin.math.roundToInt
 
-class AbakusClient(
+internal interface AbakusClient {
+    fun hent(fødselsnummer: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse): Set<Stønadsperiode>
+}
+
+internal class RestAbakusClient(
     private val url: URL,
     private val accessTokenClient: AccessTokenClient
-) {
-    fun hent(identifiktor: Identifiktor, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse): Set<Stønadsperiode> {
+) : AbakusClient {
+    override fun hent(fødselsnummer: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse): Set<Stønadsperiode> {
         check(fom <= tom) { "fom $fom må være før eller lik tom $tom" }
         val callId = "${UUID.randomUUID()}"
-        val requestBody = requestBody(identifiktor, fom, tom, *ytelser)
+        val requestBody = requestBody(fødselsnummer, fom, tom, *ytelser)
 
         val response = try {
             url.postJson(requestBody,
@@ -30,18 +34,18 @@ class AbakusClient(
             ).second
         } catch (exception: Exception) {
             sikkerlogg.error("Feil ved henting av ${ytelser.toSet()} fra Abakus for {} med {}.",
-                identifiktor.keyValue, keyValue("callId", callId), exception)
+                keyValue("fødselsnummer", fødselsnummer), keyValue("callId", callId), exception)
             throw IllegalStateException("Feil ved henting fra Abakus")
         }
 
         sikkerlogg.info("Hentet ${ytelser.toSet()} fra Abakus for {} med {}. Response:\n\t$response",
-            identifiktor.keyValue, keyValue("callId", callId))
+            keyValue("fødselsnummer", fødselsnummer), keyValue("callId", callId))
 
         return try {
             response.abakusResponseTilStønadsperioder(fom, tom, *ytelser)
         } catch (exception: Exception) {
             sikkerlogg.error("Feil ved mapping av ${ytelser.toSet()} fra Abakus-response for {} med {}.",
-                identifiktor.keyValue, keyValue("callId", callId), exception)
+                keyValue("fødselsnummer", fødselsnummer), keyValue("callId", callId), exception)
             throw throw IllegalStateException("Feil ved mapping av response fra Abakus")
         }
     }
@@ -52,10 +56,10 @@ class AbakusClient(
         private val aktiveYtelseStatuser = setOf("LØPENDE", "AVSLUTTET")
 
         @Language("JSON")
-        private fun requestBody(identifiktor: Identifiktor, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse) = """
+        private fun requestBody(fødselsnummer: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse) = """
         {
             "ident": {
-                "verdi": "$identifiktor"
+                "verdi": "$fødselsnummer"
             },
             "periode": {
                 "fom": "$fom",

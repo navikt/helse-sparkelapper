@@ -10,12 +10,12 @@ interface Foreldrepengerløser {
 
 data class Foreldrepengerløsning(
     @JsonProperty("Foreldrepengeytelse")
-    val foreldrepengeytelse: Ytelse? = null,
+    val foreldrepengeytelse: YtelseDto? = null,
     @JsonProperty("Svangerskapsytelse")
-    val svangerskapsytelse: Ytelse? = null
+    val svangerskapsytelse: YtelseDto? = null
 )
 
-data class Ytelse(
+data class YtelseDto(
     val aktørId: String,
     val fom: LocalDate,
     val tom: LocalDate,

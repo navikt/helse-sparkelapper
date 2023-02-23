@@ -1,9 +1,9 @@
-package no.nav.helse.sparkel.abakus
+package no.nav.helse.sparkel.sputnik.abakus
 
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-class Stønadsperiode(val fom: LocalDate, val tom: LocalDate, val grad: Int, val ytelse: Ytelse, val vedtatt: LocalDateTime) {
+internal class Stønadsperiode(val fom: LocalDate, val tom: LocalDate, val grad: Int, val ytelse: Ytelse, val vedtatt: LocalDateTime) {
 
     override fun hashCode() =
         fom.hashCode() + tom.hashCode() + grad.hashCode() + ytelse.hashCode() + vedtatt.hashCode()
