@@ -24,7 +24,7 @@ internal class Sputnik(
         }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext) = try {
         val stønader = Stønad.stønaderSomSkalLøses(packet)
         sikkerlogg.info("Mottok behov for $stønader:\n ${packet.toJson()}")
         val (fom, tom) = stønader.omsluttendePeriode(packet)
@@ -40,6 +40,8 @@ internal class Sputnik(
                 context.publish(fødselsnummer, json)
             }
         }
+    } catch (exception: Exception) {
+        sikkerlogg.error("Feil ved løsing av behov:\n ${packet.toJson()}", exception)
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {

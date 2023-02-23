@@ -47,6 +47,7 @@ internal class SputnikTest {
             }
         }
         """
+        assertEquals(1, testRapid.inspektør.size)
         assertJsonEquals(forventet, testRapid.løsning())
     }
 
@@ -73,6 +74,7 @@ internal class SputnikTest {
             }
         }
         """
+        assertEquals(1, testRapid.inspektør.size)
         assertJsonEquals(forventet, testRapid.løsning())
     }
 
@@ -110,6 +112,7 @@ internal class SputnikTest {
             }
         }
         """
+        assertEquals(1, testRapid.inspektør.size)
         assertJsonEquals(forventet, testRapid.løsning())
     }
 
@@ -125,6 +128,7 @@ internal class SputnikTest {
             }
         }
         """
+        assertEquals(1, testRapid.inspektør.size)
         assertJsonEquals(forventet, testRapid.løsning())
     }
 
@@ -256,6 +260,12 @@ internal class SputnikTest {
         assertEquals(0, testRapid.inspektør.size)
     }
 
+    @Test
+    fun `Appen går ikke ned ved feil ved oppslag`() {
+        testRapid.sendTestMessage(behovForAlleStønadstyper(FeilVedoppslagFødselsnummer))
+        assertEquals(0, testRapid.inspektør.size)
+    }
+
     private fun TestRapid.løsning(index: Int = 0) = inspektør.message(index).path("@løsning").toString()
 
     private companion object {
@@ -308,6 +318,7 @@ internal class SputnikTest {
         private const val IngenStønadstyperFødselsnummer = "0"
         private const val AltUntattSvangerskapspengerFødselsnummer = "1"
         private const val AltUntattForeldrepengerFødselsnummer = "2"
+        private const val FeilVedoppslagFødselsnummer = "3"
 
         private val testAbakusClient = object : AbakusClient {
             private val AlleYtelser = setOf("FORELDREPENGER", "SVANGERSKAPSPENGER", "PLEIEPENGER", "OMSORGSPENGER", "OPPLÆRINGSPENGER")
@@ -316,6 +327,7 @@ internal class SputnikTest {
                    IngenStønadstyperFødselsnummer -> emptySet()
                    AltUntattSvangerskapspengerFødselsnummer -> AlleYtelser.minus("SVANGERSKAPSPENGER")
                    AltUntattForeldrepengerFødselsnummer -> AlleYtelser.minus("FORELDREPENGER")
+                   FeilVedoppslagFødselsnummer -> throw IllegalStateException("Noe gikk feil")
                    else -> AlleYtelser
                }
 
