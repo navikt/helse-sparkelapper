@@ -40,8 +40,8 @@ internal class Sputnik(
                 context.publish(fødselsnummer, json)
             }
         }
-    } catch (exception: Exception) {
-        sikkerlogg.error("Feil ved løsing av behov:\n ${packet.toJson()}", exception)
+    } catch (ex: Exception) {
+        sikkerlogg.error("Feil ved løsing av behov:\n ${packet.toJson()}", ex)
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
