@@ -37,7 +37,7 @@ internal class Sputnik(
             stønad.leggTilLøsning(packet, stønadsperioder)
             packet.toJson().let { json ->
                 sikkerlogg.info("Sender løsning for $stønad:\n $json")
-                context.publish(fødselsnummer, json)
+                //context.publish(fødselsnummer, json)
             }
         }
     } catch (exception: Exception) {
