@@ -10,11 +10,9 @@ import no.nav.helse.sparkel.sputnik.abakus.Ytelse
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 
-@Disabled
 internal class SputnikTest {
 
     private val testRapid = TestRapid().also {

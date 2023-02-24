@@ -20,8 +20,10 @@ fun main() {
     startRapidsApplication(abakusClient,)
 }
 
-internal fun startRapidsApplication(abakusClient: AbakusClient) =
+internal fun startRapidsApplication(abakusClient: AbakusClient) {
+    val dev = System.getenv("NAIS_CLUSTER_NAME")?.lowercase() == "dev-gcp"
     RapidApplication.create(System.getenv()).apply {
-        Sputnik(this, abakusClient)
-        Foreldrepenger(this, Abakusløser(abakusClient))
+        if (dev) Sputnik(this, abakusClient)
+        else Foreldrepenger(this, Abakusløser(abakusClient))
     }.start()
+}
