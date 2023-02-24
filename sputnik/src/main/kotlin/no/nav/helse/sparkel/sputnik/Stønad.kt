@@ -71,7 +71,7 @@ internal class Stønad private constructor(
             behov = "Pleiepenger",
             fomKey = "pleiepengerFom",
             tomKey = "pleiepengerTom",
-            abakusYtelser = setOf(Ytelse("PLEIEPENGER"))
+            abakusYtelser = setOf(Ytelse("PLEIEPENGER_SYKT_BARN"))
         ) { stønadsperioder -> stønadsperioder.barnSykdomLøsning() }
 
         private val Omsorgspenger = Stønad(

@@ -323,7 +323,7 @@ internal class SputnikTest {
         private const val FeilVedoppslagFødselsnummer = "3"
 
         private val testAbakusClient = object : AbakusClient {
-            private val AlleYtelser = setOf("FORELDREPENGER", "SVANGERSKAPSPENGER", "PLEIEPENGER", "OMSORGSPENGER", "OPPLÆRINGSPENGER")
+            private val AlleYtelser = setOf("FORELDREPENGER", "SVANGERSKAPSPENGER", "PLEIEPENGER_SYKT_BARN", "OMSORGSPENGER", "OPPLÆRINGSPENGER")
             override fun hent(fødselsnummer: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse): Set<Stønadsperiode> {
                val medILøsning = when (fødselsnummer) {
                    IngenStønadstyperFødselsnummer -> emptySet()
