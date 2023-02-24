@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.sputnik
 
+import java.util.UUID
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.sputnik.abakus.Ytelse
@@ -32,6 +33,7 @@ internal class Stønad private constructor(
             .filterNot { it.tom < fom } // Filtrerer bort perioder som slutter før fom
             .toSet()
 
+        packet["@id"] = "${UUID.randomUUID()}"
         packet["@løsning"] = mapOf(behov to løsning(aktuelleStønadsperioder))
     }
 
