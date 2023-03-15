@@ -1,4 +1,7 @@
 kafkaPool: nav-prod
+replicas:
+  min: "1"
+  max: "12"
 azure:
   enabled: true
   claims:
