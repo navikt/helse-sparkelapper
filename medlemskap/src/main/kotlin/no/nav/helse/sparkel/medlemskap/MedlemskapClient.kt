@@ -15,10 +15,9 @@ internal class MedlemskapClient(
     private val azureClient: AzureClient,
     private val accesstokenScope: String = "??"
 ) {
-    private val workaroundHandler = WorkaroundHandler()
 
     internal fun hentMedlemskapsvurdering(fnr: String, fom: LocalDate, tom: LocalDate): JsonNode {
-        val (responseCode, responseBody) = workaroundHandler.handle(fnr, fom, tom) {
+        val (responseCode, responseBody) =
             with(URL(baseUrl).openConnection() as HttpURLConnection) {
                 requestMethod = "POST"
                 setRequestProperty("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
@@ -39,7 +38,6 @@ internal class MedlemskapClient(
                 val stream: InputStream? = if (responseCode < 300) this.inputStream else this.errorStream
                 responseCode to stream?.bufferedReader()?.readText()
             }
-        }
 
         if (responseBody == null) {
             throw MedlemskapException("unknown error (responseCode=$responseCode) from medlemskap", responseBody)

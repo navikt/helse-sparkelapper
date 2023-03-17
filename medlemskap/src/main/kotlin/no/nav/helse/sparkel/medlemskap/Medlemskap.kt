@@ -40,23 +40,17 @@ internal class Medlemskap(
             "vedtaksperiodeId" to vedtaksperiodeId
         )) {
             try {
-                packet.info("løser behov {} for {}", keyValue("id", behovId), keyValue("vedtaksperiodeId", vedtaksperiodeId))
+                info("løser behov {} for {}", keyValue("id", behovId), keyValue("vedtaksperiodeId", vedtaksperiodeId))
                 håndter(packet, context)
-            } catch (err: MedlemskapException) {
-                log.warn("feil ved behov {} for {}: ${err.message}", keyValue("id", behovId), keyValue("vedtaksperiodeId", vedtaksperiodeId), err)
-                sikkerlogg.warn("feil ved behov {} for {}: ${err.message}\n\t${err.responseBody}", keyValue("id", behovId), keyValue("vedtaksperiodeId", vedtaksperiodeId), err)
-                håndterFeil(packet, context)
             } catch (err: Exception) {
-                packet.warn("feil ved behov {} for {}: ${err.message}", keyValue("id", behovId), keyValue("vedtaksperiodeId", vedtaksperiodeId), err)
+                warn("feil ved behov {} for {}: ${err.message}", keyValue("id", behovId), keyValue("vedtaksperiodeId", vedtaksperiodeId), err)
                 håndterFeil(packet, context)
             }
         }
     }
 
     private fun håndterFeil(packet: JsonMessage, context: MessageContext) {
-        if ("dev-fss" != System.getenv("NAIS_CLUSTER_NAME")) return
-
-        packet["@løsning"] = mapOf<String, Any>(behov to emptyMap<String, Any>())
+        packet["@løsning"] = mapOf<String, Any>(behov to mapOf("resultat" to mapOf("svar" to "UAVKLART")))
         context.publish(packet.toJson()).also {
             sikkerlogg.info("sender {} som {}", keyValue("id", packet["@id"].asText()), packet.toJson())
         }
@@ -85,12 +79,12 @@ internal class Medlemskap(
         }
     }
 
-    private fun JsonMessage.info(format: String, vararg args: Any) {
+    private fun info(format: String, vararg args: Any) {
         log.info(format, *args)
         sikkerlogg.info(format, *args)
     }
 
-    private fun JsonMessage.warn(format: String, vararg args: Any) {
+    private fun warn(format: String, vararg args: Any) {
         log.warn(format, *args)
         sikkerlogg.warn(format, *args)
     }
