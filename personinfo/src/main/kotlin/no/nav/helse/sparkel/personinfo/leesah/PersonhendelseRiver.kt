@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.*
 import net.logstash.logback.argument.StructuredArguments.keyValue
@@ -47,7 +46,6 @@ internal class PersonhendelseRiver(
             return sikkerlogg.info("dødsdato <$dødsdato> er ikke en dato: ${err.message}\nRecord: $record", err)
         }
 
-        val lesahHendelseId = record.get("hendelseId") as String
         val ident = (record.get("personidenter") as List<Any?>).first().toString()
         val identer: IdenterResultat = pdlClient.hentIdenter(ident, UUID.randomUUID().toString())
         if (identer !is Identer) return sikkerlogg.info("Kan ikke registrere dødsdato-endring på $ident pga manglende fnr")
@@ -58,7 +56,7 @@ internal class PersonhendelseRiver(
             "fødselsnummer" to identer.fødselsnummer,
             "aktørId" to identer.aktørId,
             "dødsdato" to "$dato",
-            "lesahHendelseId" to lesahHendelseId
+            "lesahHendelseId" to "${record.get("hendelseId")}"
         ))
         sikkerlogg.info("publiserer dødsmelding for {} {}:\n${packet.toJson()}",
             keyValue("fødselsnummer", identer.fødselsnummer),
