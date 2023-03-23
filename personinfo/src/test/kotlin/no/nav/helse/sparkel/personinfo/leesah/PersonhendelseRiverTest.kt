@@ -17,9 +17,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import java.time.LocalDate
 import java.util.*
 import no.nav.helse.sparkel.personinfo.FantIkkeIdenter
 import no.nav.helse.sparkel.personinfo.Identer
+import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.dødsfallV1
 
 class PersonhendelseRiverTest {
     private val FNR = "20046913337"
@@ -44,6 +46,23 @@ class PersonhendelseRiverTest {
         testRapid.reset()
     }
 
+    @Test
+    fun `håndterer dødsfall`() {
+        every { pdlClient.hentIdenter(FNR, any()) } returns Identer(
+            fødselsnummer = FNR,
+            aktørId = AKTØRID
+        )
+        val dødsdato = LocalDate.of(2018, 1, 1)
+        personhendelseRiver.onPackage(dødsfallV1(FNR, dødsdato))
+        assertEquals(1, testRapid.inspektør.size)
+        val melding = testRapid.inspektør.message(0)
+        assertEquals(FNR, melding["fødselsnummer"].asText())
+        assertEquals(AKTØRID, melding["aktørId"].asText())
+        assertEquals("dødsmelding", melding["@event_name"].asText())
+        assertEquals("$dødsdato", melding["dødsdato"].asText())
+        assertDoesNotThrow(melding["@opprettet"]::asLocalDateTime)
+        assertDoesNotThrow { UUID.fromString(melding["@id"].asText()) }
+    }
     @Test
     fun `logger kun informasjon om endring av adressebeskyttelse`() {
         every { pdlClient.hentIdenter(FNR, any()) } returns Identer(

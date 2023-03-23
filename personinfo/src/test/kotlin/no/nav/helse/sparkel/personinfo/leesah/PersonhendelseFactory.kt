@@ -5,6 +5,7 @@ import org.apache.avro.generic.GenericDatumWriter
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.io.EncoderFactory
 import java.io.ByteArrayOutputStream
+import java.time.LocalDate
 import java.util.UUID
 
 internal object PersonhendelseFactory {
@@ -25,6 +26,24 @@ internal object PersonhendelseFactory {
         put("endringstype", GenericData.EnumSymbol(PersonhendelseAvroDeserializer.sisteSkjema, "KORRIGERT"))
         put("adressebeskyttelse", GenericData.Record(addressebeskyttelseSchema).apply {
             put("gradering", GenericData.EnumSymbol(addressebeskyttelseSchema, gradering.name))
+        })
+    }
+
+    internal fun dødsfallV1(
+        fodselsnummer: String,
+        dødsdato: LocalDate,
+        hendelseId: UUID = UUID.randomUUID()
+    ): GenericRecord = GenericData.Record(PersonhendelseAvroDeserializer.sisteSkjema).apply {
+        val schema =
+            PersonhendelseAvroDeserializer.sisteSkjema.getField("doedsfall").schema().types.last()
+        put("opplysningstype", "DOEDSFALL_V1")
+        put("hendelseId", "$hendelseId")
+        put("personidenter", listOf(fodselsnummer))
+        put("master", "skatt")
+        put("opprettet", 420L)
+        put("endringstype", GenericData.EnumSymbol(PersonhendelseAvroDeserializer.sisteSkjema, "KORRIGERT"))
+        put("doedsfall", GenericData.Record(schema).apply {
+            put("doedsdato", dødsdato.toEpochDay())
         })
     }
 

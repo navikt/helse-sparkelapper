@@ -6,11 +6,16 @@ import no.nav.helse.sparkel.personinfo.PdlClient
 import org.apache.avro.generic.GenericRecord
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.util.*
+import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.personinfo.FantIkkeIdenter
 import no.nav.helse.sparkel.personinfo.Identer
 import no.nav.helse.sparkel.personinfo.IdenterResultat
+import org.apache.avro.generic.GenericData
 
 internal class PersonhendelseRiver(
     private val rapidsConnection: RapidsConnection,
@@ -23,7 +28,46 @@ internal class PersonhendelseRiver(
     private var forrigeOppdatering = LocalDateTime.MIN
 
     fun onPackage(record: GenericRecord) {
-        if (record.get("opplysningstype").toString() != "ADRESSEBESKYTTELSE_V1") return
+        val opplysningstype = record.get("opplysningstype").toString()
+        when (opplysningstype) {
+            "ADRESSEBESKYTTELSE_V1" -> håndterAdressebeskyttelse(record)
+            "DOEDSFALL_V1" -> håndterDødsmelding(record)
+        }
+    }
+
+    private fun håndterDødsmelding(record: GenericRecord) {
+        sikkerlogg.info("mottok melding om dødsfall: $record")
+
+        val dødsfall = record.get("doedsfall")
+        if (dødsfall !is GenericData.Record) return
+        val dødsdato = dødsfall["doedsdato"] ?: return
+        val dato = try {
+            LocalDate.ofEpochDay("$dødsdato".toLong())
+        } catch (err: DateTimeParseException) {
+            return sikkerlogg.info("dødsdato <$dødsdato> er ikke en dato: ${err.message}\nRecord: $record", err)
+        }
+
+        val lesahHendelseId = record.get("hendelseId") as String
+        val ident = (record.get("personidenter") as List<Any?>).first().toString()
+        val identer: IdenterResultat = pdlClient.hentIdenter(ident, UUID.randomUUID().toString())
+        if (identer !is Identer) return sikkerlogg.info("Kan ikke registrere dødsdato-endring på $ident pga manglende fnr")
+        val packet = JsonMessage.newMessage(mapOf(
+            "@event_name" to "dødsmelding",
+            "@id" to UUID.randomUUID(),
+            "@opprettet" to LocalDateTime.now(),
+            "fødselsnummer" to identer.fødselsnummer,
+            "aktørId" to identer.aktørId,
+            "dødsdato" to "$dato",
+            "lesahHendelseId" to lesahHendelseId
+        ))
+        sikkerlogg.info("publiserer dødsmelding for {} {}:\n${packet.toJson()}",
+            keyValue("fødselsnummer", identer.fødselsnummer),
+            keyValue("aktørId", identer.aktørId)
+        )
+        rapidsConnection.publish(identer.fødselsnummer, packet.toJson())
+    }
+
+    private fun håndterAdressebeskyttelse(record: GenericRecord) {
         sikkerlogg.info("mottok endring på adressebeskyttelse")
 
         val ident = (record.get("personidenter") as List<Any?>).first().toString()
@@ -45,7 +89,6 @@ internal class PersonhendelseRiver(
                 "aktørId" to identer.aktørId
             )
         )
-
         rapidsConnection.publish(identer.fødselsnummer, packet.toJson())
     }
 
