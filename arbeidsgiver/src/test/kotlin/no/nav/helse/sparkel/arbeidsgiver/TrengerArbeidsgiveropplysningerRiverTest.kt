@@ -83,6 +83,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 FNR,
                 ORGNUMMER,
                 vedtaksperiodeId,
+                LocalDate.MIN,
                 listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MAX)),
                 forespurtData = listOf(
                     mapOf(
@@ -128,6 +129,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 FNR,
                 ORGNUMMER,
                 vedtaksperiodeId,
+                LocalDate.MIN,
                 listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MAX)),
                 forespurtData = listOf(
                     mapOf(
@@ -194,6 +196,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "fødselsnummer" to FNR,
                 "organisasjonsnummer" to ORGNUMMER,
                 "vedtaksperiodeId" to vedtaksperiodeId,
+                "skjæringstidspunkt" to LocalDate.MIN,
                 "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MAX)),
                 "forespurteOpplysninger" to listOf(
                     mapOf(
@@ -225,6 +228,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "fødselsnummer" to FNR,
                 "organisasjonsnummer" to ORGNUMMER,
                 "vedtaksperiodeId" to vedtaksperiodeId,
+                "skjæringstidspunkt" to LocalDate.MIN,
                 "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MAX)),
                 "forespurteOpplysninger" to listOf(
                     mapOf(

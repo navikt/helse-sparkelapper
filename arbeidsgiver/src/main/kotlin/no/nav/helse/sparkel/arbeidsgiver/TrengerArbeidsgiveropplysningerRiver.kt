@@ -27,6 +27,7 @@ internal class TrengerArbeidsgiveropplysningerRiver(
         River(rapidsConnection).apply {
             validate { it.demandValue("@event_name", eventName) }
             validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
+            validate { it.require("skjæringstidspunkt", JsonNode::asLocalDate) }
             validate { it.requireArray("sykmeldingsperioder") {
                 require("fom", JsonNode::asLocalDate)
                 require("tom", JsonNode::asLocalDate)

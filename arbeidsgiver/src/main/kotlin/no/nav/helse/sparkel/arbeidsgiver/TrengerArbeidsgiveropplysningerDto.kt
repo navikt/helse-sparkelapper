@@ -13,6 +13,7 @@ internal data class TrengerArbeidsgiveropplysningerDto(
     val fødselsnummer: String,
     val organisasjonsnummer: String,
     val vedtaksperiodeId: UUID,
+    val skjæringstidspunkt: LocalDate,
     val sykmeldingsperioder: List<Map<String, LocalDate>>,
     val forespurtData: List<Map<String, Any>>,
     val opprettet: LocalDateTime = LocalDateTime.now()
@@ -26,6 +27,7 @@ internal fun JsonMessage.toTrengerArbeidsgiverDto(): TrengerArbeidsgiveropplysni
         fødselsnummer = this["fødselsnummer"].asText(),
         organisasjonsnummer = this["organisasjonsnummer"].asText(),
         vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
+        skjæringstidspunkt = this["skjæringstidspunkt"].asLocalDate(),
         sykmeldingsperioder = this["sykmeldingsperioder"].map {
             mapOf(
                 "fom" to it["fom"].asLocalDate(),
