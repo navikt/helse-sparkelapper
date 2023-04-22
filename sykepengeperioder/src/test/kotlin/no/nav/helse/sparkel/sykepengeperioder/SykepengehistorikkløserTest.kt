@@ -43,13 +43,12 @@ internal class SykepengehistorikkløserTest : H2Database() {
     }
 
     @Test
-    fun `løser behov`() {
+    fun `sender ikke tomme perioder`() {
         opprettPeriode(seq = 1)
         opprettPeriode(seq = 2)
         rapid.sendTestMessage(behov())
         val perioder = sisteSendtMelding.løsning()
-
-        assertEquals(2, perioder.size)
+        assertEquals(0, perioder.size)
     }
 
     @Test
@@ -70,7 +69,7 @@ internal class SykepengehistorikkløserTest : H2Database() {
         rapid.sendTestMessage(behov)
 
         val perioder = sisteSendtMelding.løsning()
-        assertEquals(2, perioder.size)
+        assertEquals(0, perioder.size)
     }
 
     @Test
@@ -106,7 +105,7 @@ internal class SykepengehistorikkløserTest : H2Database() {
         assertEquals(1, perioder[1].inntektsopplysninger.size)
 
         assertSykeperiode(
-            sykeperiode = perioder[0].utbetalteSykeperioder[0],
+            sykeperiode = perioder[0].utbetalteSykeperioder[1],
             fom = 5.september(2020),
             tom = 25.september(2020),
             grad = "100",
@@ -142,8 +141,8 @@ internal class SykepengehistorikkløserTest : H2Database() {
 
     @Test
     fun `setter statslønn hvis nyeste periode har statslønn`() {
-        opprettPeriode(seq = 1, sykmeldtFom = 1.januar(2020), statslønn = null)
-        opprettPeriode(seq = 2, sykmeldtFom = 1.februar(2020), statslønn = 1000.0)
+        opprettPeriode(seq = 1, utbetalinger = listOf(Utbetaling(1.januar(2020), 31.januar(2020))), statslønn = null)
+        opprettPeriode(seq = 2, utbetalinger = listOf(Utbetaling(1.februar(2020), 28.februar(2020))), statslønn = 1000.0)
         rapid.sendTestMessage(behov())
 
         sisteSendtMelding.løsning().let { medStatlønn ->
@@ -154,7 +153,7 @@ internal class SykepengehistorikkløserTest : H2Database() {
 
     @Test
     fun `setter arbeidsKategoriKode`() {
-        opprettPeriode(arbeidskategori = "01")
+        opprettPeriode(utbetalinger = listOf(Utbetaling(1.januar, 31.januar)), arbeidskategori = "01")
         rapid.sendTestMessage(behov())
         sisteSendtMelding.løsning().let { løsning ->
             assertEquals("01", løsning.first().arbeidsKategoriKode)
@@ -163,8 +162,8 @@ internal class SykepengehistorikkløserTest : H2Database() {
 
     @Test
     fun `forskjellig  arbeidsKategoriKode`() {
-        opprettPeriode(seq = 1, arbeidskategori = "01")
-        opprettPeriode(seq = 2, arbeidskategori = "02")
+        opprettPeriode(seq = 1, utbetalinger = listOf(Utbetaling(1.mars, 31.mars)), arbeidskategori = "01")
+        opprettPeriode(seq = 2, utbetalinger = listOf(Utbetaling(1.januar, 31.januar)), arbeidskategori = "02")
         rapid.sendTestMessage(behov())
         sisteSendtMelding.løsning().let { løsning ->
             assertEquals("01", løsning.first().arbeidsKategoriKode)

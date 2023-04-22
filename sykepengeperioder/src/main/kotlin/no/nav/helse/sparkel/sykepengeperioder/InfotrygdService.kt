@@ -49,6 +49,7 @@ internal class InfotrygdService(
                         index == 0 && statslønnDAO.harStatslønn(fødselsnummer, periode.seq)
                     )
                 }
+                .filter { it.inntektsopplysninger.isNotEmpty() || it.utbetalteSykeperioder.isNotEmpty() }
             sikkerlogg.info(
                 "løser behov: {}",
                 keyValue("id", behovId)

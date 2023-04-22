@@ -88,6 +88,7 @@ internal class InntektDAO(
                         "J" == it.refusjonsType
                     )
                 }
+                .sortedBy { it.sykepengerFom }
         }
     }
 }

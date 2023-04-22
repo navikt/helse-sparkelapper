@@ -121,7 +121,9 @@ class UtbetalingDAO(
     ) {
         internal companion object {
             internal fun tilHistorikkutbetaling(utbetalinger: List<UtbetalingDTO>) =
-                utbetalinger.map { it.tilHistorikkUtbetaling() }
+                utbetalinger
+                    .map { it.tilHistorikkUtbetaling() }
+                    .sortedBy { it.fom }
         }
 
         private fun tilHistorikkUtbetaling() = Utbetalingshistorikk.Utbetaling(

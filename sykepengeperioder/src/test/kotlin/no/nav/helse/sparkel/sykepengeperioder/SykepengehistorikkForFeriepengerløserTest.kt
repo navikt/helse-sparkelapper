@@ -95,8 +95,18 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         assertFalse(løsning.feriepengerSkalBeregnesManuelt)
         assertEquals(1, løsning.feriepengehistorikk.size)
 
+        assertEquals(listOf(
+            4.februar(2019)..29.mars(2019),
+            30.mars(2019)..14.april(2019),
+            15.april(2019)..30.april(2019),
+            1.mai(2019)..16.mai(2019),
+            17.mai(2019)..1.juni(2019),
+            2.juni(2019)..20.juni(2019),
+            4.september(2020)..4.september(2020),
+            5.september(2020)..25.september(2020),
+        ), løsning.utbetalinger.mapNotNull { u -> u.tom?.let { u.fom?.rangeTo(u.tom) } })
         assertSykeperiode(
-            sykeperiode = løsning.utbetalinger[0],
+            sykeperiode = løsning.utbetalinger[7],
             fom = 5.september(2020),
             tom = 25.september(2020),
             grad = "100",
@@ -106,14 +116,14 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
 
         assertInntektsopplysninger(
             inntektsopplysning = løsning.inntektshistorikk[0],
-            dato = 4.september(2020),
-            inntektPerMåned = 565700 / 12,
+            dato = 4.februar(2019),
+            inntektPerMåned = 507680 / 12,
             orgnummer = orgnummer
         )
         assertInntektsopplysninger(
             inntektsopplysning = løsning.inntektshistorikk[1],
-            dato = 4.februar(2019),
-            inntektPerMåned = 507680 / 12,
+            dato = 4.september(2020),
+            inntektPerMåned = 565700 / 12,
             orgnummer = orgnummer
         )
     }
