@@ -33,14 +33,14 @@ internal class ForkastetVedtaksperiodeRiverTest {
     fun `logger ett logginnslag for lange perioder`() {
         testRapid.sendTestMessage(forkastetVedtaksperiode(LocalDate.MIN, LocalDate.MIN.plusDays(16)))
         assertEquals(1, sikkerlogCollector.list.size)
-        assertTrue(sikkerlogCollector.list.any { it.message.contains("Fant en fokrastet periode som vi tror trenger forespørsel.") })
+        assertTrue(sikkerlogCollector.list.any { it.message.contains("Fant en forkastet periode som vi tror trenger forespørsel.") })
     }
     @Test
     fun `logger to logginnslag for korte perioder`() {
         testRapid.sendTestMessage(forkastetVedtaksperiode(LocalDate.MIN, LocalDate.MIN.plusDays(15)))
         assertEquals(2, sikkerlogCollector.list.size)
         assertTrue(sikkerlogCollector.list.any { it.message.contains("Se her ja, dette kan være en kort periode som ikke trenger å sende ut forespørsel.") })
-        assertTrue(sikkerlogCollector.list.any { it.message.contains("Fant en fokrastet periode som vi tror trenger forespørsel.") })
+        assertTrue(sikkerlogCollector.list.any { it.message.contains("Fant en forkastet periode som vi tror trenger forespørsel.") })
     }
 
     @Test

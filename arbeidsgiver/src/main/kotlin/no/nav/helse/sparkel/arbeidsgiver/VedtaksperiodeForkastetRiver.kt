@@ -44,17 +44,17 @@ internal class VedtaksperiodeForkastetRiver(rapidsConnection: RapidsConnection) 
             val dagerMellom = ChronoUnit.DAYS.between(fom, tom)
             if(dagerMellom <= 15) {
                 sikkerlogg.info("Se her ja, dette kan være en kort periode som ikke trenger å sende ut forespørsel. \n" +
-                    "dager mellom: $dagerMellom \n" +
-                    "fnr: $fnr \n" +
-                    "vedtaksperiode: $vedtaksperiodeId \n" +
+                    "dager mellom: $dagerMellom, \n" +
+                    "fnr: $fnr, \n" +
+                    "vedtaksperiode: $vedtaksperiodeId, \n" +
                     "tilstand: $tilstand"
                 )
             }
 
-            sikkerlogg.info("Fant en fokrastet periode som vi tror trenger forespørsel. \n" +
-                "dager mellom: $dagerMellom \n" +
-                "fnr: $fnr \n" +
-                "vedtaksperiode: $vedtaksperiodeId \n" +
+            sikkerlogg.info("Fant en forkastet periode som vi tror trenger forespørsel. \n" +
+                "dager mellom: $dagerMellom, \n" +
+                "fnr: $fnr, \n" +
+                "vedtaksperiode: $vedtaksperiodeId, \n" +
                 "tilstand: $tilstand"
             )
         }
