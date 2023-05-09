@@ -31,6 +31,7 @@ internal class PersonhendelseRiver(
         when (opplysningstype) {
             "ADRESSEBESKYTTELSE_V1" -> håndterAdressebeskyttelse(record)
             "DOEDSFALL_V1" -> håndterDødsmelding(record)
+            else -> sikkerlogg.info("uhåndtert melding {}\n$record", keyValue("opplysningstype", opplysningstype))
         }
     }
 
