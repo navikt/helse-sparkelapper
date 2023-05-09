@@ -7,6 +7,6 @@ azure:
   tenant: trygdeetaten.no
 env:
 - name: SKJERMEDE_BASE_URL
-  value: https://skjermede-personer-pip.dev.intern.nav.no
+  value: https://skjermede-personer-pip.intern.dev.nav.no
 - name: SKJERMEDE_OAUTH_SCOPE
   value: api://dev-gcp.nom.skjermede-personer-pip/.default
