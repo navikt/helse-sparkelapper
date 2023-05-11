@@ -58,6 +58,7 @@ internal object PdlOversetter {
 
     fun oversetterIdenter(pdlReply: JsonNode): IdenterResultat {
         håndterErrors(pdlReply)
+        sikkerlogg.info("hentIdenter reply=$pdlReply")
         val pdlPerson = pdlReply["data"]["hentIdenter"]["identer"]
         fun identAvType(type: String): String {
             val identgruppe = pdlPerson.firstOrNull { it["gruppe"].asText() == type }
