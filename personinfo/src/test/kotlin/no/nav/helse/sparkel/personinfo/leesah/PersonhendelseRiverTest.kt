@@ -22,6 +22,7 @@ import java.util.*
 import no.nav.helse.sparkel.personinfo.FantIkkeIdenter
 import no.nav.helse.sparkel.personinfo.Identer
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.dødsfallV1
+import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.folkeregisteridentifikatorV1
 
 class PersonhendelseRiverTest {
     private val FNR = "20046913337"
@@ -63,6 +64,27 @@ class PersonhendelseRiverTest {
         assertDoesNotThrow(melding["@opprettet"]::asLocalDateTime)
         assertDoesNotThrow { UUID.fromString(melding["@id"].asText()) }
     }
+
+    @Test
+    fun `håndterer endring av ident`() {
+        val nyttFnr = "11111111111"
+        val nyAktørId = "2222222222222"
+        every { pdlClient.hentIdenter(FNR, any()) } returns Identer(
+            fødselsnummer = nyttFnr,
+            aktørId = nyAktørId
+        )
+        personhendelseRiver.onPackage(folkeregisteridentifikatorV1(FNR))
+        assertEquals(1, testRapid.inspektør.size)
+        val melding = testRapid.inspektør.message(0)
+        assertEquals(FNR, melding["fødselsnummer"].asText())
+        assertEquals(nyAktørId, melding["aktørId"].asText())
+        assertEquals(nyttFnr, melding["nye_identer"].path("fødselsnummer").asText())
+        assertEquals(nyAktørId, melding["nye_identer"].path("aktørId").asText())
+        assertEquals("ident_opphørt", melding["@event_name"].asText())
+        assertDoesNotThrow(melding["@opprettet"]::asLocalDateTime)
+        assertDoesNotThrow { UUID.fromString(melding["@id"].asText()) }
+    }
+
     @Test
     fun `logger kun informasjon om endring av adressebeskyttelse`() {
         every { pdlClient.hentIdenter(FNR, any()) } returns Identer(

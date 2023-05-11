@@ -46,6 +46,21 @@ internal object PersonhendelseFactory {
             put("doedsdato", dødsdato.toEpochDay())
         })
     }
+    internal fun folkeregisteridentifikatorV1(fodselsnummer: String, hendelseId: UUID = UUID.randomUUID()): GenericRecord = GenericData.Record(PersonhendelseAvroDeserializer.sisteSkjema).apply {
+        val schema =
+            PersonhendelseAvroDeserializer.sisteSkjema.getField("Folkeregisteridentifikator").schema().types.last()
+        put("opplysningstype", "FOLKEREGISTERIDENTIFIKATOR_V1")
+        put("hendelseId", "$hendelseId")
+        put("personidenter", listOf(fodselsnummer))
+        put("master", "skatt")
+        put("opprettet", 420L)
+        put("endringstype", GenericData.EnumSymbol(PersonhendelseAvroDeserializer.sisteSkjema, "KORRIGERT"))
+        put("Folkeregisteridentifikator", GenericData.Record(schema).apply {
+            put("identifikasjonsnummer", fodselsnummer)
+            put("type", "FNR")
+            put("status", "opphoert")
+        })
+    }
 
     internal fun serialize(record: GenericRecord): ByteArray {
         val writer = GenericDatumWriter<GenericRecord>(record.schema)

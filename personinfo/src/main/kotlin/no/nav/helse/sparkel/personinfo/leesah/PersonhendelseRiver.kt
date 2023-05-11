@@ -31,6 +31,7 @@ internal class PersonhendelseRiver(
         when (opplysningstype) {
             "ADRESSEBESKYTTELSE_V1" -> håndterAdressebeskyttelse(record)
             "DOEDSFALL_V1" -> håndterDødsmelding(record)
+            "FOLKEREGISTERIDENTIFIKATOR_V1" -> håndterFolkeregisteridentifikator(record)
             else -> sikkerlogg.info("uhåndtert melding {}\n$record", keyValue("opplysningstype", opplysningstype))
         }
     }
@@ -64,6 +65,35 @@ internal class PersonhendelseRiver(
             keyValue("aktørId", identer.aktørId)
         )
         rapidsConnection.publish(identer.fødselsnummer, packet.toJson())
+    }
+
+    private fun håndterFolkeregisteridentifikator(record: GenericRecord) {
+        sikkerlogg.info("mottok melding om folkeregisteridentifikator:\n$record")
+
+        val folkeregisteridentifikator = record.get("Folkeregisteridentifikator")
+        if (folkeregisteridentifikator !is GenericData.Record) return
+        val ident = folkeregisteridentifikator["identifikasjonsnummer"].toString()
+        val identtype = folkeregisteridentifikator["type"].toString()
+        val status = folkeregisteridentifikator["status"].toString()
+
+        if (status != "opphoert") return
+        val identer: IdenterResultat = pdlClient.hentIdenter(ident, UUID.randomUUID().toString())
+        if (identer !is Identer) return sikkerlogg.info("Kan ikke registrere folkeregisteridentifikator-endring på $ident pga manglende fnr")
+        val packet = JsonMessage.newMessage("ident_opphørt", mapOf(
+            "fødselsnummer" to ident,
+            "identtype" to identtype,
+            "aktørId" to identer.aktørId,
+            "nye_identer" to mapOf(
+                "fødselsnummer" to identer.fødselsnummer,
+                "aktørId" to identer.aktørId
+            ),
+            "lesahHendelseId" to "${record.get("hendelseId")}"
+        ))
+        sikkerlogg.info("publiserer ident_opphørt for {} {}:\n${packet.toJson()}",
+            keyValue("fødselsnummer", identer.fødselsnummer),
+            keyValue("aktørId", identer.aktørId)
+        )
+        rapidsConnection.publish(ident, packet.toJson())
     }
 
     private fun håndterAdressebeskyttelse(record: GenericRecord) {
