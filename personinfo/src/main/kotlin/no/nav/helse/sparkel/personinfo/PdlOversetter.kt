@@ -58,7 +58,6 @@ internal object PdlOversetter {
 
     fun oversetterIdenter(pdlReply: JsonNode): IdenterResultat {
         håndterErrors(pdlReply)
-        sikkerlogg.info("hentIdenter reply=$pdlReply")
         val pdlPerson = pdlReply["data"]["hentIdenter"]["identer"]
         fun identAvType(type: String): String {
             val identgruppe = pdlPerson.firstOrNull { it["gruppe"].asText() == type }
@@ -72,6 +71,29 @@ internal object PdlOversetter {
             Identer(identAvType("FOLKEREGISTERIDENT"), identAvType("AKTORID"))
         } catch (e: NoSuchElementException) {
             FantIkkeIdenter()
+        }
+    }
+    fun oversetterAlleIdenter(pdlReply: JsonNode): Pair<Identer, List<Ident>> {
+        håndterErrors(pdlReply)
+        val (aktiveIdenter, historiske) = pdlReply.path("data").path("hentIdenter").path("identer").partition {
+            !it.path("historisk").asBoolean()
+        }
+
+        val fnr = aktiveIdenter.single { it.path("gruppe").asText() == "FOLKEREGISTERIDENT" }.path("ident").asText()
+        val aktørId = aktiveIdenter.single { it.path("gruppe").asText() == "AKTORID" }.path("ident").asText()
+        val npid = aktiveIdenter.firstOrNull { it.path("gruppe").asText() == "NPID" }?.path("ident")?.asText()
+        return Identer(
+            fødselsnummer = fnr,
+            aktørId = aktørId,
+            npid = npid,
+        ) to historiske.map {
+            val ident = it.path("ident").asText()
+            when (val gruppe = it.path("gruppe").asText()) {
+                "FOLKEREGISTERIDENT" -> Ident.Fødselsnummer(ident)
+                "AKTORID" -> Ident.AktørId(ident)
+                "NPID" -> Ident.NPID(ident)
+                else -> throw RuntimeException("ukjent identgruppe: $gruppe")
+            }
         }
     }
 
@@ -161,6 +183,13 @@ internal object PdlOversetter {
 internal interface IdenterResultat
 internal data class Identer(
     val fødselsnummer: String,
-    val aktørId: String
+    val aktørId: String,
+    val npid: String? = null
 ): IdenterResultat
 internal class FantIkkeIdenter: IdenterResultat
+
+internal sealed class Ident(val ident: String) {
+    class Fødselsnummer(ident: String) : Ident(ident)
+    class AktørId(ident: String) : Ident(ident)
+    class NPID(ident: String) : Ident(ident)
+}

@@ -69,10 +69,10 @@ class PersonhendelseRiverTest {
     fun `håndterer endring av ident`() {
         val nyttFnr = "11111111111"
         val nyAktørId = "2222222222222"
-        every { pdlClient.hentIdenter(FNR, any()) } returns Identer(
+        every { pdlClient.hentAlleIdenter(FNR, any()) } returns Pair(Identer(
             fødselsnummer = nyttFnr,
             aktørId = nyAktørId
-        )
+        ), emptyList())
         personhendelseRiver.onPackage(folkeregisteridentifikatorV1(FNR))
         assertEquals(1, testRapid.inspektør.size)
         val melding = testRapid.inspektør.message(0)

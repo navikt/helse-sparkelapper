@@ -12,6 +12,7 @@ import java.time.format.DateTimeParseException
 import java.util.*
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.personinfo.FantIkkeIdenter
+import no.nav.helse.sparkel.personinfo.Ident
 import no.nav.helse.sparkel.personinfo.Identer
 import no.nav.helse.sparkel.personinfo.IdenterResultat
 import org.apache.avro.generic.GenericData
@@ -75,23 +76,32 @@ internal class PersonhendelseRiver(
         val ident = folkeregisteridentifikator["identifikasjonsnummer"].toString()
         val identtype = folkeregisteridentifikator["type"].toString()
         val status = folkeregisteridentifikator["status"].toString()
-
         if (status != "opphoert") return
-        val identer: IdenterResultat = pdlClient.hentIdenter(ident, UUID.randomUUID().toString())
-        if (identer !is Identer) return sikkerlogg.info("Kan ikke registrere folkeregisteridentifikator-endring på $ident pga manglende fnr")
+        val (aktivIdent, historiske) = pdlClient.hentAlleIdenter(ident, UUID.randomUUID().toString())
         val packet = JsonMessage.newMessage("ident_opphørt", mapOf(
             "fødselsnummer" to ident,
             "identtype" to identtype,
-            "aktørId" to identer.aktørId,
+            "aktørId" to (historiske.firstOrNull { it is Ident.AktørId }?.ident ?: aktivIdent.aktørId),
             "nye_identer" to mapOf(
-                "fødselsnummer" to identer.fødselsnummer,
-                "aktørId" to identer.aktørId
+                "fødselsnummer" to aktivIdent.fødselsnummer,
+                "aktørId" to aktivIdent.aktørId,
+                "npid" to aktivIdent.npid
             ),
+            "gamle_identer" to historiske.map {
+                mapOf(
+                    "type" to when (it) {
+                        is Ident.NPID -> "NPID"
+                        is Ident.AktørId -> "AKTØRID"
+                        is Ident.Fødselsnummer -> "FØDSELSNUMMER"
+                    },
+                    "ident" to it.ident
+                )
+            },
             "lesahHendelseId" to "${record.get("hendelseId")}"
         ))
         sikkerlogg.info("publiserer ident_opphørt for {} {}:\n${packet.toJson()}",
-            keyValue("fødselsnummer", identer.fødselsnummer),
-            keyValue("aktørId", identer.aktørId)
+            keyValue("fødselsnummer", aktivIdent.fødselsnummer),
+            keyValue("aktørId", aktivIdent.aktørId)
         )
         rapidsConnection.publish(ident, packet.toJson())
     }

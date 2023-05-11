@@ -25,6 +25,7 @@ internal class PdlClient(
         private val dødsdatoQuery = query("/pdl/hentDødsdato.graphql")
         private val personinfoQuery = query("/pdl/hentPersoninfo.graphql")
         private val hentIdenterQuery = query("/pdl/hentIdenter.graphql")
+        private val hentAlleIdenterQuery = query("/pdl/hentAlleIdenter.graphql")
         private val hentVergemålQuery = query("/pdl/hentVergemål.graphql")
     }
 
@@ -72,6 +73,11 @@ internal class PdlClient(
         ident: String,
         callId: String
     ) = PdlOversetter.oversetterIdenter(request(ident, callId, hentIdenterQuery))
+
+    internal fun hentAlleIdenter(
+        ident: String,
+        callId: String
+    ) = PdlOversetter.oversetterAlleIdenter(request(ident, callId, hentAlleIdenterQuery))
 
     internal fun hentVergemål(
         ident: String,
