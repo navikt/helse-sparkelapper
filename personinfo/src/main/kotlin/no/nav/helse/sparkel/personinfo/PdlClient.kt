@@ -45,6 +45,7 @@ internal class PdlClient(
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
             .header("Nav-Call-Id", callId)
+            .header("behandlingsnummer", "B139")
             .POST(HttpRequest.BodyPublishers.ofString(body))
             .build()
 
