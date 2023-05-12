@@ -61,7 +61,9 @@ internal class AktørConsumer(
                                             "ident" to it.idnummer
                                         )
                                     },
-                                )).toJson())
+                                )).toJson().also {
+                                    sikkerlogg.info("sender endring om indent:\n$it")
+                                })
                             }
                         }
                         val aktørV2 = parseAktørMessage(genericRecord, key)
