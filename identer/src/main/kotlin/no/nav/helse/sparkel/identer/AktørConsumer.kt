@@ -5,6 +5,7 @@ import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.sparkel.identer.db.IdentifikatorDao
 
 internal class AktørConsumer(
@@ -22,10 +23,47 @@ internal class AktørConsumer(
             while (konsumerer) {
                 val records = kafkaConsumer.poll(Duration.ofSeconds(10))
                 log.info("Pollet og mottok ${records.count()} meldinger.")
-                records.forEach {
-                    val key = String(it.key())
-                    it.value()?.also { genericRecord ->
+                records.forEach { consumerRecord ->
+                    val key = String(consumerRecord.key())
+                    consumerRecord.value()?.also { genericRecord ->
                         sikkerlogg.info("håndterer melding:\n$genericRecord")
+
+                        val identifikatorer = genericRecord.get("identifikatorer")
+                        if (identifikatorer is List<*>) {
+                            val (aktiveIdenter, historiskeIdenter) = identifikatorer
+                                .filterIsInstance<GenericRecord>()
+                                .map { ident ->
+                                    Identifikator(
+                                        idnummer = ident.get("idnummer").toString(),
+                                        type = Type.valueOf(ident.get("type").toString()),
+                                        gjeldende = ident.get("gjeldende").toString().toBoolean()
+                                    )
+                                }
+                                .partition { ident -> ident.gjeldende }
+                            val fødselsnummer = aktiveIdenter.firstOrNull { it.type == Type.FOLKEREGISTERIDENT }
+                            val aktørId = aktiveIdenter.firstOrNull { it.type == Type.AKTORID }
+                            if (fødselsnummer != null && aktørId != null) {
+                                rapidConnection.publish(fødselsnummer.idnummer, JsonMessage.newMessage("ident_endring", mapOf(
+                                    "fødselsnummer" to fødselsnummer.idnummer,
+                                    "aktørId" to aktørId.idnummer,
+                                    "nye_identer" to mapOf(
+                                        "fødselsnummer" to fødselsnummer.idnummer,
+                                        "aktørId" to aktørId.idnummer,
+                                        "npid" to aktiveIdenter.firstOrNull { it.type == Type.NPID }?.idnummer
+                                    ),
+                                    "gamle_identer" to historiskeIdenter.map {
+                                        mapOf(
+                                            "type" to when (it.type) {
+                                                Type.NPID -> "NPID"
+                                                Type.AKTORID -> "AKTØRID"
+                                                Type.FOLKEREGISTERIDENT -> "FØDSELSNUMMER"
+                                            },
+                                            "ident" to it.idnummer
+                                        )
+                                    },
+                                )).toJson())
+                            }
+                        }
                         val aktørV2 = parseAktørMessage(genericRecord, key)
                         aktørV2.gjeldendeFolkeregisterident()?.also {
                             try {

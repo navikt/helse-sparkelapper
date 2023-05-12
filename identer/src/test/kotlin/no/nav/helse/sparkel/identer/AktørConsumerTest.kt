@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.identer
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -23,7 +24,7 @@ internal class AktørConsumerTest {
     private val rapidApplication = mockk<RapidApplication>(relaxed = true)
     private val kafkaConsumer = mockk<KafkaConsumer<ByteArray, GenericRecord>>(relaxed = true)
     private val identifikatorDao = mockk<IdentifikatorDao>(relaxed = true)
-
+    private val mapper = jacksonObjectMapper()
     @Test
     fun `sender melding til videre håndtering, uten NPID-ident`() {
         val aktørConsumer = AktørConsumer(rapidApplication, kafkaConsumer, identifikatorDao)
@@ -39,6 +40,36 @@ internal class AktørConsumerTest {
         }
         assertTrue(slot.captured.identifikatorer.map { it.idnummer }.containsAll(listOf("123", "456")))
         assertNull(slot.captured.identifikatorer.singleOrNull { it.type == Type.NPID })
+    }
+
+    @Test
+    fun `republiserer identendringer`() {
+        val aktørConsumer = AktørConsumer(rapidApplication, kafkaConsumer, identifikatorDao)
+        queueMessages(
+            aktørConsumer,
+            listOf(identendring())
+        )
+        aktørConsumer.run()
+
+        val expectedFnr = "123"
+        verify {
+            rapidApplication.publish(expectedFnr, match { json ->
+                val node = mapper.readTree(json)
+                val actualFnr = node.path("fødselsnummer").asText()
+                val actualAktørId = node.path("aktørId").asText()
+                val nyttFnr = node.path("nye_identer").path("fødselsnummer").asText()
+                val nyAktørId = node.path("nye_identer").path("aktørId").asText()
+                val nyNPID = node.path("nye_identer").path("npid").asText()
+                val gamleIdenter = node.path("gamle_identer").map { it.path("ident").asText() }.toSet()
+                node.path("@event_name").asText() == "ident_endring"
+                        && actualFnr == expectedFnr
+                        && actualAktørId == "456"
+                        && nyttFnr == expectedFnr
+                        && nyAktørId == "456"
+                        && nyNPID == "ET_ELLER_ANNET_IDNUMMER"
+                        && gamleIdenter == setOf("789", "666")
+            })
+        }
     }
 
     @Test
@@ -89,6 +120,37 @@ internal class AktørConsumerTest {
                 GenericData.Record(identifikatorSchema).apply {
                     put("idnummer", "456")
                     put("type", GenericData.EnumSymbol(identifikatorSchema, type))
+                    put("gjeldende", false)
+                },
+                GenericData.Record(identifikatorSchema).apply {
+                    put("idnummer", "ET_ELLER_ANNET_IDNUMMER")
+                    put("type", GenericData.EnumSymbol(identifikatorSchema, Type.NPID))
+                    put("gjeldende", true)
+                })
+            put("identifikatorer", identer)
+        }
+    private fun identendring(): GenericRecord =
+        GenericData.Record(AktørAvroDeserializer.schema).apply {
+            val identifikatorSchema = AktørAvroDeserializer.schema.getField("identifikatorer").schema().elementType
+            val identer = listOf(
+                GenericData.Record(identifikatorSchema).apply {
+                    put("idnummer", "123")
+                    put("type", GenericData.EnumSymbol(identifikatorSchema, Type.FOLKEREGISTERIDENT))
+                    put("gjeldende", true)
+                },
+                GenericData.Record(identifikatorSchema).apply {
+                    put("idnummer", "456")
+                    put("type", GenericData.EnumSymbol(identifikatorSchema, Type.AKTORID))
+                    put("gjeldende", true)
+                },
+                GenericData.Record(identifikatorSchema).apply {
+                    put("idnummer", "789")
+                    put("type", GenericData.EnumSymbol(identifikatorSchema, Type.FOLKEREGISTERIDENT))
+                    put("gjeldende", false)
+                },
+                GenericData.Record(identifikatorSchema).apply {
+                    put("idnummer", "666")
+                    put("type", GenericData.EnumSymbol(identifikatorSchema, Type.AKTORID))
                     put("gjeldende", false)
                 },
                 GenericData.Record(identifikatorSchema).apply {
