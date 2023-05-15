@@ -24,18 +24,29 @@ internal class VedtaksperiodeForkastetRiver(rapidsConnection: RapidsConnection) 
                     "vedtaksperiodeId",
                     "tilstand",
                     "fom",
-                    "tom"
+                    "tom",
+                    "trengerArbeidsgiveropplysninger"
                 )
             }
         }.register(this)
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        val trengerArbeidsgiveropplysninger = packet["trengerArbeidsgiveropplysninger"].asBoolean()
         val tilstand = packet["tilstand"].asText()
         val fom = packet["fom"].asLocalDate()
         val tom = packet["tom"].asLocalDate()
         val fnr = packet["fødselsnummer"].asText()
         val vedtaksperiodeId = UUID.fromString(packet["vedtaksperiodeId"].asText())
+
+        if(trengerArbeidsgiveropplysninger && (tilstand == "START" || tilstand == "AVVENTER_INFOTRYGDHISTORIKK")) {
+
+            sikkerlogg.info("Fant en forkastet periode som trenger forespørsel. \n" +
+                    "fnr: $fnr, \n" +
+                    "vedtaksperiode: $vedtaksperiodeId, \n" +
+                    "tilstand: $tilstand"
+            )
+        }
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
