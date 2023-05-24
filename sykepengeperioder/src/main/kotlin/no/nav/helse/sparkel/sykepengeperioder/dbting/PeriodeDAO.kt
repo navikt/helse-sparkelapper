@@ -8,9 +8,14 @@ import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk
 import org.intellij.lang.annotations.Language
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import javax.sql.DataSource
 
-internal fun Row.intOrNullToLocalDate(label: String) = intOrNull(label)?.takeIf { it >= 10101 }?.toLocalDate()
+internal fun Row.intOrNullToLocalDate(label: String) = try {
+    intOrNull(label)?.takeIf { it >= 10101 }?.toLocalDate()
+} catch (err: DateTimeParseException) {
+    null
+}
 internal fun Row.intToLocalDate(label: String) = int(label).toLocalDate()
 internal fun Int.toLocalDate() =
     LocalDate.parse(this.toString().padStart(8, '0'), DateTimeFormatter.ofPattern("yyyyMMdd"))
