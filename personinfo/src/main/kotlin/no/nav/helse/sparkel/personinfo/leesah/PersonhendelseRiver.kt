@@ -15,6 +15,7 @@ import no.nav.helse.sparkel.personinfo.IdenterResultat
 import no.nav.helse.sparkel.personinfo.PdlClient
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
+import org.apache.avro.util.Utf8
 import org.slf4j.LoggerFactory
 
 internal fun erDev() = "dev-gcp" == System.getenv("NAIS_CLUSTER_NAME")
@@ -81,7 +82,7 @@ internal class PersonhendelseRiver(
         val folkeregisteridentifikator = record.get("Folkeregisteridentifikator")
         if (folkeregisteridentifikator !is GenericData.Record) return
         val ident = folkeregisteridentifikator["identifikasjonsnummer"].toString()
-        val personidenter = record["personidenter"] as List<String>
+        val personidenter = getPersonidenter(record)
         val identtype = folkeregisteridentifikator["type"].toString()
         val status = folkeregisteridentifikator["status"].toString()
         if (status != "opphoert" || (erDev() && personidenter.any { it in ugyldigeIdenter })) {
@@ -115,6 +116,18 @@ internal class PersonhendelseRiver(
         )
         rapidsConnection.publish(ident, packet.toJson())
     }
+
+    private fun getPersonidenter(record: GenericRecord) =
+        (record.get("personidenter") as List<*>).map { value ->
+            when (value) {
+                is String -> value
+                is Utf8 -> value.toString()
+                else -> {
+                    sikkerlogg.info("Hva er dette for slags type?: $value")
+                    "$value"
+                }
+            }
+        }
 
     private fun håndterAdressebeskyttelse(record: GenericRecord) {
         sikkerlogg.info("mottok endring på adressebeskyttelse")
