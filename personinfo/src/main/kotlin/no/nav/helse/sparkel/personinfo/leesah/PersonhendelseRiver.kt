@@ -76,7 +76,9 @@ internal class PersonhendelseRiver(
         val ident = folkeregisteridentifikator["identifikasjonsnummer"].toString()
         val identtype = folkeregisteridentifikator["type"].toString()
         val status = folkeregisteridentifikator["status"].toString()
-        if (status != "opphoert") return
+        if (status != "opphoert" || ("dev-gcp" == System.getenv("NAIS_CLUSTER_NAME") && folkeregisteridentifikator == "2453351376480")) {
+            return
+        }
         val (aktivIdent, historiske) = pdlClient.hentAlleIdenter(ident, UUID.randomUUID().toString())
         val packet = JsonMessage.newMessage("ident_opphørt", mapOf(
             "fødselsnummer" to ident,
