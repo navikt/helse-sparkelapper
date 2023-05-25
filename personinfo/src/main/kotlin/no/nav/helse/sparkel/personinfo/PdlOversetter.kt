@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.personinfo
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import java.lang.IllegalArgumentException
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Adressebeskyttelse.Companion.somAdressebeskyttelse
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Kjønn.Companion.somKjønn
@@ -13,6 +14,7 @@ import no.nav.helse.sparkel.personinfo.Vergemålløser.Område.Sym
 import no.nav.helse.sparkel.personinfo.Vergemålløser.Resultat
 import no.nav.helse.sparkel.personinfo.Vergemålløser.Vergemål
 import no.nav.helse.sparkel.personinfo.Vergemålløser.VergemålType
+import no.nav.helse.sparkel.personinfo.leesah.erDev
 import org.slf4j.LoggerFactory
 
 internal object PdlOversetter {
@@ -79,8 +81,15 @@ internal object PdlOversetter {
             !it.path("historisk").asBoolean()
         }
 
-        val fnr: String = aktiveIdenter.single { it.path("gruppe").asText() == "FOLKEREGISTERIDENT" }.path("ident").asText()
-        val aktørId: String = aktiveIdenter.single { it.path("gruppe").asText() == "AKTORID" }.path("ident").asText()
+        val fnr: String
+        val aktørId: String
+        try {
+            fnr = aktiveIdenter.single { it.path("gruppe").asText() == "FOLKEREGISTERIDENT" }.path("ident").asText()
+            aktørId = aktiveIdenter.single { it.path("gruppe").asText() == "AKTORID" }.path("ident").asText()
+        } catch (e: IllegalArgumentException) {
+            if (erDev()) sikkerlogg.error("Det finnes flere aktive identer i svaret fra PDL\n$pdlReply")
+            throw e
+        }
 
         val npid = aktiveIdenter.firstOrNull { it.path("gruppe").asText() == "NPID" }?.path("ident")?.asText()
         return Identer(

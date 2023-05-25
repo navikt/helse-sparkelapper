@@ -17,6 +17,8 @@ import no.nav.helse.sparkel.personinfo.Identer
 import no.nav.helse.sparkel.personinfo.IdenterResultat
 import org.apache.avro.generic.GenericData
 
+internal fun erDev() = "dev-gcp" == System.getenv("NAIS_CLUSTER_NAME")
+
 internal class PersonhendelseRiver(
     private val rapidsConnection: RapidsConnection,
     private val pdlClient: PdlClient,
@@ -76,7 +78,7 @@ internal class PersonhendelseRiver(
         val ident = folkeregisteridentifikator["identifikasjonsnummer"].toString()
         val identtype = folkeregisteridentifikator["type"].toString()
         val status = folkeregisteridentifikator["status"].toString()
-        if (status != "opphoert" || ("dev-gcp" == System.getenv("NAIS_CLUSTER_NAME") && folkeregisteridentifikator == "2453351376480")) {
+        if (status != "opphoert" || (erDev() && folkeregisteridentifikator == "2453351376480")) {
             return
         }
         val (aktivIdent, historiske) = pdlClient.hentAlleIdenter(ident, UUID.randomUUID().toString())
