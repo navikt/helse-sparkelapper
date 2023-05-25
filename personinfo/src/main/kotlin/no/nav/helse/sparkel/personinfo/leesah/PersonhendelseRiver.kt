@@ -1,21 +1,21 @@
 package no.nav.helse.sparkel.personinfo.leesah
 
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.sparkel.personinfo.PdlClient
-import org.apache.avro.generic.GenericRecord
-import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
-import java.util.*
+import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.personinfo.FantIkkeIdenter
 import no.nav.helse.sparkel.personinfo.Ident
 import no.nav.helse.sparkel.personinfo.Identer
 import no.nav.helse.sparkel.personinfo.IdenterResultat
+import no.nav.helse.sparkel.personinfo.PdlClient
 import org.apache.avro.generic.GenericData
+import org.apache.avro.generic.GenericRecord
+import org.slf4j.LoggerFactory
 
 internal fun erDev() = "dev-gcp" == System.getenv("NAIS_CLUSTER_NAME")
 
@@ -70,15 +70,21 @@ internal class PersonhendelseRiver(
         rapidsConnection.publish(identer.fødselsnummer, packet.toJson())
     }
 
+    //Ugyldige identer i dev
+    private val ugyldigeIdenter = listOf(
+        "09429240384", "16499242984", "2529873690340", "2757069464029", "2453351376480", "29489135955", "04499139182", "2910142157320", "14519144590", "2349847394375", "11479105156"
+    )
+
     private fun håndterFolkeregisteridentifikator(record: GenericRecord) {
         sikkerlogg.info("mottok melding om folkeregisteridentifikator:\n$record")
 
         val folkeregisteridentifikator = record.get("Folkeregisteridentifikator")
         if (folkeregisteridentifikator !is GenericData.Record) return
         val ident = folkeregisteridentifikator["identifikasjonsnummer"].toString()
+        val personidenter = record["personidenter"] as List<String>
         val identtype = folkeregisteridentifikator["type"].toString()
         val status = folkeregisteridentifikator["status"].toString()
-        if (status != "opphoert" || (erDev() && folkeregisteridentifikator == "2453351376480")) {
+        if (status != "opphoert" || (erDev() && personidenter.any { it in ugyldigeIdenter })) {
             return
         }
         val (aktivIdent, historiske) = pdlClient.hentAlleIdenter(ident, UUID.randomUUID().toString())
