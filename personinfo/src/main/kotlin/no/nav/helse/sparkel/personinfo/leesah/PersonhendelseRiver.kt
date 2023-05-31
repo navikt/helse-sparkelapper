@@ -17,6 +17,8 @@ import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
 import org.slf4j.LoggerFactory
 
+internal fun erDev() = "dev-gcp" == System.getenv("NAIS_CLUSTER_NAME")
+
 internal class PersonhendelseRiver(
     private val rapidsConnection: RapidsConnection,
     private val pdlClient: PdlClient,
@@ -77,7 +79,16 @@ internal class PersonhendelseRiver(
         val identtype = folkeregisteridentifikator["type"].toString()
         val status = folkeregisteridentifikator["status"].toString()
         if (status != "opphoert") return
-        val (aktivIdent, historiske) = pdlClient.hentAlleIdenter(ident, UUID.randomUUID().toString())
+
+        val (aktivIdent, historiske) = try {
+            pdlClient.hentAlleIdenter(ident, UUID.randomUUID().toString())
+        } catch (e: Exception) {
+            if (erDev()) {
+                sikkerlogg.error("Fikk feil ved pdl-oppslag på ident $ident, ignorerer melding", e)
+                return
+            }
+            throw e
+        }
         val packet = JsonMessage.newMessage("ident_opphørt", mapOf(
             "fødselsnummer" to ident,
             "identtype" to identtype,
