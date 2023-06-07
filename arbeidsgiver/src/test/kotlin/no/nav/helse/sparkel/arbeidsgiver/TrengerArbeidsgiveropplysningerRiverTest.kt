@@ -84,7 +84,8 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 ORGNUMMER,
                 vedtaksperiodeId,
                 LocalDate.MIN,
-                listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MAX)),
+                listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MAX)),
+                listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
                 forespurtData = listOf(
                     mapOf(
                         "opplysningstype" to "Inntekt",
@@ -130,7 +131,8 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 ORGNUMMER,
                 vedtaksperiodeId,
                 LocalDate.MIN,
-                listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MAX)),
+                listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MAX)),
+                listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
                 forespurtData = listOf(
                     mapOf(
                         "opplysningstype" to "FastsattInntekt",
@@ -197,7 +199,8 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "organisasjonsnummer" to ORGNUMMER,
                 "vedtaksperiodeId" to vedtaksperiodeId,
                 "skjæringstidspunkt" to LocalDate.MIN,
-                "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MAX)),
+                "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MAX)),
+                "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
                 "forespurteOpplysninger" to listOf(
                     mapOf(
                         "opplysningstype" to "Inntekt",
@@ -229,7 +232,8 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "organisasjonsnummer" to ORGNUMMER,
                 "vedtaksperiodeId" to vedtaksperiodeId,
                 "skjæringstidspunkt" to LocalDate.MIN,
-                "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MAX)),
+                "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MAX)),
+                "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
                 "forespurteOpplysninger" to listOf(
                     mapOf(
                         "opplysningstype" to "FastsattInntekt",

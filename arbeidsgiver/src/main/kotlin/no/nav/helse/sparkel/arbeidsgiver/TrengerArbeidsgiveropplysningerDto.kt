@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
+import com.fasterxml.jackson.databind.JsonNode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -15,6 +16,7 @@ internal data class TrengerArbeidsgiveropplysningerDto(
     val vedtaksperiodeId: UUID,
     val skjæringstidspunkt: LocalDate,
     val sykmeldingsperioder: List<Map<String, LocalDate>>,
+    val egenmeldingsperioder: List<Map<String, LocalDate>>,
     val forespurtData: List<Map<String, Any>>,
     val opprettet: LocalDateTime = LocalDateTime.now()
 ) {
@@ -28,15 +30,18 @@ internal fun JsonMessage.toTrengerArbeidsgiverDto(): TrengerArbeidsgiveropplysni
         organisasjonsnummer = this["organisasjonsnummer"].asText(),
         vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
         skjæringstidspunkt = this["skjæringstidspunkt"].asLocalDate(),
-        sykmeldingsperioder = this["sykmeldingsperioder"].map {
-            mapOf(
-                "fom" to it["fom"].asLocalDate(),
-                "tom" to it["tom"].asLocalDate()
-            )
-        },
+        sykmeldingsperioder = this["sykmeldingsperioder"].toPerioder(),
+        egenmeldingsperioder = this["egenmeldingsperioder"].toPerioder(),
         forespurtData = this["forespurteOpplysninger"].asForespurteOpplysninger().toJsonMap(),
         opprettet = this["@opprettet"].asLocalDateTime()
     )
+
+private fun JsonNode.toPerioder() = map {
+    mapOf(
+        "fom" to it["fom"].asLocalDate(),
+        "tom" to it["tom"].asLocalDate()
+    )
+}
 
 internal enum class Meldingstype {
     TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER
