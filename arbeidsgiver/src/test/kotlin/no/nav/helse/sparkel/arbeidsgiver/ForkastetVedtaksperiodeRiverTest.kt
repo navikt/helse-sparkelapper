@@ -1,114 +1,142 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
-import ch.qos.logback.classic.Logger
-import ch.qos.logback.classic.spi.ILoggingEvent
-import ch.qos.logback.core.read.ListAppender
+import com.fasterxml.jackson.databind.JsonNode
+import io.mockk.mockk
+import io.mockk.verify
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import org.intellij.lang.annotations.Language
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.header.internals.RecordHeader
 import org.junit.jupiter.api.Test
-import org.slf4j.LoggerFactory
 
 internal class ForkastetVedtaksperiodeRiverTest {
 
     private val testRapid = TestRapid()
-    private val sikkerlogCollector = ListAppender<ILoggingEvent>()
+    private val mockproducer: KafkaProducer<String, TrengerArbeidsgiveropplysningerDto> = mockk(relaxed = true)
 
     init {
-        VedtaksperiodeForkastetRiver(testRapid)
-        (LoggerFactory.getLogger("tjenestekall") as Logger).addAppender(sikkerlogCollector)
-        sikkerlogCollector.start()
-    }
-
-    @BeforeEach
-    fun beforeEach() {
-        sikkerlogCollector.list.clear()
+        VedtaksperiodeForkastetRiver(testRapid, mockproducer)
     }
 
     @Test
     fun `ignorerer andre eventer`() {
         testRapid.sendTestMessage(
             forkastetVedtaksperiode(
+                UUID.randomUUID(),
                 LocalDate.MIN,
                 LocalDate.MIN.plusDays(15),
                 eventName = "tull",
                 tilstand = "START"
             )
         )
-        assertEquals(0, sikkerlogCollector.list.size)
+        verify(exactly = 0) {
+            mockproducer.send(any())
+        }
     }
 
     @Test
-    fun `logger periode med trengerArbeidsgiveropplysninger=true og som er forkastet i tilstand START`() {
+    fun `leser event og sender videre når trengerArbeidsgiveropplysninger=true og som er forkastet i tilstand START`() {
+        val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(
             forkastetVedtaksperiode(
-                LocalDate.MIN,
-                LocalDate.MIN.plusDays(30),
-                tilstand = "START"
+                vedtaksperiodeId = vedtaksperiodeId,
+                fom = LocalDate.MIN.plusDays(1),
+                tom = LocalDate.MIN.plusDays(30),
+                tilstand = "START",
             )
         )
-        assertEquals(1, sikkerlogCollector.list.size)
-        assertTrue(sikkerlogCollector.list.any { it.message.contains("Fant en forkastet periode som trenger forespørsel.") })
+
+        val payload = mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId)
+        verify(exactly = 1) {
+            val record = ProducerRecord(
+                "tbd.arbeidsgiveropplysninger",
+                null,
+                FNR,
+                payload,
+                listOf(RecordHeader("type", payload.meldingstype))
+            )
+            mockproducer.send(record)
+        }
     }
 
     @Test
-    fun `logger periode med trengerArbeidsgiveropplysninger=true og som er forkastet i tilstand AVVENTER_INFOTRYGDHISTORIKK`() {
+    fun `leser event og sender videre når trengerArbeidsgiveropplysninger=true og som er forkastet i tilstand AVVENTER_INFOTRYGDHISTORIKK`() {
+        val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(
             forkastetVedtaksperiode(
-                LocalDate.MIN,
-                LocalDate.MIN.plusDays(16),
-                tilstand = "AVVENTER_INFOTRYGDHISTORIKK"
+                vedtaksperiodeId = vedtaksperiodeId,
+                fom = LocalDate.MIN.plusDays(1),
+                tom = LocalDate.MIN.plusDays(30),
+                tilstand = "AVVENTER_INFOTRYGDHISTORIKK",
             )
         )
-        assertEquals(1, sikkerlogCollector.list.size)
-        assertTrue(sikkerlogCollector.list.any { it.message.contains("Fant en forkastet periode som trenger forespørsel.") })
+
+        val payload = mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId)
+        verify {
+            val record = ProducerRecord(
+                "tbd.arbeidsgiveropplysninger",
+                null,
+                FNR,
+                payload,
+                listOf(RecordHeader("type", payload.meldingstype))
+            )
+            mockproducer.send(record)
+        }
     }
 
     @Test
-    fun `logger ikke periode som er forkastet i annen tilstand enn AVVENTER_INFOTRYGDHISTORIKK eller START`() {
+    fun `leser ikke inn event som er forkastet i annen tilstand enn AVVENTER_INFOTRYGDHISTORIKK eller START`() {
         testRapid.sendTestMessage(
             forkastetVedtaksperiode(
+                UUID.randomUUID(),
                 LocalDate.MIN,
                 LocalDate.MIN.plusDays(16),
                 tilstand = "tulletilstand"
             )
         )
-        assertEquals(0, sikkerlogCollector.list.size)
+        verify(exactly = 0) {
+            mockproducer.send(any())
+        }
     }
 
     @Test
-    fun `logger ikke periode med trengerArbeidsgiveropplysninger=false`() {
+    fun `leser ikke inn event med trengerArbeidsgiveropplysninger=false`() {
         testRapid.sendTestMessage(
             forkastetVedtaksperiode(
+                UUID.randomUUID(),
                 fom = LocalDate.MIN,
                 tom = LocalDate.MIN.plusDays(16),
                 tilstand = "START",
                 trengerArbeidsgiveropplysninger = false
             )
         )
-        assertEquals(0, sikkerlogCollector.list.size)
+        verify(exactly = 0) {
+            mockproducer.send(any())
+        }
     }
 
-    @Language("JSON")
     private fun forkastetVedtaksperiode(
+        vedtaksperiodeId: UUID,
         fom: LocalDate,
         tom: LocalDate,
         eventName: String = "vedtaksperiode_forkastet",
         tilstand: String,
-        trengerArbeidsgiveropplysninger: Boolean = true
-    ) = """
-    {
-        "@event_name": "$eventName",
-        "vedtaksperiodeId": "${UUID.randomUUID()}",
-        "tilstand": "$tilstand",
-        "fom": "$fom",
-        "tom": "$tom",
-        "trengerArbeidsgiveropplysninger": $trengerArbeidsgiveropplysninger,
-        "fødselsnummer": "fnr"
-    }
-    """
+        trengerArbeidsgiveropplysninger: Boolean = true,
+    ) = objectMapper.valueToTree<JsonNode>(
+        mapOf(
+            "@event_name" to eventName,
+            "fødselsnummer" to FNR,
+            "organisasjonsnummer" to ORGNUMMER,
+            "vedtaksperiodeId" to vedtaksperiodeId,
+            "tilstand" to tilstand,
+            "trengerArbeidsgiveropplysninger" to trengerArbeidsgiveropplysninger,
+            "fom" to fom,
+            "tom" to tom,
+            "sykmeldingsperioder" to listOf(mapOf("fom" to fom, "tom" to tom)),
+            "@opprettet" to LocalDateTime.MAX
+        )
+    ).toString()
 }

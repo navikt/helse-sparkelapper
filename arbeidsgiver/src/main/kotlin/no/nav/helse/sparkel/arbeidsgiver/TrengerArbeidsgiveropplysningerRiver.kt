@@ -14,7 +14,7 @@ import org.apache.kafka.common.header.internals.RecordHeader
 import org.slf4j.LoggerFactory
 
 internal class TrengerArbeidsgiveropplysningerRiver(
-    private val rapidsConnection: RapidsConnection,
+    rapidsConnection: RapidsConnection,
     private val arbeidsgiverProducer: KafkaProducer<String, TrengerArbeidsgiveropplysningerDto>
 ) : River.PacketListener {
     private companion object {
@@ -56,8 +56,7 @@ internal class TrengerArbeidsgiveropplysningerRiver(
             logg.info("$it:\n{}", loggVennligPacket(packet))
             sikkerlogg.info("$it med data:\n{}", packet.toJson())
         }
-
-        val payload = packet.toTrengerArbeidsgiverDto()
+        val payload = packet.toKomplettTrengerArbeidsgiverDto()
         arbeidsgiverProducer.send(
             ProducerRecord(
                 "tbd.arbeidsgiveropplysninger",
@@ -68,18 +67,10 @@ internal class TrengerArbeidsgiveropplysningerRiver(
             )
         ).get()
 
-        "Publiserte forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger".let {
+        "Publiserte komplett forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger".let {
             logg.info(it)
             sikkerlogg.info("$it med data :\n{}", payload)
         }
-
-        rapidsConnection.publish(
-            JsonMessage.newMessage(
-                mapOf(
-                    "@event_name" to "publisert_forespørsel_om_arbeidsgiveropplyninger"
-                )
-            ).toJson()
-        )
     }
 }
 

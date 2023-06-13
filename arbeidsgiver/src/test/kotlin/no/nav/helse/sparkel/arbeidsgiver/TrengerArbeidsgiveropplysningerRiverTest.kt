@@ -18,7 +18,6 @@ import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.internals.RecordHeader
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -53,21 +52,11 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
     }
 
     @Test
-    fun `logger ved gyldig event`() {
-        testRapid.sendTestMessage(eventMeldingMedInntekt("trenger_opplysninger_fra_arbeidsgiver"))
-        assertEquals(2, logCollector.list.size)
-        assertTrue(logCollector.list.any { it.message.contains("Mottok trenger_opplysninger_fra_arbeidsgiver-event fra spleis") })
-        assertTrue(logCollector.list.any { it.message.contains("Publiserte forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger") })
-        assertEquals(2, sikkerlogCollector.list.size)
-        assertTrue(sikkerlogCollector.list.any { it.message.contains("Mottok trenger_opplysninger_fra_arbeidsgiver-event fra spleis med data") })
-        assertTrue(sikkerlogCollector.list.any { it.message.contains("Publiserte forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger") })
-    }
-
-    @Test
     fun `ignorerer andre eventer`() {
         testRapid.sendTestMessage(eventMeldingMedInntekt("Tullebehov"))
-        assertEquals(0, logCollector.list.size)
-        assertEquals(0, sikkerlogCollector.list.size)
+        verify(exactly = 0) {
+            mockproducer.send(any())
+        }
     }
 
     @Test
@@ -76,36 +65,8 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(eventMeldingMedInntekt("trenger_opplysninger_fra_arbeidsgiver", vedtaksperiodeId))
 
-        assertEquals(1, testRapid.inspektør.size)
-        verify {
-            val trengerArbeidsgiveropplysningerDto = TrengerArbeidsgiveropplysningerDto(
-                Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER,
-                FNR,
-                ORGNUMMER,
-                vedtaksperiodeId,
-                LocalDate.MIN,
-                listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MAX)),
-                listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
-                forespurtData = listOf(
-                    mapOf(
-                        "opplysningstype" to "Inntekt",
-                        "forslag" to mapOf("beregningsmåneder" to listOf(
-                            YearMonth.of(2022, 8),
-                            YearMonth.of(2022, 9),
-                            YearMonth.of(2022, 10)
-                        ))
-                    ),
-                    mapOf(
-                        "opplysningstype" to "Refusjon",
-                        "forslag" to emptyList<Refusjonsforslag>()
-                    ),
-                    mapOf(
-                        "opplysningstype" to "Arbeidsgiverperiode",
-                        "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
-                    )
-                ),
-                opprettet = LocalDateTime.MAX
-            )
+        verify(exactly = 1) {
+            val trengerArbeidsgiveropplysningerDto = mockTrengerArbeidsgiveropplysningerMedInntekt(vedtaksperiodeId)
             val record = ProducerRecord(
                 "tbd.arbeidsgiveropplysninger",
                 null,
@@ -123,43 +84,8 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(eventMeldingMedFastsattInntekt(vedtaksperiodeId))
 
-        assertEquals(1, testRapid.inspektør.size)
-        verify {
-            val trengerArbeidsgiveropplysningerDto = TrengerArbeidsgiveropplysningerDto(
-                Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER,
-                FNR,
-                ORGNUMMER,
-                vedtaksperiodeId,
-                LocalDate.MIN,
-                listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MAX)),
-                listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
-                forespurtData = listOf(
-                    mapOf(
-                        "opplysningstype" to "FastsattInntekt",
-                        "fastsattInntekt" to 10000.0
-                    ),
-                    mapOf(
-                        "opplysningstype" to "Refusjon",
-                        "forslag" to listOf(
-                            mapOf(
-                                "fom" to LocalDate.MIN,
-                                "tom" to LocalDate.MIN.plusDays(10),
-                                "beløp" to 10000.0
-                            ),
-                            mapOf(
-                                "fom" to LocalDate.MIN.plusDays(11),
-                                "tom" to null,
-                                "beløp" to 9000.0
-                            )
-                        )
-                    ),
-                    mapOf(
-                        "opplysningstype" to "Arbeidsgiverperiode",
-                        "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
-                    )
-                ),
-                opprettet = LocalDateTime.MAX
-            )
+        verify(exactly = 1) {
+            val trengerArbeidsgiveropplysningerDto = mockTrengerArbeidsgiverOpplysningerMedFastsattInntekt(vedtaksperiodeId)
             val record = ProducerRecord(
                 "tbd.arbeidsgiveropplysninger",
                 null,
@@ -174,18 +100,27 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
     @Test
     fun `vi logger error ved inntekt uten beregningsmåneder`() {
         testRapid.sendTestMessage(ugyldigInntektEvent())
+        verify(exactly = 0) {
+            mockproducer.send(any())
+        }
         assertTrue(sikkerlogCollector.list.any { it.message.contains("forstod ikke trenger_opplysninger_fra_arbeidsgiver") })
     }
 
     @Test
     fun `vi logger error ved fastsatt inntekt uten fastsatt inntekt`() {
         testRapid.sendTestMessage(ugyldigFastsattInntektEvent())
+        verify(exactly = 0) {
+            mockproducer.send(any())
+        }
         assertTrue(sikkerlogCollector.list.any { it.message.contains("forstod ikke trenger_opplysninger_fra_arbeidsgiver") })
     }
 
     @Test
     fun `vi logger error ved arbeidsgiverperiode uten forslag`() {
         testRapid.sendTestMessage(ugyldigArbeidsperiodeEvent())
+        verify(exactly = 0) {
+            mockproducer.send(any())
+        }
         assertTrue(sikkerlogCollector.list.any { it.message.contains("forstod ikke trenger_opplysninger_fra_arbeidsgiver") })
     }
 
@@ -199,7 +134,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "organisasjonsnummer" to ORGNUMMER,
                 "vedtaksperiodeId" to vedtaksperiodeId,
                 "skjæringstidspunkt" to LocalDate.MIN,
-                "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MAX)),
+                "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
                 "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
                 "forespurteOpplysninger" to listOf(
                     mapOf(
@@ -232,7 +167,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "organisasjonsnummer" to ORGNUMMER,
                 "vedtaksperiodeId" to vedtaksperiodeId,
                 "skjæringstidspunkt" to LocalDate.MIN,
-                "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MAX)),
+                "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
                 "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
                 "forespurteOpplysninger" to listOf(
                     mapOf(

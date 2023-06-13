@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
-import com.fasterxml.jackson.databind.JsonNode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -14,7 +13,7 @@ internal data class TrengerArbeidsgiveropplysningerDto(
     val fødselsnummer: String,
     val organisasjonsnummer: String,
     val vedtaksperiodeId: UUID,
-    val skjæringstidspunkt: LocalDate,
+    val skjæringstidspunkt: LocalDate?,
     val sykmeldingsperioder: List<Map<String, LocalDate>>,
     val egenmeldingsperioder: List<Map<String, LocalDate>>,
     val forespurtData: List<Map<String, Any>>,
@@ -23,9 +22,9 @@ internal data class TrengerArbeidsgiveropplysningerDto(
     val meldingstype get() = type.name.lowercase().toByteArray()
 }
 
-internal fun JsonMessage.toTrengerArbeidsgiverDto(): TrengerArbeidsgiveropplysningerDto =
+internal fun JsonMessage.toKomplettTrengerArbeidsgiverDto(): TrengerArbeidsgiveropplysningerDto =
     TrengerArbeidsgiveropplysningerDto(
-        type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER,
+        type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
         fødselsnummer = this["fødselsnummer"].asText(),
         organisasjonsnummer = this["organisasjonsnummer"].asText(),
         vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
@@ -36,13 +35,24 @@ internal fun JsonMessage.toTrengerArbeidsgiverDto(): TrengerArbeidsgiveropplysni
         opprettet = this["@opprettet"].asLocalDateTime()
     )
 
-private fun JsonNode.toPerioder() = map {
-    mapOf(
-        "fom" to it["fom"].asLocalDate(),
-        "tom" to it["tom"].asLocalDate()
+internal fun JsonMessage.toBegrensetTrengerArbeidsgiverDto(): TrengerArbeidsgiveropplysningerDto =
+    TrengerArbeidsgiveropplysningerDto(
+        type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_BEGRENSET,
+        fødselsnummer = this["fødselsnummer"].asText(),
+        organisasjonsnummer = this["organisasjonsnummer"].asText(),
+        vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
+        skjæringstidspunkt = null,
+        sykmeldingsperioder = this["sykmeldingsperioder"].toPerioder(),
+        egenmeldingsperioder = emptyList(),
+        forespurtData = listOf(
+            Inntekt(Inntektsforslag(emptyList())),
+            Arbeidsgiverperiode(emptyList()),
+            Refusjon(emptyList())
+        ).toJsonMap(),
+        opprettet = this["@opprettet"].asLocalDateTime()
     )
-}
 
 internal enum class Meldingstype {
-    TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER
+    TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
+    TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_BEGRENSET
 }

@@ -1,16 +1,21 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
-import java.util.UUID
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.helse.rapids_rivers.asLocalDate
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.header.internals.RecordHeader
 import org.slf4j.LoggerFactory
 
-internal class VedtaksperiodeForkastetRiver(rapidsConnection: RapidsConnection) : River.PacketListener {
+internal class VedtaksperiodeForkastetRiver(
+    rapidsConnection: RapidsConnection,
+    private val arbeidsgiverProducer: KafkaProducer<String, TrengerArbeidsgiveropplysningerDto>
+) : River.PacketListener {
     private companion object {
+        val logg = LoggerFactory.getLogger(this::class.java)
         val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         const val eventName = "vedtaksperiode_forkastet"
     }
@@ -21,31 +26,44 @@ internal class VedtaksperiodeForkastetRiver(rapidsConnection: RapidsConnection) 
             validate {
                 it.requireKey(
                     "fødselsnummer",
+                    "organisasjonsnummer",
                     "vedtaksperiodeId",
                     "tilstand",
                     "fom",
                     "tom",
-                    "trengerArbeidsgiveropplysninger"
+                    "trengerArbeidsgiveropplysninger",
+                    "sykmeldingsperioder",
+                    "@opprettet"
                 )
             }
         }.register(this)
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        val trengerArbeidsgiveropplysninger = packet["trengerArbeidsgiveropplysninger"].asBoolean()
         val tilstand = packet["tilstand"].asText()
-        val fom = packet["fom"].asLocalDate()
-        val tom = packet["tom"].asLocalDate()
-        val fnr = packet["fødselsnummer"].asText()
-        val vedtaksperiodeId = UUID.fromString(packet["vedtaksperiodeId"].asText())
+        val trengerArbeidsgiveropplysninger = packet["trengerArbeidsgiveropplysninger"].asBoolean()
 
         if(trengerArbeidsgiveropplysninger && (tilstand == "START" || tilstand == "AVVENTER_INFOTRYGDHISTORIKK")) {
+            "Fant en forkastet periode som trenger forespørsel".let {
+                logg.info(it)
+                sikkerlogg.info("$it med data :\n{}", packet.toJson())
+            }
 
-            sikkerlogg.info("Fant en forkastet periode som trenger forespørsel. \n" +
-                    "fnr: $fnr, \n" +
-                    "vedtaksperiode: $vedtaksperiodeId, \n" +
-                    "tilstand: $tilstand"
-            )
+            val payload = packet.toBegrensetTrengerArbeidsgiverDto()
+            arbeidsgiverProducer.send(
+                ProducerRecord(
+                    "tbd.arbeidsgiveropplysninger",
+                    null,
+                    payload.fødselsnummer,
+                    payload,
+                    listOf(RecordHeader("type", payload.meldingstype))
+                )
+            ).get()
+
+            "Publiserte begrenset forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger".let {
+                logg.info(it)
+                sikkerlogg.info("$it med data :\n{}", payload)
+            }
         }
     }
 
