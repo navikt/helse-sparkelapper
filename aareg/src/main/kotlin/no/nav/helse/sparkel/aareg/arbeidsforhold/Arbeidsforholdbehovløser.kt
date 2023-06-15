@@ -88,6 +88,18 @@ class Arbeidsforholdbehovløser(
 
                 løsning
             }
+        } catch (err: AaregException) {
+            log.error(
+                "Feilmelding for behov={} ved oppslag i AAreg. Svarer med tom liste",
+                keyValue("id", packet["@id"].asText())
+            )
+            sikkerlogg.error(
+                "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Svarer med tom liste. Response:\n\t{}",
+                keyValue("id", packet["@id"].asText()),
+                err.responseValue().toString(),
+                err,
+            )
+            emptyList()
         } catch (err: ClientRequestException) {
             log.warn(
                 "Feilmelding for behov={} ved oppslag i AAreg. Svarer med tom liste",
