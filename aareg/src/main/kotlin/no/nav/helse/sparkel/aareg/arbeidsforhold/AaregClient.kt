@@ -35,7 +35,7 @@ class AaregClient(
         return responseValue as ArrayNode
     }
 
-    private fun erDev() = "dev-gcp" == System.getenv("NAIS_CLUSTER_NAME")
+    private fun erDev() = "dev-fss" == System.getenv("NAIS_CLUSTER_NAME")
     private val aaregUrl by lazy {
         val versjon = if (erDev()) "v2" else "v1"
         "$baseUrl/$versjon/arbeidstaker/arbeidsforhold"
