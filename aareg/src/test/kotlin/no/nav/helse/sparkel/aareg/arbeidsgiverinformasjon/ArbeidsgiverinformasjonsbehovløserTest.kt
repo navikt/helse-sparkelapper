@@ -5,13 +5,13 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import java.util.*
+import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.objectMapper
-import no.nav.helse.sparkel.ereg.EregClient
-import no.nav.helse.sparkel.ereg.EregResponse
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows

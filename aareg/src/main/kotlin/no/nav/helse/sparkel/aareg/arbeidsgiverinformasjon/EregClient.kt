@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.ereg
+package no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.client.*

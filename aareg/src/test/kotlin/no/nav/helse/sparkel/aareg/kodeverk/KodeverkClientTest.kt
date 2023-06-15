@@ -1,12 +1,10 @@
-package no.nav.helse.sparkel.aareg.util
+package no.nav.helse.sparkel.aareg.kodeverk
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import io.ktor.http.encodeURLPath
-import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
-import no.nav.helse.sparkel.aareg.kodeverk.hentTekst
 import no.nav.helse.sparkel.aareg.objectMapper
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals

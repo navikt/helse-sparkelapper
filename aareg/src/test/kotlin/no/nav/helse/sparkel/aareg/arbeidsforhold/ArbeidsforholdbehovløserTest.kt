@@ -6,8 +6,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.util.*
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
-import no.nav.helse.sparkel.aareg.arbeidsforholdV2.arbeidsforholdV2Response
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.arbeidsforholdV2Response
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.objectMapper
 import org.junit.jupiter.api.Assertions.assertFalse

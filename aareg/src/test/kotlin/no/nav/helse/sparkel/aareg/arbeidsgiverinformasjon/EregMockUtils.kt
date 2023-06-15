@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.ereg
+package no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon
 
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*

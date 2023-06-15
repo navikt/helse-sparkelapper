@@ -1,8 +1,7 @@
-package no.nav.helse.sparkel.aareg.arbeidsforholdV2
+package no.nav.helse.sparkel.aareg.arbeidsforhold
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -11,7 +10,6 @@ import no.nav.helse.sparkel.aareg.objectMapper
 import java.time.LocalDate
 import java.util.*
 import no.nav.helse.sparkel.aareg.sikkerlogg
-
 
 class AaregClient(
     private val baseUrl: String,

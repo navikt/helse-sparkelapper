@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.aareg.arbeidsforholdV2
+package no.nav.helse.sparkel.aareg.arbeidsforhold
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.client.plugins.ClientRequestException

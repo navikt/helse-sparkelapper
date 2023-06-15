@@ -11,8 +11,6 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.sikkerlogg
-import no.nav.helse.sparkel.ereg.EregClient
-import no.nav.helse.sparkel.ereg.FeilVedHenting
 
 class Arbeidsgiverinformasjonsbehovløser(
     rapidsConnection: RapidsConnection,

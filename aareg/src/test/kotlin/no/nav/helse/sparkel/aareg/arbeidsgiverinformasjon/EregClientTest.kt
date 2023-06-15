@@ -1,10 +1,10 @@
-package no.nav.helse.sparkel.ereg
+package no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon
 
 import io.mockk.every
+import java.util.UUID.randomUUID
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.util.UUID.randomUUID
 
 internal class EregClientTest {
 

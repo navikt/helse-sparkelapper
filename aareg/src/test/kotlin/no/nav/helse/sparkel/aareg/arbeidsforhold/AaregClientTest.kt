@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.aareg.arbeidsforholdV2
+package no.nav.helse.sparkel.aareg.arbeidsforhold
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.mockk.every
@@ -7,8 +7,9 @@ import java.time.LocalDate
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.isMissingOrNull
-import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdbehovløser
-import no.nav.helse.sparkel.aareg.azure.AzureAD
+import no.nav.helse.sparkel.aareg.AzureAD
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregmockGenerator
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import org.junit.jupiter.api.Assertions

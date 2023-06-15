@@ -12,15 +12,11 @@ import io.ktor.serialization.jackson.JacksonConverter
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdbehovløser
-import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
-import no.nav.helse.sparkel.aareg.arbeidsforholdV2.ArbeidsforholdLøserV2
+import no.nav.helse.sparkel.aareg.arbeidsforhold.AaregClient
+import no.nav.helse.sparkel.aareg.arbeidsforhold.ArbeidsforholdLøserV2
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.Arbeidsgiverinformasjonsbehovløser
-import no.nav.helse.sparkel.aareg.azure.AzureAD
-import no.nav.helse.sparkel.aareg.azure.AzureADProps
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
-import no.nav.helse.sparkel.aareg.util.Environment
-import no.nav.helse.sparkel.aareg.util.setUpEnvironment
-import no.nav.helse.sparkel.ereg.EregClient
+import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.EregClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

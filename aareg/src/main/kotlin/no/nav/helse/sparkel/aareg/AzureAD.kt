@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.aareg.azure
+package no.nav.helse.sparkel.aareg
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
@@ -16,8 +16,6 @@ import java.net.URL
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.LocalDateTime
-import no.nav.helse.sparkel.aareg.logger
-import no.nav.helse.sparkel.aareg.objectMapper
 
 class AzureAD(private val props: AzureADProps) {
     private var cachedAccessToken: Token = fetchToken()

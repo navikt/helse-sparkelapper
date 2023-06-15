@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.aareg.arbeidsforholdV2
+package no.nav.helse.sparkel.aareg.arbeidsforhold
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -10,7 +10,9 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.*
-import no.nav.helse.sparkel.aareg.azure.AzureAD
+import no.nav.helse.sparkel.aareg.AzureAD
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aregMockClient
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.mockGenerator
 
 internal class ArbeidsforholdLøserV2Test {
     private val objectMapper = jacksonObjectMapper()

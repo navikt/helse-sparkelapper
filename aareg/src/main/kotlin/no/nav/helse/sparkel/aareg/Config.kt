@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.aareg.util
+package no.nav.helse.sparkel.aareg
 
 import java.net.URL
 

@@ -6,9 +6,6 @@ import io.ktor.client.statement.*
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
-import no.nav.helse.sparkel.aareg.arbeidsforholdV2.AaregClient
-import no.nav.helse.sparkel.aareg.arbeidsforholdV2.asLocalDate
-import no.nav.helse.sparkel.aareg.arbeidsforholdV2.asOptionalLocalDate
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import org.slf4j.LoggerFactory
 import java.time.LocalDate

@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.aareg.arbeidsforholdV2
+package no.nav.helse.sparkel.aareg.arbeidsforhold.util
 
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
