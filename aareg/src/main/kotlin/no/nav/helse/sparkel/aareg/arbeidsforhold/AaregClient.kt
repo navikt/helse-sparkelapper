@@ -20,23 +20,29 @@ class AaregClient(
         fnr: String,
         callId: UUID
     ): ArrayNode {
-        val response = httpClient.prepareGet("$baseUrl/v1/arbeidstaker/arbeidsforhold") {
+        val response = httpClient.prepareGet(aaregUrl) {
             header("Authorization", "Bearer ${tokenSupplier()}")
             System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
             header("Nav-Call-Id", callId)
             accept(ContentType.Application.Json)
             header("Nav-Personident", fnr)
         }.execute()
+        if (erDev()) sikkerlogg.debug("Respons fra v2:\n\t{}", response.bodyAsText())
 
         sikkerlogg.info("AaregResponse status: " + response.status)
         val responseValue = objectMapper.readTree(response.bodyAsText())
         if (!responseValue.isArray) throw AaregException(responseValue.path("melding").asText("Ukjent respons fra Aareg"), responseValue)
         return responseValue as ArrayNode
     }
+
+    private fun erDev() = "dev-gcp" == System.getenv("NAIS_CLUSTER_NAME")
+    private val aaregUrl by lazy {
+        val versjon = if (erDev()) "v2" else "v1"
+        "$baseUrl/$versjon/arbeidstaker/arbeidsforhold"
+    }
 }
 
 class AaregException(message: String, private val responseValue: JsonNode) : RuntimeException(message) {
-
     fun responseValue() = responseValue
 }
 
