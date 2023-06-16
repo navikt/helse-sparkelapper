@@ -27,7 +27,7 @@ class AaregClient(
             accept(ContentType.Application.Json)
             header("Nav-Personident", fnr)
         }.execute()
-        if (erDev()) sikkerlogg.debug("Respons fra v2:\n\t{}", response.bodyAsText())
+        // if (erDev()) sikkerlogg.debug("Respons fra v2:\n\t{}", response.bodyAsText())
 
         sikkerlogg.info("AaregResponse status: " + response.status)
         val responseValue = objectMapper.readTree(response.bodyAsText())
@@ -37,7 +37,7 @@ class AaregClient(
 
     private fun erDev() = "dev-fss" == System.getenv("NAIS_CLUSTER_NAME")
     private val aaregUrl by lazy {
-        val versjon = if (erDev()) "v2" else "v1"
+        val versjon = "v1" // if (erDev()) "v2" else "v1"
         "$baseUrl/$versjon/arbeidstaker/arbeidsforhold"
     }
 }
