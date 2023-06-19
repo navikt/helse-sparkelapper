@@ -51,8 +51,3 @@ internal fun JsonMessage.toBegrensetTrengerArbeidsgiverDto(): TrengerArbeidsgive
         ).toJsonMap(),
         opprettet = this["@opprettet"].asLocalDateTime()
     )
-
-internal enum class Meldingstype {
-    TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
-    TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_BEGRENSET
-}

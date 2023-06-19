@@ -9,3 +9,9 @@ internal fun JsonNode.toPerioder() = map {
         "tom" to it["tom"].asLocalDate()
     )
 }
+
+internal enum class Meldingstype {
+    TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
+    TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_BEGRENSET,
+    INNTEKTSMELDING_HÅNDTERT
+}

@@ -18,17 +18,19 @@ import org.slf4j.LoggerFactory
 private val logger: Logger = LoggerFactory.getLogger("sparkel-arbeidsgiver")
 
 fun main() {
-    val arbeidsgiverProducer = createAivenProducer(System.getenv())
+    val forespørselProducer = createAivenProducer<TrengerArbeidsgiveropplysningerDto>(System.getenv())
+    val inntektsmeldingHåndtertProducer = createAivenProducer<InntektsmeldingHåndtertDto>(System.getenv())
 
     val app = RapidApplication.create(System.getenv()).apply {
-        TrengerArbeidsgiveropplysningerRiver(this, arbeidsgiverProducer)
-        VedtaksperiodeForkastetRiver(this, arbeidsgiverProducer)
+        TrengerArbeidsgiveropplysningerRiver(this, forespørselProducer)
+        VedtaksperiodeForkastetRiver(this, forespørselProducer)
+        InntektsmeldingHåndertRiver(this, inntektsmeldingHåndtertProducer)
     }
     logger.info("Hei, bro!")
     app.start()
 }
 
-private fun createAivenProducer(env: Map<String, String>): KafkaProducer<String, TrengerArbeidsgiveropplysningerDto> {
+private fun <T> createAivenProducer(env: Map<String, String>): KafkaProducer<String, T> {
     val properties = Properties().apply {
         put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, env.getValue("KAFKA_BROKERS"))
         put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, SecurityProtocol.SSL.name)
@@ -44,13 +46,13 @@ private fun createAivenProducer(env: Map<String, String>): KafkaProducer<String,
         put(ProducerConfig.LINGER_MS_CONFIG, "0")
         put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "1")
     }
-    return KafkaProducer(properties, StringSerializer(), TrengerArbeidsgiveropplysningerDTOSerializer())
+    return KafkaProducer(properties, StringSerializer(), CustomSerializer<T>())
 }
 
-internal class TrengerArbeidsgiveropplysningerDTOSerializer : Serializer<TrengerArbeidsgiveropplysningerDto> {
+class CustomSerializer<T> : Serializer<T> {
     private val objectMapper = jacksonObjectMapper()
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .registerModules(JavaTimeModule())
 
-    override fun serialize(topic: String, data: TrengerArbeidsgiveropplysningerDto): ByteArray = objectMapper.writeValueAsBytes(data)
+    override fun serialize(topic: String, data: T): ByteArray = objectMapper.writeValueAsBytes(data)
 }
