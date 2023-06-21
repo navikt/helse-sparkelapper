@@ -5,3 +5,7 @@ replicas:
 env:
   - name: KAFKA_EXTRA_TOPIC
     value: tbd.arbeidsgiveropplysninger
+gcp:
+  type: POSTGRES_15
+  name: sparkelarbeidsgiver
+  envVarPrefix: DATABASE
