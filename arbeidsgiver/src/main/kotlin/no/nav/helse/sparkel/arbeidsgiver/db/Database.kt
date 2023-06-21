@@ -3,7 +3,6 @@ package no.nav.helse.sparkel.arbeidsgiver.db
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway
-import org.jetbrains.exposed.sql.Database
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -23,8 +22,6 @@ object Environment {
 }
 class Database(dbConfig: HikariConfig = dbConfig()) {
     val dataSource by lazy { HikariDataSource(dbConfig) }
-    val db by lazy { Database.connect(dataSource) }
-
     fun migrate() {
         migrationConfig()
             .let(::HikariDataSource)

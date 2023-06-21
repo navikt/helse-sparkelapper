@@ -23,6 +23,7 @@ import org.apache.kafka.common.serialization.Serializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.jetbrains.exposed.sql.Database as ExposedDatabase
 
 private val logger: Logger = LoggerFactory.getLogger("sparkel-arbeidsgiver")
 
@@ -49,6 +50,7 @@ fun main() {
 private fun RapidsConnection.registerDbLifecycle(db: Database) {
     register(object : RapidsConnection.StatusListener {
         override fun onStartup(rapidsConnection: RapidsConnection) {
+            ExposedDatabase.connect(db.dataSource)
             db.migrate()
         }
 
