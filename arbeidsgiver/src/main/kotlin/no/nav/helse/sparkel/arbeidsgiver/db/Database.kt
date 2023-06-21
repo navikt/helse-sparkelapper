@@ -55,7 +55,7 @@ private fun migrationConfig(): HikariConfig =
     HikariConfig().apply {
         jdbcUrl = DB_URL
         username = Environment.Database.username
-        password = Environment.Database.username
+        password = Environment.Database.password
         maximumPoolSize = 2
         connectionTimeout = 1.minutes.toMillis()
         initializationFailTimeout = 1.minutes.toMillis()
