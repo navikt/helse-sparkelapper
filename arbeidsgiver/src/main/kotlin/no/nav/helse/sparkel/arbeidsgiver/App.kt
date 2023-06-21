@@ -5,6 +5,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.util.Properties
 import no.nav.helse.rapids_rivers.RapidApplication
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerRiver
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.VedtaksperiodeForkastetRiver
+import no.nav.helse.sparkel.arbeidsgiver.db.Database
+import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndertRiver
+import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndtertDto
+import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_registrert.InntektsmeldingRegistrertRepository
+import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_registrert.InntektsmeldingRegistrertRiver
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -18,16 +27,35 @@ import org.slf4j.LoggerFactory
 private val logger: Logger = LoggerFactory.getLogger("sparkel-arbeidsgiver")
 
 fun main() {
-    val forespørselProducer = createAivenProducer<TrengerArbeidsgiveropplysningerDto>(System.getenv())
-    val inntektsmeldingHåndtertProducer = createAivenProducer<InntektsmeldingHåndtertDto>(System.getenv())
+    val env = System.getenv()
 
-    val app = RapidApplication.create(System.getenv()).apply {
+    val database = Database()
+    val inntektsmeldingRegistrertRepository = InntektsmeldingRegistrertRepository()
+
+    val forespørselProducer = createAivenProducer<TrengerArbeidsgiveropplysningerDto>(env)
+    val inntektsmeldingHåndtertProducer = createAivenProducer<InntektsmeldingHåndtertDto>(env)
+
+    val app = RapidApplication.create(env).apply {
+        registerDbLifecycle(database)
         TrengerArbeidsgiveropplysningerRiver(this, forespørselProducer)
         VedtaksperiodeForkastetRiver(this, forespørselProducer)
         InntektsmeldingHåndertRiver(this, inntektsmeldingHåndtertProducer)
+        InntektsmeldingRegistrertRiver(this, inntektsmeldingRegistrertRepository)
     }
     logger.info("Hei, bro!")
     app.start()
+}
+
+private fun RapidsConnection.registerDbLifecycle(db: Database) {
+    register(object : RapidsConnection.StatusListener {
+        override fun onStartup(rapidsConnection: RapidsConnection) {
+            db.migrate()
+        }
+
+        override fun onShutdown(rapidsConnection: RapidsConnection) {
+            db.dataSource.close()
+        }
+    })
 }
 
 private fun <T> createAivenProducer(env: Map<String, String>): KafkaProducer<String, T> {

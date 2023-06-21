@@ -1,7 +1,8 @@
-package no.nav.helse.sparkel.arbeidsgiver
+package no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert
 
 import java.util.UUID
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.sparkel.arbeidsgiver.Meldingstype
 
 internal data class InntektsmeldingHåndtertDto(
     val type: Meldingstype,

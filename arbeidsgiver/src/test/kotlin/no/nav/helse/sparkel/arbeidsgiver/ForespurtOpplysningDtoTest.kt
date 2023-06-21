@@ -5,7 +5,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
 import java.time.YearMonth
-import org.junit.jupiter.api.Assertions.*
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Arbeidsgiverperiode
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.FastsattInntekt
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Inntekt
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Inntektsforslag
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Refusjon
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Refusjonsforslag
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.asForespurteOpplysninger
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class ForespurtOpplysningDtoTest {

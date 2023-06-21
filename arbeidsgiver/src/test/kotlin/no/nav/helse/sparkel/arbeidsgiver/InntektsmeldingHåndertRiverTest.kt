@@ -5,6 +5,8 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndertRiver
+import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndtertDto
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.internals.RecordHeader

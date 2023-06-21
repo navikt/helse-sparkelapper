@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.arbeidsgiver
+package no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger
 
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -6,7 +6,9 @@ import java.util.UUID
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.rapids_rivers.asLocalDateTime
-import no.nav.helse.sparkel.arbeidsgiver.ForespurtOpplysning.Companion.toJsonMap
+import no.nav.helse.sparkel.arbeidsgiver.Meldingstype
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.ForespurtOpplysning.Companion.toJsonMap
+import no.nav.helse.sparkel.arbeidsgiver.toPerioder
 
 internal data class TrengerArbeidsgiveropplysningerDto(
     val type: Meldingstype,

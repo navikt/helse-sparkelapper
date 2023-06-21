@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.arbeidsgiver
+package no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger
 
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.LocalDate
