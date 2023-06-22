@@ -11,6 +11,7 @@ import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -60,7 +61,6 @@ internal class InntektsmeldingRegistrertRepositoryTest {
             assertEquals(hendelseId, actual[InntektsmeldingRegistrertTable.hendelseId])
             assertEquals(opprettet, actual[InntektsmeldingRegistrertTable.opprettet])
         }
-
     }
 
     @Test
@@ -76,5 +76,30 @@ internal class InntektsmeldingRegistrertRepositoryTest {
             inntektsmeldingRegistrertRepository.lagre(inntektsmeldingRegistrertDto)
             inntektsmeldingRegistrertRepository.lagre(inntektsmeldingRegistrertDto)
         }
+    }
+
+    @Test
+    fun `finner dokumentId knyttet til en hendelsesId`() {
+        val hendelseId = UUID.randomUUID()
+        val expectedDokumentId = UUID.randomUUID()
+        val opprettet = LocalDate.EPOCH.atStartOfDay()
+        val inntektsmeldingRegistrertDto = InntektsmeldingRegistrertDto(
+            hendelseId = hendelseId,
+            dokumentId = expectedDokumentId,
+            opprettet = opprettet
+        )
+
+        inntektsmeldingRegistrertRepository.lagre(inntektsmeldingRegistrertDto)
+        transaction {
+            assertEquals(1, InntektsmeldingRegistrertTable.selectAll().map { it }.size)
+        }
+
+        val actualDokumentId = inntektsmeldingRegistrertRepository.finnDokumentId(hendelseId)
+        assertEquals(expectedDokumentId, actualDokumentId)
+    }
+
+    @Test
+    fun `returnerer null dersom det ikke finnes en knytning mellom dokumentId og hendelsesId`() {
+        assertNull(inntektsmeldingRegistrertRepository.finnDokumentId(UUID.randomUUID()))
     }
 }

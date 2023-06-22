@@ -1,7 +1,9 @@
 package no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_registrert
 
+import java.util.UUID
 import no.nav.helse.sparkel.arbeidsgiver.db.InntektsmeldingRegistrertTable
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
 internal class InntektsmeldingRegistrertRepository {
@@ -16,4 +18,11 @@ internal class InntektsmeldingRegistrertRepository {
                 } get (id)
             }
         }
+
+    fun finnDokumentId(hendelseId: UUID): UUID? = transaction {
+        InntektsmeldingRegistrertTable
+            .select { InntektsmeldingRegistrertTable.hendelseId eq hendelseId }
+            .map { it[InntektsmeldingRegistrertTable.dokumentId] }
+            .singleOrNull()
+    }
 }
