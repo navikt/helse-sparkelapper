@@ -40,7 +40,7 @@ fun main() {
         registerDbLifecycle(database)
         TrengerArbeidsgiveropplysningerRiver(this, forespørselProducer)
         VedtaksperiodeForkastetRiver(this, forespørselProducer)
-        InntektsmeldingHåndertRiver(this, inntektsmeldingHåndtertProducer)
+        InntektsmeldingHåndertRiver(this, inntektsmeldingHåndtertProducer, inntektsmeldingRegistrertRepository)
         InntektsmeldingRegistrertRiver(this, inntektsmeldingRegistrertRepository)
     }
     logger.info("Hei, bro!")
