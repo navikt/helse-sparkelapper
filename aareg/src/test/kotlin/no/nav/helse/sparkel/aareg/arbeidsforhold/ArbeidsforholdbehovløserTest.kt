@@ -6,7 +6,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.util.*
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.helse.sparkel.aareg.arbeidsforhold.util.arbeidsforholdV2Response
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.defaultArbeidsforholdResponse
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.objectMapper
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -21,7 +21,7 @@ internal class ArbeidsforholdbehovløserTest {
         Arbeidsforholdbehovløser(testRapid, aaregClient, kodeverkClient)
         coEvery {
             aaregClient.hentFraAareg(any(), any())
-        } returns objectMapper.readValue(arbeidsforholdV2Response())
+        } returns objectMapper.readValue(defaultArbeidsforholdResponse())
         every { kodeverkClient.getYrke(any() )} returns "SAUETELLER"
     }
 

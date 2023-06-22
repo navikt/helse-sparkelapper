@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.*
 import no.nav.helse.sparkel.aareg.AzureAD
-import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aregMockClient
-import no.nav.helse.sparkel.aareg.arbeidsforhold.util.mockGenerator
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregmockGenerator
 
 internal class ArbeidsforholdLøserV2Test {
     private val objectMapper = jacksonObjectMapper()
@@ -48,7 +48,7 @@ internal class ArbeidsforholdLøserV2Test {
         val mockAaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             tokenSupplier = {azureAdMock.accessToken()},
-            httpClient = aregMockClient(mockGenerator)
+            httpClient = aaregMockClient(aaregmockGenerator)
         )
         ArbeidsforholdLøserV2(rapid, mockAaregClient)
         rapid.sendTestMessage(behov)

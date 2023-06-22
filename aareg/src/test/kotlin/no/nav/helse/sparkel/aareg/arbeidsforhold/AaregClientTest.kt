@@ -36,7 +36,7 @@ internal class AaregClientTest {
 
         val arbeidsforhold = aaregResponse.map { it.toArbeidsforhold() }
 
-        assertEquals("987654321", arbeidsforhold[0].orgnummer)
+        assertEquals("organisasjonsnummer", arbeidsforhold[0].orgnummer)
         assertEquals(LocalDate.of(2014, 7, 1), arbeidsforhold[0].ansattSiden)
         assertEquals(LocalDate.of(2015, 12, 31), arbeidsforhold[0].ansattTil)
     }
@@ -59,7 +59,7 @@ internal class AaregClientTest {
         val aaregResponse = runBlocking { aaregClient.hentFraAareg("12343555", UUID.randomUUID()) }
 
         val listArbeidsforholdbehovløserLøsingDto = aaregResponse.filter { arbeidsforhold ->
-            arbeidsforhold["arbeidsgiver"].path("organisasjonsnummer").asText() == "987654321"
+            arbeidsforhold["arbeidsgiver"].path("organisasjonsnummer").asText() == "organisasjonsnummer"
         }
             .filter { it.path("innrapportertEtterAOrdningen").asBoolean() }
             .also {

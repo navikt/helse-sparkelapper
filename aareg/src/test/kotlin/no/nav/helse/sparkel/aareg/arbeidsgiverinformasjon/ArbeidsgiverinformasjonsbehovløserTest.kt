@@ -75,6 +75,8 @@ internal class ArbeidsgiverinformasjonsbehovløserTest {
         val løsning = testRapid.inspektør.message(testRapid.inspektør.size - 1).path("@løsning")
         assertTrue(løsning["Arbeidsgiverinformasjon"].isArray)
         assertEquals(2, løsning["Arbeidsgiverinformasjon"].size())
+        val orgnumre = løsning["Arbeidsgiverinformasjon"].map { it["orgnummer"].asText() }.toSet()
+        assertEquals(setOf(gyldigOrganisasjonsnummer1, gyldigOrganisasjonsnummer2), orgnumre)
     }
 
     @Test

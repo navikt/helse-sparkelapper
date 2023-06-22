@@ -66,6 +66,12 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
         context.publish(packet.toJson())
     }
 
+//    private fun JsonNode.toArbeidsforhold() = Arbeidsforhold(
+//        ansattSiden = this.path("ansettelsesperiode").path("startdato").asLocalDate(),
+//        ansattTil = this.path("ansettelsesperiode").path("startdato").asOptionalLocalDate(),
+//        orgnummer = this["arbeidsgiver"].path("organisasjonsnummer").asText()
+//    )
+
     private fun JsonNode.toArbeidsforhold() = Arbeidsforhold(
         ansattSiden = this.path("ansettelsesperiode").path("periode").path("fom").asLocalDate(),
         ansattTil = this.path("ansettelsesperiode").path("periode").path("tom").asOptionalLocalDate(),
