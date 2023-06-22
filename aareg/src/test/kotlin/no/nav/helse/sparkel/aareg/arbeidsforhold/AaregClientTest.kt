@@ -12,12 +12,12 @@ import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregmockGenerator
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.sikkerlogg
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class AaregClientTest {
 
-    val kodeverkClientMock = mockk<KodeverkClient>()
+    private val kodeverkClientMock = mockk<KodeverkClient>()
 
     @Test
     fun `mapping toArbeidsforhold fra aareg er ok`() {
@@ -36,11 +36,9 @@ internal class AaregClientTest {
 
         val arbeidsforhold = aaregResponse.map { it.toArbeidsforhold() }
 
-        println("Hello: " + aaregResponse)
-
-        Assertions.assertEquals("987654321", arbeidsforhold[0].orgnummer)
-        Assertions.assertEquals(LocalDate.of(2014, 7, 1), arbeidsforhold[0].ansattSiden)
-        Assertions.assertEquals(LocalDate.of(2015, 12, 31), arbeidsforhold[0].ansattTil)
+        assertEquals("987654321", arbeidsforhold[0].orgnummer)
+        assertEquals(LocalDate.of(2014, 7, 1), arbeidsforhold[0].ansattSiden)
+        assertEquals(LocalDate.of(2015, 12, 31), arbeidsforhold[0].ansattTil)
     }
 
     @Test
@@ -77,10 +75,10 @@ internal class AaregClientTest {
             .toLøsningDto()
 
 
-        Assertions.assertEquals(49, listArbeidsforholdbehovløserLøsingDto[0].stillingsprosent)
-        Assertions.assertEquals(LocalDate.of(2015,12,31), listArbeidsforholdbehovløserLøsingDto[0].sluttdato)
-        Assertions.assertEquals(LocalDate.of(2014,7,1), listArbeidsforholdbehovløserLøsingDto[0].startdato)
-        Assertions.assertEquals("utvikler", listArbeidsforholdbehovløserLøsingDto[0].stillingstittel)
+        assertEquals(49, listArbeidsforholdbehovløserLøsingDto[0].stillingsprosent)
+        assertEquals(LocalDate.of(2015,12,31), listArbeidsforholdbehovløserLøsingDto[0].sluttdato)
+        assertEquals(LocalDate.of(2014,7,1), listArbeidsforholdbehovløserLøsingDto[0].startdato)
+        assertEquals("utvikler", listArbeidsforholdbehovløserLøsingDto[0].stillingstittel)
     }
 
 
