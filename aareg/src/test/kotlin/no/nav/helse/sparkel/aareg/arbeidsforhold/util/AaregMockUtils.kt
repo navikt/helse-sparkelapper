@@ -3,26 +3,14 @@ package no.nav.helse.sparkel.aareg.arbeidsforhold.util
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.http.*
-import io.mockk.every
-import io.mockk.mockk
 import org.intellij.lang.annotations.Language
 
-val aaregmockGenerator = mockk<AaregResponseGenerator>(relaxed = true) {
-    every { arbeidsforholdResponse() }.returns(defaultArbeidsforholdResponse())
-}
-
-interface AaregResponseGenerator {
-    fun arbeidsforholdResponse(): String
-}
-
-fun aaregMockClient(aaregResponseGenerator: AaregResponseGenerator) = HttpClient(MockEngine) {
+fun aaregMockClient(aaregResponse: String = defaultArbeidsforholdResponse()) = HttpClient(MockEngine) {
     engine {
         addHandler { request ->
             when {
-                request.url.fullPath.startsWith("/v1/arbeidstaker/arbeidsforhold") -> {
-                    respond(aaregResponseGenerator.arbeidsforholdResponse())
-                }
-                else -> error("Endepunktet finnes ikke ${request.url.fullPath}")
+                request.url.fullPath.startsWith("/v1/arbeidstaker/arbeidsforhold") -> respond(aaregResponse)
+                else -> error("Endepunktet finnes ikke: ${request.url.fullPath}")
             }
         }
     }

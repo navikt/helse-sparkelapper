@@ -9,10 +9,9 @@ import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.sparkel.aareg.AzureAD
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
-import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregmockGenerator
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.sikkerlogg
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class AaregClientTest {
@@ -29,7 +28,7 @@ internal class AaregClientTest {
         val aaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             tokenSupplier = { azureAdMock.accessToken() },
-            httpClient = aaregMockClient(aaregmockGenerator)
+            httpClient = aaregMockClient()
         )
 
         val aaregResponse = runBlocking { aaregClient.hentFraAareg("12343555", UUID.randomUUID()) }
@@ -53,7 +52,7 @@ internal class AaregClientTest {
         val aaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             tokenSupplier = { azureAdMock.accessToken() },
-            httpClient = aaregMockClient(aaregmockGenerator)
+            httpClient = aaregMockClient()
         )
 
         val aaregResponse = runBlocking { aaregClient.hentFraAareg("12343555", UUID.randomUUID()) }
