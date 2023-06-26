@@ -4,13 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.mockk.every
-import io.mockk.mockk
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.*
-import no.nav.helse.sparkel.aareg.AzureAD
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
 
 internal class ArbeidsforholdLøserV2Test {
@@ -39,14 +36,10 @@ internal class ArbeidsforholdLøserV2Test {
 
     @Test
     internal fun `løser arbeidsforholdV2behov`() {
-        val azureAdMock = mockk<AzureAD>()
-
-        every { azureAdMock.accessToken() } returns "superToken"
-
         val behov = """{"@id": "${UUID.randomUUID()}", "@behov":["${ArbeidsforholdLøserV2.behov}"], "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
         val mockAaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
-            tokenSupplier = {azureAdMock.accessToken()},
+            tokenSupplier = { "superToken" },
             httpClient = aaregMockClient()
         )
         ArbeidsforholdLøserV2(rapid, mockAaregClient)

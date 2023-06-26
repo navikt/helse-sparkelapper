@@ -1,12 +1,10 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
-import com.fasterxml.jackson.module.kotlin.readValue
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import java.util.*
+import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.helse.sparkel.aareg.arbeidsforhold.util.defaultArbeidsforholdResponse
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.objectMapper
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -14,15 +12,16 @@ import org.junit.jupiter.api.Test
 
 internal class ArbeidsforholdbehovløserTest {
     private val testRapid = TestRapid()
-    private val aaregClient = mockk<AaregClient>()
     private val kodeverkClient = mockk<KodeverkClient>()
 
     init {
+        val aaregClient = AaregClient(
+            baseUrl = "http://baseUrl.local",
+            tokenSupplier = { "superToken" },
+            httpClient = aaregMockClient()
+        )
+        every { kodeverkClient.getYrke(any()) } returns "SAUETELLER"
         Arbeidsforholdbehovløser(testRapid, aaregClient, kodeverkClient)
-        coEvery {
-            aaregClient.hentFraAareg(any(), any())
-        } returns objectMapper.readValue(defaultArbeidsforholdResponse())
-        every { kodeverkClient.getYrke(any() )} returns "SAUETELLER"
     }
 
     @Test
