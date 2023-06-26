@@ -64,38 +64,26 @@ class Arbeidsforholdbehovløser(
                 val innrapportertEtterAOrdningen = arbeidsforholdPåOrganisasjonsnummer
                     .filter { it.path("innrapportertEtterAOrdningen").asBoolean() }
 
-                val arbeidsforholdTilLøsning = if (arbeidsforholdPåOrganisasjonsnummer.isNotEmpty() &&
-                    innrapportertEtterAOrdningen.isEmpty()) {
-                    sikkerlogg.warn("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg der innrapportertEtterAOrdningen=true, ignorerer filtrering og returnerer alle")
-                    arbeidsforholdPåOrganisasjonsnummer
-                } else innrapportertEtterAOrdningen
+                val relevanteArbeidsforhold =
+                    if (arbeidsforholdPåOrganisasjonsnummer.isNotEmpty() && innrapportertEtterAOrdningen.isEmpty()) {
+                        sikkerlogg.warn("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg med innrapportertEtterAOrdningen=true, ignorerer filtrering og returnerer alle arbeidsforhold for orgnummer")
+                        arbeidsforholdPåOrganisasjonsnummer
+                    } else innrapportertEtterAOrdningen
 
-                // TODO: returnere arbeidsforholdTilLøsning hvis dette er ok
-                val løsning = innrapportertEtterAOrdningen.also {
-                        if (it.any { arbeidsforhold ->
-                                !arbeidsforhold.path("arbeidsavtaler").any { arbeidsavtale ->
-                                    arbeidsavtale.path("gyldighetsperiode").path("tom")
-                                        .isMissingOrNull()
-                                }
-                            }) {
-                            sikkerlogg.info("RESTen av svaret {}", it)
-                        }
-                    }
-                    .toLøsningDto()
-                if (løsning.isEmpty()) {
+                val løsning = relevanteArbeidsforhold.toLøsningDto()
+                if (løsning.isEmpty())
                     sikkerlogg.error("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg, fikk svar:\n$arbeidsforholdFraAareg")
-                }
 
                 løsning
             }
         } catch (err: AaregException) {
             log.error(
                 "Feilmelding for behov={} ved oppslag i AAreg. Svarer med tom liste",
-                keyValue("id", packet["@id"].asText())
+                keyValue("id", id)
             )
             sikkerlogg.error(
                 "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Svarer med tom liste. Response:\n\t{}",
-                keyValue("id", packet["@id"].asText()),
+                keyValue("id", id),
                 err.responseValue().toString(),
                 err,
             )
