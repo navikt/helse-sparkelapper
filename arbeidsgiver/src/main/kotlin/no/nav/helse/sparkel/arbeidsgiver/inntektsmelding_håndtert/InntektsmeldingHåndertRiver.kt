@@ -31,7 +31,8 @@ internal class InntektsmeldingHåndertRiver(
                     "fødselsnummer",
                     "organisasjonsnummer",
                     "vedtaksperiodeId",
-                    "inntektsmeldingId"
+                    "inntektsmeldingId",
+                    "@opprettet"
                 )
             }
         }.register(this)

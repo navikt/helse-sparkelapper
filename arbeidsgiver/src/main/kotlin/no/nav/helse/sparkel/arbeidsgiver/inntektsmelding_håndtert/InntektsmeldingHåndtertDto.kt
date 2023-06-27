@@ -1,7 +1,9 @@
 package no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert
 
+import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.helse.sparkel.arbeidsgiver.Meldingstype
 
 internal data class InntektsmeldingHåndtertDto(
@@ -9,7 +11,8 @@ internal data class InntektsmeldingHåndtertDto(
     val fødselsnummer: String,
     val organisasjonsnummer: String,
     val vedtaksperiodeId: UUID,
-    val dokumentId: UUID?
+    val dokumentId: UUID?,
+    val opprettet: LocalDateTime
 ) {
     val meldingstype get() = type.name.lowercase().toByteArray()
 }
@@ -19,5 +22,6 @@ internal fun JsonMessage.toInntektsmeldingHåndtertDto(dokumentId: UUID?) = Innt
     fødselsnummer = this["fødselsnummer"].asText(),
     organisasjonsnummer = this["organisasjonsnummer"].asText(),
     vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
-    dokumentId = dokumentId
+    dokumentId = dokumentId,
+    opprettet = this["@opprettet"].asLocalDateTime()
 )

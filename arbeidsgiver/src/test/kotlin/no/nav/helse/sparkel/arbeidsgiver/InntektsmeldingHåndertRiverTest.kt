@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndertRiver
@@ -89,7 +90,8 @@ class InntektsmeldingHåndertRiverTest {
             "fødselsnummer" to FNR,
             "organisasjonsnummer" to ORGNUMMER,
             "vedtaksperiodeId" to vedtaksperiodeId,
-            "inntektsmeldingId" to hendelseId
+            "inntektsmeldingId" to hendelseId,
+            "@opprettet" to LocalDateTime.MAX
         )
     ).toString()
 }

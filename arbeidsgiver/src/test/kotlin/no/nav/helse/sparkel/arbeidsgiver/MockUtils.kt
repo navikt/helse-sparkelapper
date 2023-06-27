@@ -115,5 +115,6 @@ internal fun mockInntektsmeldingHåndtert(vedtaksperiodeId: UUID, dokumentId: UU
     fødselsnummer = FNR,
     organisasjonsnummer = ORGNUMMER,
     vedtaksperiodeId = vedtaksperiodeId,
-    dokumentId = dokumentId
+    dokumentId = dokumentId,
+    opprettet = LocalDateTime.MAX
 )
