@@ -35,8 +35,8 @@ internal class ArbeidsforholdLøserV2Test {
     }
 
     @Test
-    internal fun `løser arbeidsforholdV2behov`() {
-        val behov = """{"@id": "${UUID.randomUUID()}", "@behov":["${ArbeidsforholdLøserV2.behov}"], "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+    internal fun `løser ArbeidsforholdV2`() {
+        val behov = """{"@id": "${UUID.randomUUID()}", "@behov":["ArbeidsforholdV2"], "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
         val mockAaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             tokenSupplier = { "superToken" },
@@ -44,13 +44,27 @@ internal class ArbeidsforholdLøserV2Test {
         )
         ArbeidsforholdLøserV2(rapid, mockAaregClient)
         rapid.sendTestMessage(behov)
-        val løsning = sendtMelding.løsning()
+        val løsning = sendtMelding.løsning("ArbeidsforholdV2")
         assertTrue(løsning.isNotEmpty())
     }
 
-    private fun JsonNode.løsning(): List<Arbeidsforhold> =
+    @Test
+    internal fun `løser også AlleArbeidsforhold`() {
+        val behov = """{"@id": "${UUID.randomUUID()}", "@behov":["AlleArbeidsforhold"], "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
+        val mockAaregClient = AaregClient(
+            baseUrl = "http://baseUrl.local",
+            tokenSupplier = { "superToken" },
+            httpClient = aaregMockClient()
+        )
+        ArbeidsforholdLøserV2(rapid, mockAaregClient)
+        rapid.sendTestMessage(behov)
+        val løsning = sendtMelding.løsning("AlleArbeidsforhold")
+        assertTrue(løsning.isNotEmpty())
+    }
+
+    private fun JsonNode.løsning(behov: String): List<Arbeidsforhold> =
         this.path("@løsning")
-            .path(ArbeidsforholdLøserV2.behov)
+            .path(behov)
             .map {
                 Arbeidsforhold(
                     it["orgnummer"].asText(),

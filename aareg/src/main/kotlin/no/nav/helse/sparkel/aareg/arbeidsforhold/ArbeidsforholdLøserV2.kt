@@ -11,16 +11,12 @@ import java.util.*
 
 class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aaregClient: AaregClient) : River.PacketListener {
 
-    companion object {
-        internal const val behov = "ArbeidsforholdV2"
-    }
-
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     private val log = LoggerFactory.getLogger(this::class.java)
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireContains("@behov", behov) }
+            validate { it.requireAllOrAny("@behov", listOf("ArbeidsforholdV2", "AlleArbeidsforhold")) }
             validate { it.forbid("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
@@ -62,15 +58,14 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
             emptyList()
         }
 
+        val behov = packet["@behov"].first { it.asText() in listOf("ArbeidsforholdV2", "AlleArbeidsforhold")}.asText()
         packet.setLøsning(behov, arbeidsforhold)
         context.publish(packet.toJson())
     }
 
-//    private fun JsonNode.toArbeidsforhold() = Arbeidsforhold(
-//        ansattSiden = this.path("ansettelsesperiode").path("startdato").asLocalDate(),
-//        ansattTil = this.path("ansettelsesperiode").path("startdato").asOptionalLocalDate(),
-//        orgnummer = this["arbeidsgiver"].path("organisasjonsnummer").asText()
-//    )
+    override fun onSevere(error: MessageProblems.MessageException, context: MessageContext) {
+        super.onSevere(error, context)
+    }
 
     private fun JsonNode.toArbeidsforhold() = Arbeidsforhold(
         ansattSiden = this.path("ansettelsesperiode").path("periode").path("fom").asLocalDate(),
@@ -78,7 +73,9 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
         orgnummer = this["arbeidsgiver"].path("organisasjonsnummer").asText()
     )
 
-    override fun onError(problems: MessageProblems, context: MessageContext) {}
+    override fun onError(problems: MessageProblems, context: MessageContext) {
+
+    }
 
     private fun JsonMessage.setLøsning(nøkkel: String, data: Any) {
         this["@løsning"] = mapOf(
