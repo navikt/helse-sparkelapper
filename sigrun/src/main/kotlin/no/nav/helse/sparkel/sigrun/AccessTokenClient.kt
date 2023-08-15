@@ -49,7 +49,11 @@ class AccessTokenClient(
 class AccessToken(
     private val accessToken: String,
     private val expires: LocalDateTime
-)
+) {
+    fun berikRequestMedBearer(headers: HeadersBuilder) {
+        headers["Authentication"] = "Bearer $accessToken"
+    }
+}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 private data class AadResponse(
