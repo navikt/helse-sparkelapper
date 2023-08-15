@@ -5,6 +5,9 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
 import io.ktor.serialization.jackson.JacksonConverter
 import kotlinx.coroutines.runBlocking
@@ -13,6 +16,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("no.nav.helse.sparkel.sigrun.App")
+private val sikkerlog = LoggerFactory.getLogger("tjenestekall")
 
 fun main() {
     val app = createApp(System.getenv())
@@ -29,6 +33,14 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
                             .registerModule(JavaTimeModule())
                     )
                 )
+            }
+            install(Logging) {
+                this.level = LogLevel.ALL
+                this.logger = object : Logger {
+                    override fun log(message: String) {
+                        sikkerlog.info(message)
+                    }
+                }
             }
         }
 
