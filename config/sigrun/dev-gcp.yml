@@ -1,0 +1,11 @@
+kafkaPool: nav-dev
+azure:
+  enabled: true
+  tenant: trygdeetaten.no
+externalHosts:
+  - team-inntekt-proxy.dev-fss-pub.nais.io
+env:
+  - name: SIGRUN_URL
+    value: https://team-inntekt-proxy.dev-fss-pub.nais.io/sigrun-q2
+  - name: ACCESS_TOKEN_SCOPE
+    value: api://dev-fss.team-inntekt.sigrun-q2/.default
