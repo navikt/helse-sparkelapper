@@ -10,6 +10,7 @@ import kotlinx.coroutines.sync.withLock
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDateTime
 import kotlin.collections.set
 
 class AccessTokenClient(
@@ -21,9 +22,9 @@ class AccessTokenClient(
 
     private val log = LoggerFactory.getLogger(AccessTokenClient::class.java)
 
-    suspend fun hentAccessToken(scope: String): AadAccessToken {
+    suspend fun hentAccessToken(scope: String): AccessToken? {
         log.info("Henter nytt token fra Azure AD")
-        return try {
+        val result: AadResponse = try {
             httpClient.preparePost(aadAccessTokenUrl) {
                 accept(ContentType.Application.Json)
                 method = HttpMethod.Post
@@ -37,13 +38,25 @@ class AccessTokenClient(
         } catch (e: Exception) {
             throw RuntimeException("Klarte ikke hente nytt token fra Azure AD", e)
         }
+
+        if (result.access_token != null && result.expires_in != null)
+            return AccessToken(result.access_token, LocalDateTime.now().plus(result.expires_in))
+        log.error("feil fra Azure: ${result.error}: ${result.error_description}")
+        return null
     }
 }
 
+class AccessToken(
+    private val accessToken: String,
+    private val expires: LocalDateTime
+)
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class AadAccessToken(
-    val access_token: String,
-    val expires_in: Duration
+private data class AadResponse(
+    val access_token: String?,
+    val expires_in: Duration?,
+    val error: String?,
+    val error_description: String?
 ) {
-    internal val expiry = Instant.now().plus(expires_in)
+
 }
