@@ -82,6 +82,64 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
     }
 
     @Test
+    fun `Videresender forrige inntekt hvis Toggle er enabled`() = Toggle.SendForrigeInntekt.enable {
+        every { mockproducer.send(any()) } answers { callOriginal() }
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(eventMeldingMedForrigeInntekt(vedtaksperiodeId))
+
+        verify(exactly = 1) {
+            val trengerArbeidsgiveropplysningerDto = mockTrengerArbeidsgiveropplysningerMedForrigeInntekt(vedtaksperiodeId)
+            val record = ProducerRecord(
+                "tbd.arbeidsgiveropplysninger",
+                null,
+                FNR,
+                trengerArbeidsgiveropplysningerDto,
+                listOf(RecordHeader("type", trengerArbeidsgiveropplysningerDto.meldingstype))
+            )
+            mockproducer.send(record)
+        }
+    }
+
+    @Test
+    fun `Videresender forrige inntekt lik null hvis Toggle er enabled`() = Toggle.SendForrigeInntekt.enable {
+        every { mockproducer.send(any()) } answers { callOriginal() }
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(eventMeldingMedForrigeInntektNull(vedtaksperiodeId))
+
+        verify(exactly = 1) {
+            val trengerArbeidsgiveropplysningerDto = mockTrengerArbeidsgiveropplysningerMedForrigeInntektLikNull(vedtaksperiodeId)
+            val record = ProducerRecord(
+                "tbd.arbeidsgiveropplysninger",
+                null,
+                FNR,
+                trengerArbeidsgiveropplysningerDto,
+                listOf(RecordHeader("type", trengerArbeidsgiveropplysningerDto.meldingstype))
+            )
+            mockproducer.send(record)
+        }
+    }
+
+    @Test
+    fun `Videresender ikke forrige inntekt hvis Toggle er disabled`() {
+        every { mockproducer.send(any()) } answers { callOriginal() }
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(eventMeldingMedForrigeInntekt(vedtaksperiodeId))
+
+        verify(exactly = 1) {
+            val trengerArbeidsgiveropplysningerDto = mockTrengerArbeidsgiveropplysningerMedInntekt(vedtaksperiodeId)
+            val record = ProducerRecord(
+                "tbd.arbeidsgiveropplysninger",
+                null,
+                FNR,
+                trengerArbeidsgiveropplysningerDto,
+                listOf(RecordHeader("type", trengerArbeidsgiveropplysningerDto.meldingstype))
+            )
+            mockproducer.send(record)
+        }
+    }
+
+
+    @Test
     fun `publiserer forespørsel om arbeidsgiveropplysninger - med fastsatt inntekt, refusjon, og agp`() {
         every { mockproducer.send(any()) } answers { callOriginal() }
         val vedtaksperiodeId = UUID.randomUUID()
@@ -183,6 +241,82 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                             mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(10), "beløp" to 10000.0),
                             mapOf("fom" to LocalDate.MIN.plusDays(11), "tom" to null, "beløp" to 9000.0)
                         )
+                    ),
+                    mapOf(
+                        "opplysningstype" to "Arbeidsgiverperiode",
+                        "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+                    )
+                )
+            )
+        ).toString()
+
+    private fun eventMeldingMedForrigeInntekt(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
+        objectMapper.valueToTree<JsonNode>(
+            mapOf(
+                "@id" to UUID.randomUUID(),
+                "@event_name" to "trenger_opplysninger_fra_arbeidsgiver",
+                "@opprettet" to LocalDateTime.MAX,
+                "fødselsnummer" to FNR,
+                "organisasjonsnummer" to ORGNUMMER,
+                "vedtaksperiodeId" to vedtaksperiodeId,
+                "skjæringstidspunkt" to LocalDate.MIN,
+                "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
+                "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
+                "forespurteOpplysninger" to listOf(
+                    mapOf(
+                        "opplysningstype" to "Inntekt",
+                        "forslag" to mapOf(
+                            "beregningsmåneder" to listOf(
+                                YearMonth.of(2022, 8),
+                                YearMonth.of(2022, 9),
+                                YearMonth.of(2022, 10)
+                            ),
+                            "forrigeInntekt" to mapOf(
+                                "skjæringstidspunkt" to LocalDate.MIN,
+                                "kilde" to "INNTEKTSMELDING",
+                                "beløp" to 31000.0
+                            )
+                        )
+                    ),
+                    mapOf(
+                        "opplysningstype" to "Refusjon",
+                        "forslag" to emptyList<Refusjonsforslag>()
+                    ),
+                    mapOf(
+                        "opplysningstype" to "Arbeidsgiverperiode",
+                        "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+                    )
+                )
+            )
+        ).toString()
+
+    private fun eventMeldingMedForrigeInntektNull(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
+        objectMapper.valueToTree<JsonNode>(
+            mapOf(
+                "@id" to UUID.randomUUID(),
+                "@event_name" to "trenger_opplysninger_fra_arbeidsgiver",
+                "@opprettet" to LocalDateTime.MAX,
+                "fødselsnummer" to FNR,
+                "organisasjonsnummer" to ORGNUMMER,
+                "vedtaksperiodeId" to vedtaksperiodeId,
+                "skjæringstidspunkt" to LocalDate.MIN,
+                "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
+                "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
+                "forespurteOpplysninger" to listOf(
+                    mapOf(
+                        "opplysningstype" to "Inntekt",
+                        "forslag" to mapOf(
+                            "beregningsmåneder" to listOf(
+                                YearMonth.of(2022, 8),
+                                YearMonth.of(2022, 9),
+                                YearMonth.of(2022, 10)
+                            ),
+                            "forrigeInntekt" to null
+                        )
+                    ),
+                    mapOf(
+                        "opplysningstype" to "Refusjon",
+                        "forslag" to emptyList<Refusjonsforslag>()
                     ),
                     mapOf(
                         "opplysningstype" to "Arbeidsgiverperiode",

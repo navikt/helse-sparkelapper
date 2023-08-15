@@ -6,11 +6,12 @@ import java.time.YearMonth
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.rapids_rivers.asOptionalLocalDate
 import no.nav.helse.rapids_rivers.asYearMonth
+import no.nav.helse.sparkel.arbeidsgiver.Toggle
 import org.slf4j.LoggerFactory
 
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
-internal sealed class ForespurtOpplysning() {
+internal sealed class ForespurtOpplysning {
 
     companion object {
         fun List<ForespurtOpplysning>.toJsonMap() = map { forespurtOpplysning ->
@@ -32,7 +33,7 @@ internal sealed class ForespurtOpplysning() {
 
                 is Inntekt -> mapOf(
                     "opplysningstype" to "Inntekt",
-                    "forslag" to mapOf("beregningsmåneder" to forespurtOpplysning.forslag.beregningsmåneder)
+                    "forslag" to forespurtOpplysning.forslag.toJsonMap()
                 )
 
                 is Refusjon -> mapOf(
@@ -47,6 +48,24 @@ internal sealed class ForespurtOpplysning() {
                 )
             }
         }
+
+        fun Inntektsforslag.toJsonMap(): Map<String, Any?>  =
+            if (Toggle.SendForrigeInntekt.enabled) {
+                mapOf(
+                    "beregningsmåneder" to this.beregningsmåneder,
+                    "forrigeInntekt" to this.forrigeInntekt?.let {forrigeInntekt ->
+                        mapOf(
+                            "skjæringstidspunkt" to forrigeInntekt.skjæringstidspunkt,
+                            "kilde" to forrigeInntekt.kilde,
+                            "beløp" to forrigeInntekt.beløp
+                        )
+                    }
+                )
+            } else {
+                mapOf(
+                    "beregningsmåneder" to this.beregningsmåneder
+                )
+            }
     }
 }
 
@@ -54,8 +73,8 @@ internal data class Refusjonsforslag(val fom: LocalDate, val tom: LocalDate?, va
 internal data class Refusjon(val forslag: List<Refusjonsforslag>) : ForespurtOpplysning()
 internal data class Arbeidsgiverperiode(val forslag: List<Map<String, LocalDate>>) : ForespurtOpplysning()
 internal data class FastsattInntekt(val fastsattInntekt: Double) : ForespurtOpplysning()
-
-internal data class Inntektsforslag(val beregningsmåneder: List<YearMonth>)
+internal data class Inntektsforslag(val beregningsmåneder: List<YearMonth>, val forrigeInntekt: ForrigeInntekt? = null)
+internal data class ForrigeInntekt(val skjæringstidspunkt: LocalDate, val kilde: String, val beløp: Double)
 internal data class Inntekt(val forslag: Inntektsforslag) : ForespurtOpplysning()
 
 internal fun JsonNode.asForespurteOpplysninger(): List<ForespurtOpplysning> =
@@ -79,8 +98,21 @@ private fun JsonNode.asArbeidsgiverperiodeforslag(): List<Map<String, LocalDate>
     )
 }
 
-private fun JsonNode.asInntektsforslag() =
-    Inntektsforslag(beregningsmåneder = this["beregningsmåneder"].map(JsonNode::asYearMonth))
+private fun JsonNode.asInntektsforslag(): Inntektsforslag =
+    Inntektsforslag(
+        beregningsmåneder = this["beregningsmåneder"].map(JsonNode::asYearMonth),
+        forrigeInntekt = this["forrigeInntekt"]?.asForrigeInntekt()
+    )
+
+private fun JsonNode.asForrigeInntekt(): ForrigeInntekt? =
+    if (this.isNull) null
+    else {
+        ForrigeInntekt(
+            skjæringstidspunkt = this["skjæringstidspunkt"].asLocalDate(),
+            kilde = this["kilde"].asText(),
+            beløp = this["beløp"].asDouble()
+        )
+    }
 
 private fun JsonNode.asRefusjonsforslag() = map {
     Refusjonsforslag(

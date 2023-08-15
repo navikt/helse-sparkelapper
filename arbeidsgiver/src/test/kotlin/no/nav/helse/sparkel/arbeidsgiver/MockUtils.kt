@@ -58,6 +58,60 @@ internal fun mockTrengerArbeidsgiveropplysningerMedInntekt(vedtaksperiodeId: UUI
         )
     )
 )
+internal fun mockTrengerArbeidsgiveropplysningerMedForrigeInntekt(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerDto(
+    vedtaksperiodeId = vedtaksperiodeId,
+    type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
+    forespurtData = listOf(
+        mapOf(
+            "opplysningstype" to "Inntekt",
+            "forslag" to mapOf(
+                "beregningsmåneder" to listOf(
+                YearMonth.of(2022, 8),
+                YearMonth.of(2022, 9),
+                YearMonth.of(2022, 10)
+            ),
+                "forrigeInntekt" to mapOf(
+                    "skjæringstidspunkt" to LocalDate.MIN,
+                    "kilde" to "INNTEKTSMELDING",
+                    "beløp" to 31000.0
+                )
+            )
+        ),
+        mapOf(
+            "opplysningstype" to "Refusjon",
+            "forslag" to emptyList<Refusjonsforslag>()
+        ),
+        mapOf(
+            "opplysningstype" to "Arbeidsgiverperiode",
+            "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+        )
+    )
+)
+internal fun mockTrengerArbeidsgiveropplysningerMedForrigeInntektLikNull(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerDto(
+    vedtaksperiodeId = vedtaksperiodeId,
+    type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
+    forespurtData = listOf(
+        mapOf(
+            "opplysningstype" to "Inntekt",
+            "forslag" to mapOf(
+                "beregningsmåneder" to listOf(
+                YearMonth.of(2022, 8),
+                YearMonth.of(2022, 9),
+                YearMonth.of(2022, 10)
+            ),
+                "forrigeInntekt" to null
+            )
+        ),
+        mapOf(
+            "opplysningstype" to "Refusjon",
+            "forslag" to emptyList<Refusjonsforslag>()
+        ),
+        mapOf(
+            "opplysningstype" to "Arbeidsgiverperiode",
+            "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+        )
+    )
+)
 
 internal fun mockTrengerArbeidsgiverOpplysningerMedFastsattInntekt(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerDto(
     vedtaksperiodeId = vedtaksperiodeId,
