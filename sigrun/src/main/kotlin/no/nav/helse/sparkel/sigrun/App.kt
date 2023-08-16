@@ -121,7 +121,6 @@ private class SigrunClient(
     fun hentBeregnetSkatt(fnr: String, år: Int): Map<String, Int> {
         val accessToken = runBlocking { tokenClient.hentAccessToken(scope) } ?: return emptyMap()
         return runBlocking {
-            delay(1000) // teste å vente i ett sekund for å se om Sigrun godtar tokenet
             val response = httpClient.prepareGet(sigrunBaseUrl + "/api/beregnetskatt") {
                 accept(ContentType.Application.Json)
                 method = HttpMethod.Post

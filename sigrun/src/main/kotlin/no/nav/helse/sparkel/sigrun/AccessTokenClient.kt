@@ -51,7 +51,7 @@ class AccessToken(
     private val expires: LocalDateTime
 ) {
     fun berikRequestMedBearer(headers: HeadersBuilder) {
-        headers["Authentication"] = "Bearer $accessToken"
+        headers["Authorization"] = "Bearer $accessToken"
     }
 }
 
