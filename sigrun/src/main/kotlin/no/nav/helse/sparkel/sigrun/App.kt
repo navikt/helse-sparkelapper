@@ -76,7 +76,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
 private class PensjonsgivendeInntekt(
     rapidsConnection: RapidsConnection,
     private val sigrunClient: SigrunClient
-) : River.PacketListener {
+) {
     init {
         River(rapidsConnection)
             .validate {
@@ -85,13 +85,31 @@ private class PensjonsgivendeInntekt(
                 it.requireKey("fødselsnummer")
                 it.require("InntekterForSykepengegrunnlag.beregningStart", JsonNode::asYearMonth)
             }
-            .register(this)
+            .register(VilkårsgrunnlagRiver())
+        River(rapidsConnection)
+            .validate {
+                it.demandValue("@event_name", "sigrun_test")
+                it.requireKey("fødselsnummer", "beregningÅr")
+            }
+            .register(TestRiver())
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        val beregningÅr = packet["InntekterForSykepengegrunnlag.beregningStart"].asYearMonth().year
-        val fnr = packet["fødselsnummer"].asText()
+    private inner class VilkårsgrunnlagRiver : River.PacketListener {
+        override fun onPacket(packet: JsonMessage, context: MessageContext) {
+            val beregningÅr = packet["InntekterForSykepengegrunnlag.beregningStart"].asYearMonth().year
+            val fnr = packet["fødselsnummer"].asText()
+            hentBeregnetSkatt(fnr, beregningÅr)
+        }
+    }
+    private inner class TestRiver : River.PacketListener {
+        override fun onPacket(packet: JsonMessage, context: MessageContext) {
+            val beregningÅr = packet["beregningÅr"].asInt()
+            val fnr = packet["fødselsnummer"].asText()
+            hentBeregnetSkatt(fnr, beregningÅr)
+        }
+    }
 
+    private fun hentBeregnetSkatt(fnr: String, beregningÅr: Int) {
         log.info("henter beregnet skatt for person")
         sikkerlog.info("henter beregnet skatt for $fnr")
 
