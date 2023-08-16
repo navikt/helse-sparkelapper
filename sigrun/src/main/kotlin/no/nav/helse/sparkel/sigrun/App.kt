@@ -15,6 +15,7 @@ import io.ktor.client.request.preparePost
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.serialization.jackson.JacksonConverter
+import java.time.Year
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.JsonMessage
@@ -23,6 +24,7 @@ import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asYearMonth
+import no.nav.helse.sparkel.sigrun.SigrunClient.BeregnetSkattResponse.BeregnetSkattOpplysning.Companion.tilMap
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("no.nav.helse.sparkel.sigrun.App")
@@ -91,11 +93,20 @@ private class PensjonsgivendeInntekt(
 
         log.info("henter beregnet skatt for person")
         sikkerlog.info("henter beregnet skatt for $fnr")
+
+        val result = mutableMapOf<Int, Map<String, Int>>()
         (beregningÅr - 4).until(beregningÅr).forEach { år ->
             log.info("Henter beregnet skatt for $år")
             sikkerlog.info("Henter beregnet skatt for $år")
-            sigrunClient.hentBeregnetSkatt(fnr, år)
+            result[år] = sigrunClient.hentBeregnetSkatt(fnr, år)
         }
+
+        sikkerlog.info("respons fra Sigrun:\n\t${mapper.writeValueAsString(result.map { (år, opplysninger) ->
+            mapOf(
+                "år" to år,
+                "opplysninger" to opplysninger
+            )
+        })}")
     }
 }
 
@@ -105,8 +116,8 @@ private class SigrunClient(
     private val tokenClient: AccessTokenClient,
     private val scope: String
 ) {
-    fun hentBeregnetSkatt(fnr: String, år: Int) {
-        val accessToken = runBlocking { tokenClient.hentAccessToken(scope) } ?: return
+    fun hentBeregnetSkatt(fnr: String, år: Int): Map<String, Int> {
+        val accessToken = runBlocking { tokenClient.hentAccessToken(scope) } ?: return emptyMap()
         val response: BeregnetSkattResponse = runBlocking {
             httpClient.preparePost(sigrunBaseUrl + "/api/beregnetskatt") {
                 accept(ContentType.Application.Json)
@@ -124,15 +135,34 @@ private class SigrunClient(
             }.body()
         }
 
-        sikkerlog.info("respons fra Sigrun:\n\t${mapper.writeValueAsString(response)}")
+        return response.tilMap()
     }
 
     private class BeregnetSkattResponse(
         val opplysninger: List<BeregnetSkattOpplysning>
     ) {
+        fun tilMap() = opplysninger.tilMap()
+
         class BeregnetSkattOpplysning(
             private val tekniskNavn: String,
             private val verdi: String
-        )
+        ) {
+            companion object {
+                fun List<BeregnetSkattOpplysning>.tilMap() = this
+                    .associateBy(BeregnetSkattOpplysning::tekniskNavn, BeregnetSkattOpplysning::verdi)
+                    .mapValues {
+                        try { it.value.toInt() }
+                        catch (err: NumberFormatException) {
+                            "${it.value} lar seg ikke tolke som Int: ${err.message}".also { errortekst ->
+                                log.warn(errortekst, err)
+                                sikkerlog.warn(errortekst, err)
+                            }
+                            null
+                        }
+                    }
+                    .filterValues { it != null }
+                    .mapValues { it.value!! }
+            }
+        }
     }
 }
