@@ -18,6 +18,7 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.JacksonConverter
 import java.util.UUID
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -120,6 +121,7 @@ private class SigrunClient(
     fun hentBeregnetSkatt(fnr: String, år: Int): Map<String, Int> {
         val accessToken = runBlocking { tokenClient.hentAccessToken(scope) } ?: return emptyMap()
         return runBlocking {
+            delay(1000) // teste å vente i ett sekund for å se om Sigrun godtar tokenet
             val response = httpClient.prepareGet(sigrunBaseUrl + "/api/beregnetskatt") {
                 accept(ContentType.Application.Json)
                 method = HttpMethod.Post
