@@ -6,7 +6,6 @@ import java.time.YearMonth
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.rapids_rivers.asOptionalLocalDate
 import no.nav.helse.rapids_rivers.asYearMonth
-import no.nav.helse.sparkel.arbeidsgiver.Toggle
 import org.slf4j.LoggerFactory
 
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -49,23 +48,17 @@ internal sealed class ForespurtOpplysning {
             }
         }
 
-        fun Inntektsforslag.toJsonMap(): Map<String, Any?>  =
-            if (Toggle.SendForrigeInntekt.enabled) {
-                mapOf(
-                    "beregningsmåneder" to this.beregningsmåneder,
-                    "forrigeInntekt" to this.forrigeInntekt?.let {forrigeInntekt ->
-                        mapOf(
-                            "skjæringstidspunkt" to forrigeInntekt.skjæringstidspunkt,
-                            "kilde" to forrigeInntekt.kilde,
-                            "beløp" to forrigeInntekt.beløp
-                        )
-                    }
-                )
-            } else {
-                mapOf(
-                    "beregningsmåneder" to this.beregningsmåneder
-                )
-            }
+        fun Inntektsforslag.toJsonMap(): Map<String, Any?> =
+            mapOf(
+                "beregningsmåneder" to this.beregningsmåneder,
+                "forrigeInntekt" to this.forrigeInntekt?.let { forrigeInntekt ->
+                    mapOf(
+                        "skjæringstidspunkt" to forrigeInntekt.skjæringstidspunkt,
+                        "kilde" to forrigeInntekt.kilde,
+                        "beløp" to forrigeInntekt.beløp
+                    )
+                }
+            )
     }
 }
 

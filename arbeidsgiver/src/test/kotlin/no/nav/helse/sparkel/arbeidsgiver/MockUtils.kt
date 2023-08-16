@@ -36,28 +36,7 @@ private fun mockTrengerArbeidsgiveropplysningerDto(
     forespurtData = forespurtData,
     opprettet = LocalDateTime.MAX
 )
-internal fun mockTrengerArbeidsgiveropplysningerMedInntekt(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerDto(
-    vedtaksperiodeId = vedtaksperiodeId,
-    type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
-    forespurtData = listOf(
-        mapOf(
-            "opplysningstype" to "Inntekt",
-            "forslag" to mapOf("beregningsmåneder" to listOf(
-                YearMonth.of(2022, 8),
-                YearMonth.of(2022, 9),
-                YearMonth.of(2022, 10)
-            ))
-        ),
-        mapOf(
-            "opplysningstype" to "Refusjon",
-            "forslag" to emptyList<Refusjonsforslag>()
-        ),
-        mapOf(
-            "opplysningstype" to "Arbeidsgiverperiode",
-            "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
-        )
-    )
-)
+
 internal fun mockTrengerArbeidsgiveropplysningerMedForrigeInntekt(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerDto(
     vedtaksperiodeId = vedtaksperiodeId,
     type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
@@ -87,7 +66,7 @@ internal fun mockTrengerArbeidsgiveropplysningerMedForrigeInntekt(vedtaksperiode
         )
     )
 )
-internal fun mockTrengerArbeidsgiveropplysningerMedForrigeInntektLikNull(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerDto(
+internal fun mockTrengerArbeidsgiveropplysningerMedInntekt(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerDto(
     vedtaksperiodeId = vedtaksperiodeId,
     type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
     forespurtData = listOf(
@@ -151,7 +130,10 @@ internal fun mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId: UU
     forespurtData = listOf(
         mapOf(
             "opplysningstype" to "Inntekt",
-            "forslag" to mapOf("beregningsmåneder" to emptyList<String>())
+            "forslag" to mapOf(
+                "beregningsmåneder" to emptyList<String>(),
+                "forrigeInntekt" to null
+            )
         ),
         mapOf(
             "opplysningstype" to "Arbeidsgiverperiode",

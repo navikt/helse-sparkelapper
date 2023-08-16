@@ -5,8 +5,6 @@ replicas:
 env:
   - name: KAFKA_EXTRA_TOPIC
     value: tbd.arbeidsgiveropplysninger
-  - name: SEND_FORRIGE_INNTEKT
-    value: "true"
 gcp:
   type: POSTGRES_15
   name: sparkelarbeidsgiver
