@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
@@ -14,6 +15,7 @@ import io.ktor.client.request.header
 import io.ktor.client.request.preparePost
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.JacksonConverter
 import java.time.Year
 import java.util.UUID
@@ -118,8 +120,8 @@ private class SigrunClient(
 ) {
     fun hentBeregnetSkatt(fnr: String, år: Int): Map<String, Int> {
         val accessToken = runBlocking { tokenClient.hentAccessToken(scope) } ?: return emptyMap()
-        val response: BeregnetSkattResponse = runBlocking {
-            httpClient.preparePost(sigrunBaseUrl + "/api/beregnetskatt") {
+        return runBlocking {
+            val response = httpClient.preparePost(sigrunBaseUrl + "/api/beregnetskatt") {
                 accept(ContentType.Application.Json)
                 method = HttpMethod.Post
                 accessToken.berikRequestMedBearer(headers)
@@ -132,10 +134,16 @@ private class SigrunClient(
                 header("no.nav.callid", "$callId")
                 header("Nav-Consumer-Id", "sparkel-sigrun")
                 header("no.nav.consumer.id", "sparkel-sigrun")
-            }.body()
+            }.execute()
+            if (response.status != HttpStatusCode.OK) {
+                "Sigrun svarte med http ${response.status.value}, returnerer derfor tomt resultat".also {
+                    log.info(it)
+                    sikkerlog.info(it)
+                }
+                emptyMap()
+            }
+            else response.body<BeregnetSkattResponse>().tilMap()
         }
-
-        return response.tilMap()
     }
 
     private class BeregnetSkattResponse(
