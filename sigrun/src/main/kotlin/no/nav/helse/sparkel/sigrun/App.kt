@@ -18,7 +18,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.JacksonConverter
 import java.util.UUID
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -26,7 +25,7 @@ import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asYearMonth
-import no.nav.helse.sparkel.sigrun.SigrunClient.BeregnetSkattResponse.BeregnetSkattOpplysning.Companion.tilMap
+import no.nav.helse.sparkel.sigrun.SigrunClient.BeregnetSkattOpplysning.Companion.tilMap
 import org.slf4j.LoggerFactory
 
 private val log = LoggerFactory.getLogger("no.nav.helse.sparkel.sigrun.App")
@@ -121,7 +120,7 @@ private class SigrunClient(
     fun hentBeregnetSkatt(fnr: String, år: Int): Map<String, Int> {
         val accessToken = runBlocking { tokenClient.hentAccessToken(scope) } ?: return emptyMap()
         return runBlocking {
-            val response = httpClient.prepareGet(sigrunBaseUrl + "/api/beregnetskatt") {
+            val response = httpClient.prepareGet("$sigrunBaseUrl/api/beregnetskatt") {
                 accept(ContentType.Application.Json)
                 method = HttpMethod.Post
                 accessToken.berikRequestMedBearer(headers)
@@ -142,35 +141,29 @@ private class SigrunClient(
                 }
                 emptyMap()
             }
-            else response.body<BeregnetSkattResponse>().tilMap()
+            else response.body<List<BeregnetSkattOpplysning>>().tilMap()
         }
     }
 
-    private class BeregnetSkattResponse(
-        val opplysninger: List<BeregnetSkattOpplysning>
+    class BeregnetSkattOpplysning(
+        private val tekniskNavn: String,
+        private val verdi: String
     ) {
-        fun tilMap() = opplysninger.tilMap()
-
-        class BeregnetSkattOpplysning(
-            private val tekniskNavn: String,
-            private val verdi: String
-        ) {
-            companion object {
-                fun List<BeregnetSkattOpplysning>.tilMap() = this
-                    .associateBy(BeregnetSkattOpplysning::tekniskNavn, BeregnetSkattOpplysning::verdi)
-                    .mapValues {
-                        try { it.value.toInt() }
-                        catch (err: NumberFormatException) {
-                            "${it.value} lar seg ikke tolke som Int: ${err.message}".also { errortekst ->
-                                log.warn(errortekst, err)
-                                sikkerlog.warn(errortekst, err)
-                            }
-                            null
+        companion object {
+            fun List<BeregnetSkattOpplysning>.tilMap() = this
+                .associateBy(BeregnetSkattOpplysning::tekniskNavn, BeregnetSkattOpplysning::verdi)
+                .mapValues {
+                    try { it.value.toInt() }
+                    catch (err: NumberFormatException) {
+                        "${it.value} lar seg ikke tolke som Int: ${err.message}".also { errortekst ->
+                            log.warn(errortekst, err)
+                            sikkerlog.warn(errortekst, err)
                         }
+                        null
                     }
-                    .filterValues { it != null }
-                    .mapValues { it.value!! }
-            }
+                }
+                .filterValues { it != null }
+                .mapValues { it.value!! }
         }
     }
 }
