@@ -48,7 +48,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
                 )
             }
             install(Logging) {
-                this.level = LogLevel.ALL
+                this.level = LogLevel.NONE
                 this.logger = object : Logger {
                     override fun log(message: String) {
                         sikkerlog.info(message)
