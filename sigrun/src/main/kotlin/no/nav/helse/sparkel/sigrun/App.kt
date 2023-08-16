@@ -12,12 +12,11 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.accept
 import io.ktor.client.request.header
-import io.ktor.client.request.preparePost
+import io.ktor.client.request.prepareGet
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.JacksonConverter
-import java.time.Year
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.JsonMessage
@@ -121,7 +120,7 @@ private class SigrunClient(
     fun hentBeregnetSkatt(fnr: String, år: Int): Map<String, Int> {
         val accessToken = runBlocking { tokenClient.hentAccessToken(scope) } ?: return emptyMap()
         return runBlocking {
-            val response = httpClient.preparePost(sigrunBaseUrl + "/api/beregnetskatt") {
+            val response = httpClient.prepareGet(sigrunBaseUrl + "/api/beregnetskatt") {
                 accept(ContentType.Application.Json)
                 method = HttpMethod.Post
                 accessToken.berikRequestMedBearer(headers)
