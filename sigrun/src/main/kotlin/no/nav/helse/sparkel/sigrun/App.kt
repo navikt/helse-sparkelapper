@@ -116,8 +116,11 @@ private class SigrunClient(
                 header("x-aktoerid", "")
                 header("x-filter", "BeregnetSkattPensjonsgivendeInntekt")
                 header("x-inntektsaar", "$år")
-                header("Nav-Call-Id", "${UUID.randomUUID()}")
+                val callId = UUID.randomUUID()
+                header("Nav-Call-Id", "$callId")
+                header("no.nav.consumer.id", "$callId")
                 header("Nav-Consumer-Id", "sparkel-sigrun")
+                header("no.nav.consumer.id", "sparkel-sigrun")
             }.body()
         }
 
