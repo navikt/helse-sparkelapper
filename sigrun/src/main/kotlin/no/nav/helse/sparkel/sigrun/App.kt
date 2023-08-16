@@ -129,7 +129,7 @@ private class SigrunClient(
                 header("x-inntektsaar", "$år")
                 val callId = UUID.randomUUID()
                 header("Nav-Call-Id", "$callId")
-                header("no.nav.consumer.id", "$callId")
+                header("no.nav.callid", "$callId")
                 header("Nav-Consumer-Id", "sparkel-sigrun")
                 header("no.nav.consumer.id", "sparkel-sigrun")
             }.body()
