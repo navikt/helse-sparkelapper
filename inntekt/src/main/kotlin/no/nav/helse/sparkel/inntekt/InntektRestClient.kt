@@ -10,6 +10,8 @@ import io.prometheus.client.Summary
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlag
 import java.time.YearMonth
+import net.logstash.logback.argument.StructuredArguments.keyValue
+import org.slf4j.LoggerFactory
 
 private const val INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME = "inntektskomponent_client_seconds"
 private val clientLatencyStats: Summary = Summary.build()
@@ -19,6 +21,8 @@ private val clientLatencyStats: Summary = Summary.build()
     .quantile(0.99, 0.001) // Add 99th percentile with 0.1% tolerated error
     .help("Latency inntektskomponenten, in seconds")
     .register()
+
+private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
 class InntektRestClient(
     private val baseUrl: String,
@@ -49,7 +53,11 @@ class InntektRestClient(
                     "maanedFom" to fom,
                     "maanedTom" to tom
                 ))
-            }.execute { tilMånedListe(objectMapper.readValue(it.bodyAsText()), filter) }
+            }.execute {
+                val content = it.bodyAsText()
+                sikkerlogg.info("inntektskomponenten svarte for filter=$filter med:\n\t$content", keyValue("callId", callId), keyValue("fødselsnummer", fnr))
+                tilMånedListe(objectMapper.readValue(content), filter)
+            }
         }
     }
 }
