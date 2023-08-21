@@ -2,13 +2,17 @@ package no.nav.helse.sparkel.aareg.arbeidsforhold
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import no.nav.helse.sparkel.aareg.objectMapper
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.accept
+import io.ktor.client.request.header
+import io.ktor.client.request.prepareGet
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
+import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforhold
+import no.nav.helse.sparkel.aareg.objectMapper
 import no.nav.helse.sparkel.aareg.sikkerlogg
 
 class AaregClient(
@@ -16,21 +20,29 @@ class AaregClient(
     private val tokenSupplier: () -> String,
     private val httpClient: HttpClient = HttpClient()
 ) {
-    suspend fun hentFraAareg(
+    suspend fun hentFraAaregV1(
         fnr: String,
         callId: UUID
     ): ArrayNode {
         val response = hent(fnr, callId, "$baseUrl/v1/arbeidstaker/arbeidsforhold")
-        if (erDev()) {
-            val responseFraV2 = hent(fnr, callId, "$baseUrl/v2/arbeidstaker/arbeidsforhold")
-            sikkerlogg.debug("Respons fra v2:\n\t{}", responseFraV2.bodyAsText())
-        }
 
         sikkerlogg.info("AaregResponse status: " + response.status)
         val responseValue = objectMapper.readTree(response.bodyAsText())
-        if (!responseValue.isArray) throw AaregException(responseValue.path("melding").asText("Ukjent respons fra Aareg"), responseValue)
+        if (!responseValue.isArray) throw AaregException(
+            responseValue.path("melding").asText("Ukjent respons fra Aareg"), responseValue
+        )
         return responseValue as ArrayNode
     }
+
+    suspend fun hentFraAareg(
+        fnr: String,
+        callId: UUID
+    ): List<AaregArbeidsforhold> = hent(
+        fnr,
+        callId,
+        "$baseUrl/v2/arbeidstaker/arbeidsforhold?sporingsinformasjon=false&arbeidsforholdstatus=AKTIV,FREMTIDIG,AVSLUTTET"
+    ).body()
+
 
     private suspend fun hent(fnr: String, callId: UUID, url: String) =
         httpClient.prepareGet(url) {
@@ -40,8 +52,6 @@ class AaregClient(
             accept(ContentType.Application.Json)
             header("Nav-Personident", fnr)
         }.execute()
-
-    private fun erDev() = "dev-fss" == System.getenv("NAIS_CLUSTER_NAME")
 }
 
 class AaregException(message: String, private val responseValue: JsonNode) : RuntimeException(message) {

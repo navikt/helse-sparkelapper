@@ -10,6 +10,7 @@ import no.nav.helse.sparkel.aareg.sikkerlogg
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.util.*
+import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforhold
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 
 class Arbeidsforholdbehovløser(
@@ -55,8 +56,9 @@ class Arbeidsforholdbehovløser(
         return try {
             log.info("løser behov={}", keyValue("id", id))
             runBlocking {
-                val arbeidsforholdFraAareg = aaregClient.hentFraAareg(fnr, id)
-                val arbeidsforholdPåOrganisasjonsnummer = arbeidsforholdFraAareg
+                val arbeidsforholdFraAaregV1 = aaregClient.hentFraAaregV1(fnr, id)
+
+                val arbeidsforholdPåOrganisasjonsnummer = arbeidsforholdFraAaregV1
                     .filter { arbeidsforhold ->
                         arbeidsforhold["arbeidsgiver"].path("organisasjonsnummer").asText() == organisasjonsnummer
                     }
@@ -70,11 +72,22 @@ class Arbeidsforholdbehovløser(
                         arbeidsforholdPåOrganisasjonsnummer
                     } else innrapportertEtterAOrdningen
 
-                val løsning = relevanteArbeidsforhold.toLøsningDto()
-                if (løsning.isEmpty())
-                    sikkerlogg.error("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg, fikk svar:\n$arbeidsforholdFraAareg")
+                val løsningV1 = relevanteArbeidsforhold.toLøsningDto()
 
-                løsning
+                if (erDev()) {
+                    val arbeidsforholdFraAareg = aaregClient.hentFraAareg(fnr, id).filter { arbeidsforhold -> arbeidsforhold.arbeidssted.getOrgnummer() == organisasjonsnummer }
+                    val løsning = arbeidsforholdFraAareg.toLøsning()
+                    if (løsning.toSet() == løsningV1.toSet()) {
+                        sikkerlogg.info("Likt svar fra V1 og V2")
+                    } else {
+                        sikkerlogg.info("Ulikt svar, V1:\n$løsningV1,\nV2:\n$løsning")
+                    }
+                }
+
+                if (løsningV1.isEmpty())
+                    sikkerlogg.error("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg, fikk svar:\n$arbeidsforholdFraAaregV1")
+
+                løsningV1
             }
         } catch (err: AaregException) {
             log.error(
@@ -117,6 +130,15 @@ class Arbeidsforholdbehovløser(
         }
     }
 
+    private fun List<AaregArbeidsforhold>.toLøsning(): List<LøsningDto> = this.map { arbeidsforhold ->
+            LøsningDto(
+                startdato = arbeidsforhold.ansettelsesperiode.startdato,
+                sluttdato = arbeidsforhold.ansettelsesperiode.sluttdato,
+                stillingsprosent = arbeidsforhold.ansettelsesdetaljer.avtaltStillingsprosent,
+                stillingstittel = arbeidsforhold.ansettelsesdetaljer.yrke.beskrivelse,
+            )
+    }
+
     private fun JsonMessage.setLøsning(nøkkel: String, data: Any) {
         this["@løsning"] = mapOf(
             nøkkel to data
@@ -129,4 +151,6 @@ class Arbeidsforholdbehovløser(
         val startdato: LocalDate,
         val sluttdato: LocalDate?
     )
+
+    private fun erDev() = "dev-fss" == System.getenv("NAIS_CLUSTER_NAME")
 }

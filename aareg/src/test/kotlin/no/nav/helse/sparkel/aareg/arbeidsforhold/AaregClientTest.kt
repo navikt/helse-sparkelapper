@@ -31,7 +31,7 @@ internal class AaregClientTest {
             httpClient = aaregMockClient()
         )
 
-        val aaregResponse = runBlocking { aaregClient.hentFraAareg("12343555", UUID.randomUUID()) }
+        val aaregResponse = runBlocking { aaregClient.hentFraAaregV1("12343555", UUID.randomUUID()) }
 
         val arbeidsforhold = aaregResponse.map { it.toArbeidsforhold() }
 
@@ -55,7 +55,7 @@ internal class AaregClientTest {
             httpClient = aaregMockClient()
         )
 
-        val aaregResponse = runBlocking { aaregClient.hentFraAareg("12343555", UUID.randomUUID()) }
+        val aaregResponse = runBlocking { aaregClient.hentFraAaregV1("12343555", UUID.randomUUID()) }
 
         val listArbeidsforholdbehovløserLøsingDto = aaregResponse.filter { arbeidsforhold ->
             arbeidsforhold["arbeidsgiver"].path("organisasjonsnummer").asText() == "organisasjonsnummer"
