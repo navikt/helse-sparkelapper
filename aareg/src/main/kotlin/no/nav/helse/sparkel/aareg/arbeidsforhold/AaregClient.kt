@@ -20,14 +20,11 @@ class AaregClient(
         fnr: String,
         callId: UUID
     ): ArrayNode {
-        val response = httpClient.prepareGet(aaregUrl) {
-            header("Authorization", "Bearer ${tokenSupplier()}")
-            System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
-            header("Nav-Call-Id", callId)
-            accept(ContentType.Application.Json)
-            header("Nav-Personident", fnr)
-        }.execute()
-        // if (erDev()) sikkerlogg.debug("Respons fra v2:\n\t{}", response.bodyAsText())
+        val response = hent(fnr, callId, "$baseUrl/v1/arbeidstaker/arbeidsforhold")
+        if (erDev()) {
+            val responseFraV2 = hent(fnr, callId, "$baseUrl/v2/arbeidstaker/arbeidsforhold")
+            sikkerlogg.debug("Respons fra v2:\n\t{}", responseFraV2.bodyAsText())
+        }
 
         sikkerlogg.info("AaregResponse status: " + response.status)
         val responseValue = objectMapper.readTree(response.bodyAsText())
@@ -35,11 +32,16 @@ class AaregClient(
         return responseValue as ArrayNode
     }
 
+    private suspend fun hent(fnr: String, callId: UUID, url: String) =
+        httpClient.prepareGet(url) {
+            header("Authorization", "Bearer ${tokenSupplier()}")
+            System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
+            header("Nav-Call-Id", callId)
+            accept(ContentType.Application.Json)
+            header("Nav-Personident", fnr)
+        }.execute()
+
     private fun erDev() = "dev-fss" == System.getenv("NAIS_CLUSTER_NAME")
-    private val aaregUrl by lazy {
-        val versjon = "v1" // if (erDev()) "v2" else "v1"
-        "$baseUrl/$versjon/arbeidstaker/arbeidsforhold"
-    }
 }
 
 class AaregException(message: String, private val responseValue: JsonNode) : RuntimeException(message) {
