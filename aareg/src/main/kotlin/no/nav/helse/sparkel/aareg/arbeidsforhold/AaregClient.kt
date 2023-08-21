@@ -3,7 +3,6 @@ package no.nav.helse.sparkel.aareg.arbeidsforhold
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareGet
@@ -24,7 +23,7 @@ class AaregClient(
         fnr: String,
         callId: UUID
     ): ArrayNode {
-        val response = hent(fnr, callId, "$baseUrl/v1/arbeidstaker/arbeidsforhold")
+        val response = hentV1(fnr, callId, "$baseUrl/v1/arbeidstaker/arbeidsforhold")
 
         sikkerlogg.info("AaregResponse status: " + response.status)
         val responseValue = objectMapper.readTree(response.bodyAsText())
@@ -41,10 +40,10 @@ class AaregClient(
         fnr,
         callId,
         "$baseUrl/v2/arbeidstaker/arbeidsforhold?sporingsinformasjon=false&arbeidsforholdstatus=AKTIV,FREMTIDIG,AVSLUTTET"
-    ).body()
+    )
 
 
-    private suspend fun hent(fnr: String, callId: UUID, url: String) =
+    private suspend fun hentV1(fnr: String, callId: UUID, url: String) =
         httpClient.prepareGet(url) {
             header("Authorization", "Bearer ${tokenSupplier()}")
             System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
@@ -52,6 +51,15 @@ class AaregClient(
             accept(ContentType.Application.Json)
             header("Nav-Personident", fnr)
         }.execute()
+
+    private suspend fun hent(fnr: String, callId: UUID, url: String): List<AaregArbeidsforhold> =
+        httpClient.prepareGet(url) {
+            header("Authorization", "Bearer ${tokenSupplier()}")
+            System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
+            header("Nav-Call-Id", callId)
+            accept(ContentType.Application.Json)
+            header("Nav-Personident", fnr)
+        }.body()
 }
 
 class AaregException(message: String, private val responseValue: JsonNode) : RuntimeException(message) {
