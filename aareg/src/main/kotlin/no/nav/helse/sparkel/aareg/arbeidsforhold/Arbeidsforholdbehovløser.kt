@@ -81,6 +81,8 @@ class Arbeidsforholdbehovløser(
                         sikkerlogg.info("Likt svar fra V1 og V2")
                     } else {
                         sikkerlogg.info("Ulikt svar, V1:\n$løsningV1,\nV2:\n$løsning")
+                        sikkerlogg.info("V1 variant:\n$relevanteArbeidsforhold")
+                        sikkerlogg.info("V2 variant:\n$arbeidsforholdFraAareg")
                     }
                 }
 
