@@ -9,6 +9,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.sparkel.aareg.AzureAD
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClientV1
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -17,6 +18,28 @@ import org.junit.jupiter.api.Test
 internal class AaregClientTest {
 
     private val kodeverkClientMock = mockk<KodeverkClient>()
+
+    @Test
+    fun `mapping toArbeidsforhold fra aaregV1 er ok`() {
+
+        val azureAdMock = mockk<AzureAD>()
+
+        every { azureAdMock.accessToken() } returns "superToken"
+
+        val aaregClient = AaregClient(
+            baseUrl = "http://baseUrl.local",
+            tokenSupplier = { azureAdMock.accessToken() },
+            httpClient = aaregMockClientV1()
+        )
+
+        val aaregResponse = runBlocking { aaregClient.hentFraAaregV1("12343555", UUID.randomUUID()) }
+
+        val arbeidsforhold = aaregResponse.map { it.toArbeidsforhold() }
+
+        assertEquals("organisasjonsnummer", arbeidsforhold[0].orgnummer)
+        assertEquals(LocalDate.of(2014, 7, 1), arbeidsforhold[0].ansattSiden)
+        assertEquals(LocalDate.of(2015, 12, 31), arbeidsforhold[0].ansattTil)
+    }
 
     @Test
     fun `mapping toArbeidsforhold fra aareg er ok`() {
@@ -31,13 +54,13 @@ internal class AaregClientTest {
             httpClient = aaregMockClient()
         )
 
-        val aaregResponse = runBlocking { aaregClient.hentFraAaregV1("12343555", UUID.randomUUID()) }
+        val arbeidsforhold = runBlocking { aaregClient.hentFraAareg("12343555", UUID.randomUUID()) }
 
-        val arbeidsforhold = aaregResponse.map { it.toArbeidsforhold() }
-
-        assertEquals("organisasjonsnummer", arbeidsforhold[0].orgnummer)
-        assertEquals(LocalDate.of(2014, 7, 1), arbeidsforhold[0].ansattSiden)
-        assertEquals(LocalDate.of(2015, 12, 31), arbeidsforhold[0].ansattTil)
+        assertEquals("896929119", arbeidsforhold[0].arbeidssted.getOrgnummer())
+        assertEquals(LocalDate.of(2003, 8, 3), arbeidsforhold[0].ansettelsesperiode.startdato)
+        assertEquals(LocalDate.of(2010, 8, 3), arbeidsforhold[0].ansettelsesperiode.sluttdato)
+        assertEquals(100, arbeidsforhold[0].ansettelsesdetaljer[0].avtaltStillingsprosent)
+        assertEquals("FRISØR", arbeidsforhold[0].ansettelsesdetaljer[0].yrke.beskrivelse)
     }
 
     @Test
@@ -52,7 +75,7 @@ internal class AaregClientTest {
         val aaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             tokenSupplier = { azureAdMock.accessToken() },
-            httpClient = aaregMockClient()
+            httpClient = aaregMockClientV1()
         )
 
         val aaregResponse = runBlocking { aaregClient.hentFraAaregV1("12343555", UUID.randomUUID()) }

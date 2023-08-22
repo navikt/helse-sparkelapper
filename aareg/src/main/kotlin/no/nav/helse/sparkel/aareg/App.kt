@@ -11,12 +11,12 @@ import io.ktor.http.ContentType
 import io.ktor.serialization.jackson.JacksonConverter
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdbehovløser
 import no.nav.helse.sparkel.aareg.arbeidsforhold.AaregClient
 import no.nav.helse.sparkel.aareg.arbeidsforhold.ArbeidsforholdLøserV2
+import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdbehovløser
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.Arbeidsgiverinformasjonsbehovløser
-import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.EregClient
+import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -50,7 +50,7 @@ internal fun createApp(environment: Environment): RapidsConnection {
     )
 
     val eregClient = EregClient(environment.organisasjonBaseUrl, environment.appName, httpClient)
-    val aaregClient = AaregClient(environment.aaregBaseUrlRest, {azureAD.accessToken()})
+    val aaregClient = AaregClient(environment.aaregBaseUrlRest, {azureAD.accessToken()}, httpClient)
 
     val rapidsConnection = RapidApplication.create(environment.raw)
     Arbeidsgiverinformasjonsbehovløser(rapidsConnection, kodeverkClient, eregClient)

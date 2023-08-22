@@ -4,7 +4,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClientV1
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.objectMapper
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -18,7 +18,7 @@ internal class ArbeidsforholdbehovløserTest {
         val aaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             tokenSupplier = { "superToken" },
-            httpClient = aaregMockClient()
+            httpClient = aaregMockClientV1()
         )
         every { kodeverkClient.getYrke(any()) } returns "SAUETELLER"
         Arbeidsforholdbehovløser(testRapid, aaregClient, kodeverkClient)

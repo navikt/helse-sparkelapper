@@ -8,7 +8,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.*
-import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClientV1
 
 internal class ArbeidsforholdLøserV2Test {
     private val objectMapper = jacksonObjectMapper()
@@ -40,7 +40,7 @@ internal class ArbeidsforholdLøserV2Test {
         val mockAaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             tokenSupplier = { "superToken" },
-            httpClient = aaregMockClient()
+            httpClient = aaregMockClientV1()
         )
         ArbeidsforholdLøserV2(rapid, mockAaregClient)
         rapid.sendTestMessage(behov)
@@ -54,7 +54,7 @@ internal class ArbeidsforholdLøserV2Test {
         val mockAaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             tokenSupplier = { "superToken" },
-            httpClient = aaregMockClient()
+            httpClient = aaregMockClientV1()
         )
         ArbeidsforholdLøserV2(rapid, mockAaregClient)
         rapid.sendTestMessage(behov)

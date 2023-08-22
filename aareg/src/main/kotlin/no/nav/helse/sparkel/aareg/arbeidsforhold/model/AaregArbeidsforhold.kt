@@ -5,7 +5,7 @@ import java.time.LocalDate
 data class AaregArbeidsforhold(
     val arbeidssted: Arbeidssted,
     val ansettelsesperiode: Ansettelsesperiode,
-    val ansettelsesdetaljer: Ansettelsesdetaljer,
+    val ansettelsesdetaljer: List<Ansettelsesdetaljer>,
 )
 
 data class Ansettelsesperiode(

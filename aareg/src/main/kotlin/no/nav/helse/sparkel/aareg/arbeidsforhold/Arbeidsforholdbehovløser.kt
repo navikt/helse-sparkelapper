@@ -134,8 +134,8 @@ class Arbeidsforholdbehovløser(
             LøsningDto(
                 startdato = arbeidsforhold.ansettelsesperiode.startdato,
                 sluttdato = arbeidsforhold.ansettelsesperiode.sluttdato,
-                stillingsprosent = arbeidsforhold.ansettelsesdetaljer.avtaltStillingsprosent,
-                stillingstittel = arbeidsforhold.ansettelsesdetaljer.yrke.beskrivelse,
+                stillingsprosent = arbeidsforhold.ansettelsesdetaljer.first().avtaltStillingsprosent,
+                stillingstittel = arbeidsforhold.ansettelsesdetaljer.first().yrke.beskrivelse,
             )
     }
 
