@@ -29,12 +29,7 @@ internal class ForespurtOpplysningDtoTest {
                 YearMonth.of(2022, 10)
             ))),
             Refusjon(emptyList()),
-            Arbeidsgiverperiode(listOf(
-                mapOf(
-                    "fom" to LocalDate.of(2022, 11, 1),
-                    "tom" to LocalDate.of(2022, 11, 16)
-                ))
-            )
+            Arbeidsgiverperiode
         )
         val actualForespurteOpplysninger = forespurteOpplysningerMedInntektJson().asForespurteOpplysninger()
 
@@ -51,12 +46,7 @@ internal class ForespurtOpplysningDtoTest {
                     tom = null,
                     beløp = 10000.0
             ))),
-            Arbeidsgiverperiode(listOf(
-                mapOf(
-                    "fom" to LocalDate.of(2022, 11, 1),
-                    "tom" to LocalDate.of(2022, 11, 16)
-                ))
-            )
+            Arbeidsgiverperiode
         )
         val actualForespurteOpplysninger = forespurteOpplysningerMedFastsattInntektJson().asForespurteOpplysninger()
 
@@ -76,13 +66,7 @@ internal class ForespurtOpplysningDtoTest {
                     ]
                 },
                 {
-                    "opplysningstype": "Arbeidsgiverperiode",
-                    "forslag": [
-                        {
-                            "fom": "2022-11-01",
-                            "tom": "2022-11-16"
-                        }
-                    ]
+                    "opplysningstype": "Arbeidsgiverperiode"
                 }
             ]
         """
@@ -105,13 +89,7 @@ internal class ForespurtOpplysningDtoTest {
                     "forslag": []
                 },
                 {
-                    "opplysningstype": "Arbeidsgiverperiode",
-                    "forslag": [
-                        {
-                            "fom": "2022-11-01",
-                            "tom": "2022-11-16"
-                        }
-                    ]
+                    "opplysningstype": "Arbeidsgiverperiode"
                 }
             ]
         """

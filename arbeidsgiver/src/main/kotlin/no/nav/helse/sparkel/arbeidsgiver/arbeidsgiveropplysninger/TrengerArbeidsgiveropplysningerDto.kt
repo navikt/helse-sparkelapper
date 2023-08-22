@@ -48,7 +48,7 @@ internal fun JsonMessage.toBegrensetTrengerArbeidsgiverDto(): TrengerArbeidsgive
         egenmeldingsperioder = emptyList(),
         forespurtData = listOf(
             Inntekt(Inntektsforslag(emptyList())),
-            Arbeidsgiverperiode(emptyList()),
+            Arbeidsgiverperiode,
             Refusjon(emptyList())
         ).toJsonMap(),
         opprettet = this["@opprettet"].asLocalDateTime()

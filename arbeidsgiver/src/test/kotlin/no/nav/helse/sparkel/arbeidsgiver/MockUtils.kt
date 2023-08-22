@@ -61,8 +61,7 @@ internal fun mockTrengerArbeidsgiveropplysningerMedForrigeInntekt(vedtaksperiode
             "forslag" to emptyList<Refusjonsforslag>()
         ),
         mapOf(
-            "opplysningstype" to "Arbeidsgiverperiode",
-            "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+            "opplysningstype" to "Arbeidsgiverperiode"
         )
     )
 )
@@ -86,8 +85,7 @@ internal fun mockTrengerArbeidsgiveropplysningerMedInntekt(vedtaksperiodeId: UUI
             "forslag" to emptyList<Refusjonsforslag>()
         ),
         mapOf(
-            "opplysningstype" to "Arbeidsgiverperiode",
-            "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+            "opplysningstype" to "Arbeidsgiverperiode"
         )
     )
 )
@@ -116,8 +114,7 @@ internal fun mockTrengerArbeidsgiverOpplysningerMedFastsattInntekt(vedtaksperiod
             )
         ),
         mapOf(
-            "opplysningstype" to "Arbeidsgiverperiode",
-            "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+            "opplysningstype" to "Arbeidsgiverperiode"
         )
     )
 )
@@ -136,8 +133,7 @@ internal fun mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId: UU
             )
         ),
         mapOf(
-            "opplysningstype" to "Arbeidsgiverperiode",
-            "forslag" to emptyList<Map<String, LocalDate>>()
+            "opplysningstype" to "Arbeidsgiverperiode"
         ),
         mapOf(
             "opplysningstype" to "Refusjon",

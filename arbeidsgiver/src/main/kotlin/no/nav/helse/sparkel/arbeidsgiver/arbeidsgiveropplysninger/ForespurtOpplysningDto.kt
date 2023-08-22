@@ -16,13 +16,7 @@ internal sealed class ForespurtOpplysning {
         fun List<ForespurtOpplysning>.toJsonMap() = map { forespurtOpplysning ->
             when (forespurtOpplysning) {
                 is Arbeidsgiverperiode -> mapOf(
-                    "opplysningstype" to "Arbeidsgiverperiode",
-                    "forslag" to forespurtOpplysning.forslag.map { forslag ->
-                        mapOf(
-                            "fom" to forslag["fom"],
-                            "tom" to forslag["tom"]
-                        )
-                    }
+                    "opplysningstype" to "Arbeidsgiverperiode"
                 )
 
                 is FastsattInntekt -> mapOf(
@@ -64,7 +58,7 @@ internal sealed class ForespurtOpplysning {
 
 internal data class Refusjonsforslag(val fom: LocalDate, val tom: LocalDate?, val beløp: Double)
 internal data class Refusjon(val forslag: List<Refusjonsforslag>) : ForespurtOpplysning()
-internal data class Arbeidsgiverperiode(val forslag: List<Map<String, LocalDate>>) : ForespurtOpplysning()
+internal object Arbeidsgiverperiode : ForespurtOpplysning()
 internal data class FastsattInntekt(val fastsattInntekt: Double) : ForespurtOpplysning()
 internal data class Inntektsforslag(val beregningsmåneder: List<YearMonth>, val forrigeInntekt: ForrigeInntekt? = null)
 internal data class ForrigeInntekt(val skjæringstidspunkt: LocalDate, val kilde: String, val beløp: Double)
@@ -76,19 +70,12 @@ internal fun JsonNode.asForespurteOpplysninger(): List<ForespurtOpplysning> =
 internal fun JsonNode.asForespurtOpplysning() = when (val opplysningstype = this["opplysningstype"].asText()) {
     "Inntekt" -> Inntekt(forslag = this["forslag"].asInntektsforslag())
     "Refusjon" -> Refusjon(forslag = this["forslag"].asRefusjonsforslag())
-    "Arbeidsgiverperiode" -> Arbeidsgiverperiode(forslag = this["forslag"].asArbeidsgiverperiodeforslag())
+    "Arbeidsgiverperiode" -> Arbeidsgiverperiode
     "FastsattInntekt" -> FastsattInntekt(fastsattInntekt = this["fastsattInntekt"].asDouble())
     else -> {
         sikkerlogg.error("Mottok et trenger_opplysninger_fra_arbeidsgiver-event med ukjent opplysningtype: $opplysningstype")
         null
     }
-}
-
-private fun JsonNode.asArbeidsgiverperiodeforslag(): List<Map<String, LocalDate>> = map { periode ->
-    mapOf(
-        "fom" to periode["fom"].asLocalDate(),
-        "tom" to periode["tom"].asLocalDate()
-    )
 }
 
 private fun JsonNode.asInntektsforslag(): Inntektsforslag =
