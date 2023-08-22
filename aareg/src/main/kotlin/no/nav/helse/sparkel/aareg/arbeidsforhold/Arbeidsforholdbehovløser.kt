@@ -75,7 +75,8 @@ class Arbeidsforholdbehovløser(
                 val løsningV1 = relevanteArbeidsforhold.toLøsningDto()
 
                 if (erDev()) {
-                    val arbeidsforholdFraAareg = aaregClient.hentFraAareg(fnr, id).filter { arbeidsforhold -> arbeidsforhold.arbeidssted.getOrgnummer() == organisasjonsnummer }
+                    val arbeidsforholdFraAareg = aaregClient.hentFraAareg(fnr, id)
+                        .filter { arbeidsforhold -> arbeidsforhold.arbeidssted.getOrgnummer() == organisasjonsnummer }
                     val løsning = arbeidsforholdFraAareg.toLøsning()
                     if (løsning.toSet() == løsningV1.toSet()) {
                         sikkerlogg.info("Likt svar fra V1 og V2")
@@ -84,6 +85,12 @@ class Arbeidsforholdbehovløser(
                         sikkerlogg.info("V1 variant:\n$relevanteArbeidsforhold")
                         sikkerlogg.info("V2 variant:\n$arbeidsforholdFraAareg")
                     }
+                }
+                val gyldighetsperiodeFoms = løsningV1.map { it.startdato }
+                if (gyldighetsperiodeFoms.all { it.dayOfMonth == 1 }) {
+                    sikkerlogg.info("Alle gyldighetsperiode.fom fra V1 er den første i måneden.")
+                } else {
+                    sikkerlogg.info("gyldighetsperiode.fom fra V1: ${gyldighetsperiodeFoms}")
                 }
 
                 if (løsningV1.isEmpty())
@@ -133,12 +140,12 @@ class Arbeidsforholdbehovløser(
     }
 
     private fun List<AaregArbeidsforhold>.toLøsning(): List<LøsningDto> = this.map { arbeidsforhold ->
-            LøsningDto(
-                startdato = arbeidsforhold.ansettelsesperiode.startdato,
-                sluttdato = arbeidsforhold.ansettelsesperiode.sluttdato,
-                stillingsprosent = arbeidsforhold.ansettelsesdetaljer.first().avtaltStillingsprosent,
-                stillingstittel = arbeidsforhold.ansettelsesdetaljer.first().yrke.beskrivelse,
-            )
+        LøsningDto(
+            startdato = arbeidsforhold.ansettelsesperiode.startdato,
+            sluttdato = arbeidsforhold.ansettelsesperiode.sluttdato,
+            stillingsprosent = arbeidsforhold.ansettelsesdetaljer.first().avtaltStillingsprosent,
+            stillingstittel = arbeidsforhold.ansettelsesdetaljer.first().yrke.beskrivelse,
+        )
     }
 
     private fun JsonMessage.setLøsning(nøkkel: String, data: Any) {
