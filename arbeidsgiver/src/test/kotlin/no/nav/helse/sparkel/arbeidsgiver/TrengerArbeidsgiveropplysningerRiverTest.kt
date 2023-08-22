@@ -21,6 +21,7 @@ import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeids
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.internals.RecordHeader
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -138,12 +139,12 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
     }
 
     @Test
-    fun `vi logger error ved arbeidsgiverperiode uten forslag`() {
-        testRapid.sendTestMessage(ugyldigArbeidsperiodeEvent())
-        verify(exactly = 0) {
+    fun `vi logger ikke error ved arbeidsgiverperiode uten forslag`() {
+        testRapid.sendTestMessage(gyldigArbeidsperiodeEvent())
+        verify(exactly = 1) {
             mockproducer.send(any())
         }
-        assertTrue(sikkerlogCollector.list.any { it.message.contains("forstod ikke trenger_opplysninger_fra_arbeidsgiver") })
+        assertFalse(sikkerlogCollector.list.any { it.message.contains("forstod ikke trenger_opplysninger_fra_arbeidsgiver") })
     }
 
     private fun eventMeldingMedFastsattInntekt(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
@@ -171,8 +172,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                         )
                     ),
                     mapOf(
-                        "opplysningstype" to "Arbeidsgiverperiode",
-                        "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+                        "opplysningstype" to "Arbeidsgiverperiode"
                     )
                 )
             )
@@ -211,8 +211,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                         "forslag" to emptyList<Refusjonsforslag>()
                     ),
                     mapOf(
-                        "opplysningstype" to "Arbeidsgiverperiode",
-                        "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+                        "opplysningstype" to "Arbeidsgiverperiode"
                     )
                 )
             )
@@ -247,8 +246,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                         "forslag" to emptyList<Refusjonsforslag>()
                     ),
                     mapOf(
-                        "opplysningstype" to "Arbeidsgiverperiode",
-                        "forslag" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(15)))
+                        "opplysningstype" to "Arbeidsgiverperiode"
                     )
                 )
             )
@@ -263,7 +261,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
         mapUtenForespurteOpplysninger(vedtaksperiodeId)
             .plus("forespurteOpplysninger" to listOf(mapOf("opplysningstype" to "FastsattInntekt")))
             .toJson()
-    private fun ugyldigArbeidsperiodeEvent(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
+    private fun gyldigArbeidsperiodeEvent(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
         mapUtenForespurteOpplysninger(vedtaksperiodeId)
             .plus("forespurteOpplysninger" to listOf(mapOf("opplysningstype" to "Arbeidsgiverperiode")))
             .toJson()
@@ -279,5 +277,8 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
         "vedtaksperiodeId" to vedtaksperiodeId,
         "fom" to LocalDate.MIN,
         "tom" to LocalDate.MAX,
+        "egenmeldingsperioder" to emptyList<Map<String, LocalDate>>(),
+        "skjæringstidspunkt" to LocalDate.MIN,
+        "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MAX))
     )
 }
