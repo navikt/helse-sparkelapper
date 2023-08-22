@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.accept
+import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.bodyAsText
@@ -44,11 +45,10 @@ class AaregClient(
             "$baseUrl/v2/arbeidstaker/arbeidsforhold?sporingsinformasjon=false&arbeidsforholdstatus=AKTIV,FREMTIDIG,AVSLUTTET"
         )
 
-        sikkerlogg.info("V2 response før body():\n$response")
+        sikkerlogg.info("V2-response:\n${response.bodyAsText()}")
 
         return response.body()
     }
-
 
     private suspend fun hentV1(fnr: String, callId: UUID, url: String) =
         httpClient.prepareGet(url) {
@@ -60,13 +60,13 @@ class AaregClient(
         }.execute()
 
     private suspend fun hent(fnr: String, callId: UUID, url: String) =
-        httpClient.prepareGet(url) {
+        httpClient.get(url) {
             header("Authorization", "Bearer ${tokenSupplier()}")
             System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
             header("Nav-Call-Id", callId)
             accept(ContentType.Application.Json)
             header("Nav-Personident", fnr)
-        }.execute()
+        }
 }
 
 class AaregException(message: String, private val responseValue: JsonNode) : RuntimeException(message) {
