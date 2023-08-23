@@ -9,10 +9,11 @@ import java.time.YearMonth
 import java.util.UUID
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Refusjonsforslag
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerIkkeArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndtertDto
 
-internal const val FNR = "1111111111"
-internal const val ORGNUMMER = "222222222"
+internal const val FNR = "fnr"
+internal const val ORGNUMMER = "orgnummer"
 
 internal val objectMapper = jacksonObjectMapper()
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
@@ -34,6 +35,16 @@ private fun mockTrengerArbeidsgiveropplysningerDto(
     sykmeldingsperioder = sykmeldingsperioder,
     egenmeldingsperioder = egenmeldingsperioder,
     forespurtData = forespurtData,
+    opprettet = LocalDateTime.MAX
+)
+internal fun mockTrengerIkkeArbeidsgiveropplysningerDto(
+    vedtaksperiodeId: UUID,
+    type: Meldingstype,
+) = TrengerIkkeArbeidsgiveropplysningerDto(
+    type = type,
+    fødselsnummer = FNR,
+    organisasjonsnummer = ORGNUMMER,
+    vedtaksperiodeId = vedtaksperiodeId,
     opprettet = LocalDateTime.MAX
 )
 

@@ -21,15 +21,14 @@ import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeids
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.internals.RecordHeader
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 
 internal class TrengerArbeidsgiveropplysningerRiverTest {
-    private val FNR = "1111111111"
-    private val ORGNUMMER = "222222222"
+    private val FNR = "fnr"
+    private val ORGNUMMER = "orgnummer"
 
     private val objectMapper = jacksonObjectMapper()
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
