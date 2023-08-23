@@ -16,6 +16,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.internals.RecordHeader
 import org.intellij.lang.annotations.Language
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -72,11 +73,13 @@ internal class TrengerIkkeArbeidsgiveropplysningerRiverTest {
     }
 
     @Test
-    fun `sender ikke beskjed om at vi ikke trenger forespørsler ved ugyldig event`() {
+    fun `logger error og sender ikke beskjed om at vi ikke trenger forespørsler ved ugyldig event`() {
         testRapid.sendTestMessage(eventUtenFødselsnummer())
         testRapid.sendTestMessage(eventUtenOrgnummer())
         testRapid.sendTestMessage(eventUtenVedtaksperiodeId())
         testRapid.sendTestMessage(eventUtenOpprettet())
+
+        assertEquals(4, sikkerlogCollector.list.filter { it.message.contains("forstod ikke trenger_ikke_opplysninger_fra_arbeidsgiver") }.size)
         verify(exactly = 0) {
             mockproducer.send(any())
         }
@@ -122,6 +125,6 @@ internal class TrengerIkkeArbeidsgiveropplysningerRiverTest {
     private fun eventUtenOpprettet(): String = """{
         "@event_name": "trenger_ikke_opplysninger_fra_arbeidsgiver",
         "fødselsnummer": "fnr",
-        "organisasjonsnummer": "orgnummer", 
+        "organisasjonsnummer": "orgnummer"
     }"""
 }
