@@ -8,6 +8,8 @@ import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerRiver
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerIkkeArbeidsgiveropplysningerDto
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerIkkeArbeidsgiveropplysningerRiver
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.VedtaksperiodeForkastetRiver
 import no.nav.helse.sparkel.arbeidsgiver.db.Database
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndertRiver
@@ -33,13 +35,15 @@ fun main() {
     val database = Database()
     val inntektsmeldingRegistrertRepository = InntektsmeldingRegistrertRepository()
 
-    val forespørselProducer = createAivenProducer<TrengerArbeidsgiveropplysningerDto>(env)
+    val trengerForespørselProducer = createAivenProducer<TrengerArbeidsgiveropplysningerDto>(env)
+    val trengerIkkeForespørselProducer = createAivenProducer<TrengerIkkeArbeidsgiveropplysningerDto>(env)
     val inntektsmeldingHåndtertProducer = createAivenProducer<InntektsmeldingHåndtertDto>(env)
 
     val app = RapidApplication.create(env).apply {
         registerDbLifecycle(database)
-        TrengerArbeidsgiveropplysningerRiver(this, forespørselProducer)
-        VedtaksperiodeForkastetRiver(this, forespørselProducer)
+        TrengerArbeidsgiveropplysningerRiver(this, trengerForespørselProducer)
+        TrengerIkkeArbeidsgiveropplysningerRiver(this, trengerIkkeForespørselProducer)
+        VedtaksperiodeForkastetRiver(this, trengerForespørselProducer)
         InntektsmeldingHåndertRiver(this, inntektsmeldingHåndtertProducer, inntektsmeldingRegistrertRepository)
         InntektsmeldingRegistrertRiver(this, inntektsmeldingRegistrertRepository)
     }
