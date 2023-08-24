@@ -27,7 +27,7 @@ class AaregClient(
     ): ArrayNode {
         val response = hentV1(fnr, callId, "$baseUrl/v1/arbeidstaker/arbeidsforhold")
 
-        sikkerlogg.info("AaregResponse status: " + response.status)
+        sikkerlogg.info("AaregResponse status: ${response.status}\n${response.bodyAsText()}")
         val responseValue = objectMapper.readTree(response.bodyAsText())
         if (!responseValue.isArray) throw AaregException(
             responseValue.path("melding").asText("Ukjent respons fra Aareg"), responseValue
