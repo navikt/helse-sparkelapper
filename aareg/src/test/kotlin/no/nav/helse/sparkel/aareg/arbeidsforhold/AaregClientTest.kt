@@ -107,7 +107,8 @@ internal class AaregClientTest {
     private fun JsonNode.toArbeidsforhold() = Arbeidsforhold(
         ansattSiden = this.path("ansettelsesperiode").path("periode").path("fom").asLocalDate(),
         ansattTil = this.path("ansettelsesperiode").path("periode").path("tom").asOptionalLocalDate(),
-        orgnummer = this["arbeidsgiver"].path("organisasjonsnummer").asText()
+        orgnummer = this["arbeidsgiver"].path("organisasjonsnummer").asText(),
+        type = Arbeidsforhold.Arbeidsforholdtype.fraAareg(this["type"].asText())
     )
 
     private fun List<JsonNode>.toLøsningDto(): List<Arbeidsforholdbehovløser.LøsningDto> =

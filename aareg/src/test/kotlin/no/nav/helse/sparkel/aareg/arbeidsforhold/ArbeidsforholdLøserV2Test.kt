@@ -69,7 +69,8 @@ internal class ArbeidsforholdLøserV2Test {
                 Arbeidsforhold(
                     it["orgnummer"].asText(),
                     it["ansattSiden"].asLocalDate(),
-                    it["ansattTil"].asOptionalLocalDate()
+                    it["ansattTil"].asOptionalLocalDate(),
+                    Arbeidsforhold.Arbeidsforholdtype.valueOf(it["type"].asText())
                 )
             }
 }

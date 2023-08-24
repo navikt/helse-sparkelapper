@@ -70,16 +70,17 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
     private fun JsonNode.toArbeidsforhold() = Arbeidsforhold(
         ansattSiden = this.path("ansettelsesperiode").path("periode").path("fom").asLocalDate(),
         ansattTil = this.path("ansettelsesperiode").path("periode").path("tom").asOptionalLocalDate(),
-        orgnummer = this["arbeidsgiver"].path("organisasjonsnummer").asText()
+        orgnummer = this["arbeidsgiver"].path("organisasjonsnummer").asText(),
+        type = Arbeidsforhold.Arbeidsforholdtype.fraAareg(this["type"].asText())
     )
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
 
     }
 
-    private fun JsonMessage.setLøsning(nøkkel: String, data: Any) {
+    private fun JsonMessage.setLøsning(nøkkel: String, arbeidsforhold: List<Arbeidsforhold>) {
         this["@løsning"] = mapOf(
-            nøkkel to data
+            nøkkel to arbeidsforhold
         )
     }
 }

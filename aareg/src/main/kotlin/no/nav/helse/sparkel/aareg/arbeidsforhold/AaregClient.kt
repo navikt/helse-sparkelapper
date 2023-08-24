@@ -25,7 +25,7 @@ class AaregClient(
         fnr: String,
         callId: UUID
     ): ArrayNode {
-        val response = hentV1(fnr, callId, "$baseUrl/v1/arbeidstaker/arbeidsforhold")
+        val response = hentV1(fnr, callId, "$baseUrl/v1/arbeidstaker/arbeidsforhold?arbeidsforholdtype=ordinaertArbeidsforhold,maritimtArbeidsforhold,forenkletOppgjoersordning")
 
         sikkerlogg.info("AaregResponse status: ${response.status}\n${response.bodyAsText()}")
         val responseValue = objectMapper.readTree(response.bodyAsText())
@@ -76,8 +76,26 @@ class AaregException(message: String, private val responseValue: JsonNode) : Run
 data class Arbeidsforhold(
     val orgnummer: String,
     val ansattSiden: LocalDate,
-    val ansattTil: LocalDate?
-)
+    val ansattTil: LocalDate?,
+    val type: Arbeidsforholdtype
+) {
+    enum class Arbeidsforholdtype {
+        FORENKLET_OPPGJØRSORDNING,
+        FRILANSER,
+        MARITIMT,
+        ORDINÆRT;
+
+        companion object {
+            fun fraAareg(type: String) = when (type) {
+                "forenkletOppgjoersordning" -> FORENKLET_OPPGJØRSORDNING
+                "frilanserOppdragstakerHonorarPersonerMm" -> FRILANSER
+                "maritimtArbeidsforhold" -> MARITIMT
+                "ordinaertArbeidsforhold" -> ORDINÆRT
+                else -> error("har ikke mappingregel for arbeidsforholdtype: $type")
+            }
+        }
+    }
+}
 
 internal fun JsonNode.asOptionalLocalDate() =
     takeIf(JsonNode::isTextual)?.asText()?.takeIf(String::isNotEmpty)?.let { LocalDate.parse(it.substring(0, 10)) }
