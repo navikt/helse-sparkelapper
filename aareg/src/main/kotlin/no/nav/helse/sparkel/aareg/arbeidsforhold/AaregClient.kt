@@ -25,7 +25,7 @@ class AaregClient(
         fnr: String,
         callId: UUID
     ): ArrayNode {
-        val response = hentV1(fnr, callId, "$baseUrl/v1/arbeidstaker/arbeidsforhold?arbeidsforholdtype=ordinaertArbeidsforhold,maritimtArbeidsforhold,forenkletOppgjoersordning")
+        val response = hentV1(fnr, callId, "$baseUrl/v1/arbeidstaker/arbeidsforhold?arbeidsforholdtype=ordinaertArbeidsforhold,maritimtArbeidsforhold,forenkletOppgjoersordning,frilanserOppdragstakerHonorarPersonerMm")
 
         sikkerlogg.info("AaregResponse status: ${response.status}\n${response.bodyAsText()}")
         val responseValue = objectMapper.readTree(response.bodyAsText())
