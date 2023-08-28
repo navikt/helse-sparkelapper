@@ -9,10 +9,19 @@ import no.nav.helse.sparkel.aareg.objectMapper
 import org.intellij.lang.annotations.Language
 
 fun aaregMockClientV1(aaregResponse: String = defaultArbeidsforholdResponseV1()) = HttpClient(MockEngine) {
+    install(ContentNegotiation) {
+        register(ContentType.Application.Json, JacksonConverter(objectMapper))
+    }
+    expectSuccess = false
     engine {
         addHandler { request ->
             when {
                 request.url.fullPath.startsWith("/v1/arbeidstaker/arbeidsforhold") -> respond(aaregResponse)
+                request.url.fullPath.startsWith("/v2/arbeidstaker/arbeidsforhold") -> respond(
+                    content = defaultArbeidsforholdResponse(),
+                    status = HttpStatusCode.OK,
+                    headers = headersOf(HttpHeaders.ContentType, "application/json")
+                )
                 else -> error("Endepunktet finnes ikke: ${request.url.fullPath}")
             }
         }

@@ -74,19 +74,18 @@ class Arbeidsforholdbehovløser(
 
                 val løsningV1 = relevanteArbeidsforhold.toLøsningDto()
 
-                if (erDev()) {
-                    val arbeidsforholdFraAareg = aaregClient.hentFraAareg(fnr, id)
-                        .filter { arbeidsforhold -> arbeidsforhold.arbeidssted.getOrgnummer() == organisasjonsnummer }
-                    val løsning = arbeidsforholdFraAareg.toLøsning()
-                    val tilSammenligning = løsning.map { af -> af.copy(startdato = af.startdato.withDayOfMonth(1)) }
-                    if (tilSammenligning.toSet() == løsningV1.toSet()) {
-                        sikkerlogg.info("Likt svar fra V1 og V2")
-                    } else {
-                        sikkerlogg.info("Ulikt svar, V1:\n$løsningV1,\nV2:\n$tilSammenligning")
-                        sikkerlogg.info("V1 variant:\n$relevanteArbeidsforhold")
-                        sikkerlogg.info("V2 variant:\n$arbeidsforholdFraAareg")
-                    }
+                val arbeidsforholdFraAareg = aaregClient.hentFraAareg(fnr, id)
+                    .filter { arbeidsforhold -> arbeidsforhold.arbeidssted.getOrgnummer() == organisasjonsnummer }
+                val løsning = arbeidsforholdFraAareg.toLøsning()
+                val tilSammenligning = løsning.map { af -> af.copy(startdato = af.startdato.withDayOfMonth(1)) }
+                if (tilSammenligning.toSet() == løsningV1.toSet()) {
+                    sikkerlogg.info("Likt svar fra V1 og V2")
+                } else {
+                    sikkerlogg.info("Ulikt svar, V1:\n$løsningV1,\nV2:\n$tilSammenligning")
+                    sikkerlogg.info("V1 variant:\n$relevanteArbeidsforhold")
+                    sikkerlogg.info("V2 variant:\n$arbeidsforholdFraAareg")
                 }
+
                 if (løsningV1.isEmpty())
                     sikkerlogg.error("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg, fikk svar:\n$arbeidsforholdFraAaregV1")
 
@@ -154,6 +153,4 @@ class Arbeidsforholdbehovløser(
         val startdato: LocalDate,
         val sluttdato: LocalDate?
     )
-
-    private fun erDev() = "dev-fss" == System.getenv("NAIS_CLUSTER_NAME")
 }
