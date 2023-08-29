@@ -229,7 +229,7 @@ internal class RestAbakusClientTest {
         },
         {
             "ytelse": "SVANGERSKAPSPENGER",
-            "ytelseStatus": "LØPENDE",
+            "ytelseStatus": "UNDER_BEHANDLING",
             "vedtattTidspunkt": "2023-02-16T09:52:35.255",
             "anvist": [{
                 "periode": {

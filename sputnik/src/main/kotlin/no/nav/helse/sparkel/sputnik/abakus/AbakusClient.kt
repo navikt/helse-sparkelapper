@@ -53,7 +53,7 @@ internal class RestAbakusClient(
     private companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
-        private val aktiveYtelseStatuser = setOf("LØPENDE", "AVSLUTTET")
+        private val aktiveYtelseStatuser = setOf("LØPENDE", "AVSLUTTET", "UNDER_BEHANDLING")
 
         @Language("JSON")
         private fun requestBody(fødselsnummer: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse) = """
