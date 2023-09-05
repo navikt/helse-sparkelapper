@@ -11,6 +11,7 @@ import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforhold
+import no.nav.helse.sparkel.aareg.arbeidsforhold.model.Arbeidsstedtype.Underenhet
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import org.slf4j.LoggerFactory
 
@@ -66,7 +67,7 @@ class Arbeidsforholdbehovløser(
             log.info("løser behov={}", keyValue("id", id))
             runBlocking {
                 val arbeidsforholdFraAareg = aaregClient.hentFraAareg(fnr, id)
-                    .filter { arbeidsforhold -> arbeidsforhold.arbeidssted.getOrgnummer() == organisasjonsnummer }
+                    .filter { arbeidsforhold -> arbeidsforhold.arbeidssted.run { type == Underenhet && getOrgnummer() == organisasjonsnummer } }
                 val løsning = arbeidsforholdFraAareg.toLøsningDto()
 
                 if (løsning.isEmpty())

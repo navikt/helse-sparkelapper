@@ -11,6 +11,7 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforhold
+import no.nav.helse.sparkel.aareg.arbeidsforhold.model.Arbeidsstedtype.Underenhet
 import org.slf4j.LoggerFactory
 
 class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aaregClient: AaregClient) :
@@ -21,7 +22,7 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
             Arbeidsforhold(
                 ansattSiden = arbeidsforhold.ansettelsesperiode.startdato,
                 ansattTil = arbeidsforhold.ansettelsesperiode.sluttdato,
-                orgnummer = arbeidsforhold.arbeidssted.getOrgnummer(),
+                orgnummer = arbeidsforhold.arbeidssted.run { if (type == Underenhet) getOrgnummer() else "" },
                 type = arbeidsforhold.type.kode,
             )
         }

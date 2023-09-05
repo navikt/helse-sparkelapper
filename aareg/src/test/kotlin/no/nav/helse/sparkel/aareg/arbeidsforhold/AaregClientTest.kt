@@ -54,7 +54,7 @@ internal class AaregClientTest {
 
 
         assertEquals(100, løsningsDto[0].stillingsprosent)
-        assertEquals("FRISØR", løsningsDto[0].stillingstittel)
+        assertEquals("HELSEFAGARBEIDER", løsningsDto[0].stillingstittel)
         assertEquals(LocalDate.of(2003, 8, 3), løsningsDto[0].startdato)
         assertEquals(LocalDate.of(2010, 8, 3), løsningsDto[0].sluttdato)
     }

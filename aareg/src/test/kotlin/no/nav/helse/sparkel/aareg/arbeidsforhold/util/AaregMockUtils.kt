@@ -26,6 +26,7 @@ fun aaregMockClient(aaregResponse: String = defaultArbeidsforholdResponse()) = H
                     status = HttpStatusCode.OK,
                     headers = headersOf(HttpHeaders.ContentType, "application/json")
                 )
+
                 else -> error("Endepunktet finnes ikke: ${request.url.fullPath}")
             }
         }
@@ -44,12 +45,12 @@ fun defaultArbeidsforholdResponse() = """[
             "identer": [
                 {
                     "type": "AKTORID",
-                    "ident": "2840402937960",
+                    "ident": "9123456789",
                     "gjeldende": true
                 },
                 {
                     "type": "FOLKEREGISTERIDENT",
-                    "ident": "03856698016",
+                    "ident": "9123456789",
                     "gjeldende": true
                 }
             ]
@@ -68,43 +69,40 @@ fun defaultArbeidsforholdResponse() = """[
             "identer": [
                 {
                     "type": "ORGANISASJONSNUMMER",
-                    "ident": "963743254"
+                    "ident": "912345678"
                 }
             ]
         },
         "ansettelsesperiode": {
             "startdato": "2003-08-03",
-            "sluttdato": "2010-08-03"
+            "sluttdato": "2010-08-03",
+            "sluttaarsak": {
+                "kode": "arbeidstakerHarSagtOppSelv",
+                "beskrivelse": "Arbeidstaker har sagt opp selv"
+            }
         },
         "ansettelsesdetaljer": [
             {
                 "type": "Ordinaer",
                 "arbeidstidsordning": {
-                    "kode": "ikkeSkift",
-                    "beskrivelse": "Ikke skift"
+                    "kode": "doegnkontinuerligSkiftOgTurnus355",
+                    "beskrivelse": "Døgnkontinuerlig skiftarbeid og turnusarbeid (35,5 t/u)"
                 },
                 "ansettelsesform": {
-                    "kode": "fast",
-                    "beskrivelse": "Fast ansettelse"
+                    "kode": "midlertidig",
+                    "beskrivelse": "Midlertidig ansettelse"
                 },
                 "yrke": {
-                    "kode": "5141103",
-                    "beskrivelse": "FRISØR"
+                    "kode": "5132121",
+                    "beskrivelse": "HELSEFAGARBEIDER"
                 },
-                "antallTimerPrUke": 37.5,
+                "antallTimerPrUke": 35.5,
                 "avtaltStillingsprosent": 100.0,
+                "sisteStillingsprosentendring": "2021-01-01",
+                "sisteLoennsendring": "2022-05-01",
                 "rapporteringsmaaneder": {
-                    "fra": "2003-08",
+                    "fra": "2022-09",
                     "til": null
-                }
-            }
-        ],
-        "varsler": [
-            {
-                "entitet": "Arbeidsforhold",
-                "varsling": {
-                    "kode": "NAVEND",
-                    "beskrivelse": "NAV har opprettet eller endret arbeidsforholdet"
                 }
             }
         ],
@@ -112,14 +110,95 @@ fun defaultArbeidsforholdResponse() = """[
             "kode": "A_ORDNINGEN",
             "beskrivelse": "Rapportert via a-ordningen (2015-d.d.)"
         },
-        "navArbeidsforholdId": 60510125,
-        "navVersjon": 0,
-        "navUuid": "04f2c7e0-12fc-4db9-a8a6-7c5298816923",
-        "opprettet": "2023-08-03T12:26:28.921",
-        "sistBekreftet": "2023-08-03T12:26:28",
-        "sistEndret": "2023-08-03T12:26:48",
+        "navArbeidsforholdId": 12345678,
+        "navVersjon": 93,
+        "navUuid": "a12345e6-c7f1-4949-6737-25e1cac0b1ae",
+        "opprettet": "2020-11-05T17:30:47.593",
+        "sistBekreftet": "2023-03-02T14:00:19",
+        "sistEndret": "2022-10-05T20:33:49",
         "bruksperiode": {
-            "fom": "2023-08-03T12:26:28.931",
+            "fom": "2020-11-05T17:35:26.103",
+            "tom": null
+        }
+    },
+    {
+        "type": {
+            "kode": "forenkletOppgjoersordning",
+            "beskrivelse": "Forenklet oppgjørsordning"
+        },
+        "arbeidstaker": {
+            "identer": [
+                {
+                    "type": "AKTORID",
+                    "ident": "9123456789",
+                    "gjeldende": true
+                },
+                {
+                    "type": "FOLKEREGISTERIDENT",
+                    "ident": "9123456789",
+                    "gjeldende": true
+                }
+            ]
+        },
+        "arbeidssted": {
+            "type": "Person",
+            "identer": [
+                {
+                    "type": "AKTORID",
+                    "ident": "9123456789",
+                    "gjeldende": true
+                },
+                {
+                    "type": "FOLKEREGISTERIDENT",
+                    "ident": "9123456789",
+                    "gjeldende": true
+                }
+            ]
+        },
+        "opplysningspliktig": {
+            "type": "Person",
+            "identer": [
+                {
+                    "type": "AKTORID",
+                    "ident": "9123456789",
+                    "gjeldende": true
+                },
+                {
+                    "type": "FOLKEREGISTERIDENT",
+                    "ident": "9123456789",
+                    "gjeldende": true
+                }
+            ]
+        },
+        "ansettelsesperiode": {
+            "startdato": "2017-05-01",
+            "sluttdato": "2017-11-30"
+        },
+        "ansettelsesdetaljer": [
+            {
+                "type": "Forenklet",
+                "yrke": {
+                    "kode": "5136102",
+                    "beskrivelse": "DAGMAMMA"
+                },
+                "rapporteringsmaaneder": {
+                    "fra": "2018-06",
+                    "til": null
+                }
+            }
+        ],
+        "rapporteringsordning": {
+            "kode": "A_ORDNINGEN",
+            "beskrivelse": "Rapportert via a-ordningen (2015-d.d.)"
+        },
+        "navArbeidsforholdId": 61234509,
+        "navVersjon": 0,
+        "navUuid": "c358d127-6a2d-4f1c-9c27-5c4126d4aaaa",
+        "opprettet": "2018-06-26T12:34:36.66",
+        "sistBekreftet": "2018-06-26T12:34:36",
+        "sistEndret": "2018-06-26T12:45:29",
+        "bruksperiode": {
+            "fom": "2018-06-26T12:45:09.85",
             "tom": null
         }
     }
