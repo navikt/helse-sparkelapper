@@ -1,15 +1,31 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.statement.*
+import io.ktor.client.statement.bodyAsText
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.rapids_rivers.*
+import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
+import no.nav.helse.rapids_rivers.MessageProblems
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
+import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforhold
 import org.slf4j.LoggerFactory
-import java.util.*
 
-class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aaregClient: AaregClient) : River.PacketListener {
+class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aaregClient: AaregClient) :
+    River.PacketListener {
+
+    companion object {
+        internal fun List<AaregArbeidsforhold>.toArbeidsforhold(): List<Arbeidsforhold> = this.map { arbeidsforhold ->
+            Arbeidsforhold(
+                ansattSiden = arbeidsforhold.ansettelsesperiode.startdato,
+                ansattTil = arbeidsforhold.ansettelsesperiode.sluttdato,
+                orgnummer = arbeidsforhold.arbeidssted.getOrgnummer(),
+                type = arbeidsforhold.type.kode,
+            )
+        }
+    }
 
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -25,12 +41,13 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         sikkerlogg.info("Mottok melding: ${packet.toJson()}")
+
         val arbeidsforhold = try {
             log.info("løser behov={}", keyValue("id", packet["@id"].asText()))
             runBlocking {
                 aaregClient
-                    .hentFraAaregV1(packet["fødselsnummer"].asText(), UUID.fromString(packet["@id"].asText()))
-                    .map { it.toArbeidsforhold() }
+                    .hentFraAareg(packet["fødselsnummer"].asText(), UUID.fromString(packet["@id"].asText()))
+                    .toArbeidsforhold()
             }
         } catch (err: AaregException) {
             log.error(
@@ -58,7 +75,7 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
             emptyList()
         }
 
-        val behov = packet["@behov"].first { it.asText() in listOf("ArbeidsforholdV2", "AlleArbeidsforhold")}.asText()
+        val behov = packet["@behov"].first { it.asText() in listOf("ArbeidsforholdV2", "AlleArbeidsforhold") }.asText()
         packet.setLøsning(behov, arbeidsforhold)
         context.publish(packet.toJson())
     }
@@ -66,13 +83,6 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
     override fun onSevere(error: MessageProblems.MessageException, context: MessageContext) {
         super.onSevere(error, context)
     }
-
-    private fun JsonNode.toArbeidsforhold() = Arbeidsforhold(
-        ansattSiden = this.path("ansettelsesperiode").path("periode").path("fom").asLocalDate(),
-        ansattTil = this.path("ansettelsesperiode").path("periode").path("tom").asOptionalLocalDate(),
-        orgnummer = this["arbeidsgiver"].path("organisasjonsnummer").asText(),
-        type = Arbeidsforhold.Arbeidsforholdtype.fraAareg(this["type"].asText())
-    )
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
 

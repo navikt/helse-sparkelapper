@@ -1,25 +1,34 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.statement.*
+import io.ktor.client.statement.bodyAsText
+import java.time.LocalDate
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.rapids_rivers.*
+import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
+import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforhold
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
-import java.util.*
-import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforhold
-import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 
 class Arbeidsforholdbehovløser(
     rapidsConnection: RapidsConnection,
     private val aaregClient: AaregClient,
-    private val kodeverkClient: KodeverkClient,
 ) : River.PacketListener {
     companion object {
         internal const val behov = "Arbeidsforhold"
+
+        internal fun List<AaregArbeidsforhold>.toLøsningDto(): List<LøsningDto> = this.map { arbeidsforhold ->
+            LøsningDto(
+                startdato = arbeidsforhold.ansettelsesperiode.startdato,
+                sluttdato = arbeidsforhold.ansettelsesperiode.sluttdato,
+                stillingsprosent = arbeidsforhold.ansettelsesdetaljer.first().avtaltStillingsprosent,
+                stillingstittel = arbeidsforhold.ansettelsesdetaljer.first().yrke.beskrivelse,
+            )
+        }
     }
 
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -56,40 +65,14 @@ class Arbeidsforholdbehovløser(
         return try {
             log.info("løser behov={}", keyValue("id", id))
             runBlocking {
-                val arbeidsforholdFraAaregV1 = aaregClient.hentFraAaregV1(fnr, id)
-
-                val arbeidsforholdPåOrganisasjonsnummer = arbeidsforholdFraAaregV1
-                    .filter { arbeidsforhold ->
-                        arbeidsforhold["arbeidsgiver"].path("organisasjonsnummer").asText() == organisasjonsnummer
-                    }
-
-                val innrapportertEtterAOrdningen = arbeidsforholdPåOrganisasjonsnummer
-                    .filter { it.path("innrapportertEtterAOrdningen").asBoolean() }
-
-                val relevanteArbeidsforhold =
-                    if (arbeidsforholdPåOrganisasjonsnummer.isNotEmpty() && innrapportertEtterAOrdningen.isEmpty()) {
-                        sikkerlogg.warn("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg med innrapportertEtterAOrdningen=true, ignorerer filtrering og returnerer alle arbeidsforhold for orgnummer")
-                        arbeidsforholdPåOrganisasjonsnummer
-                    } else innrapportertEtterAOrdningen
-
-                val løsningV1 = relevanteArbeidsforhold.toLøsningDto()
-
                 val arbeidsforholdFraAareg = aaregClient.hentFraAareg(fnr, id)
                     .filter { arbeidsforhold -> arbeidsforhold.arbeidssted.getOrgnummer() == organisasjonsnummer }
-                val løsning = arbeidsforholdFraAareg.toLøsning()
-                val tilSammenligning = løsning.map { af -> af.copy(startdato = af.startdato.withDayOfMonth(1)) }
-                if (tilSammenligning.toSet() == løsningV1.toSet()) {
-                    sikkerlogg.info("Likt svar fra V1 og V2")
-                } else {
-                    sikkerlogg.info("Ulikt svar, V1:\n$løsningV1,\nV2:\n$tilSammenligning")
-                    sikkerlogg.info("V1 variant:\n$relevanteArbeidsforhold")
-                    sikkerlogg.info("V2 variant:\n$arbeidsforholdFraAareg")
-                }
+                val løsning = arbeidsforholdFraAareg.toLøsningDto()
 
-                if (løsningV1.isEmpty())
-                    sikkerlogg.error("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg, fikk svar:\n$arbeidsforholdFraAaregV1")
+                if (løsning.isEmpty())
+                    sikkerlogg.error("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg, fikk svar:\n$arbeidsforholdFraAareg")
 
-                løsningV1
+                løsning
             }
         } catch (err: AaregException) {
             log.error(
@@ -119,26 +102,6 @@ class Arbeidsforholdbehovløser(
             sikkerlogg.info("What now? \n${packet.toJson()} \n{}", err)
             emptyList()
         }
-    }
-
-    private fun List<JsonNode>.toLøsningDto(): List<LøsningDto> = this.flatMap { arbeidsforhold ->
-        arbeidsforhold.path("arbeidsavtaler").map {
-            LøsningDto(
-                startdato = it.path("gyldighetsperiode").path("fom").asLocalDate(),
-                sluttdato = it.path("gyldighetsperiode").path("tom")?.asOptionalLocalDate(),
-                stillingsprosent = it.path("stillingsprosent")?.asInt() ?: 0,
-                stillingstittel = kodeverkClient.getYrke(it.path("yrke").asText())
-            )
-        }
-    }
-
-    private fun List<AaregArbeidsforhold>.toLøsning(): List<LøsningDto> = this.map { arbeidsforhold ->
-        LøsningDto(
-            startdato = arbeidsforhold.ansettelsesperiode.startdato,
-            sluttdato = arbeidsforhold.ansettelsesperiode.sluttdato,
-            stillingsprosent = arbeidsforhold.ansettelsesdetaljer.first().avtaltStillingsprosent,
-            stillingstittel = arbeidsforhold.ansettelsesdetaljer.first().yrke.beskrivelse,
-        )
     }
 
     private fun JsonMessage.setLøsning(nøkkel: String, data: Any) {

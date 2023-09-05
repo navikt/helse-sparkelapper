@@ -1,45 +1,18 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.mockk.every
 import io.mockk.mockk
 import java.time.LocalDate
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
-import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.sparkel.aareg.AzureAD
+import no.nav.helse.sparkel.aareg.arbeidsforhold.ArbeidsforholdLøserV2.Companion.toArbeidsforhold
+import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdbehovløser.Companion.toLøsningDto
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
-import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClientV1
-import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
-import no.nav.helse.sparkel.aareg.sikkerlogg
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class AaregClientTest {
-
-    private val kodeverkClientMock = mockk<KodeverkClient>()
-
-    @Test
-    fun `mapping toArbeidsforhold fra aaregV1 er ok`() {
-
-        val azureAdMock = mockk<AzureAD>()
-
-        every { azureAdMock.accessToken() } returns "superToken"
-
-        val aaregClient = AaregClient(
-            baseUrl = "http://baseUrl.local",
-            tokenSupplier = { azureAdMock.accessToken() },
-            httpClient = aaregMockClientV1()
-        )
-
-        val aaregResponse = runBlocking { aaregClient.hentFraAaregV1("12343555", UUID.randomUUID()) }
-
-        val arbeidsforhold = aaregResponse.map { it.toArbeidsforhold() }
-
-        assertEquals("organisasjonsnummer", arbeidsforhold[0].orgnummer)
-        assertEquals(LocalDate.of(2014, 7, 1), arbeidsforhold[0].ansattSiden)
-        assertEquals(LocalDate.of(2015, 12, 31), arbeidsforhold[0].ansattTil)
-    }
 
     @Test
     fun `mapping toArbeidsforhold fra aareg er ok`() {
@@ -54,13 +27,13 @@ internal class AaregClientTest {
             httpClient = aaregMockClient()
         )
 
-        val arbeidsforhold = runBlocking { aaregClient.hentFraAareg("12343555", UUID.randomUUID()) }
+        val aaregResponse = runBlocking { aaregClient.hentFraAareg("12343555", UUID.randomUUID()) }
+        val arbeidsforhold = aaregResponse.toArbeidsforhold()
 
-        assertEquals("896929119", arbeidsforhold[0].arbeidssted.getOrgnummer())
-        assertEquals(LocalDate.of(2003, 8, 3), arbeidsforhold[0].ansettelsesperiode.startdato)
-        assertEquals(LocalDate.of(2010, 8, 3), arbeidsforhold[0].ansettelsesperiode.sluttdato)
-        assertEquals(100, arbeidsforhold[0].ansettelsesdetaljer[0].avtaltStillingsprosent)
-        assertEquals("FRISØR", arbeidsforhold[0].ansettelsesdetaljer[0].yrke.beskrivelse)
+        assertEquals("123456789", arbeidsforhold[0].orgnummer)
+        assertEquals(LocalDate.of(2003, 8, 3), arbeidsforhold[0].ansattSiden)
+        assertEquals(LocalDate.of(2010, 8, 3), arbeidsforhold[0].ansattTil)
+        assertEquals(Arbeidsforholdtype.ORDINÆRT, arbeidsforhold[0].type)
     }
 
     @Test
@@ -70,56 +43,21 @@ internal class AaregClientTest {
 
         every { azureAdMock.accessToken() } returns "superToken"
 
-        every { kodeverkClientMock.getYrke(any()) } returns "utvikler"
-
         val aaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             tokenSupplier = { azureAdMock.accessToken() },
-            httpClient = aaregMockClientV1()
+            httpClient = aaregMockClient()
         )
 
-        val aaregResponse = runBlocking { aaregClient.hentFraAaregV1("12343555", UUID.randomUUID()) }
-
-        val listArbeidsforholdbehovløserLøsingDto = aaregResponse.filter { arbeidsforhold ->
-            arbeidsforhold["arbeidsgiver"].path("organisasjonsnummer").asText() == "organisasjonsnummer"
-        }
-            .filter { it.path("innrapportertEtterAOrdningen").asBoolean() }
-            .also {
-                if (it.any { arbeidsforhold ->
-                        !arbeidsforhold.path("arbeidsavtaler").any { arbeidsavtale ->
-                            arbeidsavtale.path("gyldighetsperiode").path("tom")
-                                .isMissingOrNull()
-                        }
-                    }) {
-                    sikkerlogg.info("RESTen av svaret {}", it)
-                }
-            }
-            .toLøsningDto()
+        val aaregResponse = runBlocking { aaregClient.hentFraAareg("12343555", UUID.randomUUID()) }
+        val løsningsDto = aaregResponse.toLøsningDto()
 
 
-        assertEquals(49, listArbeidsforholdbehovløserLøsingDto[0].stillingsprosent)
-        assertEquals(LocalDate.of(2015,12,31), listArbeidsforholdbehovløserLøsingDto[0].sluttdato)
-        assertEquals(LocalDate.of(2014,7,1), listArbeidsforholdbehovløserLøsingDto[0].startdato)
-        assertEquals("utvikler", listArbeidsforholdbehovløserLøsingDto[0].stillingstittel)
+        assertEquals(100, løsningsDto[0].stillingsprosent)
+        assertEquals("FRISØR", løsningsDto[0].stillingstittel)
+        assertEquals(LocalDate.of(2003, 8, 3), løsningsDto[0].startdato)
+        assertEquals(LocalDate.of(2010, 8, 3), løsningsDto[0].sluttdato)
     }
 
-
-    private fun JsonNode.toArbeidsforhold() = Arbeidsforhold(
-        ansattSiden = this.path("ansettelsesperiode").path("periode").path("fom").asLocalDate(),
-        ansattTil = this.path("ansettelsesperiode").path("periode").path("tom").asOptionalLocalDate(),
-        orgnummer = this["arbeidsgiver"].path("organisasjonsnummer").asText(),
-        type = Arbeidsforhold.Arbeidsforholdtype.fraAareg(this["type"].asText())
-    )
-
-    private fun List<JsonNode>.toLøsningDto(): List<Arbeidsforholdbehovløser.LøsningDto> =
-        this.flatMap { arbeidsforhold ->
-            arbeidsforhold.path("arbeidsavtaler").map {
-                Arbeidsforholdbehovløser.LøsningDto(
-                    startdato = it.path("gyldighetsperiode").path("fom").asLocalDate(),
-                    sluttdato = it.path("gyldighetsperiode").path("tom")?.asOptionalLocalDate(),
-                    stillingsprosent = it.path("stillingsprosent")?.asInt() ?: 0,
-                    stillingstittel = kodeverkClientMock.getYrke(it.path("yrke").asText())
-                )
-            }
-        }
 }
+

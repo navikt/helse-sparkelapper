@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.util.*
-import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClientV1
 
 internal class ArbeidsforholdLøserV2Test {
     private val objectMapper = jacksonObjectMapper()
@@ -40,7 +40,7 @@ internal class ArbeidsforholdLøserV2Test {
         val mockAaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             tokenSupplier = { "superToken" },
-            httpClient = aaregMockClientV1()
+            httpClient = aaregMockClient()
         )
         ArbeidsforholdLøserV2(rapid, mockAaregClient)
         rapid.sendTestMessage(behov)
@@ -54,7 +54,7 @@ internal class ArbeidsforholdLøserV2Test {
         val mockAaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             tokenSupplier = { "superToken" },
-            httpClient = aaregMockClientV1()
+            httpClient = aaregMockClient()
         )
         ArbeidsforholdLøserV2(rapid, mockAaregClient)
         rapid.sendTestMessage(behov)
@@ -70,7 +70,16 @@ internal class ArbeidsforholdLøserV2Test {
                     it["orgnummer"].asText(),
                     it["ansattSiden"].asLocalDate(),
                     it["ansattTil"].asOptionalLocalDate(),
-                    Arbeidsforhold.Arbeidsforholdtype.valueOf(it["type"].asText())
+                    fraAareg(it["type"].asText())
                 )
             }
+
+
+    private fun fraAareg(type: String) = when (type) {
+        "forenkletOppgjoersordning" -> Arbeidsforholdtype.FORENKLET_OPPGJØRSORDNING
+        "frilanserOppdragstakerHonorarPersonerMm" -> Arbeidsforholdtype.FRILANSER
+        "maritimtArbeidsforhold" -> Arbeidsforholdtype.MARITIMT
+        "ordinaertArbeidsforhold" -> Arbeidsforholdtype.ORDINÆRT
+        else -> error("har ikke mappingregel for arbeidsforholdtype: $type")
+    }
 }

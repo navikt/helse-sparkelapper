@@ -54,7 +54,7 @@ internal fun createApp(environment: Environment): RapidsConnection {
 
     val rapidsConnection = RapidApplication.create(environment.raw)
     Arbeidsgiverinformasjonsbehovløser(rapidsConnection, kodeverkClient, eregClient)
-    Arbeidsforholdbehovløser(rapidsConnection, aaregClient, kodeverkClient)
+    Arbeidsforholdbehovløser(rapidsConnection, aaregClient)
     ArbeidsforholdLøserV2(rapidsConnection, aaregClient)
 
     return rapidsConnection
