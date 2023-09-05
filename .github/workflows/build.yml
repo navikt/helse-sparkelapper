@@ -13,9 +13,6 @@ env:
 jobs:
   generate_vars:
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      id-token: write
     outputs:
       team: ${{ steps.set-vars.outputs.team }}
       tag: ${{ steps.set-vars.outputs.tag }}
@@ -82,6 +79,9 @@ jobs:
     needs: generate_vars
     name: build
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      id-token: write
     if: needs.generate_vars.outputs.emptyMatrix == 'false'
     strategy:
       fail-fast: false
