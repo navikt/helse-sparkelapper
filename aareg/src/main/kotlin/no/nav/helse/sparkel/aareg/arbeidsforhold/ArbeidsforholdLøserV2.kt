@@ -23,7 +23,7 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
                 ansattSiden = arbeidsforhold.ansettelsesperiode.startdato,
                 ansattTil = arbeidsforhold.ansettelsesperiode.sluttdato,
                 orgnummer = arbeidsforhold.arbeidssted.run { if (type == Underenhet) getOrgnummer() else "" },
-                type = arbeidsforhold.type.kode,
+                type = Arbeidsforholdtype.valueOf(arbeidsforhold.type.kode.name),
             )
         }
     }

@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -65,13 +64,9 @@ data class Arbeidsforhold(
 )
 
 enum class Arbeidsforholdtype {
-    @JsonProperty("forenkletOppgjoersordning")
     FORENKLET_OPPGJØRSORDNING,
-    @JsonProperty("frilanserOppdragstakerHonorarPersonerMm")
     FRILANSER,
-    @JsonProperty("maritimtArbeidsforhold")
     MARITIMT,
-    @JsonProperty("ordinaertArbeidsforhold")
     ORDINÆRT,
 }
 

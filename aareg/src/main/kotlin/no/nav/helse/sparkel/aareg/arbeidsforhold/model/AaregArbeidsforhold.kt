@@ -1,7 +1,7 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold.model
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.LocalDate
-import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdtype
 
 data class AaregArbeidsforhold(
     val type: AaregArbeidsforholdtype,
@@ -10,8 +10,19 @@ data class AaregArbeidsforhold(
     val ansettelsesdetaljer: List<Ansettelsesdetaljer>,
 )
 
+enum class Arbeidsforholdkode {
+    @JsonProperty("forenkletOppgjoersordning")
+    FORENKLET_OPPGJØRSORDNING,
+    @JsonProperty("frilanserOppdragstakerHonorarPersonerMm")
+    FRILANSER,
+    @JsonProperty("maritimtArbeidsforhold")
+    MARITIMT,
+    @JsonProperty("ordinaertArbeidsforhold")
+    ORDINÆRT,
+}
+
 data class AaregArbeidsforholdtype(
-    val kode: Arbeidsforholdtype,
+    val kode: Arbeidsforholdkode,
     val beskrivelse: String,
 )
 

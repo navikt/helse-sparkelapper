@@ -70,16 +70,7 @@ internal class ArbeidsforholdLøserV2Test {
                     it["orgnummer"].asText(),
                     it["ansattSiden"].asLocalDate(),
                     it["ansattTil"].asOptionalLocalDate(),
-                    fraAareg(it["type"].asText())
+                    Arbeidsforholdtype.valueOf(it["type"].asText())
                 )
             }
-
-
-    private fun fraAareg(type: String) = when (type) {
-        "forenkletOppgjoersordning" -> Arbeidsforholdtype.FORENKLET_OPPGJØRSORDNING
-        "frilanserOppdragstakerHonorarPersonerMm" -> Arbeidsforholdtype.FRILANSER
-        "maritimtArbeidsforhold" -> Arbeidsforholdtype.MARITIMT
-        "ordinaertArbeidsforhold" -> Arbeidsforholdtype.ORDINÆRT
-        else -> error("har ikke mappingregel for arbeidsforholdtype: $type")
-    }
 }
