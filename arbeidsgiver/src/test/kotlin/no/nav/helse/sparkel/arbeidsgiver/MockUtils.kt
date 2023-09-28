@@ -5,7 +5,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.YearMonth
 import java.util.UUID
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Refusjonsforslag
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
@@ -55,11 +54,6 @@ internal fun mockTrengerArbeidsgiveropplysningerMedForrigeInntekt(vedtaksperiode
         mapOf(
             "opplysningstype" to "Inntekt",
             "forslag" to mapOf(
-                "beregningsmåneder" to listOf(
-                YearMonth.of(2022, 8),
-                YearMonth.of(2022, 9),
-                YearMonth.of(2022, 10)
-            ),
                 "forrigeInntekt" to mapOf(
                     "skjæringstidspunkt" to LocalDate.MIN,
                     "kilde" to "INNTEKTSMELDING",
@@ -82,14 +76,7 @@ internal fun mockTrengerArbeidsgiveropplysningerMedInntekt(vedtaksperiodeId: UUI
     forespurtData = listOf(
         mapOf(
             "opplysningstype" to "Inntekt",
-            "forslag" to mapOf(
-                "beregningsmåneder" to listOf(
-                YearMonth.of(2022, 8),
-                YearMonth.of(2022, 9),
-                YearMonth.of(2022, 10)
-            ),
-                "forrigeInntekt" to null
-            )
+            "forslag" to mapOf("forrigeInntekt" to null)
         ),
         mapOf(
             "opplysningstype" to "Refusjon",
@@ -138,10 +125,7 @@ internal fun mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId: UU
     forespurtData = listOf(
         mapOf(
             "opplysningstype" to "Inntekt",
-            "forslag" to mapOf(
-                "beregningsmåneder" to emptyList<String>(),
-                "forrigeInntekt" to null
-            )
+            "forslag" to mapOf("forrigeInntekt" to null)
         ),
         mapOf(
             "opplysningstype" to "Arbeidsgiverperiode"

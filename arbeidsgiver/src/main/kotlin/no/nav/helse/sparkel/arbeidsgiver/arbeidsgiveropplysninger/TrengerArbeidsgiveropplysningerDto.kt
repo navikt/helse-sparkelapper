@@ -47,7 +47,7 @@ internal fun JsonMessage.toBegrensetTrengerArbeidsgiverDto(): TrengerArbeidsgive
         sykmeldingsperioder = this["sykmeldingsperioder"].toPerioder(),
         egenmeldingsperioder = emptyList(),
         forespurtData = listOf(
-            Inntekt(Inntektsforslag(emptyList())),
+            Inntekt(Inntektsforslag()),
             Arbeidsgiverperiode,
             Refusjon(emptyList())
         ).toJsonMap(),

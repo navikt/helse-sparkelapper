@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
-import java.time.YearMonth
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Arbeidsgiverperiode
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.FastsattInntekt
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Inntekt
@@ -23,11 +22,7 @@ internal class ForespurtOpplysningDtoTest {
     @Test
     fun `tolker forespurt opplysninger korrekt - med inntekt`() {
         val expectedForespurteOpplysninger = listOf(
-            Inntekt(Inntektsforslag(listOf(
-                YearMonth.of(2022, 8),
-                YearMonth.of(2022, 9),
-                YearMonth.of(2022, 10)
-            ))),
+            Inntekt(Inntektsforslag()),
             Refusjon(emptyList()),
             Arbeidsgiverperiode
         )
@@ -76,13 +71,7 @@ internal class ForespurtOpplysningDtoTest {
         """[
                 {
                     "opplysningstype": "Inntekt",
-                    "forslag": {
-                        "beregningsmåneder": [
-                            "2022-08",
-                            "2022-09",
-                            "2022-10"
-                        ]
-                    }
+                    "forslag": {}
                 },
                 {
                     "opplysningstype": "Refusjon", 

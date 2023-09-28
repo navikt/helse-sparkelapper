@@ -12,7 +12,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.YearMonth
 import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Refusjonsforslag
@@ -120,15 +119,6 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
     }
 
     @Test
-    fun `vi logger error ved inntekt uten beregningsmåneder`() {
-        testRapid.sendTestMessage(ugyldigInntektEvent())
-        verify(exactly = 0) {
-            mockproducer.send(any())
-        }
-        assertTrue(sikkerlogCollector.list.any { it.message.contains("forstod ikke trenger_opplysninger_fra_arbeidsgiver") })
-    }
-
-    @Test
     fun `vi logger error ved fastsatt inntekt uten fastsatt inntekt`() {
         testRapid.sendTestMessage(ugyldigFastsattInntektEvent())
         verify(exactly = 0) {
@@ -183,14 +173,8 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "forespurteOpplysninger" to listOf(
                     mapOf(
                         "opplysningstype" to "Inntekt",
-                        "forslag" to mapOf(
-                            "beregningsmåneder" to listOf(
-                                YearMonth.of(2022, 8),
-                                YearMonth.of(2022, 9),
-                                YearMonth.of(2022, 10)
-                            ),
-                            "forrigeInntekt" to mapOf(
-                                "skjæringstidspunkt" to LocalDate.MIN,
+                        "forslag" to mapOf("forrigeInntekt" to mapOf(
+                            "skjæringstidspunkt" to LocalDate.MIN,
                                 "kilde" to "INNTEKTSMELDING",
                                 "beløp" to 31000.0
                             )
@@ -222,14 +206,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "forespurteOpplysninger" to listOf(
                     mapOf(
                         "opplysningstype" to "Inntekt",
-                        "forslag" to mapOf(
-                            "beregningsmåneder" to listOf(
-                                YearMonth.of(2022, 8),
-                                YearMonth.of(2022, 9),
-                                YearMonth.of(2022, 10)
-                            ),
-                            "forrigeInntekt" to null
-                        )
+                        "forslag" to mapOf("forrigeInntekt" to null)
                     ),
                     mapOf(
                         "opplysningstype" to "Refusjon",
@@ -244,7 +221,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
 
     private fun ugyldigInntektEvent(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
         mapUtenForespurteOpplysninger(vedtaksperiodeId)
-            .plus("forespurteOpplysninger" to listOf(mapOf("opplysningstype" to "Inntekt")))
+            .plus("forespurteOpplysninger" to listOf(mapOf("opplysningstype" to "Inntekt", "forslag" to null)))
             .toJson()
 
     private fun ugyldigFastsattInntektEvent(vedtaksperiodeId: UUID = UUID.randomUUID()): String =

@@ -2,10 +2,8 @@ package no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger
 
 import com.fasterxml.jackson.databind.JsonNode
 import java.time.LocalDate
-import java.time.YearMonth
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.rapids_rivers.asOptionalLocalDate
-import no.nav.helse.rapids_rivers.asYearMonth
 import org.slf4j.LoggerFactory
 
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -44,7 +42,6 @@ internal sealed class ForespurtOpplysning {
 
         fun Inntektsforslag.toJsonMap(): Map<String, Any?> =
             mapOf(
-                "beregningsmåneder" to this.beregningsmåneder,
                 "forrigeInntekt" to this.forrigeInntekt?.let { forrigeInntekt ->
                     mapOf(
                         "skjæringstidspunkt" to forrigeInntekt.skjæringstidspunkt,
@@ -60,7 +57,7 @@ internal data class Refusjonsforslag(val fom: LocalDate, val tom: LocalDate?, va
 internal data class Refusjon(val forslag: List<Refusjonsforslag>) : ForespurtOpplysning()
 internal object Arbeidsgiverperiode : ForespurtOpplysning()
 internal data class FastsattInntekt(val fastsattInntekt: Double) : ForespurtOpplysning()
-internal data class Inntektsforslag(val beregningsmåneder: List<YearMonth>, val forrigeInntekt: ForrigeInntekt? = null)
+internal data class Inntektsforslag(val forrigeInntekt: ForrigeInntekt? = null)
 internal data class ForrigeInntekt(val skjæringstidspunkt: LocalDate, val kilde: String, val beløp: Double)
 internal data class Inntekt(val forslag: Inntektsforslag) : ForespurtOpplysning()
 
@@ -79,10 +76,7 @@ internal fun JsonNode.asForespurtOpplysning() = when (val opplysningstype = this
 }
 
 private fun JsonNode.asInntektsforslag(): Inntektsforslag =
-    Inntektsforslag(
-        beregningsmåneder = this["beregningsmåneder"].map(JsonNode::asYearMonth),
-        forrigeInntekt = this["forrigeInntekt"]?.asForrigeInntekt()
-    )
+    Inntektsforslag(forrigeInntekt = this["forrigeInntekt"]?.asForrigeInntekt())
 
 private fun JsonNode.asForrigeInntekt(): ForrigeInntekt? =
     if (this.isNull) null
