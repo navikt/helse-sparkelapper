@@ -4,12 +4,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val jvmTarget = "17"
 
 plugins {
-    kotlin("jvm") version "1.8.21"
+    kotlin("jvm") version "1.9.10"
 }
 
 val gradleWrapperVersion = "8.1.1"
 val junitJupiterVersion = "5.8.2"
-val rapidsAndRiversVersion = "2023080113411690890096.310ed8e5ed93"
+val rapidsAndRiversVersion = "2023093008351696055717.ffdec6aede3d"
 val ktorVersion = "2.1.1"
 val cxfVersion = "3.5.3"
 val mockkVersion = "1.12.0"
