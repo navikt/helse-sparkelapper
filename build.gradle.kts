@@ -131,11 +131,10 @@ allprojects {
 }
 
 subprojects {
-    ext {
-        set("ktorVersion", ktorVersion)
-        set("rapidsAndRiversVersion", rapidsAndRiversVersion)
-        set("cxfVersion", cxfVersion)
-    }
+    ext.set("ktorVersion", ktorVersion)
+    ext.set("rapidsAndRiversVersion", rapidsAndRiversVersion)
+    ext.set("cxfVersion", cxfVersion)
+
     dependencies {
         testImplementation("io.mockk:mockk:$mockkVersion")
         testImplementation("com.github.tomakehurst:wiremock:$wiremockVersion") {
@@ -166,7 +165,7 @@ subprojects {
 
                 doLast {
                     configurations.runtimeClasspath.get().forEach {
-                        val file = File("$buildDir/libs/${it.name}")
+                        val file = File("${layout.buildDirectory.get()}/libs/${it.name}")
                         if (!file.exists())
                             it.copyTo(file)
                     }
