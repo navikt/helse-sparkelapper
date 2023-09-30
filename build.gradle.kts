@@ -7,7 +7,7 @@ plugins {
     kotlin("jvm") version "1.9.10"
 }
 
-val gradleWrapperVersion = "8.1.1"
+val gradleWrapperVersion = "8.3"
 val junitJupiterVersion = "5.8.2"
 val rapidsAndRiversVersion = "2023093008351696055717.ffdec6aede3d"
 val ktorVersion = "2.1.1"
