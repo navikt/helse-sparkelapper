@@ -8,6 +8,7 @@ Dette er for øvrig et skikkelig bra sted å skrive navnene på hver tjeneste og
 ## Legge til en ny gradle-modul
 
 1. Lag en mappe og sørg for at det finnes en `build.gradle.kts` der
+2. Lag App.kt i `src/main/kotlin/no/nav/helse/sparkel/[app]`
 
 ## Legge til ny app
 
@@ -16,7 +17,7 @@ Ved hver pakke som blir lastet opp trigges en deployment workflow for den pakken
 
 Navnet på appen blir prefikset med `sparkel-` i nais.yml, så navnet på modulen skal være uten.
 
-1. Gjør 'Legge til en ny gradle-modul'. Mappenavnet korresponderer med appnavnet
+1. Gjør 'Legge til en ny gradle-modul'. Mappenavnet korresponderer med appnavnet 
 2. Lag `config/[app]/[cluster].yml` for de klustrene appen skal deployes til. 
 3. Push endringene
 
