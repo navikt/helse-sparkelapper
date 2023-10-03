@@ -8,7 +8,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import org.slf4j.LoggerFactory
 
-class DokumentRiver(
+internal class DokumentRiver(
     rapidsConnection: RapidsConnection,
     private val søknadClient: SøknadClient,
 ) : River.PacketListener {
@@ -20,7 +20,7 @@ class DokumentRiver(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@behov", "hent-dokument") }
+            validate { it.demandAll("@behov", listOf("hent-dokument")) }
             validate { it.rejectKey("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
