@@ -7,7 +7,7 @@ fun main() {
     val env = System.getenv()
 
     val søknadClient = SøknadClient(
-        baseUrl = env.getValue("SØKNAD_API_URL"),
+        baseUrl = env.getValue("SOKNAD_API_URL"),
     )
 
     RapidApplication.create(env).apply {
