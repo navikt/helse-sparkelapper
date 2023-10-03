@@ -15,18 +15,22 @@ class SøknadClient(
         private val httpClient = HttpClient.newHttpClient()
     }
     override fun hentDokument(dokumentid: String): JsonNode {
-        val request = HttpRequest.newBuilder(URI.create(baseUrl + "/api/v3/soknader/$dokumentid/kafkaformat"))
-            .header("Content-Type", "application/json")
-            .header("Accept", "application/json")
-            .GET()
-            .build()
+        try {
+            val request = HttpRequest.newBuilder(URI.create(baseUrl + "/api/v3/soknader/$dokumentid/kafkaformat"))
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .GET()
+                .build()
 
-        val responseHandler = HttpResponse.BodyHandlers.ofString()
+            val responseHandler = HttpResponse.BodyHandlers.ofString()
 
-        val response = httpClient.send(request, responseHandler)
-        response.statusCode().let {
-            if (it >= 300) throw RuntimeException("error (responseCode=$it) from Flex")
+            val response = httpClient.send(request, responseHandler)
+            response.statusCode().let {
+                if (it >= 300) throw RuntimeException("error (responseCode=$it) from Flex")
+            }
+            return objectMapper.readTree(response.body())
+        } catch (exception: Exception) {
+            throw RuntimeException("Feil ved kall mot sykepengesoknad-backend", exception)
         }
-        return objectMapper.readTree(response.body())
     }
 }
