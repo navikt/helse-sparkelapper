@@ -11,12 +11,8 @@ fun main() {
     )
 
     RapidApplication.create(env).apply {
-        val dokumentRiver = DokumentRiver(
-            rapidsConnection = this,
-            søknadClient = søknadClient,
-        )
-
-    }
+        DokumentRiver(rapidsConnection = this, søknadClient = søknadClient)
+    }.start()
 }
 
 internal interface DokumentClient {
