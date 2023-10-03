@@ -6,6 +6,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import org.slf4j.LoggerFactory
 
 class SøknadClient(
     private val baseUrl: String,
@@ -13,6 +14,7 @@ class SøknadClient(
     companion object {
         private val objectMapper = ObjectMapper()
         private val httpClient = HttpClient.newHttpClient()
+        private val log = LoggerFactory.getLogger(SøknadClient::class.java)
     }
     override fun hentDokument(dokumentid: String): JsonNode {
         try {
@@ -30,7 +32,9 @@ class SøknadClient(
             }
             return objectMapper.readTree(response.body())
         } catch (exception: Exception) {
-            throw RuntimeException("Feil ved kall mot sykepengesoknad-backend", exception)
+            // @TODO throw etter appen er ferdigutviklet
+            log.warn("Feil ved kall mot sykepengesoknad-backend", exception)
+            return objectMapper.createObjectNode()
         }
     }
 }
