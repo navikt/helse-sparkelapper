@@ -15,6 +15,7 @@ class DokumentRiver(
 
     companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+        private val log = LoggerFactory.getLogger(DokumentRiver::class.java)
     }
 
     init {
@@ -33,6 +34,7 @@ class DokumentRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        log.info("Leser melding ${packet["@id"]}")
         val dokumenttype = packet["dokumenttype"].asText()
         when (dokumenttype) {
             "SØKNAD" -> håndter(packet, context, søknadClient)
@@ -45,12 +47,10 @@ class DokumentRiver(
 
     private fun håndter(packet: JsonMessage, context: MessageContext, dokumentClient: DokumentClient) {
         val dokumentid = packet["dokumentid"].asText()
-        val fødselsnummer = packet["fødselsnummer"].asText()
         val id = packet["@id"].asText()
 
         packet["@løsning"] = mapOf<String, Any>(
             "dokument" to dokumentClient.hentDokument(
-                fnr = fødselsnummer,
                 dokumentid = dokumentid,
             )
         )

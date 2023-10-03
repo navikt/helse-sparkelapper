@@ -16,5 +16,5 @@ fun main() {
 }
 
 internal interface DokumentClient {
-    fun hentDokument(fnr: String, dokumentid: String): JsonNode
+    fun hentDokument(dokumentid: String): JsonNode
 }

@@ -14,16 +14,11 @@ class SøknadClient(
         private val objectMapper = ObjectMapper()
         private val httpClient = HttpClient.newHttpClient()
     }
-    override fun hentDokument(fnr: String, dokumentid: String): JsonNode {
-        val body = objectMapper.writeValueAsString(mapOf(
-            "fnr" to fnr,
-            "dokumentid" to dokumentid
-        ))
-
-        val request = HttpRequest.newBuilder(URI.create(baseUrl))
+    override fun hentDokument(dokumentid: String): JsonNode {
+        val request = HttpRequest.newBuilder(URI.create(baseUrl + "/api/v3/soknader/$dokumentid/kafkaformat"))
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(body))
+            .GET()
             .build()
 
         val responseHandler = HttpResponse.BodyHandlers.ofString()
