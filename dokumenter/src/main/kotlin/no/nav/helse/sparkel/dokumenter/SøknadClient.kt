@@ -35,7 +35,7 @@ class SøknadClient(
                 method = HttpMethod.Get
                 accessToken.berikRequestMedBearer(headers)
                 val callId = UUID.randomUUID()
-                header("Nav-Call-Id", "$callId")
+                header("Nav-Callid", "$callId")
                 header("no.nav.callid", "$callId")
                 header("Nav-Consumer-Id", "sparkel-dokumenter")
                 header("no.nav.consumer.id", "sparkel-dokumenter")
