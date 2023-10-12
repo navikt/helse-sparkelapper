@@ -18,4 +18,4 @@ env:
   - name: SOKNAD_API_URL
     value: http://sykepengesoknad-backend.flex
   - name: ACCESS_TOKEN_SCOPE
-    value:
+    value: api://dev-gcp.flex.sykepengesoknad-backend/.default

@@ -27,13 +27,13 @@ class SøknadClient(
     }
 
     override fun hentDokument(dokumentid: String): JsonNode {
-        // val accessToken = runBlocking { tokenClient.hentAccessToken(scope) } ?: return objectMapper.createObjectNode()
+         val accessToken = runBlocking { tokenClient.hentAccessToken(scope) } ?: return objectMapper.createObjectNode()
 
         return runBlocking {
             val response = httpClient.prepareGet("$baseUrl/api/v3/soknader/$dokumentid/kafkaformat") {
                 accept(ContentType.Application.Json)
                 method = HttpMethod.Get
-                // accessToken.berikRequestMedBearer(headers)
+                accessToken.berikRequestMedBearer(headers)
                 val callId = UUID.randomUUID()
                 header("Nav-Call-Id", "$callId")
                 header("no.nav.callid", "$callId")
@@ -44,7 +44,7 @@ class SøknadClient(
             if (response.status != HttpStatusCode.OK) {
                 "Feil ved kall mot sykepengesoknad-backend http ${response.status.value}, returnerer derfor tomt resultat".also {
                     log.info(it)
-                    sikkerlog.info(it)
+                    sikkerlog.info("$it response: $response")
                 }
                 objectMapper.createObjectNode()
             } else response.body<JsonNode>()
