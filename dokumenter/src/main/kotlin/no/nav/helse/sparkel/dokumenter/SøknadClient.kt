@@ -2,39 +2,53 @@ package no.nav.helse.sparkel.dokumenter
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.accept
+import io.ktor.client.request.header
+import io.ktor.client.request.prepareGet
+import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import java.util.UUID
+import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 
 class SøknadClient(
     private val baseUrl: String,
-): DokumentClient {
+    private val tokenClient: AccessTokenClient,
+    private val httpClient: HttpClient,
+    private val scope: String
+) : DokumentClient {
     companion object {
         private val objectMapper = ObjectMapper()
-        private val httpClient = HttpClient.newHttpClient()
         private val log = LoggerFactory.getLogger(SøknadClient::class.java)
+        private val sikkerlog = LoggerFactory.getLogger("tjenestekall")
     }
+
     override fun hentDokument(dokumentid: String): JsonNode {
-        try {
-            val request = HttpRequest.newBuilder(URI.create(baseUrl + "/api/v3/soknader/$dokumentid/kafkaformat"))
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .GET()
-                .build()
+        // val accessToken = runBlocking { tokenClient.hentAccessToken(scope) } ?: return objectMapper.createObjectNode()
 
-            val responseHandler = HttpResponse.BodyHandlers.ofString()
+        return runBlocking {
+            val response = httpClient.prepareGet("$baseUrl/api/v3/soknader/$dokumentid/kafkaformat") {
+                accept(ContentType.Application.Json)
+                method = HttpMethod.Get
+                // accessToken.berikRequestMedBearer(headers)
+                val callId = UUID.randomUUID()
+                header("Nav-Call-Id", "$callId")
+                header("no.nav.callid", "$callId")
+                header("Nav-Consumer-Id", "sparkel-dokumenter")
+                header("no.nav.consumer.id", "sparkel-dokumenter")
+            }.execute()
 
-            val response = httpClient.send(request, responseHandler)
-            response.statusCode().let {
-                if (it >= 300) throw RuntimeException("error (responseCode=$it) from Flex")
-            }
-            return objectMapper.readTree(response.body())
-        } catch (exception: Exception) {
-            // @TODO throw etter appen er ferdigutviklet
-            log.warn("Feil ved kall mot sykepengesoknad-backend", exception)
-            return objectMapper.createObjectNode()
+            if (response.status != HttpStatusCode.OK) {
+                "Feil ved kall mot sykepengesoknad-backend http ${response.status.value}, returnerer derfor tomt resultat".also {
+                    log.info(it)
+                    sikkerlog.info(it)
+                }
+                objectMapper.createObjectNode()
+            } else response.body<JsonNode>()
         }
     }
 }
+
