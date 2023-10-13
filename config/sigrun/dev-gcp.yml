@@ -2,8 +2,10 @@ kafkaPool: nav-dev
 azure:
   enabled: true
   tenant: trygdeetaten.no
-externalHosts:
-  - team-inntekt-proxy.dev-fss-pub.nais.io
+accessPolicy:
+  outbound:
+    external:
+      - host: team-inntekt-proxy.dev-fss-pub.nais.io
 env:
   - name: SIGRUN_URL
     value: https://team-inntekt-proxy.dev-fss-pub.nais.io/proxy/sigrun-q2

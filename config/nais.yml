@@ -91,11 +91,21 @@ spec:
             envVarPrefix: {{ gcp.envVarPrefix }}
         tier: {{ gcp.tier }}
   {{/if}}
-  {{#if externalHosts}}
+  {{#if accessPolicy}}
   accessPolicy:
     outbound:
+      {{#if accessPolicy.outbound.external}}
       external:
-      {{# each externalHosts as |item| }}
-        - host: {{item}}
-      {{/each}}
+        {{# each accessPolicy.outbound.external as |item| }}
+        - host: {{item.host}}
+        {{/each}}
+      {{/if}}
+      {{#if accessPolicy.outbound.rules}}
+      rules:
+        {{# each accessPolicy.outbound.rules as |item|}}
+        - application: {{ item.application }}
+          namespace: {{ item.namespace }}
+          cluster: {{ item.cluster }}
+        {{/each}}
+      {{/if}}
   {{/if}}

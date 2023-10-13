@@ -2,8 +2,10 @@ kafkaPool: nav-prod
 azure:
   enabled: true
   tenant: nav.no
-externalHosts:
-  - fpabakus.prod-fss-pub.nais.io
+accessPolicy:
+  outbound:
+    external:
+      - host: fpabakus.prod-fss-pub.nais.io
 env:
   - name: ABAKUS_URL
     value: https://fpabakus.prod-fss-pub.nais.io/fpabakus/ekstern/api/ytelse/v1/hent-ytelse-vedtak

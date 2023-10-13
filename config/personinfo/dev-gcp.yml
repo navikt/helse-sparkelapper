@@ -8,8 +8,10 @@ azure:
     extra:
       - azp_name
   tenant: trygdeetaten.no
-externalHosts:
-  - pdl-api.dev-fss-pub.nais.io
+accessPolicy:
+  outbound:
+    external:
+      - host: pdl-api.dev-fss-pub.nais.io
 env:
   - name: PDL_URL
     value: https://pdl-api.dev-fss-pub.nais.io/graphql

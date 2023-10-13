@@ -5,8 +5,10 @@ replicas:
 azure:
   enabled: true
   tenant: trygdeetaten.no
-externalHosts:
-  - fpabakus.dev-fss-pub.nais.io
+accessPolicy:
+  outbound:
+    external:
+       - host: fpabakus.dev-fss-pub.nais.io
 env:
   - name: ABAKUS_URL
     value: https://fpabakus.dev-fss-pub.nais.io/fpabakus/ekstern/api/ytelse/v1/hent-ytelse-vedtak
