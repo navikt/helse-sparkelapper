@@ -8,12 +8,12 @@ azure:
     extra:
       - azp_name
   tenant: trygdeetaten.no
-  accessPolicy:
-    outbound:
-      rules:
-        - application: sykepengesoknad-backend
-          namespace: flex
-          cluster: dev-gcp
+accessPolicy:
+  outbound:
+    rules:
+      - application: sykepengesoknad-backend
+        namespace: flex
+        cluster: dev-gcp
 env:
   - name: SOKNAD_API_URL
     value: http://sykepengesoknad-backend.flex

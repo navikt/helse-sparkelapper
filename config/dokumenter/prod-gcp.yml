@@ -8,12 +8,12 @@ azure:
     extra:
       - azp_name
   tenant: nav.no
-  accessPolicy:
-    outbound:
-      rules:
-        - application: sykepengesoknad-backend
-          namespace: flex
-          cluster: prod-gcp
+accessPolicy:
+  outbound:
+    rules:
+      - application: sykepengesoknad-backend
+        namespace: flex
+        cluster: prod-gcp
 env:
   - name: SOKNAD_API_URL
     value: http://sykepengesoknad-backend.flex
