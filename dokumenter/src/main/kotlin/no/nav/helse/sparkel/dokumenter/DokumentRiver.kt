@@ -20,7 +20,7 @@ internal class DokumentRiver(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandAll("@behov", listOf("hent-dokument")) }
+            validate { it.demandValue("@event_name", "hent-dokument") }
             validate { it.rejectKey("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }

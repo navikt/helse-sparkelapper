@@ -45,8 +45,7 @@ internal class DokumentRiverTest {
     @Language("JSON")
     fun behov() = """
         {
-            "@event_name" : "behov",
-            "@behov" : [ "hent-dokument" ],
+            "@event_name" : "hent-dokument",
             "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "fødselsnummer" : "fnr",
