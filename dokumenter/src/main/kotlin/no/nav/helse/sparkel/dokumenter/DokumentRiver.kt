@@ -24,8 +24,8 @@ internal class DokumentRiver(
             validate { it.rejectKey("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
-            validate { it.requireKey("dokumentid") }
-            validate { it.requireKey("dokumenttype") }
+            validate { it.requireKey("dokumentId") }
+            validate { it.requireKey("dokumentType") }
         }.register(this)
     }
 
@@ -35,23 +35,23 @@ internal class DokumentRiver(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         log.info("Leser melding ${packet["@id"]}")
-        val dokumenttype = packet["dokumenttype"].asText()
-        when (dokumenttype) {
+        val dokumentType = packet["dokumentType"].asText()
+        when (dokumentType) {
             "SØKNAD" -> håndter(packet, context, søknadClient)
             else -> sikkerlogg.info(
                 "uhåndtert melding {}\n$packet",
-                StructuredArguments.keyValue("dokumenttype", dokumenttype)
+                StructuredArguments.keyValue("dokumentType", dokumentType)
             )
         }
     }
 
     private fun håndter(packet: JsonMessage, context: MessageContext, dokumentClient: DokumentClient) {
-        val dokumentid = packet["dokumentid"].asText()
+        val dokumentId = packet["dokumentId"].asText()
         val id = packet["@id"].asText()
 
         packet["@løsning"] = mapOf<String, Any>(
             "dokument" to dokumentClient.hentDokument(
-                dokumentid = dokumentid,
+                dokumentId = dokumentId,
             )
         )
         context.publish(packet.toJson()).also {

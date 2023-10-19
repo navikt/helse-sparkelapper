@@ -49,8 +49,8 @@ internal class DokumentRiverTest {
             "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "fødselsnummer" : "fnr",
-            "dokumentid" : "${UUID.randomUUID()}",
-            "dokumenttype" : "SØKNAD"
+            "dokumentId" : "${UUID.randomUUID()}",
+            "dokumentType" : "SØKNAD"
         }
         """.trimIndent()
 

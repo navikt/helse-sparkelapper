@@ -46,5 +46,5 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
 }
 
 internal interface DokumentClient {
-    fun hentDokument(dokumentid: String): JsonNode
+    fun hentDokument(dokumentId: String): JsonNode
 }

@@ -26,11 +26,11 @@ class SøknadClient(
         private val sikkerlog = LoggerFactory.getLogger("tjenestekall")
     }
 
-    override fun hentDokument(dokumentid: String): JsonNode {
+    override fun hentDokument(dokumentId: String): JsonNode {
          val accessToken = runBlocking { tokenClient.hentAccessToken(scope) } ?: return objectMapper.createObjectNode()
 
         return runBlocking {
-            val response = httpClient.prepareGet("$baseUrl/api/v3/soknader/$dokumentid/kafkaformat") {
+            val response = httpClient.prepareGet("$baseUrl/api/v3/soknader/$dokumentId/kafkaformat") {
                 accept(ContentType.Application.Json)
                 method = HttpMethod.Get
                 accessToken.berikRequestMedBearer(headers)
