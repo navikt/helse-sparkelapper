@@ -64,6 +64,7 @@ class PDL(
                 .header("Nav-Consumer-Token", "Bearer $accessToken")
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
+                .header("behandlingsnummer", "B139")
                 .header("Nav-Call-Id", behovId)
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build()
