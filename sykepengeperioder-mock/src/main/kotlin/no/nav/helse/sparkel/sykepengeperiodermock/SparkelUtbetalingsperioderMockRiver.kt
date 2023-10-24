@@ -6,7 +6,7 @@ import no.nav.helse.rapids_rivers.*
 import org.slf4j.LoggerFactory
 
 internal class SparkelUtbetalingsperioderMockRiver(
-    private val rapidsConnection: RapidsConnection,
+    rapidsConnection: RapidsConnection,
     private val svar: Map<String, List<Utbetalingsperiode>>
 ) : River.PacketListener {
 
@@ -38,7 +38,7 @@ internal class SparkelUtbetalingsperioderMockRiver(
         val fødselsnummer = packet["fødselsnummer"].asText()
         val utbetalingsperioder = svar.getOrDefault(
             fødselsnummer, emptyList<Utbetalingsperiode>()
-            .also { log.info("Fant ikke forhåndskonfigurert infotrygdutbetalingshistorikk. Defaulter til en som er tom") }
+                .also { log.info("Fant ikke forhåndskonfigurert infotrygdutbetalingshistorikk blant ${svar.size} forhåndskonfigurerte. Defaulter til en som er tom") }
         )
         packet["@løsning"] = mapOf(
             behov to objectMapper.convertValue(utbetalingsperioder, ArrayNode::class.java)

@@ -39,7 +39,7 @@ class ApplicationBuilder : RapidsConnection.StatusListener {
             }
             routing {
                 post("/reset") {
-                    log.info("Fjerner alle konfigurerte sykepengeperioder")
+                    log.info("Fjerner ${svarSykepengehistorikk.size} konfigurerte sykepengeperioder og ${svarUtbetalingsperioder.size} konfigurerte utbetalingsperioder")
                     svarSykepengehistorikk.clear()
                     svarUtbetalingsperioder.clear()
                     call.respond(HttpStatusCode.OK)
@@ -56,7 +56,7 @@ class ApplicationBuilder : RapidsConnection.StatusListener {
                         return@post call.respond(HttpStatusCode.BadRequest, "Kunne ikke parse payload")
                     }
                     svarSykepengehistorikk[fødselsnummer] = utbetalteSykeperiode
-                    log.info("Oppdatererte mocket sykepengehistorikk for fnr: ${fødselsnummer.substring(4)}*******")
+                    log.info("Oppdatererte mocket sykepengehistorikk for fnr: ${fødselsnummer.substring(0, 4)}*******")
                     call.respond(HttpStatusCode.OK)
                 }
                 post("/utbetalingshistorikk/{fødselsnummer}") {
@@ -71,7 +71,7 @@ class ApplicationBuilder : RapidsConnection.StatusListener {
                         return@post call.respond(HttpStatusCode.BadRequest, "Kunne ikke parse payload")
                     }
                     svarUtbetalingsperioder[fødselsnummer] = utbetalteSykeperiode
-                    log.info("Oppdatererte mocket utbetalingshistorikk for fnr: ${fødselsnummer.substring(4)}*******")
+                    log.info("Oppdatererte mocket utbetalingshistorikk for fnr: ${fødselsnummer.substring(0, 4)}*******")
                     call.respond(HttpStatusCode.OK)
                 }
             }
