@@ -41,12 +41,13 @@ internal class SparkelSykepengeperioderMockRiver(
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         log.info("besvarer behov for sykepengehistorikk på id: ${packet["@id"].textValue()}")
         val fødselsnummer = packet["fødselsnummer"].asText()
-        val utbetalteSykeperiode = svar.getOrDefault(
-            fødselsnummer, emptyList<Sykepengehistorikk>()
-                .also { log.info("Fant ikke forhåndskonfigurert sykepengehistorikk. Defaulter til en som er tom") }
-        )
+        val sykepengeperioder = svar[fødselsnummer]
+            ?: run {
+                log.info("Fant ikke forhåndskonfigurert sykepengehistorikk blant ${svar.size} forhåndskonfigurerte. Defaulter til en som er tom")
+                emptyList()
+            }
         packet["@løsning"] = mapOf(
-            behov to objectMapper.convertValue(utbetalteSykeperiode, ArrayNode::class.java)
+            behov to objectMapper.convertValue(sykepengeperioder, ArrayNode::class.java)
         )
         context.publish(packet.toJson())
     }

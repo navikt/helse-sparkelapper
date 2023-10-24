@@ -36,10 +36,12 @@ internal class SparkelUtbetalingsperioderMockRiver(
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         log.info("besvarer behov for infotrygdutbetalingshistorikk på id: ${packet["@id"].textValue()}")
         val fødselsnummer = packet["fødselsnummer"].asText()
-        val utbetalingsperioder = svar.getOrDefault(
-            fødselsnummer, emptyList<Utbetalingsperiode>()
-                .also { log.info("Fant ikke forhåndskonfigurert infotrygdutbetalingshistorikk blant ${svar.size} forhåndskonfigurerte. Defaulter til en som er tom") }
-        )
+        val utbetalingsperioder = svar[fødselsnummer]
+            ?: run {
+                log.info("Fant ikke forhåndskonfigurert infotrygdutbetalingshistorikk blant ${svar.size} forhåndskonfigurerte. Defaulter til en som er tom")
+                emptyList()
+            }
+
         packet["@løsning"] = mapOf(
             behov to objectMapper.convertValue(utbetalingsperioder, ArrayNode::class.java)
         )
