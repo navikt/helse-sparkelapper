@@ -54,14 +54,6 @@ internal class SparkelSykepengeperioderMockRiverTest {
     }
 
     @Test
-    fun `løser behov HentInfotrygdutbetalinger`() {
-        testrapid.sendTestMessage(enkeltBehov("nytt-fnr", "HentInfotrygdutbetalinger"))
-        val løsning = testrapid.inspektør.løsning("HentInfotrygdutbetalinger")
-        assertFalse(løsning.isMissingOrNull())
-        assertEquals(0, løsning.size())
-    }
-
-    @Test
     fun `løser behov med perioder om vi ikke matcher på fnr og har data`() {
         testrapid.sendTestMessage(enkeltBehov(fødselsnummer))
         val løsning = testrapid.inspektør.løsning("Sykepengehistorikk")
