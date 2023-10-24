@@ -1,22 +1,16 @@
 package no.nav.helse.sparkel.sykepengeperiodermock
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.asLocalDate
+import java.time.LocalDate
+import java.util.UUID
 import no.nav.helse.rapids_rivers.asOptionalLocalDate
-import no.nav.helse.sparkel.sykepengeperiodermock.SparkelSykepengeperioderMockRiver
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.helse.sparkel.sykepengeperiodermock.Inntektsopplysning
-import no.nav.helse.sparkel.sykepengeperiodermock.Sykepengehistorikk
-import no.nav.helse.sparkel.sykepengeperiodermock.UtbetalteSykepengeperioder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
-import java.time.LocalDate
-import java.util.UUID
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SparkelSykepengeperioderMockRiverTest {
@@ -60,6 +54,14 @@ internal class SparkelSykepengeperioderMockRiverTest {
     }
 
     @Test
+    fun `løser behov HentInfotrygdutbetalinger`() {
+        testrapid.sendTestMessage(enkeltBehov("nytt-fnr", "HentInfotrygdutbetalinger"))
+        val løsning = testrapid.inspektør.løsning("HentInfotrygdutbetalinger")
+        assertFalse(løsning.isMissingOrNull())
+        assertEquals(0, løsning.size())
+    }
+
+    @Test
     fun `løser behov med perioder om vi ikke matcher på fnr og har data`() {
         testrapid.sendTestMessage(enkeltBehov(fødselsnummer))
         val løsning = testrapid.inspektør.løsning("Sykepengehistorikk")
@@ -70,16 +72,16 @@ internal class SparkelSykepengeperioderMockRiverTest {
         assertEquals(LocalDate.of(2021, 5,30), løsning.first()["maksDato"].asOptionalLocalDate())
     }
 
-    private fun enkeltBehov(fødselsnummer: String) =
+    private fun enkeltBehov(fødselsnummer: String, behov: String = "Sykepengehistorikk") =
         """
         {
             "@event_name" : "behov",
-            "@behov" : [ "Sykepengehistorikk" ],
+            "@behov" : [ "$behov" ],
             "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "vedtaksperiodeId" : "vedtaksperiodeId",
             "fødselsnummer" : "$fødselsnummer",
-            "Sykepengehistorikk": {
+            "$behov": {
                 "historikkFom" : "2020-01-18",
                 "historikkTom" : "2020-05-17"
             }
