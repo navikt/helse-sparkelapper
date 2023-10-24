@@ -11,28 +11,30 @@ import no.nav.helse.rapids_rivers.asLocalDate
 import org.slf4j.LoggerFactory
 
 internal class SparkelSykepengeperioderMockRiver(
-    private val rapidsConnection: RapidsConnection,
+    rapidsConnection: RapidsConnection,
     private val svar: Map<String, List<Sykepengehistorikk>>
 ) : River.PacketListener {
 
     private val log = LoggerFactory.getLogger("SparkelSykepengeperioderMockRiver")
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
+    companion object {
+        const val behov = "Sykepengehistorikk"
+    }
+
     init {
-        listOf("Sykepengehistorikk", "HentInfotrygdutbetalinger").forEach { behov ->
-            River(rapidsConnection).apply {
-                validate { it.demandAll("@behov", listOf(behov)) }
-                validate { it.rejectKey("@løsning") }
-                validate { it.requireKey("@id") }
-                validate { it.requireKey("fødselsnummer") }
-                validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
-                validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
-            }.register(this)
-        }
+        River(rapidsConnection).apply {
+            validate { it.demandAll("@behov", listOf(behov)) }
+            validate { it.rejectKey("@løsning") }
+            validate { it.requireKey("@id") }
+            validate { it.requireKey("fødselsnummer") }
+            validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
+            validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
+        }.register(this)
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
-        sikkerlogg.error("forstod ikke behov, feilmelding:\n${problems.toExtendedReport()}")
+        sikkerlogg.error("forstod ikke $behov med melding\n${problems.toExtendedReport()}")
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
@@ -43,8 +45,9 @@ internal class SparkelSykepengeperioderMockRiver(
             fødselsnummer, emptyList<Sykepengehistorikk>()
                 .also { log.info("Fant ikke forhåndskonfigurert sykepengehistorikk. Defaulter til en som er tom") }
         )
-        val behov = packet["@behov"].first().asText()
-        packet["@løsning"] = mapOf(behov to objectMapper.convertValue(utbetalteSykeperiode, ArrayNode::class.java))
+        packet["@løsning"] = mapOf(
+            behov to objectMapper.convertValue(utbetalteSykeperiode, ArrayNode::class.java)
+        )
         context.publish(packet.toJson())
     }
 }
