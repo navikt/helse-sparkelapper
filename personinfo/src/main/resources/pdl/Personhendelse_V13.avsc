@@ -276,7 +276,8 @@
 						"default": null
 					}, {
 						"name": "omfangetErInnenPersonligOmraade",
-						"type": ["null", "boolean"]
+						"type": ["null", "boolean"],
+						"default": null
 					}]
 				}
 			}]
