@@ -8,7 +8,6 @@ import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.serialize
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.skyscreamer.jsonassert.JSONAssert
 
 internal class PersonhendelseAvroDeserializerTest {
 
@@ -38,13 +37,6 @@ internal class PersonhendelseAvroDeserializerTest {
         assertThrows<EOFException> {
            """{"test": true}""".toByteArray().deserialiser()
         }
-    }
-
-    @Test
-    fun `prototype av personhendelser er V11`() {
-        val proto = PersonhendelseAvroDeserializerTest::class.java.getResource("/pdl/PersonhendelseProto.avsc")!!.readText()
-        val v11 = PersonhendelseAvroDeserializerTest::class.java.getResource("/pdl/Personhendelse_V11.avsc")!!.readText()
-        JSONAssert.assertEquals(proto, v11, true)
     }
 
     private companion object {
