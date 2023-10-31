@@ -8,10 +8,12 @@ Du kan gjenskap feilen med `Base64='<melding>'` meldingen fra logglinjen og kjø
 
 Hvordan oppdaterer jeg skjemaet til en ny versjon?
 
-Legg til nyeste skjema i resources. Dette finner du i attributten `schema` på responsen på linkene under. Versjonen er i `version` (OBS! Lenkene nås ikke med naisdevice)
+Legg til nyeste skjema i resources. Dette finner du i attributten `schema` på responsen på linken under. Versjonen er i `version`.
 
-Dev: https://kafka-schema-registry.nais.preprod.local/subjects/aapen-person-pdl-leesah-v1-value/versions/latest
+Lenkene nås ikke med naisdevice, du må `exec`-e inn i en pod som bruker kafka. Kjør fra en pod i dev eller prod, alt ettersom.
 
-Prod: https://kafka-schema-registry.nais.adeo.no/subjects/aapen-person-pdl-leesah-v1-value/versions/latest
+```shell
+curl -u $KAFKA_SCHEMA_REGISTRY_USER:$KAFKA_SCHEMA_REGISTRY_PASSWORD $KAFKA_SCHEMA_REGISTRY/subjects/pdl.leesah-v1-value/versions[/<versjon]
+```
 
 Behold de to siste versjonene av skjemaet og endre i `PersonhendelseAvroDeserializer`
