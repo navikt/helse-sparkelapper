@@ -34,9 +34,18 @@ internal class DokumentRiverTest {
     }
 
     @Test
-    fun `svarer ut behov for dokument`() {
+    fun `svarer ut behov for dokument type SØKNAD`() {
         every { søknadClient.hentDokument(any()) } returns objectMapper.readTree("""{"søknadId": "123"}""")
-        rapid.sendTestMessage(behov())
+        rapid.sendTestMessage(behov("SØKNAD"))
+        val svar = rapid.inspektør.message(0)
+        val dokument = svar.dokumentLøsning()["dokument"]
+        assertEquals(1, dokument?.size())
+    }
+
+    @Test
+    fun `svarer ut behov for dokument type INNTEKTSMELDING`() {
+        every { inntektsmeldingClient.hentDokument(any()) } returns objectMapper.readTree("""{"innteksmeldingId": "123"}""")
+        rapid.sendTestMessage(behov("INNTEKTSMELDING"))
         val svar = rapid.inspektør.message(0)
         val dokument = svar.dokumentLøsning()["dokument"]
         assertEquals(1, dokument?.size())
@@ -44,14 +53,14 @@ internal class DokumentRiverTest {
 
 
     @Language("JSON")
-    fun behov() = """
+    fun behov(dokumenttype: String) = """
         {
             "@event_name" : "hent-dokument",
             "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "fødselsnummer" : "fnr",
             "dokumentId" : "${UUID.randomUUID()}",
-            "dokumentType" : "SØKNAD"
+            "dokumentType" : "$dokumenttype"
         }
         """.trimIndent()
 
