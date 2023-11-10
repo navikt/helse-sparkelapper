@@ -18,12 +18,13 @@ internal class DokumentRiverTest {
 
     private lateinit var rapid: TestRapid
     private var søknadClient: SøknadClient = mockk(relaxed = true)
+    private var inntektsmeldingClient: InntektsmeldingClient = mockk(relaxed = true)
     private val objectMapper = ObjectMapper()
 
     @BeforeAll
     fun setup() {
         rapid = TestRapid().apply {
-            DokumentRiver(this, søknadClient)
+            DokumentRiver(this, søknadClient, inntektsmeldingClient)
         }
     }
 
