@@ -41,7 +41,19 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
             scope = env.getValue("ACCESS_TOKEN_SCOPE")
         )
 
-        DokumentRiver(rapidsConnection = this, søknadClient = søknadClient)
+        val inntektsmeldingClient = InntektsmeldingClient(
+            baseUrl = env.getValue("IM_API_URL"),
+            AccessTokenClient(
+                aadAccessTokenUrl = env.getValue("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
+                clientId = env.getValue("AZURE_APP_CLIENT_ID"),
+                clientSecret = env.getValue("AZURE_APP_CLIENT_SECRET"),
+                httpClient = httpClient
+            ),
+            httpClient = httpClient,
+            scope = env.getValue("ACCESS_TOKEN_SCOPE_IM")
+        )
+
+        DokumentRiver(rapidsConnection = this, søknadClient = søknadClient, inntektsmeldingClient = inntektsmeldingClient)
     }
 }
 

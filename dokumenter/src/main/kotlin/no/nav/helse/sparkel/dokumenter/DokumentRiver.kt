@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory
 internal class DokumentRiver(
     rapidsConnection: RapidsConnection,
     private val søknadClient: SøknadClient,
+    private val inntektsmeldingClient: InntektsmeldingClient,
 ) : River.PacketListener {
 
     companion object {
@@ -38,6 +39,7 @@ internal class DokumentRiver(
         val dokumentType = packet["dokumentType"].asText()
         when (dokumentType) {
             "SØKNAD" -> håndter(packet, context, søknadClient)
+            "INNTEKTSMELDING" -> håndter(packet, context, inntektsmeldingClient)
             else -> sikkerlogg.info(
                 "uhåndtert melding {}\n$packet",
                 StructuredArguments.keyValue("dokumentType", dokumentType)
