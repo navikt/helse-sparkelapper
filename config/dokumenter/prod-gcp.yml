@@ -14,8 +14,14 @@ accessPolicy:
       - application: sykepengesoknad-backend
         namespace: flex
         cluster: prod-gcp
+    external:
+      - host: syfoinntektsmelding.dev-fss-pub.nais.io
 env:
   - name: SOKNAD_API_URL
     value: http://sykepengesoknad-backend.flex
   - name: ACCESS_TOKEN_SCOPE
     value: api://prod-gcp.flex.sykepengesoknad-backend/.default
+  - name: IM_API_URL
+    value: https://syfoinntektsmelding.dev-fss-pub.nais.io
+  - name: ACCESS_TOKEN_SCOPE_IM
+    value: api://dev-fss.helsearbeidsgiver.syfoinntektsmelding/.default
