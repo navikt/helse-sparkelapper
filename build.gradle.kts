@@ -173,4 +173,4 @@ fun Project.mainClass() =
     "$group.${name.replace("-", "")}.AppKt"
 
 fun Project.erFellesmodul() = name == "felles"
-fun Project.skalLagAppJar() = name !in listOf("felles", "abakus")
+fun Project.skalLagAppJar() = name !in listOf("felles", "infotrygd")
