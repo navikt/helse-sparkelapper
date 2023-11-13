@@ -39,6 +39,7 @@ internal class DokumentRiver(
         val dokumentType = packet["dokumentType"].asText()
         when (dokumentType) {
             "SØKNAD" -> håndter(packet, context, søknadClient)
+            "INNTEKTSMELDING" -> håndter(packet, context, inntektsmeldingClient)
             else -> sikkerlogg.info(
                 "uhåndtert melding {}\n$packet",
                 StructuredArguments.keyValue("dokumentType", dokumentType)

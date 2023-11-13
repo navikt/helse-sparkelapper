@@ -42,6 +42,15 @@ internal class DokumentRiverTest {
         assertEquals(1, dokument?.size())
     }
 
+    @Test
+    fun `svarer ut behov for dokument type INNTEKTSMELDING`() {
+        every { inntektsmeldingClient.hentDokument(any()) } returns objectMapper.readTree("""{"innteksmeldingId": "123"}""")
+        rapid.sendTestMessage(behov("INNTEKTSMELDING"))
+        val svar = rapid.inspektør.message(0)
+        val dokument = svar.dokumentLøsning()["dokument"]
+        assertEquals(1, dokument?.size())
+    }
+
     @Language("JSON")
     fun behov(dokumenttype: String) = """
         {
