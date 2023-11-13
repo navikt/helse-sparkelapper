@@ -9,6 +9,7 @@ import org.intellij.lang.annotations.Language
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
+import no.nav.helse.sparkel.infotrygd.Fnr
 
 internal abstract class H2Database {
     protected companion object {

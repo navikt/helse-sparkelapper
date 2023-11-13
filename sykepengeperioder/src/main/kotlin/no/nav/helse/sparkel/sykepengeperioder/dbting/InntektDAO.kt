@@ -4,9 +4,11 @@ import java.time.LocalDate
 import javax.sql.DataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import no.nav.helse.sparkel.sykepengeperioder.Fnr
-import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk.Inntektsopplysninger
-import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode.Premiegrunnlag
+import no.nav.helse.sparkel.infotrygd.Fnr
+import no.nav.helse.sparkel.infotrygd.Utbetalingshistorikk
+import no.nav.helse.sparkel.infotrygd.Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode.Premiegrunnlag
+import no.nav.helse.sparkel.infotrygd.intOrNullToLocalDate
+import no.nav.helse.sparkel.infotrygd.intToLocalDate
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
 
@@ -70,7 +72,7 @@ internal class InntektDAO(
             internal fun tilInntektsopplysninger(inntekter: List<InntektDTO>) = inntekter
                 .filter {
                     when (val periodeKode = it.periode) {
-                        in Inntektsopplysninger.PeriodeKode.gyldigePeriodeKoder -> true
+                        in Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode.gyldigePeriodeKoder -> true
                         else -> {
                             log.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
                             tjenestekallLog.warn("Ukjent periodetype i respons fra Infotrygd: $periodeKode")
@@ -78,11 +80,11 @@ internal class InntektDAO(
                         }
                     }
                 }
-                .filter { Inntektsopplysninger.PeriodeKode.verdiFraKode(it.periode) != Premiegrunnlag }
+                .filter { Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode.verdiFraKode(it.periode) != Premiegrunnlag }
                 .map {
-                    Inntektsopplysninger(
+                    Utbetalingshistorikk.Inntektsopplysninger(
                         it.sykepengerFom,
-                        Inntektsopplysninger.PeriodeKode.verdiFraKode(it.periode).omregn(it.loenn),
+                        Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode.verdiFraKode(it.periode).omregn(it.loenn),
                         it.orgNr,
                         it.refusjonTom,
                         "J" == it.refusjonsType

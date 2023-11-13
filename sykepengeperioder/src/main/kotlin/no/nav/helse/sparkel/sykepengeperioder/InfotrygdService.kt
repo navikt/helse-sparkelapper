@@ -2,9 +2,14 @@ package no.nav.helse.sparkel.sykepengeperioder
 
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*
-import no.nav.helse.sparkel.sykepengeperioder.dbting.PeriodeDAO.PeriodeDTO.Companion.ekstraFerieperioder
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
+import no.nav.helse.sparkel.infotrygd.Fnr
+import no.nav.helse.sparkel.infotrygd.PeriodeDAO
+import no.nav.helse.sparkel.infotrygd.PeriodeDAO.PeriodeDTO.Companion.ekstraFerieperioder
+import no.nav.helse.sparkel.infotrygd.UtbetalingDAO
+import no.nav.helse.sparkel.infotrygd.Utbetalingshistorikk
+import no.nav.helse.sparkel.infotrygd.Utbetalingsperiode
 
 internal class InfotrygdService(
     private val periodeDAO: PeriodeDAO,

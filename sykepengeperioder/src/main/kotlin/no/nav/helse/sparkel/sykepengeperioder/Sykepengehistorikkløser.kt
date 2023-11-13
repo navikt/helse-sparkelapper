@@ -5,6 +5,7 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
+import no.nav.helse.sparkel.infotrygd.Fnr
 
 internal class Sykepengehistorikkløser(
     rapidsConnection: RapidsConnection,
