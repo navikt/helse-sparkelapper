@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import java.time.LocalDate
+import no.nav.helse.sparkel.infotrygd.Utbetalingshistorikk
 
 internal class Sykepengehistorikk(
     val utbetalinger: List<Utbetalingshistorikk.Utbetaling>,

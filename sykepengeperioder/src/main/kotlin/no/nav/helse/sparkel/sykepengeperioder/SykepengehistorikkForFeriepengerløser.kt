@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.sykepengeperioder
 import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
+import no.nav.helse.sparkel.infotrygd.Fnr
 import org.slf4j.LoggerFactory
 
 internal class SykepengehistorikkForFeriepengerløser(

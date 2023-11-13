@@ -2,13 +2,13 @@ package no.nav.helse.sparkel.sykepengeperioder.dbting
 
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import no.nav.helse.sparkel.sykepengeperioder.Fnr
 import no.nav.helse.sparkel.sykepengeperioder.Sykepengehistorikk
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
+import no.nav.helse.sparkel.infotrygd.Fnr
 
 internal class FeriepengeDAO(
     private val dataSource: DataSource

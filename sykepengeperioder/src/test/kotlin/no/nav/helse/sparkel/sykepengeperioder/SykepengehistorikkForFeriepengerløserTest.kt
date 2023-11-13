@@ -6,6 +6,8 @@ import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.helse.sparkel.infotrygd.PeriodeDAO
+import no.nav.helse.sparkel.infotrygd.UtbetalingDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.*

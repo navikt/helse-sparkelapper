@@ -2,9 +2,9 @@ package no.nav.helse.sparkel.sykepengeperioder.dbting
 
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import no.nav.helse.sparkel.sykepengeperioder.Fnr
 import org.intellij.lang.annotations.Language
 import javax.sql.DataSource
+import no.nav.helse.sparkel.infotrygd.Fnr
 
 class StatslønnDAO(
     private val dataSource: DataSource

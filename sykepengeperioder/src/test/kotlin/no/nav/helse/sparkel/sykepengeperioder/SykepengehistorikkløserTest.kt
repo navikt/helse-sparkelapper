@@ -13,6 +13,8 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
+import no.nav.helse.sparkel.infotrygd.PeriodeDAO
+import no.nav.helse.sparkel.infotrygd.UtbetalingDAO
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SykepengehistorikkløserTest : H2Database() {

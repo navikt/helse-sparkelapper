@@ -1,7 +1,7 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
-import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode
-import no.nav.helse.sparkel.sykepengeperioder.Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode.*
+import no.nav.helse.sparkel.infotrygd.Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode
+import no.nav.helse.sparkel.infotrygd.Utbetalingshistorikk.Inntektsopplysninger.PeriodeKode.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
