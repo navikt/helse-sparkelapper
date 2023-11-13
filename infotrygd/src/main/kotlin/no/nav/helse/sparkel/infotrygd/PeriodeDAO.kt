@@ -1,27 +1,16 @@
 package no.nav.helse.sparkel.infotrygd
 
-import kotliquery.Row
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import org.intellij.lang.annotations.Language
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 import javax.sql.DataSource
 
-internal fun Row.intOrNullToLocalDate(label: String) = try {
-    intOrNull(label)?.takeIf { it >= 10101 }?.toLocalDate()
-} catch (err: DateTimeParseException) {
-    null
-}
-internal fun Row.intToLocalDate(label: String) = int(label).toLocalDate()
-internal fun Int.toLocalDate() =
-    LocalDate.parse(this.toString().padStart(8, '0'), DateTimeFormatter.ofPattern("yyyyMMdd"))
-
-internal class PeriodeDAO(
+class PeriodeDAO(
     private val dataSource: DataSource
 ) {
-    internal fun perioder(fnr: Fnr, fom: LocalDate, tom: LocalDate): List<PeriodeDTO> {
+    fun perioder(fnr: Fnr, fom: LocalDate, tom: LocalDate): List<PeriodeDTO> {
         return sessionOf(dataSource).use { session ->
             @Language("Oracle")
             val statement = """
@@ -111,7 +100,7 @@ internal class PeriodeDAO(
         }
     }
 
-    internal data class PeriodeDTO(
+    data class PeriodeDTO(
         val ident: Long,
         val tknr: String,
         val seq: Int,
@@ -139,11 +128,11 @@ internal class PeriodeDAO(
         val skadet: LocalDate?,
         val vedtatt: LocalDate?
     ) {
-        internal companion object {
-            internal fun List<PeriodeDTO>.ekstraFerieperioder() = flatMap { it.ferie() }
+        companion object {
+            fun List<PeriodeDTO>.ekstraFerieperioder() = flatMap { it.ferie() }
         }
 
-        internal fun tilUtbetalingshistorikk(
+        fun tilUtbetalingshistorikk(
             utbetalingList: List<Utbetalingshistorikk.Utbetaling>,
             inntektList: List<Utbetalingshistorikk.Inntektsopplysninger>,
             statslønn: Boolean
@@ -164,62 +153,7 @@ internal class PeriodeDAO(
             if (fom == null || tom == null) null
             else Utbetalingshistorikk.Utbetaling(fom, tom, "", "", fom, 0.0, "9", "Ferie", "0")
 
-        internal fun tilUtbetalingsperiode(utbetalingList: List<UtbetalingDAO.UtbetalingDTO>) =
+        fun tilUtbetalingsperiode(utbetalingList: List<UtbetalingDAO.UtbetalingDTO>) =
             utbetalingList.map { it.tilUtbetalingsperiode(arbeidsKategori) }
-
-        private fun String.toArbKategori() =
-            when (this) {
-                "00" -> "Fisker"
-                "01" -> "Arbeidstaker"
-                "02" -> "Selvstendig"
-                "03" -> "ArbeidstakerSelvstendig"
-                "04" -> "Sjømenn"
-                "05" -> "Jordbruker"
-                "06" -> "Arbeidsledig"
-                "07" -> "Innaktiv"
-                "08" -> "Befal"
-                "09" -> "MenigKorporal"
-                "10" -> "Arbeidstaker m/Sjømenn"
-                "11" -> "Turnuskandidater"
-                "12" -> "SvalbardArbeidere"
-                "13" -> "ArbeidstakerJordbruker"
-                "14" -> "Yrkesskade"
-                "15" -> "AmbassadePersonell"
-                "16" -> "Reindrift"
-                "17" -> "ArbeidstakerFisker"
-                "18" -> "IkkeIBruk"
-                "19" -> "Oppdragstaker"
-                "20" -> "ArbeidstakerOppdragstaker"
-                "21" -> "FFU21"
-                "22" -> "FFU22"
-                "23" -> "ArbeidstakerALøyse"
-                "24" -> "OppdragstakerUtenForsikring"
-                "25" -> "ArbOppdragstakerUtenForsikring"
-                else -> "Ukjent"
-            }
-
-        private fun String.toStansAarsak() =
-            when (this) {
-                "AF" -> "AvsluttetFrisk"
-                "FL" -> "Flyttet"
-                "AA" -> "Avsluttet"
-                "AD" -> "AvsluttetDød"
-                "MAX" -> "MaxUtbetaling"
-                "SM-II" -> "SM-II-Mangler"
-                "DØD" -> "Død"
-                "MIDL" -> "MidlertidigStans"
-                "19870301" -> "StansDato"
-                "99999999" -> "StansDato"
-                "OA" -> "OpphørArbeidsforhold"
-                "BO" -> "BortfallOmsorgsAnsvar"
-                "GA" -> "GravidAdopsjon"
-                "SF" -> "SpesielleForhold"
-                "SA" -> "SP UnderAktivisering"
-                "IA" -> "SP UnderAktiviseringUtenForhåndsgodkjenning"
-                "FA" -> "FriskmeldtTilArbFor"
-                "RT" -> "Reisetilskott"
-                "YA" -> "YrkesrettetAttføring"
-                else -> "Ukjent.."
-            }
     }
 }

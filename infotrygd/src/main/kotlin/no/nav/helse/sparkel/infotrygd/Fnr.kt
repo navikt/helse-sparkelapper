@@ -1,6 +1,6 @@
 package no.nav.helse.sparkel.infotrygd
 
-internal class Fnr(private val fnr: String) {
+class Fnr(private val fnr: String) {
     init {
         require(fnr.length == 11) { "Fødselsnummer skal være 11 tegn, var ${fnr.length}" }
     }
@@ -10,7 +10,7 @@ internal class Fnr(private val fnr: String) {
     private val year: String = fnr.substring(4, 6)
     private val id: String = fnr.substring(6)
 
-    internal fun formatAsITFnr() = "$year$month$date$id"
+    fun formatAsITFnr() = "$year$month$date$id"
 
     override fun toString() = fnr
 }

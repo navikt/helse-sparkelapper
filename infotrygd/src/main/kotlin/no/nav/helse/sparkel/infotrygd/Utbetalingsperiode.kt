@@ -2,7 +2,7 @@ package no.nav.helse.sparkel.infotrygd
 
 import java.time.LocalDate
 
-internal class Utbetalingsperiode(
+class Utbetalingsperiode(
     val arbeidsKategoriKode: String,
     val fom: LocalDate?,
     val tom: LocalDate?,
