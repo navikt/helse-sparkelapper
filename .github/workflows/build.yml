@@ -111,12 +111,20 @@ jobs:
         uses: andstor/file-existence-action@v2
         with:
           files: "${{ matrix.project }}/build/libs/app.jar"
+      - name: Check Dockerfile existence
+        id: dockerfile
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "config/${{ matrix.project }}/Dockerfile"
       - name: create docker tag
         if: steps.app_jar.outputs.files_exists == 'true'
         run: |
           echo "IMAGE=${CONTAINER_REGISTRY}/${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}" >> $GITHUB_ENV
-      - name: build docker image
-        if: steps.app_jar.outputs.files_exists == 'true'
+      - name: build default docker image
+        if: steps.app_jar.outputs.files_exists == 'true' && steps.dockerfile.outputs.files_exists == 'false'
+        run: docker build ${{ matrix.project }} --pull -t $IMAGE -f Dockerfile
+      - name: build custom docker image
+        if: steps.app_jar.outputs.files_exists == 'true' && steps.dockerfile.outputs.files_exists == 'true'
         run: docker build ${{ matrix.project }} --pull -t $IMAGE -f Dockerfile
       - name: push docker image
         if: steps.app_jar.outputs.files_exists == 'true'
