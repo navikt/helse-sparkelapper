@@ -27,5 +27,5 @@ class Infotrygdutbetalinger (dataSource: DataSource) {
         )}
     }
 
-    private val String.somGrad get() = takeUnless { it.isBlank() }?.toInt() ?: 100
+    private val String.somGrad get() = takeUnless { it.isBlank() }?.toInt() ?: 0
 }
