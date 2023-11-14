@@ -24,6 +24,10 @@ metadata:
 spec:
   image: {{image}}
   port: 8080
+  {{#if ingress}}
+  ingresses:
+    - {{ingress}}
+  {{/if}}
   liveness:
     path: isalive
     initialDelay: 5
