@@ -12,6 +12,7 @@ dependencies {
     implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
     implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")
+    implementation(project(":felles"))
 
     testImplementation("org.testcontainers:postgresql:$testcontainersOostgresqlVersion")
 }

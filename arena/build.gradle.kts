@@ -14,4 +14,5 @@ dependencies {
 
     implementation("no.nav.tjenestespesifikasjoner:ytelseskontrakt-v3-tjenestespesifikasjon:$tjenestespesifikasjonerVersion")
     implementation("no.nav.tjenestespesifikasjoner:nav-meldekortUtbetalingsgrunnlag-v1-tjenestespesifikasjon:$tjenestespesifikasjonerVersion")
+    implementation(project(":felles"))
 }

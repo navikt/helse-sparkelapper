@@ -5,4 +5,5 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:2.2.3")
     testImplementation("org.skyscreamer:jsonassert:1.5.0")
     testImplementation("io.mockk:mockk:1.12.8")
+    implementation(project(":felles"))
 }

@@ -7,7 +7,7 @@ dependencies {
     implementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-
+    implementation(project(":felles"))
 
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
 }

@@ -86,8 +86,6 @@ allprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     dependencies {
-        if (!erFellesmodul()) implementation(project(":felles"))
-
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
@@ -172,5 +170,4 @@ subprojects {
 fun Project.mainClass() =
     "$group.${name.replace("-", "")}.AppKt"
 
-fun Project.erFellesmodul() = name == "felles"
 fun Project.skalLagAppJar() = name !in listOf("felles", "infotrygd")

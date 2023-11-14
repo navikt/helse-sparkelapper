@@ -6,10 +6,11 @@ val flywayVersion = "8.4.1"
 
 dependencies{
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")
+    implementation(project(":felles"))
+    implementation(project(":infotrygd"))
 
     testImplementation("com.h2database:h2:$h2Version")
     testImplementation("org.flywaydb:flyway-core:$flywayVersion")
-    implementation(project(":infotrygd"))
 
 }
 val compileTestKotlin: KotlinCompile by tasks
