@@ -16,6 +16,6 @@ fun main() {
 private fun Application.sykepengeperioderApi() {
     routing {
         get("/isalive") { call.respondText("ÆØÅæøå ${LocalDateTime.now()}") }
-        get("/isready") { call.respondText("READY!") }
+        get("/isready") { call.respondText("READY4U!") }
     }
 }
