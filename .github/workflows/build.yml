@@ -125,7 +125,7 @@ jobs:
         run: docker build ${{ matrix.project }} --pull -t $IMAGE -f Dockerfile
       - name: build custom docker image
         if: steps.app_jar.outputs.files_exists == 'true' && steps.dockerfile.outputs.files_exists == 'true'
-        run: docker build ${{ matrix.project }} --pull -t $IMAGE -f Dockerfile
+        run: docker build ${{ matrix.project }} --pull -t $IMAGE -f config/${{ matrix.project }}/Dockerfile
       - name: push docker image
         if: steps.app_jar.outputs.files_exists == 'true'
         run: |
