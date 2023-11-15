@@ -24,9 +24,11 @@ import java.time.LocalDate
 import no.nav.helse.sparkel.infotrygd.api.Infotrygdperiode
 import no.nav.helse.sparkel.infotrygd.api.Infotrygdutbetalinger
 import no.nav.helse.sparkel.infotrygd.api.Personidentifikator
+import org.slf4j.LoggerFactory
 
 private val String.env get() = checkNotNull(System.getenv(this)) { "Fant ikke environment variable $this" }
 private val objectMapper = jacksonObjectMapper()
+private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
 fun main() {
     embeddedServer(CIO, port = 8080, module = Application::sykepengeperioderApi).start(wait = true)
@@ -69,7 +71,9 @@ private fun Application.sykepengeperioderApi() {
                 val fom = LocalDate.parse(request.path("fom").asText())
                 val tom = LocalDate.parse(request.path("tom").asText())
                 val perioder = infotrygdutbetalinger.utbetalinger(Personidentifikator(personidentifikator), fom, tom)
-                call.respondText(perioder.response, Json)
+                val response = perioder.response
+                sikkerlogg.info("Sender perioder:\n\t$response")
+                call.respondText(response, Json)
             }
         }
     }
