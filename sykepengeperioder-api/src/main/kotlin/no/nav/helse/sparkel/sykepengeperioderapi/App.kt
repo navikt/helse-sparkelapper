@@ -35,7 +35,12 @@ fun main() {
 }
 
 private val List<Infotrygdperiode>.response get() = objectMapper.createObjectNode().let { json ->
-    val perioder = map { objectMapper.createObjectNode().put("fom", "${it.fom}").put("tom", "${it.tom}").put("grad", it.grad) }
+    val perioder = map { objectMapper.createObjectNode()
+        .put("organisasjonsnummer", it.organisasjonsnummer)
+        .put("fom", "${it.fom}")
+        .put("tom", "${it.tom}")
+        .put("grad", it.grad)
+    }
     json.putArray("perioder").addAll(perioder)
     json.toString()
 }

@@ -21,11 +21,15 @@ class Infotrygdutbetalinger (dataSource: DataSource) {
         }
 
         return historikk.filter { it.fom != null }.map { Infotrygdperiode(
+            organisasjonsnummer = it.organisasjonsnummer?.takeIf { orgnr -> orgnr.matches(organisasjonsnummerRegex) },
             fom = it.fom!!,
             tom = it.tom ?: LocalDate.MAX,
             grad = it.grad.somGrad
         )}
     }
 
-    private val String.somGrad get() = takeUnless { it.isBlank() }?.toInt() ?: 0
+    private companion object {
+        private val String.somGrad get() = takeUnless { it.isBlank() }?.toInt() ?: 0
+        private val organisasjonsnummerRegex = "\\d{9}".toRegex()
+    }
 }
