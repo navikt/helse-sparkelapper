@@ -12,7 +12,6 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
-import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
@@ -38,7 +37,7 @@ private val objectMapper = jacksonObjectMapper()
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
 fun main() {
-    embeddedServer(CIO, port = 8080, module = Application::sykepengeperioderApi).start(wait = true)
+    embeddedServer(ConfiguredCIO, port = 8080, module = Application::sykepengeperioderApi).start(wait = true)
 }
 
 private val List<Infotrygdperiode>.response get() = objectMapper.createObjectNode().let { json ->
