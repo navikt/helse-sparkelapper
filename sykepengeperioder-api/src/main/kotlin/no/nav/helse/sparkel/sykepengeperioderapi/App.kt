@@ -7,12 +7,17 @@ import com.zaxxer.hikari.HikariDataSource
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
+import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.plugins.callid.CallId
+import io.ktor.server.plugins.callid.callIdMdc
+import io.ktor.server.plugins.callloging.CallLogging
+import io.ktor.server.request.path
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
@@ -21,10 +26,12 @@ import io.ktor.server.routing.routing
 import java.io.File
 import java.net.URL
 import java.time.LocalDate
+import java.util.UUID
 import no.nav.helse.sparkel.infotrygd.api.Infotrygdperiode
 import no.nav.helse.sparkel.infotrygd.api.Infotrygdutbetalinger
 import no.nav.helse.sparkel.infotrygd.api.Personidentifikator
 import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
 
 private val String.env get() = checkNotNull(System.getenv(this)) { "Fant ikke environment variable $this" }
 private val objectMapper = jacksonObjectMapper()
@@ -46,6 +53,22 @@ private val List<Infotrygdperiode>.response get() = objectMapper.createObjectNod
 }
 
 private fun Application.sykepengeperioderApi() {
+
+    install(CallId) {
+        header("x-callId")
+        verify { it.isNotEmpty() }
+        generate { UUID.randomUUID().toString() }
+    }
+    install(CallLogging) {
+        logger = sikkerlogg
+        level = Level.INFO
+        disableDefaultColors()
+        callIdMdc("callId")
+        filter { call ->
+            val path = call.request.path()
+            listOf("isalive", "isready", "metrics").none { path.contains(it) }
+        }
+    }
 
     val dataSource = HikariDataSource(HikariConfig().apply {
         jdbcUrl = File("/var/run/secrets/nais.io/oracle/config/jdbc_url").readText()
