@@ -10,6 +10,9 @@ class UtbetalingDAO(
     private val dataSource: DataSource
 ) {
 
+    fun utbetalinger(fnre: List<Fnr>, vararg seq: Int): List<UtbetalingDTO> =
+        fnre.flatMap { fnr -> utbetalinger(fnr, *seq) }
+
     fun utbetalinger(fnr: Fnr, vararg seq: Int): List<UtbetalingDTO> {
         return utbetalingerSomFunker(fnr, *seq)
     }

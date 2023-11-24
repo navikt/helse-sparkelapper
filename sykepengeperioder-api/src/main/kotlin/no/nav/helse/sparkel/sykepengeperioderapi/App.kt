@@ -41,13 +41,13 @@ fun main() {
 }
 
 private val List<Infotrygdperiode>.response get() = objectMapper.createObjectNode().let { json ->
-    val perioder = map { objectMapper.createObjectNode()
+    val utbetaltePerioder = map { objectMapper.createObjectNode()
         .put("organisasjonsnummer", it.organisasjonsnummer)
         .put("fom", "${it.fom}")
         .put("tom", "${it.tom}")
         .put("grad", it.grad)
     }
-    json.putArray("perioder").addAll(perioder)
+    json.putArray("utbetaltePerioder").addAll(utbetaltePerioder)
     json.toString()
 }
 
@@ -94,10 +94,13 @@ private fun Application.sykepengeperioderApi() {
         authenticate {
             post {
                 val request = objectMapper.readTree(call.receiveText())
-                val personidentifikator = request.path("personidentifikator").asText()
+                val personidentifikatorer = request.path("personidentifikatorer")
+                    .map { Personidentifikator(it.asText()) }
+                    .toSet()
+                    .takeUnless { it.isEmpty() } ?: throw IllegalArgumentException("Det må sendes med minst én personidentifikator")
                 val fom = LocalDate.parse(request.path("fom").asText())
                 val tom = LocalDate.parse(request.path("tom").asText())
-                val perioder = infotrygdutbetalinger.utbetalinger(Personidentifikator(personidentifikator), fom, tom)
+                val perioder = infotrygdutbetalinger.utbetalinger(personidentifikatorer, fom, tom)
                 val response = perioder.response
                 sikkerlogg.info("Sender perioder:\n\t$response")
                 call.respondText(response, Json)

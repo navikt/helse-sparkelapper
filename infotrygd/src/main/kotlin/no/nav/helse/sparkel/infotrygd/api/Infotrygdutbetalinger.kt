@@ -11,12 +11,12 @@ class Infotrygdutbetalinger (dataSource: DataSource) {
     private val utbetalingDAO = UtbetalingDAO(dataSource)
     private val periodeDAO = PeriodeDAO(dataSource)
 
-    fun utbetalinger(personidentifikator: Personidentifikator, fom: LocalDate, tom:LocalDate): List<Infotrygdperiode> {
-        val fødselsnummer = Fnr(personidentifikator.toString())
-        val perioder = periodeDAO.perioder(fødselsnummer, fom, tom)
+    fun utbetalinger(personidentifikatore: Set<Personidentifikator>, fom: LocalDate, tom:LocalDate): List<Infotrygdperiode> {
+        val fødselsnummere = personidentifikatore.map { personidentifikator-> Fnr(personidentifikator.toString()) }
+        val perioder = periodeDAO.perioder(fødselsnummere, fom, tom)
         val historikk: List<Utbetalingsperiode> = perioder.flatMap { periode ->
             periode.tilUtbetalingsperiode(
-                utbetalingDAO.utbetalinger(fødselsnummer, periode.seq)
+                utbetalingDAO.utbetalinger(fødselsnummere, periode.seq)
             )
         }
 
