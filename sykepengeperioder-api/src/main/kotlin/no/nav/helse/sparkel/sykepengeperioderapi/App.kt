@@ -4,9 +4,11 @@ import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.ktor.client.engine.ProxyBuilder
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.Url
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
@@ -100,9 +102,18 @@ private fun Application.sykepengeperioderApi() {
 
     val infotrygdutbetalinger = Infotrygdutbetalinger(dataSource)
 
+    /*
+        System.getenv("HTTP_PROXY")?.let {
+        jwkProviderBuilder.proxied(ProxyBuilder.http(it))
+    }
+     */
+
     authentication {
         jwt {
-            val jwkProvider = JwkProviderBuilder(URL("AZURE_OPENID_CONFIG_JWKS_URI".envOgLogg)).build()
+            val jwkProvider = JwkProviderBuilder(URL("AZURE_OPENID_CONFIG_JWKS_URI".envOgLogg))
+                .proxied(ProxyBuilder.http(Url("HTTP_PROXY".envOgLogg)))
+                .build()
+
             verifier(jwkProvider, "AZURE_OPENID_CONFIG_ISSUER".envOgLogg) {
                 withAudience("AZURE_APP_CLIENT_ID".envOgLogg)
             }
