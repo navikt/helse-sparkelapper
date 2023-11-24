@@ -6,11 +6,9 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.client.engine.ProxyBuilder
 import io.ktor.http.ContentType.Application.Json
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.Url
 import io.ktor.server.application.Application
-import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
@@ -21,7 +19,8 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.callloging.CallLogging
-import io.ktor.server.request.header
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
@@ -32,7 +31,6 @@ import io.ktor.server.routing.routing
 import java.io.File
 import java.net.URL
 import java.time.LocalDate
-import java.util.Base64
 import java.util.UUID
 import no.nav.helse.sparkel.infotrygd.api.Infotrygdperiode
 import no.nav.helse.sparkel.infotrygd.api.Infotrygdutbetalinger
@@ -46,19 +44,6 @@ private val String.envOgLogg get() = checkNotNull(System.getenv(this)) { "Fant i
     sikkerlogg.info("Config $this=$verdi")
 }
 private val objectMapper = jacksonObjectMapper()
-private suspend fun ApplicationCall.respondChallenge() {
-    try {
-        val jwt = request.header(HttpHeaders.Authorization)
-            ?.substringAfter("Bearer ")
-            ?.split(".")
-            ?.takeIf { it.size == 3 }
-            ?: return respond(HttpStatusCode.Unauthorized, "Bearer token må settes i Authorization header for å hente data!")
-        sikkerlogg.error("Mottok request med access token som ikke har tilgang til endepunkt ${request.path()}!\n\tJWT Headers: ${String(Base64.getUrlDecoder().decode(jwt[0]))}\n\tJWT Payload: ${String(Base64.getUrlDecoder().decode(jwt[1]))}")
-        respond(HttpStatusCode.Forbidden, "Bearer token som er brukt har ikke rett tilgang til å hente data! Ta kontakt med NAV.")
-    } catch (throwable: Throwable) {
-        respond(HttpStatusCode.Unauthorized, "Bearer token må settes i Authorization header for å hente data!")
-    }
-}
 
 fun main() {
     embeddedServer(ConfiguredCIO, port = 8080, module = Application::sykepengeperioderApi).start(wait = true)
@@ -93,6 +78,13 @@ private fun Application.sykepengeperioderApi() {
         }
     }
 
+    install(StatusPages) {
+        exception<Throwable> { call, cause ->
+            sikkerlogg.info("Feil ved håndtering av ${call.request.httpMethod.value} - ${call.request.path()}", cause)
+            call.respond(InternalServerError)
+        }
+    }
+
     val dataSource = HikariDataSource(HikariConfig().apply {
         jdbcUrl = File("/var/run/secrets/nais.io/oracle/config/jdbc_url").readText()
         username = File("/var/run/secrets/nais.io/oracle/creds/username").readText()
@@ -101,12 +93,6 @@ private fun Application.sykepengeperioderApi() {
     })
 
     val infotrygdutbetalinger = Infotrygdutbetalinger(dataSource)
-
-    /*
-        System.getenv("HTTP_PROXY")?.let {
-        jwkProviderBuilder.proxied(ProxyBuilder.http(it))
-    }
-     */
 
     authentication {
         jwt {
@@ -118,7 +104,6 @@ private fun Application.sykepengeperioderApi() {
                 withAudience("AZURE_APP_CLIENT_ID".envOgLogg)
             }
             validate { credentials -> JWTPrincipal(credentials.payload) }
-            challenge { _, _ -> call.respondChallenge() }
         }
     }
 
