@@ -38,9 +38,12 @@ import no.nav.helse.sparkel.infotrygd.api.Personidentifikator
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
-private val String.env get() = checkNotNull(System.getenv(this)) { "Fant ikke environment variable $this" }
-private val objectMapper = jacksonObjectMapper()
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+private val String.env get() = checkNotNull(System.getenv(this)) { "Fant ikke environment variable $this" }
+private val String.envOgLogg get() = checkNotNull(System.getenv(this)) { "Fant ikke environment variable $this" }.also { verdi ->
+    sikkerlogg.info("Config $this=$verdi")
+}
+private val objectMapper = jacksonObjectMapper()
 private suspend fun ApplicationCall.respondChallenge() {
     try {
         val jwt = request.header(HttpHeaders.Authorization)
@@ -99,9 +102,9 @@ private fun Application.sykepengeperioderApi() {
 
     authentication {
         jwt {
-            val jwkProvider = JwkProviderBuilder(URL("AZURE_OPENID_CONFIG_JWKS_URI".env)).build()
-            verifier(jwkProvider, "AZURE_OPENID_CONFIG_ISSUER".env) {
-                withAudience("AZURE_APP_CLIENT_ID".env)
+            val jwkProvider = JwkProviderBuilder(URL("AZURE_OPENID_CONFIG_JWKS_URI".envOgLogg)).build()
+            verifier(jwkProvider, "AZURE_OPENID_CONFIG_ISSUER".envOgLogg) {
+                withAudience("AZURE_APP_CLIENT_ID".envOgLogg)
             }
             validate { credentials -> JWTPrincipal(credentials.payload) }
             challenge { _, _ -> call.respondChallenge() }
