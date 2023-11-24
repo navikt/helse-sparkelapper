@@ -5,6 +5,12 @@ azure:
   enabled: true
   tenant: trygdeetaten.no
 ingress: https://sykepengeperioder-api.dev-fss-pub.nais.io
+accessPolicy:
+  inbound:
+    rules:
+      - application: spokelse
+        namespace: tbd
+        cluster: dev-gcp
 mountPaths:
   - mountPath: /var/run/secrets/nais.io/oracle/creds
     kvPath: oracle/data/dev/creds/sp_infotrygd_q-user

@@ -97,6 +97,15 @@ spec:
   {{/if}}
   {{#if accessPolicy}}
   accessPolicy:
+    inbound:
+      {{#if accessPolicy.inbound.rules}}
+      rules:
+        {{# each accessPolicy.inbound.rules as |item|}}
+        - application: {{ item.application }}
+          namespace: {{ item.namespace }}
+          cluster: {{ item.cluster }}
+        {{/each}}
+      {{/if}}
     outbound:
       {{#if accessPolicy.outbound.external}}
       external:
