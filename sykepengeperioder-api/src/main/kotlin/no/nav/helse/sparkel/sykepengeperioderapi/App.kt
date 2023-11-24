@@ -113,7 +113,6 @@ private fun Application.sykepengeperioderApi() {
         authenticate {
             post {
                 val request = objectMapper.readTree(call.receiveText())
-                sikkerlogg.info("Mottok request:\n\t$request")
                 val personidentifikatorer = request.path("personidentifikatorer")
                     .map { Personidentifikator(it.asText()) }
                     .toSet()
