@@ -10,11 +10,6 @@ import javax.sql.DataSource
 class PeriodeDAO(
     private val dataSource: DataSource
 ) {
-
-    fun perioder(fnre: List<Fnr>, fom: LocalDate, tom:LocalDate): List<PeriodeDTO> {
-        return fnre.flatMap { fnr -> perioder(fnr, fom, tom) }
-    }
-
     fun perioder(fnr: Fnr, fom: LocalDate, tom: LocalDate): List<PeriodeDTO> {
         return sessionOf(dataSource).use { session ->
             @Language("Oracle")

@@ -3,7 +3,8 @@ package no.nav.helse.sparkel.infotrygd.api
 import java.time.LocalDate
 
 class Infotrygdperiode(
-    val organisasjonsnummer: String?,
+    val personidentifikator: Personidentifikator,
+    val organisasjonsnummer: Organisasjonsnummer?,
     val fom: LocalDate,
     val tom: LocalDate,
     val grad: Int

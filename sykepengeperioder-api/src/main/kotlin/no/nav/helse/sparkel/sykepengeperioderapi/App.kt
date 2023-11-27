@@ -51,7 +51,8 @@ fun main() {
 
 private val List<Infotrygdperiode>.response get() = objectMapper.createObjectNode().let { json ->
     val utbetaltePerioder = map { objectMapper.createObjectNode()
-        .put("organisasjonsnummer", it.organisasjonsnummer)
+        .put("personidentifikator", it.personidentifikator.toString())
+        .put("organisasjonsnummer", it.organisasjonsnummer?.toString())
         .put("fom", "${it.fom}")
         .put("tom", "${it.tom}")
         .put("grad", it.grad)
