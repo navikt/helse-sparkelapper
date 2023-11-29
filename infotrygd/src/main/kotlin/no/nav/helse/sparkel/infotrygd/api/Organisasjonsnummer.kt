@@ -7,6 +7,8 @@ class Organisasjonsnummer private constructor(private val id: String) {
 
     override fun toString() = id
 
+    override fun equals(other: Any?) = other is Organisasjonsnummer && other.id == this.id
+
     companion object {
         private val regex = "\\d{9}".toRegex()
         private val String.gyldig get() = matches(regex)
