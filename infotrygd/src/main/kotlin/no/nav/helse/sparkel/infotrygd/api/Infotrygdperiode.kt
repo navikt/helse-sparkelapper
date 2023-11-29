@@ -7,5 +7,6 @@ class Infotrygdperiode(
     val organisasjonsnummer: Organisasjonsnummer?,
     val fom: LocalDate,
     val tom: LocalDate,
-    val grad: Int
+    val grad: Int,
+    val pålitelig: Boolean = true
 )

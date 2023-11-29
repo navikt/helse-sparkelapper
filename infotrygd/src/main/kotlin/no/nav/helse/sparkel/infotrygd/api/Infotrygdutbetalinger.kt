@@ -20,14 +20,16 @@ class Infotrygdutbetalinger (dataSource: DataSource) {
                 utbetalingDAO.utbetalinger(fnr, *sekvensIdeer)
             }
 
-        return fnrTilUtbetalinger.flatMap { (fnr, utbetalingsperioder) ->
-            utbetalingsperioder.map { Infotrygdperiode(
-                personidentifikator = Personidentifikator(fnr.toString()),
-                organisasjonsnummer = it.arbOrgnr.organisasjosnummerOrNull,
-                fom = it.fom!!,
-                tom = it.tom ?: LocalDate.MAX,
-                grad = it.grad.somGrad
-            )}
+      return fnrTilUtbetalinger.flatMap { (fnr, utbetalingsperioder) ->
+            utbetalingsperioder.map {
+                Infotrygdperiode(
+                    personidentifikator = Personidentifikator(fnr.toString()),
+                    organisasjonsnummer = it.arbOrgnr.organisasjosnummerOrNull,
+                    fom = it.fom!!,
+                    tom = it.tom ?: LocalDate.MAX,
+                    grad = it.grad.somGrad
+                )
+            }
         }
     }
 
