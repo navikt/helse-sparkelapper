@@ -4,16 +4,22 @@ import no.nav.helse.sparkel.infotrygd.api.Infotrygdperiode
 
 internal class InfotrygdperiodeMedSikkerGrad(
     infotrygdperiode: Infotrygdperiode
-) : Infotrygdperiode(infotrygdperiode.personidentifikator, infotrygdperiode.organisasjonsnummer, infotrygdperiode.fom, infotrygdperiode.tom, infotrygdperiode.grad)
+) : Infotrygdperiode(infotrygdperiode.personidentifikator, infotrygdperiode.organisasjonsnummer, infotrygdperiode.fom, infotrygdperiode.tom, infotrygdperiode.grad) {
+    override fun equals(other: Any?) = other is InfotrygdperiodeMedSikkerGrad && super.equals(other)
+    override fun toString() = "Sikker grad ${super.toString()}"
+}
 
 internal class InfotrygdperiodeMedUsikkerGrad(
     infotrygdperiode: Infotrygdperiode
-) : Infotrygdperiode(infotrygdperiode.personidentifikator, infotrygdperiode.organisasjonsnummer, infotrygdperiode.fom, infotrygdperiode.tom, infotrygdperiode.grad)
+) : Infotrygdperiode(infotrygdperiode.personidentifikator, infotrygdperiode.organisasjonsnummer, infotrygdperiode.fom, infotrygdperiode.tom, infotrygdperiode.grad) {
+    override fun equals(other: Any?) = other is InfotrygdperiodeMedUsikkerGrad && super.equals(other)
+    override fun toString() = "Usikker grad ${super.toString()}"
+}
 
 private fun Infotrygdperiode.overlapperMed(other: Infotrygdperiode): Boolean {
     val start = maxOf(this.fom, other.fom)
     val slutt = minOf(this.tom, other.tom)
-    return start < slutt
+    return start <= slutt
 }
 
 private fun Infotrygdperiode.overlappPåAnnenArbeidsgiverMedGrad100(other: Infotrygdperiode) =
