@@ -56,6 +56,9 @@ private val List<Infotrygdperiode>.response get() = objectMapper.createObjectNod
         .put("fom", "${it.fom}")
         .put("tom", "${it.tom}")
         .put("grad", it.grad)
+        .apply {
+            putArray("tags").let { tags -> it.tags.forEach(tags::add) }
+        }
     }
     json.putArray("utbetaltePerioder").addAll(utbetaltePerioder)
     json.toString()

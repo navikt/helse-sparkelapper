@@ -16,6 +16,9 @@ internal class InfotrygdperiodeMedUsikkerGrad(
     override fun toString() = "Usikker grad ${super.toString()}"
 }
 
+internal val Infotrygdperiode.tags: Set<String>
+    get() = if (this is InfotrygdperiodeMedUsikkerGrad) setOf("UsikkerGrad") else emptySet()
+
 private fun Infotrygdperiode.overlapperMed(other: Infotrygdperiode): Boolean {
     val start = maxOf(this.fom, other.fom)
     val slutt = minOf(this.tom, other.tom)

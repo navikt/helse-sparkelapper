@@ -96,6 +96,17 @@ internal class UsikkerGradTest {
             InfotrygdperiodeMedUsikkerGrad(periode9)
         ), infotrygdperioder.markerUsikkerGrad())
     }
+
+    @Test
+    fun `perioder med usikker grad får UsikkerGrad-tag`() {
+        val periode1 = periode("100000000", fom = 1.januar, tom = 1.januar, grad = 100)
+        val periode2 = periode("100000001", fom = 1.januar, tom = 1.januar, grad = 100)
+        val periode3 = periode("100000003", fom = 2.januar, tom = 2.januar, grad = 100)
+        val infotrygdperioder = listOf(periode1, periode2, periode3).markerUsikkerGrad()
+        assertEquals(setOf("UsikkerGrad"), infotrygdperioder[0].tags)
+        assertEquals(setOf("UsikkerGrad"), infotrygdperioder[1].tags)
+        assertEquals(emptySet<String>(), infotrygdperioder[2].tags)
+    }
 }
 
 private fun periode(orgnr: String?, fom: LocalDate = LocalDate.now(), tom: LocalDate = LocalDate.now(), grad: Int = 100) =
