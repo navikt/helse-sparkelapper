@@ -36,13 +36,9 @@ internal class Utbetalingsperiodeløser(
         val historikkFom = packet["$behov.historikkFom"].asLocalDate()
         val historikkTom = packet["$behov.historikkTom"].asLocalDate()
 
-        // Midlertidig
-        val fødselsnummer = packet["fødselsnummer"].asText().let { fnr ->
-            (if (fnr.length == 10) "0" else "") + fnr
-        }
         infotrygdService.løsningForHentInfotrygdutbetalingerbehov(
             packet["@id"].asText(),
-            Fnr(fødselsnummer),
+            Fnr(packet["fødselsnummer"].asText()),
             historikkFom,
             historikkTom
         )
