@@ -35,9 +35,14 @@ internal class Utbetalingsperiodeløser(
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         val historikkFom = packet["$behov.historikkFom"].asLocalDate()
         val historikkTom = packet["$behov.historikkTom"].asLocalDate()
+
+        // Midlertidig
+        val fødselsnummer = packet["fødselsnummer"].asText().let { fnr ->
+            (if (fnr.length == 10) "0" else "") + fnr
+        }
         infotrygdService.løsningForHentInfotrygdutbetalingerbehov(
             packet["@id"].asText(),
-            Fnr(packet["fødselsnummer"].asText()),
+            Fnr(fødselsnummer),
             historikkFom,
             historikkTom
         )
