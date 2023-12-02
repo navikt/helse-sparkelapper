@@ -52,7 +52,7 @@ internal class Utbetalingsperiodeløser(
                 )
                 context.publish(packet.toJson().also { json ->
                     sikkerlogg.info(
-                        "sender svar {} for {}:\n\t{}",
+                        "sender svar {}:\n\t{}",
                         keyValue("id", packet["@id"].asText()),
                         json
                     )
