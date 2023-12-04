@@ -40,9 +40,6 @@ import org.slf4j.event.Level
 
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 private val String.env get() = checkNotNull(System.getenv(this)) { "Fant ikke environment variable $this" }
-private val String.envOgLogg get() = checkNotNull(System.getenv(this)) { "Fant ikke environment variable $this" }.also { verdi ->
-    sikkerlogg.info("Config $this=$verdi")
-}
 private val objectMapper = jacksonObjectMapper()
 
 fun main() {
@@ -100,12 +97,12 @@ private fun Application.sykepengeperioderApi() {
 
     authentication {
         jwt {
-            val jwkProvider = JwkProviderBuilder(URL("AZURE_OPENID_CONFIG_JWKS_URI".envOgLogg))
-                .proxied(ProxyBuilder.http(Url("HTTP_PROXY".envOgLogg)))
+            val jwkProvider = JwkProviderBuilder(URL("AZURE_OPENID_CONFIG_JWKS_URI".env))
+                .proxied(ProxyBuilder.http(Url("HTTP_PROXY".env)))
                 .build()
 
-            verifier(jwkProvider, "AZURE_OPENID_CONFIG_ISSUER".envOgLogg) {
-                withAudience("AZURE_APP_CLIENT_ID".envOgLogg)
+            verifier(jwkProvider, "AZURE_OPENID_CONFIG_ISSUER".env) {
+                withAudience("AZURE_APP_CLIENT_ID".env)
             }
             validate { credentials -> JWTPrincipal(credentials.payload) }
         }
