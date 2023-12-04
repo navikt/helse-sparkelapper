@@ -84,7 +84,7 @@ private fun Application.sykepengeperioderApi() {
 
     install(StatusPages) {
         exception<Throwable> { call, cause ->
-            sikkerlogg.info("Feil ved håndtering av ${call.request.httpMethod.value} - ${call.request.path()}", cause)
+            sikkerlogg.error("Feil ved håndtering av ${call.request.httpMethod.value} - ${call.request.path()}", cause)
             call.respond(InternalServerError)
         }
     }
