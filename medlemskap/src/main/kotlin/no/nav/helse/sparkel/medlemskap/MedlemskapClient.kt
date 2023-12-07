@@ -8,6 +8,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDate
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.helse.rapids_rivers.isMissingOrNull
 import org.intellij.lang.annotations.Language
 
 internal class MedlemskapClient(
@@ -47,10 +48,10 @@ internal class MedlemskapClient(
             throw MedlemskapException("unknown error (responseCode=$responseCode) from medlemskap", responseBody)
         }
 
-        return responseJson
+        return parseSvar(responseJson)
     }
 
-    private companion object {
+    internal companion object {
         private val objectMapper = jacksonObjectMapper()
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         @Language("JSON")
@@ -62,6 +63,18 @@ internal class MedlemskapClient(
           "førsteDagForYtelse": "$fom"
         }
         """
+
+        fun parseSvar(root: JsonNode): JsonNode {
+            return jacksonObjectMapper().createObjectNode().set("resultat", jacksonObjectMapper().createObjectNode().put("svar", finnSvar(root)))
+        }
+
+        private fun finnSvar(root: JsonNode): String {
+            if (root.path("resultat").path("svar").isTextual) return root.path("resultat").path("svar").asText()
+
+            if (root.path("speilSvar").isTextual) return root.path("speilSvar").asText()
+
+            throw MedlemskapException("Klarte ikke parse medlemsskapsrespone", root.toString())
+        }
     }
 }
 
