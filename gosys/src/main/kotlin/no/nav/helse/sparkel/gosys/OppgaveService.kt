@@ -1,6 +1,9 @@
 package no.nav.helse.sparkel.gosys
 
 import com.fasterxml.jackson.databind.JsonNode
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.gosys.GjelderverdierSomIkkeSkalTriggeVarsel.Companion.inneholder
 import org.slf4j.LoggerFactory
@@ -38,6 +41,7 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
                 return@withMDC null
             }
             sikkerlogg.info("Åpne oppgaver, respons: $response")
+            log.debug("datoer på oppgavene: {}", response.opprettetDatoer())
             response.antallRelevanteOppgaver().also { antallEtterFiltrering ->
                 if (antallEtterFiltrering == 0 && response["oppgaver"].size() > 0) {
                     log.info("Gosys-oppgaver ble filtrert ned til 0 slik at varsel ikke vil bli laget for $aktørId.")
@@ -62,6 +66,11 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
         get("oppgaver").filterNot { oppgave ->
             inneholder(oppgave.finnVerdi("behandlingstype"), oppgave.finnVerdi("behandlingstema"))
         }.size
+
+    private fun JsonNode.opprettetDatoer(): List<LocalDate?> = get("oppgaver").map { oppgave ->
+        val textValue = oppgave.finnVerdi("opprettetTidspunkt") ?: return@map null
+        LocalDateTime.parse(textValue, ISO_ZONED_DATE_TIME).toLocalDate()
+    }
 
     private fun JsonNode.finnVerdi(key: String): String? =
         if (hasNonNull(key)) get(key).textValue() else null
