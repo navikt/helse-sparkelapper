@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.gosys
 
 import com.fasterxml.jackson.databind.JsonNode
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME
 import net.logstash.logback.argument.StructuredArguments.keyValue
@@ -20,7 +21,8 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
 
     fun løsningForBehov(
         behovId: String,
-        aktørId: String
+        aktørId: String,
+        ikkeEldreEnn: LocalDate,
     ): Int? = withMDC("id" to behovId) {
         try {
             val response = oppgavehenter.hentÅpneOppgaver(
@@ -40,7 +42,7 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
                 return@withMDC null
             }
             sikkerlogg.info("Åpne oppgaver, respons: $response")
-            response.loggDatoer()
+            response.loggDatoer(ikkeEldreEnn)
             response.antallRelevanteOppgaver().also { antallEtterFiltrering ->
                 if (antallEtterFiltrering == 0 && response["oppgaver"].size() > 0) {
                     log.info("Gosys-oppgaver ble filtrert ned til 0 slik at varsel ikke vil bli laget for $aktørId.")
@@ -66,14 +68,17 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
             inneholder(oppgave.finnVerdi("behandlingstype"), oppgave.finnVerdi("behandlingstema"))
         }.size
 
-    private fun JsonNode.loggDatoer() {
+    private fun JsonNode.loggDatoer(ikkeEldreEnn: LocalDate) {
         if (path("antallTreffTotalt").intValue() < 1) return
 
-        val datoer = get("oppgaver").map { oppgave ->
+        val (forGamle, relevante) = get("oppgaver").map { oppgave ->
             val textValue = oppgave.finnVerdi("opprettetTidspunkt") ?: return@map null
             LocalDateTime.parse(textValue, ISO_ZONED_DATE_TIME).toLocalDate()
+        }.filterNotNull().partition { dato ->
+            dato.isBefore(ikkeEldreEnn)
         }
-        log.debug("datoer på oppgavene: {}", datoer)
+
+        log.debug("ikkeEldreEnn: {} - for gamle oppgaver: {}, relevante oppgaver: {}", ikkeEldreEnn, forGamle, relevante)
     }
 
     private fun JsonNode.finnVerdi(key: String): String? =

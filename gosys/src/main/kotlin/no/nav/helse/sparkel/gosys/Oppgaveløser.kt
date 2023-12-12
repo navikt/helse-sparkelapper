@@ -21,6 +21,7 @@ internal class Oppgaveløser(
             validate { it.rejectKey("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("ÅpneOppgaver.aktørId") }
+            validate { it.requireKey("ÅpneOppgaver.ikkeEldreEnn") }
         }.register(this)
     }
 
@@ -33,7 +34,9 @@ internal class Oppgaveløser(
 
         val behovId = packet["@id"].asText()
 
-        val antall = oppgaveService.løsningForBehov(behovId, packet["ÅpneOppgaver.aktørId"].asText())
+        val aktørId = packet["ÅpneOppgaver.aktørId"].asText()
+        val ikkeEldreEnn = packet["ÅpneOppgaver.ikkeEldreEnn"].asLocalDate()
+        val antall = oppgaveService.løsningForBehov(behovId, aktørId, ikkeEldreEnn)
 
         packet["@løsning"] = mapOf(
             behov to mapOf(

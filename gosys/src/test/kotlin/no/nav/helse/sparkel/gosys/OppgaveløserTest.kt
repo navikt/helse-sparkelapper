@@ -108,7 +108,8 @@ internal class OppgaveløserTest {
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "ÅpneOppgaver": {
-                "aktørId" : "aktørId"
+                "aktørId" : "aktørId",
+                "ikkeEldreEnn" : "2023-12-12"
             }
         }
         """
@@ -122,7 +123,8 @@ internal class OppgaveløserTest {
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
             "ÅpneOppgaver": {
-                "aktørId" : "aktørId"
+                "aktørId" : "aktørId",
+                "ikkeEldreEnn" : "2023-12-12"
             }
         }
         """

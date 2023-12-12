@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.gosys
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -35,7 +36,7 @@ class OppgaveServiceTest {
 
         val service = OppgaveService(oppgavehenter)
 
-        val svar = service.løsningForBehov("behovId", "aktørId")
+        val svar = service.løsningForBehov("behovId", "aktørId", LocalDate.now())
 
         assertEquals(forventetAntall, svar)
     }
@@ -65,7 +66,7 @@ class OppgaveServiceTest {
 
         val service = OppgaveService(oppgavehenter)
 
-        val svar = service.løsningForBehov("behovId", "aktørId")
+        val svar = service.løsningForBehov("behovId", "aktørId", LocalDate.now())
 
         assertEquals(forventetAntall, svar)
     }
@@ -100,7 +101,7 @@ class OppgaveServiceTest {
 
         val service = OppgaveService(oppgavehenter)
 
-        val svar = service.løsningForBehov("behovId", "aktørId")
+        val svar = service.løsningForBehov("behovId", "aktørId", LocalDate.now())
 
         assertEquals(forventetAntall, svar)
     }
@@ -109,7 +110,7 @@ class OppgaveServiceTest {
     fun `oppgaver-feltet mangler i responsen`() {
         val oppgavehenter = Oppgavehenter { _, _ -> objectNode() }
         val service = OppgaveService(oppgavehenter)
-        val svar = service.løsningForBehov("behovId", "aktørId")
+        val svar = service.løsningForBehov("behovId", "aktørId", LocalDate.now())
         assertEquals(null, svar)
     }
 
