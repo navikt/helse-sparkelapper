@@ -69,8 +69,7 @@ private class Medlemskapvurderinger : River.PacketListener {
     fun vurderMedlemskap(ident: String) = vurderinger.remove(ident) ?: gyldigFødselsnummer(ident)
 
     private fun gyldigFødselsnummer(fødselsnummer: String): String {
-        return if (fødselsnummer == "28457417170") "UAVKLART_MED_BRUKERSPORSMAAL"
-        else try {
+        try {
             LocalDate.parse(fødselsnummer.substring(0, 6), formatter)
             "JA"
         } catch (e: Exception) {
