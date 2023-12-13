@@ -50,7 +50,11 @@ internal class Medlemskap(
             )
         )
         context.publish(packet.toJson())
-        sikkerlogg.info("Sender hardkodet svar for behov {}:\n{}", keyValue("id", packet["@id"].asText()), packet.toJson())
+        sikkerlogg.info(
+            "Sender hardkodet svar for behov {}:\n{}",
+            keyValue("id", packet["@id"].asText()),
+            packet.toJson()
+        )
     }
 }
 
@@ -64,11 +68,12 @@ private class Medlemskapvurderinger : River.PacketListener {
 
     fun vurderMedlemskap(ident: String) = vurderinger.remove(ident) ?: gyldigFødselsnummer(ident)
 
-    private fun gyldigFødselsnummer(fødselsnummer: String) : String {
-        return try {
-            LocalDate.parse(fødselsnummer.substring(0,6), formatter)
+    private fun gyldigFødselsnummer(fødselsnummer: String): String {
+        return if (fødselsnummer == "28457417170") "UAVKLART_MED_BRUKERSPORSMAAL"
+        else try {
+            LocalDate.parse(fødselsnummer.substring(0, 6), formatter)
             "JA"
-        } catch (e: Exception){
+        } catch (e: Exception) {
             "UAVKLART"
         }
     }
