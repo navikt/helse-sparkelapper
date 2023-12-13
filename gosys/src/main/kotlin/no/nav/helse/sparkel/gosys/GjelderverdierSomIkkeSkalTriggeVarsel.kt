@@ -19,7 +19,7 @@ enum class GjelderverdierSomIkkeSkalTriggeVarsel(val behandlingstype: String?, v
 
     companion object {
         fun inneholder(behandlingstype: String?, behandlingstema: String?): Boolean {
-            values().forEach {
+            entries.forEach {
                 if (it.behandlingstype == behandlingstype && it.behandlingstema == behandlingstema) return true
             }
             return false

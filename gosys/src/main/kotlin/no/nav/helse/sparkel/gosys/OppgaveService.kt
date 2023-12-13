@@ -6,7 +6,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import net.logstash.logback.argument.StructuredArguments.kv
-import no.nav.helse.sparkel.gosys.GjelderverdierSomIkkeSkalTriggeVarsel.Companion.inneholder
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 
@@ -66,7 +65,10 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
 
     private fun JsonNode.antallRelevanteOppgaver(): Int =
         get("oppgaver").filterNot { oppgave ->
-            inneholder(oppgave.finnVerdi("behandlingstype"), oppgave.finnVerdi("behandlingstema"))
+            GjelderverdierSomIkkeSkalTriggeVarsel.inneholder(
+                oppgave.finnVerdi("behandlingstype"),
+                oppgave.finnVerdi("behandlingstema"),
+            )
         }.size
 
     private fun JsonNode.loggDatoer(ikkeEldreEnn: LocalDate) {
@@ -77,6 +79,13 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
                 log.info("Mangler 'opprettetTidspunkt' for {} 🤨", kv("oppgaveId", oppgave.finnVerdi("id")))
                 return@forEach
             }
+
+            if (GjelderverdierSomIkkeSkalTriggeVarsel.inneholder(
+                    oppgave.finnVerdi("behandlingstype"),
+                    oppgave.finnVerdi("behandlingstema"),
+                )
+            ) return@forEach
+
             val dato = LocalDateTime.parse(textValue, ISO_ZONED_DATE_TIME).toLocalDate()
             if (dato.isBefore(ikkeEldreEnn)) log.debug(
                 "Kandidat for ikke-telling: {}, {}",
