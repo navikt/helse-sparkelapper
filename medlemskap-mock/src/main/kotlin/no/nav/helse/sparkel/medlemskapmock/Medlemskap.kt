@@ -68,13 +68,11 @@ private class Medlemskapvurderinger : River.PacketListener {
 
     fun vurderMedlemskap(ident: String) = vurderinger.remove(ident) ?: gyldigFødselsnummer(ident)
 
-    private fun gyldigFødselsnummer(fødselsnummer: String): String {
-        try {
-            LocalDate.parse(fødselsnummer.substring(0, 6), formatter)
-            "JA"
-        } catch (e: Exception) {
-            "UAVKLART"
-        }
+    private fun gyldigFødselsnummer(fødselsnummer: String): String = try {
+        LocalDate.parse(fødselsnummer.substring(0, 6), formatter)
+        "JA"
+    } catch (e: Exception) {
+        "UAVKLART"
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
