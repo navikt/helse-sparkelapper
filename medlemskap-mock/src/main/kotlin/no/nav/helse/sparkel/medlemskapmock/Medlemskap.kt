@@ -84,7 +84,7 @@ private class Medlemskapvurderinger : River.PacketListener {
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         val ident = packet["ident"].asText()
-        val svar = if (packet["avklartMedlemskap"].asBoolean()) "JA" else "UAVKLART"
+        val svar = packet["medlemskapVerdi"].asText()
         sikkerlogg.info("forbereder medlemskapvurdering for $ident=$svar")
         vurderinger[ident] = svar
     }
