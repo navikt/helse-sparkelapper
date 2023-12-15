@@ -21,8 +21,7 @@ internal class Medlemskap(
         River(rapidsConnection).apply {
             validate {
                 it.demandValue("@event_name", "mock_medlemskap_avklaring")
-                it.requireKey("ident")
-                it.interestedIn("medlemskapVerdi")
+                it.requireKey("ident", "medlemskapVerdi")
             }
         }.register(medlemskapvurderinger)
 
@@ -82,11 +81,7 @@ private class Medlemskapvurderinger : River.PacketListener {
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         val ident = packet["ident"].asText()
-        val svar = if (packet["medlemskapVerdi"].isTextual) {
-            packet["medlemskapVerdi"].asText()
-        } else {
-            "JA"
-        }
+        val svar = packet["medlemskapVerdi"].asText()
         sikkerlogg.info("forbereder medlemskapvurdering for $ident=$svar")
         vurderinger[ident] = svar
     }
