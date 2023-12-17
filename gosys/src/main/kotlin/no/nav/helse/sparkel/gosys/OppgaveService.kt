@@ -72,31 +72,36 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
         }.size
 
     private fun JsonNode.loggDatoer(ikkeEldreEnn: LocalDate) {
-        if (path("antallTreffTotalt").intValue() < 1) return
+        val opprinneligAntall = antallRelevanteOppgaver()
+        if (path("antallTreffTotalt").intValue() < 1 || opprinneligAntall == 0) return
 
-        get("oppgaver").forEach { oppgave ->
+        val oppgaverSomErForGamle = get("oppgaver").filter { oppgave ->
             val textValue = oppgave.finnVerdi("opprettetTidspunkt") ?: run {
                 log.info("Mangler 'opprettetTidspunkt' for {} 🤨", kv("oppgaveId", oppgave.finnVerdi("id")))
-                return@forEach
+                return@filter false
             }
 
             if (GjelderverdierSomIkkeSkalTriggeVarsel.inneholder(
                     oppgave.finnVerdi("behandlingstype"),
                     oppgave.finnVerdi("behandlingstema"),
                 )
-            ) return@forEach
+            ) {
+                return@filter false
+            }
 
             val dato = LocalDateTime.parse(textValue, ISO_ZONED_DATE_TIME).toLocalDate()
-            if (dato.isBefore(ikkeEldreEnn)) log.debug(
-                "Kandidat for ikke-telling: {}, {}",
-                kv("behandlingstype", oppgave["behandlingstype"]),
-                kv("behandlingstema", oppgave["behandlingstema"])
-            )
+            dato.isBefore(ikkeEldreEnn)
         }
+        if (opprinneligAntall == oppgaverSomErForGamle.size)
+            log.debug(
+                "Kandidat for automatisering pga. alle åpne og aktuelle Gosys-oppgaver er eldre enn 12 måneder\n{}",
+                kv("behandlingstype og -tema", oppgaverSomErForGamle.map {
+                    it["behandlingstype"] to it["behandlingstema"]
+                })
+            )
     }
 
-    private fun JsonNode.finnVerdi(key: String): String? =
-        path(key).textValue()
+    private fun JsonNode.finnVerdi(key: String): String? = path(key).textValue()
 }
 
 private fun <T> withMDC(vararg values: Pair<String, String>, block: () -> T): T = try {
