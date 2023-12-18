@@ -137,6 +137,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "organisasjonsnummer" to ORGNUMMER,
                 "vedtaksperiodeId" to vedtaksperiodeId,
                 "skjæringstidspunkt" to LocalDate.MIN,
+                "førsteFraværsdager" to listOf(mapOf("organisasjonsnummer" to ORGNUMMER, "førsteFraværsdag" to LocalDate.MIN)),
                 "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
                 "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
                 "forespurteOpplysninger" to listOf(
@@ -168,6 +169,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "organisasjonsnummer" to ORGNUMMER,
                 "vedtaksperiodeId" to vedtaksperiodeId,
                 "skjæringstidspunkt" to LocalDate.MIN,
+                "førsteFraværsdager" to listOf(mapOf("organisasjonsnummer" to ORGNUMMER, "førsteFraværsdag" to LocalDate.MIN)),
                 "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
                 "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
                 "forespurteOpplysninger" to listOf(
@@ -201,6 +203,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "organisasjonsnummer" to ORGNUMMER,
                 "vedtaksperiodeId" to vedtaksperiodeId,
                 "skjæringstidspunkt" to LocalDate.MIN,
+                "førsteFraværsdager" to listOf(mapOf("organisasjonsnummer" to ORGNUMMER, "førsteFraværsdag" to LocalDate.MIN)),
                 "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
                 "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
                 "forespurteOpplysninger" to listOf(
@@ -240,6 +243,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
         "vedtaksperiodeId" to vedtaksperiodeId,
         "fom" to LocalDate.MIN,
         "tom" to LocalDate.MAX,
+        "førsteFraværsdager" to listOf(mapOf("organisasjonsnummer" to ORGNUMMER, "førsteFraværsdag" to LocalDate.MIN)),
         "egenmeldingsperioder" to emptyList<Map<String, LocalDate>>(),
         "skjæringstidspunkt" to LocalDate.MIN,
         "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MAX))

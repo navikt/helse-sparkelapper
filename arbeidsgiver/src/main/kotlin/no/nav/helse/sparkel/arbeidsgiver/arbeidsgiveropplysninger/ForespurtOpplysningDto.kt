@@ -61,6 +61,9 @@ internal data class Inntektsforslag(val forrigeInntekt: ForrigeInntekt? = null)
 internal data class ForrigeInntekt(val skjæringstidspunkt: LocalDate, val kilde: String, val beløp: Double)
 internal data class Inntekt(val forslag: Inntektsforslag) : ForespurtOpplysning()
 
+internal fun JsonNode.asBestemmendeFraværsdager() =
+    associate { it["organisasjonsnummer"].asText() to it["førsteFraværsdag"].asLocalDate() }
+
 internal fun JsonNode.asForespurteOpplysninger(): List<ForespurtOpplysning> =
     mapNotNull(JsonNode::asForespurtOpplysning)
 

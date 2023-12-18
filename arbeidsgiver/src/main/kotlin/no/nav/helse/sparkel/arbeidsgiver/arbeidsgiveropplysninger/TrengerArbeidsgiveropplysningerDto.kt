@@ -16,6 +16,7 @@ internal data class TrengerArbeidsgiveropplysningerDto(
     val organisasjonsnummer: String,
     val vedtaksperiodeId: UUID,
     val skjæringstidspunkt: LocalDate?,
+    val bestemmendeFraværsdager: Map<String, LocalDate>,
     val sykmeldingsperioder: List<Map<String, LocalDate>>,
     val egenmeldingsperioder: List<Map<String, LocalDate>>,
     val forespurtData: List<Map<String, Any>>,
@@ -31,6 +32,7 @@ internal fun JsonMessage.toKomplettTrengerArbeidsgiverDto(): TrengerArbeidsgiver
         organisasjonsnummer = this["organisasjonsnummer"].asText(),
         vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
         skjæringstidspunkt = this["skjæringstidspunkt"].asLocalDate(),
+        bestemmendeFraværsdager = this["førsteFraværsdager"].asBestemmendeFraværsdager(),
         sykmeldingsperioder = this["sykmeldingsperioder"].toPerioder(),
         egenmeldingsperioder = this["egenmeldingsperioder"].toPerioder(),
         forespurtData = this["forespurteOpplysninger"].asForespurteOpplysninger().toJsonMap(),
@@ -44,6 +46,7 @@ internal fun JsonMessage.toBegrensetTrengerArbeidsgiverDto(): TrengerArbeidsgive
         organisasjonsnummer = this["organisasjonsnummer"].asText(),
         vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
         skjæringstidspunkt = null,
+        bestemmendeFraværsdager = emptyMap(),
         sykmeldingsperioder = this["sykmeldingsperioder"].toPerioder(),
         egenmeldingsperioder = emptyList(),
         forespurtData = listOf(

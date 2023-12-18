@@ -24,7 +24,8 @@ private fun mockTrengerArbeidsgiveropplysningerDto(
     forespurtData: List<Map<String, Any>>,
     skjæringstidspunkt: LocalDate? = LocalDate.MIN,
     sykmeldingsperioder: List<Map<String, LocalDate>> = listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
-    egenmeldingsperioder: List<Map<String, LocalDate>> = listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN))
+    egenmeldingsperioder: List<Map<String, LocalDate>> = listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
+    bestemmendeFraværsdager: Map<String, LocalDate> = mapOf(ORGNUMMER to LocalDate.MIN)
 ) = TrengerArbeidsgiveropplysningerDto(
     type = type,
     fødselsnummer = FNR,
@@ -34,6 +35,7 @@ private fun mockTrengerArbeidsgiveropplysningerDto(
     sykmeldingsperioder = sykmeldingsperioder,
     egenmeldingsperioder = egenmeldingsperioder,
     forespurtData = forespurtData,
+    bestemmendeFraværsdager = bestemmendeFraværsdager,
     opprettet = LocalDateTime.MAX
 )
 internal fun mockTrengerIkkeArbeidsgiveropplysningerDto(
@@ -122,6 +124,7 @@ internal fun mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId: UU
     Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_BEGRENSET,
     skjæringstidspunkt = null,
     egenmeldingsperioder = emptyList(),
+    bestemmendeFraværsdager = emptyMap(),
     forespurtData = listOf(
         mapOf(
             "opplysningstype" to "Inntekt",
