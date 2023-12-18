@@ -75,30 +75,41 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
         val opprinneligAntall = antallRelevanteOppgaver()
         if (path("antallTreffTotalt").intValue() < 1 || opprinneligAntall == 0) return
 
-        val oppgaverSomErForGamle = get("oppgaver").filter { oppgave ->
-            val textValue = oppgave.finnVerdi("opprettetTidspunkt") ?: run {
-                log.info("Mangler 'opprettetTidspunkt' for {} 🤨", kv("oppgaveId", oppgave.finnVerdi("id")))
-                return@filter false
-            }
-
-            if (GjelderverdierSomIkkeSkalTriggeVarsel.inneholder(
-                    oppgave.finnVerdi("behandlingstype"),
-                    oppgave.finnVerdi("behandlingstema"),
-                )
-            ) {
-                return@filter false
-            }
-
-            val dato = LocalDateTime.parse(textValue, ISO_ZONED_DATE_TIME).toLocalDate()
-            dato.isBefore(ikkeEldreEnn)
-        }
-        if (opprinneligAntall == oppgaverSomErForGamle.size)
-            log.debug(
-                "Kandidat for automatisering pga. alle åpne og aktuelle Gosys-oppgaver er eldre enn 12 måneder\n{}",
-                kv("behandlingstype og -tema", oppgaverSomErForGamle.map {
-                    it["behandlingstype"] to it["behandlingstema"]
-                })
+        val oppgaverOgOpprettetTidspunkt = get("oppgaver").filterNot { oppgave ->
+            GjelderverdierSomIkkeSkalTriggeVarsel.inneholder(
+                oppgave.finnVerdi("behandlingstype"),
+                oppgave.finnVerdi("behandlingstema"),
             )
+        }.filterNot {
+            it.finnVerdi("opprettetTidspunkt") == null
+        }.map { oppgave ->
+            val textValue = oppgave.finnVerdi("opprettetTidspunkt")
+            Triple(
+                LocalDateTime.parse(textValue, ISO_ZONED_DATE_TIME).toLocalDate(),
+                oppgave.finnVerdi("behandlingstype"),
+                oppgave.finnVerdi("behandlingstema")
+            )
+        }
+        val (forGamle, relevante) = oppgaverOgOpprettetTidspunkt.partition { it.first.isBefore(ikkeEldreEnn) }
+        if (oppgaverOgOpprettetTidspunkt.size != opprinneligAntall) log.debug("{}, {}, {}",
+            kv("opprinneligAntall", opprinneligAntall),
+            kv("forGamle", forGamle),
+            kv("relevante", relevante),
+        )
+        if (opprinneligAntall == forGamle.size) {
+            log.debug(
+                "Kandidat for automatisering pga. alle åpne og aktuelle Gosys-oppgaver er eldre enn 12 måneder. {}\n{}",
+                kv("ikkeEldreEnn", ikkeEldreEnn),
+                kv("behandlingstype og -tema for forGamle oppgaver", forGamle.map { it.second to it.third })
+            )
+        } else {
+            log.debug(
+                "Ikke kandidat for automatisering pga. aktuelle Gosys-oppgaver er ikke eldre enn 12 måneder. {}\n{}\n{}",
+                kv("ikkeEldreEnn", ikkeEldreEnn),
+                kv("behandlingstype og -tema for forGamle oppgaver", forGamle.map { it.second to it.third }),
+                kv("opprettet, behandlingstype, og -tema for relevante oppgaver", relevante),
+            )
+        }
     }
 
     private fun JsonNode.finnVerdi(key: String): String? = path(key).textValue()
