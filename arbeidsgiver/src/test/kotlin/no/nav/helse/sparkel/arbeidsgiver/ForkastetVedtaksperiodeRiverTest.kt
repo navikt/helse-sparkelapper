@@ -40,6 +40,23 @@ internal class ForkastetVedtaksperiodeRiverTest {
     }
 
     @Test
+    fun `ignorerer arbeidsledige`() {
+        testRapid.sendTestMessage(
+            forkastetVedtaksperiode(
+                UUID.randomUUID(),
+                LocalDate.MIN,
+                LocalDate.MIN.plusDays(15),
+                eventName = "vedtaksperiode_forkastet",
+                orgnummer = "ARBEIDSLEDIG",
+                tilstand = "START"
+            )
+        )
+        verify(exactly = 0) {
+            mockproducer.send(any())
+        }
+    }
+
+    @Test
     fun `leser event og sender videre når trengerArbeidsgiveropplysninger=true og som er forkastet i tilstand START`() {
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(
@@ -126,12 +143,13 @@ internal class ForkastetVedtaksperiodeRiverTest {
         tom: LocalDate,
         eventName: String = "vedtaksperiode_forkastet",
         tilstand: String,
+        orgnummer: String = ORGNUMMER,
         trengerArbeidsgiveropplysninger: Boolean = true,
     ) = objectMapper.valueToTree<JsonNode>(
         mapOf(
             "@event_name" to eventName,
             "fødselsnummer" to FNR,
-            "organisasjonsnummer" to ORGNUMMER,
+            "organisasjonsnummer" to orgnummer,
             "vedtaksperiodeId" to vedtaksperiodeId,
             "tilstand" to tilstand,
             "trengerArbeidsgiveropplysninger" to trengerArbeidsgiveropplysninger,
