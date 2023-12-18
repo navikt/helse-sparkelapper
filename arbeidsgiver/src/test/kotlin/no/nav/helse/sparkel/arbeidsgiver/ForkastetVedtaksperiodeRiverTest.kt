@@ -55,6 +55,41 @@ internal class ForkastetVedtaksperiodeRiverTest {
             mockproducer.send(any())
         }
     }
+    @Test
+    fun `ignorerer frilansere`() {
+        testRapid.sendTestMessage(
+            forkastetVedtaksperiode(
+                UUID.randomUUID(),
+                LocalDate.MIN,
+                LocalDate.MIN.plusDays(15),
+                eventName = "vedtaksperiode_forkastet",
+                orgnummer = "FRILANS",
+                tilstand = "START"
+            )
+        )
+        verify(exactly = 0) {
+            mockproducer.send(any())
+        }
+    }
+
+    @Test
+    fun `ignorerer selvstendige`() {
+        testRapid.sendTestMessage(
+            forkastetVedtaksperiode(
+                UUID.randomUUID(),
+                LocalDate.MIN,
+                LocalDate.MIN.plusDays(15),
+                eventName = "vedtaksperiode_forkastet",
+                orgnummer = "SELVSTENDIG",
+                tilstand = "START"
+            )
+        )
+        verify(exactly = 0) {
+            mockproducer.send(any())
+        }
+    }
+
+
 
     @Test
     fun `leser event og sender videre når trengerArbeidsgiveropplysninger=true og som er forkastet i tilstand START`() {
