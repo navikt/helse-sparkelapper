@@ -15,7 +15,7 @@ accessPolicy:
         namespace: flex
         cluster: prod-gcp
     external:
-      - host: syfoinntektsmelding.dev-fss-pub.nais.io
+      - host: syfoinntektsmelding.prod-fss-pub.nais.io
 env:
   - name: SOKNAD_API_URL
     value: http://sykepengesoknad-backend.flex
