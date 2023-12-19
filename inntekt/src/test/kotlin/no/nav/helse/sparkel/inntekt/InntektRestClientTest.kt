@@ -7,7 +7,6 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.http.fullPath
 import io.ktor.serialization.jackson.JacksonConverter
-import io.ktor.serialization.jackson.jackson
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -61,7 +60,9 @@ class InntektRestClientTest {
     }
 
     private val inntektRestClient = InntektRestClient(
-        "http://localhost.no", HttpClient(MockEngine) {
+        "http://localhost.no",
+        "resourceId",
+        HttpClient(MockEngine) {
             install(ContentNegotiation) {
                 register(ContentType.Application.Json, JacksonConverter(objectMapper))
             }
@@ -75,7 +76,7 @@ class InntektRestClientTest {
                 }
             }
         },
-        mockk { every { runBlocking { token() } }.returns("token") }
+        tokenSupplier = { "token" }
     )
 }
 

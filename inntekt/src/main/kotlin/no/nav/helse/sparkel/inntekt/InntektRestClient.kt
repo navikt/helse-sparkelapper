@@ -26,8 +26,9 @@ private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
 class InntektRestClient(
     private val baseUrl: String,
+    private val inntektskomponentenOAuthScope: String,
     private val httpClient: HttpClient,
-    private val stsRestClient: StsRestClient
+    private val tokenSupplier: TokenSupplier,
 ) {
     fun hentInntektsliste(
         fnr: String,
@@ -38,8 +39,8 @@ class InntektRestClient(
     ) = clientLatencyStats.startTimer().use {
         runBlocking {
             httpClient.preparePost("$baseUrl/api/v1/hentinntektliste") {
-                header("Authorization", "Bearer ${stsRestClient.token()}")
-                header("Nav-Consumer-Id", "srvsparkelinntekt")
+                header("Authorization", "Bearer ${tokenSupplier(inntektskomponentenOAuthScope)}")
+                header("Nav-Consumer-Id", "sparkel-inntekt")
                 header("Nav-Call-Id", callId)
                 contentType(ContentType.Application.Json)
                 accept(ContentType.Application.Json)
@@ -49,7 +50,7 @@ class InntektRestClient(
                         "aktoerType" to "NATURLIG_IDENT"
                     ),
                     "ainntektsfilter" to filter,
-                    "formaal" to "Foreldrepenger",
+                    "formaal" to "Sykepenger",
                     "maanedFom" to fom,
                     "maanedTom" to tom
                 ))

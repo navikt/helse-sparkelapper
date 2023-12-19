@@ -11,30 +11,21 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
 import io.ktor.serialization.jackson.JacksonConverter
-import io.ktor.serialization.jackson.jackson
 import no.nav.helse.rapids_rivers.RapidApplication
 import org.slf4j.LoggerFactory
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.util.*
 
 val objectMapper: ObjectMapper = jacksonObjectMapper()
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     .registerModule(JavaTimeModule())
 
 fun main() {
-    val env = System.getenv()
-
-    val serviceUser = ServiceUser(
-        username = Files.readString(Paths.get("/var/run/secrets/nais.io/service_user/username")),
-        password = Files.readString(Paths.get("/var/run/secrets/nais.io/service_user/password"))
-    )
-
-    val stsRestClient = StsRestClient("http://security-token-service.default.svc.nais.local", serviceUser)
+    val env = setUpEnvironment()
+    val azureAd = AzureAd(env)
     val inntektRestClient = InntektRestClient(
-        baseUrl = env.getValue("INNTEKTSKOMPONENT_BASE_URL"),
+        baseUrl = env.inntektRestUrl,
+        inntektskomponentenOAuthScope = env.inntektOAuthScope,
         httpClient = simpleHttpClient(),
-        stsRestClient = stsRestClient
+        tokenSupplier = azureAd::accessToken,
     )
 
     RapidApplication.create(System.getenv()).apply {
@@ -68,11 +59,4 @@ private fun simpleHttpClient() = HttpClient {
     install(ContentNegotiation) {
         register(ContentType.Application.Json, JacksonConverter(objectMapper))
     }
-}
-
-class ServiceUser(
-    val username: String,
-    val password: String
-) {
-    val basicAuth = "Basic ${Base64.getEncoder().encodeToString("$username:$password".toByteArray())}"
 }
