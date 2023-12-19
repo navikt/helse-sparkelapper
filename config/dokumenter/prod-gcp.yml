@@ -22,6 +22,6 @@ env:
   - name: ACCESS_TOKEN_SCOPE
     value: api://prod-gcp.flex.sykepengesoknad-backend/.default
   - name: IM_API_URL
-    value: https://syfoinntektsmelding.dev-fss-pub.nais.io
+    value: https://syfoinntektsmelding.prod-fss-pub.nais.io
   - name: ACCESS_TOKEN_SCOPE_IM
-    value: api://dev-fss.helsearbeidsgiver.syfoinntektsmelding/.default
+    value: api://prod-fss.helsearbeidsgiver.syfoinntektsmelding/.default
