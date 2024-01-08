@@ -9,7 +9,7 @@ accessPolicy:
       - host: ereg-services.prod-fss-pub.nais.io
 env:
 - name: KODEVERK_BASE_URL
-  value: https://koproderk.prod-fss-pub.nais.io
+  value: https://kodeverk.prod-fss-pub.nais.io
 - name: ORGANISASJON_BASE_URL
   value: https://ereg-services.prod-fss-pub.nais.io
 - name: AAREG_BASE_URL_REST
