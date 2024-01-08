@@ -41,7 +41,7 @@ internal class KodeverkClientTest {
     @Test
     fun `henter næring`() {
         val kodeverkClient = KodeverkClient(
-            kodeverkBaseUrl = "${server.baseUrl()}/api",
+            kodeverkBaseUrl = server.baseUrl(),
             appName = "sparkel-aareg"
         )
 
@@ -51,7 +51,7 @@ internal class KodeverkClientTest {
     @Test
     fun `henter yrke`() {
         val kodeverkClient = KodeverkClient(
-            kodeverkBaseUrl = "${server.baseUrl()}/api",
+            kodeverkBaseUrl = server.baseUrl(),
             appName = "sparkel-aareg"
         )
 
@@ -61,7 +61,7 @@ internal class KodeverkClientTest {
     @Test
     fun `cacher responsen`() {
         val kodeverkClient = KodeverkClient(
-            kodeverkBaseUrl = "${server.baseUrl()}/api",
+            kodeverkBaseUrl = server.baseUrl(),
             appName = "sparkel-aareg"
         )
 

@@ -27,7 +27,7 @@ class AaregClient(
         val response = hent(
             fnr,
             callId,
-            "$baseUrl/v2/arbeidstaker/arbeidsforhold?sporingsinformasjon=false&arbeidsforholdstatus=AKTIV,FREMTIDIG,AVSLUTTET"
+            "$baseUrl/api/v2/arbeidstaker/arbeidsforhold?sporingsinformasjon=false&arbeidsforholdstatus=AKTIV,FREMTIDIG,AVSLUTTET"
         )
 
         sikkerlogg.info("AaregResponse status:\n${response.bodyAsText()}")

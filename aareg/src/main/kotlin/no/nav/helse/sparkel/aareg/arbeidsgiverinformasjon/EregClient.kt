@@ -25,7 +25,7 @@ class EregClient(
         callId: UUID,
     ): EregResponse {
         val response: HttpResponse =
-            httpClient.get("$baseUrl/v1/organisasjon/$organisasjonsnummer?inkluderHierarki=true&inkluderHistorikk=true") {
+            httpClient.get("$baseUrl/api/v1/organisasjon/$organisasjonsnummer?inkluderHierarki=true&inkluderHistorikk=true") {
                 header("Nav-Consumer-Id", appName)
                 header("Nav-Call-Id", callId)
                 accept(ContentType.Application.Json)

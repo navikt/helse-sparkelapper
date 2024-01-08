@@ -21,7 +21,7 @@ fun aaregMockClient(aaregResponse: String = defaultArbeidsforholdResponse()) = H
     engine {
         addHandler { request ->
             when {
-                request.url.fullPath.startsWith("/v2/arbeidstaker/arbeidsforhold") -> respond(
+                request.url.fullPath.startsWith("/api/v2/arbeidstaker/arbeidsforhold") -> respond(
                     content = aaregResponse,
                     status = HttpStatusCode.OK,
                     headers = headersOf(HttpHeaders.ContentType, "application/json")

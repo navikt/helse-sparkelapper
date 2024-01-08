@@ -13,10 +13,10 @@ accessPolicy:
       - host: ereg-services-q1.dev-fss-pub.nais.io
 env:
 - name: KODEVERK_BASE_URL
-  value: https://kodeverk.dev-fss-pub.nais.io/api
+  value: https://kodeverk.dev-fss-pub.nais.io
 - name: ORGANISASJON_BASE_URL
-  value: https://ereg-services-q1.dev-fss-pub.nais.io/api
+  value: https://ereg-services-q1.dev-fss-pub.nais.io
 - name: AAREG_BASE_URL_REST
-  value: https://aareg-services-q1.dev-fss-pub.nais.io/api
+  value: https://aareg-services-q1.dev-fss-pub.nais.io
 - name: AAREG_OAUTH_SCOPE
   value: api://dev-fss.arbeidsforhold.aareg-services-nais-q1/.default

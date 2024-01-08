@@ -19,7 +19,7 @@ fun eregMockClient(responseGenerator: ResponseGenerator) = HttpClient(MockEngine
     engine {
         addHandler { request ->
             when {
-                request.url.fullPath.startsWith("/v1/organisasjon") -> {
+                request.url.fullPath.startsWith("/api/v1/organisasjon") -> {
                     respond(responseGenerator.organisasjonResponse())
                 }
                 else -> error("Endepunktet finnes ikke ${request.url.fullPath}")

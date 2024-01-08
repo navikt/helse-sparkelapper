@@ -1,0 +1,18 @@
+kafkaPool: nav-prod
+azure:
+  enabled: true
+accessPolicy:
+  outbound:
+    external:
+      - host: kodeverk.prod-fss-pub.nais.io
+      - host: aareg-services.prod-fss-pub.nais.io
+      - host: ereg-services.prod-fss-pub.nais.io
+env:
+- name: KODEVERK_BASE_URL
+  value: https://koproderk.prod-fss-pub.nais.io
+- name: ORGANISASJON_BASE_URL
+  value: https://ereg-services.prod-fss-pub.nais.io
+- name: AAREG_BASE_URL_REST
+  value: https://aareg-services.prod-fss-pub.nais.io
+- name: AAREG_OAUTH_SCOPE
+  value: api://prod-fss.arbeidsforhold.aareg-services-nais-q1/.default
