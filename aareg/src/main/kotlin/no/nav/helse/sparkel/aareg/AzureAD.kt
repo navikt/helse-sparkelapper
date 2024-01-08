@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.aareg
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.databind.ObjectMapper
 
 import io.ktor.client.*
 import io.ktor.client.engine.*
@@ -10,70 +11,52 @@ import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.serialization.jackson.JacksonConverter
+import java.net.URI
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import java.net.URL
+import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.LocalDateTime
+import java.util.concurrent.ConcurrentHashMap
 
-class AzureAD(private val props: AzureADProps) {
-    private var cachedAccessToken: Token = fetchToken()
+class AzureAD(
+    private val props: AzureADProps,
+    private val objectMapper: ObjectMapper,
+    private val client: HttpClient = HttpClient.newHttpClient()
+) {
+    private val cachedTokens = ConcurrentHashMap<String, Token>()
 
-    private val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
-
-    init {
-        hentTokenMedEnklereHttpClient().also { logger.info("Token mot arreg hentet ut fra AD.") }
-    }
-
-    internal fun accessToken(): String {
-        if (cachedAccessToken.expired) cachedAccessToken = fetchToken().also { logger.info("Token mot arreg oppfrisket 👍") }
-        return cachedAccessToken.access_token
-    }
-
-    private companion object {
-        private val azureAdClient = HttpClient(CIO) {
-            engine {
-                System.getenv("HTTP_PROXY")?.let {
-                    proxy = ProxyBuilder.http(Url(it))
-                }
-            }
-            install(ContentNegotiation) {
-                register(ContentType.Application.Json, JacksonConverter(objectMapper))
-            }
-        }
-    }
-
-    private fun fetchToken(): Token {
-        return runBlocking {
-            azureAdClient.preparePost(props.tokenEndpointURL) {
-                accept(ContentType.Application.Json)
-                method = HttpMethod.Post
-                setBody(FormDataContent(Parameters.build {
-                    append("client_id", props.clientId)
-                    append("scope", props.aaregOauthScope)
-                    append("grant_type", "client_credentials")
-                    append("client_secret", props.clientSecret)
-                }))
-            }.body()
-        }
-    }
-
-    private fun hentTokenMedEnklereHttpClient() {
-        try {
-            val body = props.run {
-                "client_id=$clientId&client_secret=$clientSecret&scope=$aaregOauthScope&grant_type=client_credentials"
-            }
-            val request = HttpRequest.newBuilder(props.tokenEndpointURL.toURI())
-                .header("Accept", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(body))
-                .build()
-
-            val response = java.net.http.HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString())
-            val token = objectMapper.readValue(response.body(), Token::class.java)
-            sikkerLogg.info("Hentet token vha java.net.http.HttpClient: $token")
+    internal fun accessToken(scope: String): String {
+        return try {
+            cachedTokens.compute(scope) { _, eksisterendeVerdi ->
+                eksisterendeVerdi?.takeUnless(Token::expired) ?: hentToken(scope)
+            }!!.access_token
         } catch (e: Exception) {
-            sikkerLogg.info("Noe gikk gæernt", e)
+            logger.warn("Kunne ikke hente token", e)
+            throw e
+        }
+    }
+
+    private fun hentToken(scope: String): Token {
+        val body = "client_id=${props.clientId}&client_secret=${props.clientSecret}&scope=$scope&grant_type=client_credentials"
+        logger.info("Henter token for $scope")
+        val request = HttpRequest.newBuilder(props.tokenEndpointURL)
+            .header("Accept", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(body))
+            .build()
+
+        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+        val responseBody = response.body()
+        try {
+            val token = objectMapper.readValue(responseBody, Token::class.java)!!
+            logger.info("Hentet token fra AAD")
+            return token
+        } catch (err: Exception) {
+            logger.error("Klarte ikke å hente token, noe galt skjedde: ${err.message}", err)
+            sikkerlogg.error("Klarte ikke å hente token, noe galt skjedde: ${err.message}.\nResponse body: $responseBody", err)
+            throw err
         }
     }
 
@@ -89,9 +72,8 @@ class AzureAD(private val props: AzureADProps) {
 }
 
 data class AzureADProps(
-    val tokenEndpointURL: URL,
+    val tokenEndpointURL: URI,
     val clientId: String,
-    val clientSecret: String,
-    val aaregOauthScope: String,
+    val clientSecret: String
 )
 

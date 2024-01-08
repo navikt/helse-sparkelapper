@@ -19,11 +19,11 @@ internal class AaregClientTest {
 
         val azureAdMock = mockk<AzureAD>()
 
-        every { azureAdMock.accessToken() } returns "superToken"
+        every { azureAdMock.accessToken(any()) } returns "superToken"
 
         val aaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
-            tokenSupplier = { azureAdMock.accessToken() },
+            tokenSupplier = { azureAdMock.accessToken("foo") },
             httpClient = aaregMockClient()
         )
 
@@ -41,11 +41,11 @@ internal class AaregClientTest {
 
         val azureAdMock = mockk<AzureAD>()
 
-        every { azureAdMock.accessToken() } returns "superToken"
+        every { azureAdMock.accessToken(any()) } returns "superToken"
 
         val aaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
-            tokenSupplier = { azureAdMock.accessToken() },
+            tokenSupplier = { azureAdMock.accessToken("foo") },
             httpClient = aaregMockClient()
         )
 

@@ -42,7 +42,7 @@ internal fun createApp(environment: Environment): RapidsConnection {
         }
         expectSuccess = false
     }
-    val azureAD = AzureAD(AzureADProps(environment.tokenEndpointURL, environment.clientId, environment.clientSecret, environment.aaregOauthScope))
+    val azureAD = AzureAD(AzureADProps(environment.tokenEndpointURL, environment.clientId, environment.clientSecret), objectMapper)
 
     val kodeverkClient = KodeverkClient(
         kodeverkBaseUrl = environment.kodeverkBaseUrl,
@@ -50,7 +50,7 @@ internal fun createApp(environment: Environment): RapidsConnection {
     )
 
     val eregClient = EregClient(environment.organisasjonBaseUrl, environment.appName, httpClient)
-    val aaregClient = AaregClient(environment.aaregBaseUrlRest, {azureAD.accessToken()}, httpClient)
+    val aaregClient = AaregClient(environment.aaregBaseUrlRest, { azureAD.accessToken(environment.aaregOauthScope) }, httpClient)
 
     val rapidsConnection = RapidApplication.create(environment.raw)
     Arbeidsgiverinformasjonsbehovløser(rapidsConnection, kodeverkClient, eregClient)

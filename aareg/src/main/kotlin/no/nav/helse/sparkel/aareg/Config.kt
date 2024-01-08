@@ -1,6 +1,6 @@
 package no.nav.helse.sparkel.aareg
 
-import java.net.URL
+import java.net.URI
 
 fun setUpEnvironment() =
     Environment(
@@ -9,7 +9,7 @@ fun setUpEnvironment() =
         kodeverkBaseUrl = fromEnv("KODEVERK_BASE_URL"),
         aaregBaseUrlRest = fromEnv("AAREG_BASE_URL_REST"),
         aaregOauthScope = fromEnv("AAREG_OAUTH_SCOPE"),
-        tokenEndpointURL = URL(fromEnv("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT")),
+        tokenEndpointURL = URI(fromEnv("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT")),
         clientId = fromEnv("AZURE_APP_CLIENT_ID"),
         clientSecret = fromEnv("AZURE_APP_CLIENT_SECRET"),
         appName = System.getenv("NAIS_APP_NAME") ?: "sparkel-aareg"
@@ -23,7 +23,7 @@ data class Environment(
     val kodeverkBaseUrl: String,
     val aaregBaseUrlRest: String,
     val aaregOauthScope: String,
-    val tokenEndpointURL: URL,
+    val tokenEndpointURL: URI,
     val clientId: String,
     val clientSecret: String,
     val appName: String
