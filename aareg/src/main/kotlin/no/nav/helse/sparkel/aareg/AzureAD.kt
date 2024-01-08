@@ -2,6 +2,8 @@ package no.nav.helse.sparkel.aareg
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.convertValue
+import com.fasterxml.jackson.module.kotlin.readValue
 
 import io.ktor.client.*
 import io.ktor.client.engine.*
@@ -54,8 +56,14 @@ class AzureAD(
             logger.info("Hentet token fra AAD")
             return token
         } catch (err: Exception) {
-            logger.error("Klarte ikke å hente token, noe galt skjedde: ${err.message}", err)
-            sikkerlogg.error("Klarte ikke å hente token, noe galt skjedde: ${err.message}.\nResponse body: $responseBody", err)
+            try {
+                val error = objectMapper.readValue<ErrorResponse>(body)
+                logger.error("Klarte ikke å hente token. Azure sier: ${error.error}: ${error.error_description}", err)
+                throw RuntimeException("${error.error}: ${error.error_description}")
+            } catch (_: Exception) {
+                logger.error("Klarte ikke å hente token, noe galt skjedde: ${err.message}", err)
+                sikkerlogg.error("Klarte ikke å hente token, noe galt skjedde: ${err.message}.\nResponse body: $responseBody", err)
+            }
             throw err
         }
     }
@@ -69,6 +77,11 @@ class AzureAD(
         private val expirationTime: LocalDateTime = LocalDateTime.now().plusSeconds(expires_in - 10L)
         internal val expired get() = expirationTime.isBefore(LocalDateTime.now())
     }
+
+    private data class ErrorResponse(
+        val error: String,
+        val error_description: String
+    )
 }
 
 data class AzureADProps(
