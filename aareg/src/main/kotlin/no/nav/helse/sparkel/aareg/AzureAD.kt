@@ -57,7 +57,7 @@ class AzureAD(
             return token
         } catch (err: Exception) {
             try {
-                val error = objectMapper.readValue<ErrorResponse>(body)
+                val error = objectMapper.readValue<ErrorResponse>(responseBody)
                 logger.error("Klarte ikke å hente token. Azure sier: ${error.error}: ${error.error_description}", err)
                 throw RuntimeException("${error.error}: ${error.error_description}")
             } catch (_: Exception) {
