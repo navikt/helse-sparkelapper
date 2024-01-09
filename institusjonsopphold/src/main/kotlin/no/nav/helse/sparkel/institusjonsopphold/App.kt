@@ -23,7 +23,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     else null
     val azureClient = if (env.containsKey("INSTITUSJONSOPPHOLD_SCOPE"))
         InMemoryAzureTokenCache(AzureTokenClient(
-            tokenEndpoint = URI("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
+            tokenEndpoint = URI(env.getValue("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT")),
             clientId = env.getValue("AZURE_APP_CLIENT_ID"),
             authMethod = AzureAuthMethod.Secret(env.getValue("AZURE_APP_CLIENT_SECRET"))
         ))
