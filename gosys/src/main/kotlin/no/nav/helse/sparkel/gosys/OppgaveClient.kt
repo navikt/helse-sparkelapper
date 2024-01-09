@@ -30,7 +30,7 @@ internal class OppgaveClient(
             requestMethod = "GET"
             connectTimeout = 10000
             readTimeout = 10000
-            setRequestProperty("Authorization", "Bearer ${stsClient?.token() ?: azureClient?.bearerToken(scope ?: "")}")
+            setRequestProperty("Authorization", "Bearer ${stsClient?.token() ?: azureClient?.bearerToken(scope ?: "")?.token}")
             setRequestProperty("Accept", "application/json")
             setRequestProperty("X-Correlation-ID", behovId)
 
