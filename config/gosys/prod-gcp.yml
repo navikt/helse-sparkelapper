@@ -1,0 +1,12 @@
+kafkaPool: nav-prod
+azure:
+  enabled: true
+accessPolicy:
+  outbound:
+    external:
+      - host: oppgave.prod-fss-pub.nais.io
+env:
+  - name: OPPGAVE_URL
+    value: https://oppgave.prod-fss-pub.nais.io
+  - name: OPPGAVE_SCOPE
+    value: api://prod-fss.oppgavehandtering.oppgave/.default
