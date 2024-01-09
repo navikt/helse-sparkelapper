@@ -8,9 +8,9 @@ azure:
 accessPolicy:
   outbound:
     external:
-      - host: oppgave-q1.dev-fss-pub.nais.io
+      - host: oppgave.dev-fss-pub.nais.io
 env:
 - name: OPPGAVE_URL
-  value: https://oppgave-q1.dev-fss-pub.nais.io
+  value: https://oppgave.dev-fss-pub.nais.io
 - name: OPPGAVE_SCOPE
-  value: api://dev-fss.oppgavehandtering.oppgave-q1/.default
+  value: api://dev-fss.oppgavehandtering.oppgave/.default
