@@ -2,11 +2,11 @@ package no.nav.helse.sparkel.personinfo
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import kotlinx.coroutines.runBlocking
 import no.nav.helse.sparkel.personinfo.v3.Attributt
 import no.nav.helse.sparkel.personinfo.v3.PDL
 import no.nav.helse.sparkel.personinfo.v3.PdlQueryBuilder
@@ -15,7 +15,7 @@ private fun query(sti: String) = PdlClient::class.java.getResource(sti)!!.readTe
 
 internal class PdlClient(
     private val baseUrl: String,
-    private val accessTokenClient: AccessTokenClient,
+    private val accessTokenClient: AzureTokenProvider,
     private val accessTokenScope: String,
 ): PDL {
 
@@ -34,15 +34,11 @@ internal class PdlClient(
         callId: String,
         query: String
     ): JsonNode {
-        val aadToken = runBlocking {
-            accessTokenClient.hentAccessToken(accessTokenScope)
-        }
-
         val body = objectMapper.writeValueAsString(PdlQueryObject(query, Variables(ident)))
 
         val request = HttpRequest.newBuilder(URI.create(baseUrl))
             .header("TEMA", "SYK")
-            .header("Authorization", "Bearer $aadToken")
+            .header("Authorization", "Bearer ${accessTokenClient.bearerToken(accessTokenScope).token}")
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
             .header("Nav-Call-Id", callId)

@@ -2,7 +2,8 @@ package no.nav.helse.sparkel.sputnik.abakus
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import java.net.URL
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.keyValue
@@ -18,8 +19,9 @@ internal interface AbakusClient {
 }
 
 internal class RestAbakusClient(
-    private val url: URL,
-    private val accessTokenClient: AccessTokenClient
+    private val url: URI,
+    private val scope: String,
+    private val accessTokenClient: AzureTokenProvider
 ) : AbakusClient {
     override fun hent(fødselsnummer: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse): Set<Stønadsperiode> {
         check(fom <= tom) { "fom $fom må være før eller lik tom $tom" }
@@ -28,7 +30,7 @@ internal class RestAbakusClient(
 
         val response = try {
             url.postJson(requestBody,
-                "Authorization" to "Bearer ${accessTokenClient.accessToken()}",
+                "Authorization" to "Bearer ${accessTokenClient.bearerToken(scope).token}",
                 "Nav-Consumer-Id" to "Sykepenger",
                 "Nav-Callid" to callId
             ).second

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.azure.AzureToken
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.configureFor
@@ -15,8 +17,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
-import io.mockk.coEvery
-import io.mockk.mockk
+import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.junit.jupiter.api.AfterAll
@@ -64,13 +65,15 @@ internal class DødsinfoløserTest {
         wireMockServer.start()
         configureFor(create().port(wireMockServer.port()).build())
 
-        val accessTokenClient = mockk<AccessTokenClient>(relaxed = true)
-        coEvery { accessTokenClient.hentAccessToken(any()) } returns "1234abc"
-
         service = PersoninfoService(
             PdlClient(
                 baseUrl = "${wireMockServer.baseUrl()}/graphql",
-                accessTokenClient = accessTokenClient,
+                accessTokenClient = object : AzureTokenProvider {
+                    override fun bearerToken(scope: String) = AzureToken("1234abc", LocalDateTime.MAX)
+                    override fun onBehalfOfToken(scope: String, token: String): AzureToken {
+                        throw NotImplementedError("ikke implementert i mocken")
+                    }
+                },
                 accessTokenScope = "someScope"
             )
         )

@@ -1,13 +1,15 @@
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.azure.AzureToken
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
-import io.mockk.coEvery
-import io.mockk.mockk
-import no.nav.helse.sparkel.personinfo.*
+import java.time.LocalDateTime
+import no.nav.helse.sparkel.personinfo.PdlClient
+import no.nav.helse.sparkel.personinfo.PersoninfoService
 import no.nav.helse.sparkel.personinfo.stubSts
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterAll
@@ -45,13 +47,15 @@ internal abstract class PdlStubber {
         WireMock.configureFor(WireMock.create().port(wireMockServer.port()).build())
         stubSts()
 
-        val accessTokenClient = mockk<AccessTokenClient>(relaxed = true)
-        coEvery { accessTokenClient.hentAccessToken(any()) } returns "1234abc"
-
         personinfoService = PersoninfoService(
             PdlClient(
                 baseUrl = "${wireMockServer.baseUrl()}/graphql",
-                accessTokenClient = accessTokenClient,
+                accessTokenClient = object : AzureTokenProvider {
+                    override fun bearerToken(scope: String) = AzureToken("1234abc", LocalDateTime.MAX)
+                    override fun onBehalfOfToken(scope: String, token: String): AzureToken {
+                        throw NotImplementedError("ikke implementert i mocken")
+                    }
+                },
                 accessTokenScope = "someScope"
             )
         )

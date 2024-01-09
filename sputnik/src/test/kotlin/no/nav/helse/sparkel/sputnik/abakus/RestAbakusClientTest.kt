@@ -1,5 +1,7 @@
 package no.nav.helse.sparkel.sputnik.abakus
 
+import com.github.navikt.tbd_libs.azure.AzureToken
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
@@ -7,7 +9,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
-import java.net.URL
+import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -32,8 +34,14 @@ internal class RestAbakusClientTest {
         mockAbakus(fnr, fom, tom)
         client = RestAbakusClient(
             url = server.abakusUrl(),
-            accessTokenClient = object : AccessTokenClient {
-                override fun accessToken() = "ey-abakus-access-token"
+            scope = "abacus-scope",
+            accessTokenClient = object : AzureTokenProvider {
+                override fun bearerToken(scope: String) =
+                    AzureToken("ey-abakus-access-token", LocalDateTime.MAX)
+
+                override fun onBehalfOfToken(scope: String, token: String): AzureToken {
+                    throw NotImplementedError("ikke implementert i mocken")
+                }
             }
         )
     }
@@ -365,7 +373,7 @@ internal class RestAbakusClientTest {
             )
         }
 
-        internal fun WireMockServer.abakusUrl() = URL("${baseUrl()}/abakus")
+        internal fun WireMockServer.abakusUrl() = URI("${baseUrl()}/abakus")
         internal fun mockAbakus(fnr: String, fom: LocalDate, tom: LocalDate) {
             mock(fnr, fom, tom, setOf(Pleiepenger), pleiepengerResponse)
             mock(fnr, fom, tom, setOf(Omsorgspenger), omsorgspengerResponse)

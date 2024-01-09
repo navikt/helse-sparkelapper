@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.personinfo
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -33,13 +34,10 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         }
     }
 
+    val azureClient = createAzureTokenClientFromEnvironment(env)
     val pdlClient = PdlClient(
         baseUrl = env.getValue("PDL_URL"),
-        accessTokenClient = AccessTokenClient(
-            aadAccessTokenUrl = env.getValue("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
-            clientId = env.getValue("AZURE_APP_CLIENT_ID"),
-            clientSecret = env.getValue("AZURE_APP_CLIENT_SECRET"),
-            httpClient = azureAdClient),
+        accessTokenClient = azureClient,
         accessTokenScope = System.getenv("ACCESS_TOKEN_SCOPE"),
     )
     val personinfoService = PersoninfoService(pdlClient)

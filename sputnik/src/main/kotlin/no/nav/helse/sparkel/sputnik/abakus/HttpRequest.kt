@@ -5,18 +5,18 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.HttpURLConnection
-import java.net.URL
+import java.net.URI
 import org.slf4j.LoggerFactory
 
 internal object HttpRequest {
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     private val objectMapper = jacksonObjectMapper()
 
-    private fun URL.request(
+    private fun URI.request(
         method: String,
         body: ((outputStream: OutputStream) -> Unit)?,
         vararg headers: Pair<String, String>
-    ) = with(openConnection() as HttpURLConnection) {
+    ) = with(toURL().openConnection() as HttpURLConnection) {
         requestMethod = method
         connectTimeout = 10000
         readTimeout = 10000
@@ -39,11 +39,11 @@ internal object HttpRequest {
         }
     }
 
-    internal fun URL.get(
+    internal fun URI.get(
         vararg headers: Pair<String, String>
     ) = request(method = "GET", body = null, *headers)
 
-    internal fun URL.post(
+    internal fun URI.post(
         requestBody: String,
         vararg headers: Pair<String, String>
     ) = request(method = "POST", body = {
@@ -53,7 +53,7 @@ internal object HttpRequest {
         }
     }, *headers)
 
-    internal fun URL.postJson(
+    internal fun URI.postJson(
         requestBody: String,
         vararg headers: Pair<String, String>
     ): Pair<Int, JsonNode> {
