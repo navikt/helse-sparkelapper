@@ -8,10 +8,10 @@ azure:
 accessPolicy:
   outbound:
     rules:
-      - application: nom-api
+      - application: skjermede-personer-pip
         namespace: nom
 env:
 - name: SKJERMEDE_BASE_URL
-  value: http://nom-api.nom.svc.cluster.local
+  value: http://skjermede-personer-pip.nom.svc.cluster.local
 - name: SKJERMEDE_OAUTH_SCOPE
-  value: api://dev-gcp.nom.nom-api/.default
+  value: api://dev-gcp.nom.skjermede-personer-pip/.default
