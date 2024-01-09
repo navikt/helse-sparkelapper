@@ -9,9 +9,8 @@ import java.net.URI
 
 internal class InstitusjonsoppholdClient(
     private val baseUrl: String,
-    private val scope: String?,
-    private val stsClient: StsRestClient?,
-    private val azureClient: AzureTokenProvider?
+    private val scope: String,
+    private val azureClient: AzureTokenProvider
 ) {
 
     companion object {
@@ -28,7 +27,7 @@ internal class InstitusjonsoppholdClient(
             requestMethod = "GET"
             connectTimeout = 10000
             readTimeout = 10000
-            setRequestProperty("Authorization", "Bearer ${stsClient?.token() ?: azureClient?.bearerToken(scope ?: "")?.token}")
+            setRequestProperty("Authorization", "Bearer ${azureClient.bearerToken(scope).token}")
             setRequestProperty("Accept", "application/json")
             setRequestProperty("Nav-Call-Id", behovId)
             System.getenv("NAIS_APP_NAME")?.also { setRequestProperty("Nav-Consumer-Id", it) }

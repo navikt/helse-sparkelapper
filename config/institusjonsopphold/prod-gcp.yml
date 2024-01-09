@@ -1,0 +1,12 @@
+kafkaPool: nav-prod
+azure:
+  enabled: true
+accessPolicy:
+  outbound:
+    external:
+      - host: institusjon-opphold-proxy.prod-fss-pub.nais.io
+env:
+  - name: INSTITUSJONSOPPHOLD_URL
+    value: https://institusjon-opphold-proxy.prod-fss-pub.nais.io
+  - name: INSTITUSJONSOPPHOLD_SCOPE
+    value: api://prod-fss.team-rocket.inst2/.default

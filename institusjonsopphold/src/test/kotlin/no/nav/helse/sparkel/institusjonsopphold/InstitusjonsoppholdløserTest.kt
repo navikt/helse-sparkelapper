@@ -61,7 +61,6 @@ internal class InstitusjonsoppholdløserTest {
             InstitusjonsoppholdClient(
                 baseUrl = wireMockServer.baseUrl(),
                 scope = "inst2-scope",
-                stsClient = null,
                 azureClient = AzureTokenClient(
                     tokenEndpoint = URI(wireMockServer.baseUrl() + "/token"),
                     clientId = "a client id",
