@@ -1,10 +1,12 @@
 package no.nav.helse.sparkel.norg
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.accept
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.parameter
 import io.ktor.client.request.prepareGet
 import io.ktor.http.*
@@ -14,6 +16,8 @@ import org.slf4j.LoggerFactory
 
 class Norg2Client(
     private val baseUrl: String,
+    private val scope: String?,
+    private val azureClient: AzureTokenProvider?,
     private val httpClient: HttpClient
 ) {
     private val log: Logger = LoggerFactory.getLogger(Norg2Client::class.java)
@@ -21,6 +25,7 @@ class Norg2Client(
     suspend fun finnBehandlendeEnhet(geografiskOmraade: String, adresseBeskyttelse: String?): Enhet =
         retry("find_local_nav_office") {
             val httpResponse = httpClient.prepareGet("$baseUrl/enhet/navkontor/$geografiskOmraade") {
+                azureClient?.also { bearerAuth(it.bearerToken(scope!!).token) }
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
                 if (!adresseBeskyttelse.isNullOrEmpty()) {

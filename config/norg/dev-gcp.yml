@@ -1,0 +1,21 @@
+kafkaPool: nav-dev
+replicas:
+  min: 1
+  max: 1
+azure:
+  enabled: true
+  tenant: trygdeetaten.no
+accessPolicy:
+  outbound:
+    external:
+      - host: norg2.dev-fss-pub.nais.io
+      - host: pdl-api.dev-fss-pub.nais.io
+env:
+- name: NORG2_BASE_URL
+  value: https://norg2.dev-fss-pub.nais.io/norg2/api/v1
+- name: NORG2_SCOPE
+  value: api://dev-fss.org.norg2/.default
+- name: PDL_URL
+  value: https://pdl-api.dev-fss-pub.nais.io/graphql
+- name: PDL_SCOPE
+  value: api://dev-fss.pdl.pdl-api/.default

@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.norg
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -16,8 +17,10 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 private const val dollar = '$'
 
 class PDL(
-    private val sts: STS,
+    private val azureClient: AzureTokenProvider?,
+    private val sts: STS?,
     private val baseUrl: String,
+    private val scope: String?,
     private val httpClient: HttpClient = HttpClient.newHttpClient()
 
 ) {
@@ -51,7 +54,7 @@ class PDL(
             IOException::class,
             retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L)
         ) {
-            val accessToken = sts.token()
+            val accessToken = azureClient?.bearerToken(scope ?: "")?.token ?: sts?.token()
 
             val body =
                 objectMapper.writeValueAsString(
@@ -61,7 +64,6 @@ class PDL(
             val request = HttpRequest.newBuilder(URI.create(baseUrl))
                 .header("TEMA", "SYK")
                 .header("Authorization", "Bearer $accessToken")
-                .header("Nav-Consumer-Token", "Bearer $accessToken")
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
                 .header("behandlingsnummer", "B139")

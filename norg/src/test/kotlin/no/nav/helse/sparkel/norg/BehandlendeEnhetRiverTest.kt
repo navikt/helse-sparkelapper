@@ -1,5 +1,7 @@
 package no.nav.helse.sparkel.norg
 
+import com.github.navikt.tbd_libs.azure.AzureToken
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -7,6 +9,7 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.jackson
 import io.mockk.coEvery
 import io.mockk.mockk
+import java.time.LocalDateTime
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -94,7 +97,16 @@ class BehandlendeEnhetRiverTest {
         }
     }
 
-    private val norg2Client = Norg2Client("baseurl", client)
+    private val azureTokenMock = object : AzureTokenProvider {
+        override fun bearerToken(scope: String): AzureToken {
+            return AzureToken("mittToken", LocalDateTime.MAX)
+        }
+
+        override fun onBehalfOfToken(scope: String, token: String): AzureToken {
+            throw NotImplementedError("ikke implementert i mock")
+        }
+    }
+    private val norg2Client = Norg2Client("baseurl", "norg2-scope", azureTokenMock, client)
     private val rapid = TestRapid()
         .apply {
             BehandlendeEnhetRiver(this, PersoninfoService(norg2Client, pdlMock))
