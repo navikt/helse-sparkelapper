@@ -6,6 +6,7 @@ import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import org.slf4j.LoggerFactory
 
 internal class OppgaveClient(
     private val baseUrl: String,
@@ -16,6 +17,7 @@ internal class OppgaveClient(
 
     companion object {
         private val objectMapper = ObjectMapper()
+        private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     }
 
     override fun hentÅpneOppgaver(
@@ -35,6 +37,8 @@ internal class OppgaveClient(
             val stream: InputStream? = if (responseCode < 300) this.inputStream else this.errorStream
             responseCode to stream?.bufferedReader()?.readText()
         }
+
+        sikkerlogg.info("GET $url ${if (stsClient != null) " med STS" else if (azureClient != null) " med azure" else "med ingenting" }:\n$responseBody")
 
         if (responseCode >= 300) {
             throw RuntimeException("unknown error (responseCode=$responseCode) from oppgave")
