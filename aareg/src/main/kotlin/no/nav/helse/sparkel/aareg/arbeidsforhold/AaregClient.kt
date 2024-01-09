@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.accept
@@ -17,7 +18,8 @@ import no.nav.helse.sparkel.aareg.sikkerlogg
 
 class AaregClient(
     private val baseUrl: String,
-    private val tokenSupplier: () -> String,
+    private val scope: String,
+    private val tokenSupplier: AzureTokenProvider,
     private val httpClient: HttpClient = HttpClient()
 ) {
     suspend fun hentFraAareg(
@@ -44,7 +46,7 @@ class AaregClient(
 
     private suspend fun hent(fnr: String, callId: UUID, url: String) =
         httpClient.get(url) {
-            header("Authorization", "Bearer ${tokenSupplier()}")
+            header("Authorization", "Bearer ${tokenSupplier.bearerToken(scope).token}")
             System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
             header("Nav-Call-Id", callId)
             accept(ContentType.Application.Json)

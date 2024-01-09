@@ -9,6 +9,7 @@ plugins {
 
 val junitJupiterVersion = "5.8.2"
 val rapidsAndRiversVersion = "2023093008351696055717.ffdec6aede3d"
+val tbdLibsVersion = "2024.01.09-10.01-864ddafa"
 val ktorVersion = "2.1.1"
 val cxfVersion = "3.5.3"
 val mockkVersion = "1.13.9"
@@ -120,6 +121,7 @@ allprojects {
 subprojects {
     ext.set("ktorVersion", ktorVersion)
     ext.set("rapidsAndRiversVersion", rapidsAndRiversVersion)
+    ext.set("tbdLibsVersion", tbdLibsVersion)
     ext.set("cxfVersion", cxfVersion)
 
     dependencies {
