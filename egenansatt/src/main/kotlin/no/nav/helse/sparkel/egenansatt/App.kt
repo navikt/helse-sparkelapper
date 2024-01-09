@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.github.navikt.tbd_libs.azure.AzureAuthMethod
-import com.github.navikt.tbd_libs.azure.AzureTokenClient
-import com.github.navikt.tbd_libs.azure.InMemoryAzureTokenCache
-import javax.swing.InputMap
+import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.slf4j.Logger
@@ -29,11 +26,7 @@ fun createApp(env: Environment): RapidsConnection {
     val rapidsConnection = RapidApplication.create(env.raw)
 
 
-    val aad = InMemoryAzureTokenCache(AzureTokenClient(
-        tokenEndpoint = env.tokenEndpointURL,
-        clientId = env.clientId,
-        authMethod = AzureAuthMethod.Secret(env.clientSecret)
-    ))
+    val aad = createAzureTokenClientFromEnvironment(env.raw)
 
     val skjermedePersoner = SkjermedePersoner(aad, env.skjermedeBaseURL, env.skjermendeOauthScope)
 

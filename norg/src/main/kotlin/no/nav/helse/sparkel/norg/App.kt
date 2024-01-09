@@ -1,14 +1,11 @@
 package no.nav.helse.sparkel.norg
 
-import com.github.navikt.tbd_libs.azure.AzureAuthMethod
-import com.github.navikt.tbd_libs.azure.AzureTokenClient
-import com.github.navikt.tbd_libs.azure.InMemoryAzureTokenCache
-import io.ktor.client.*
+import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.jackson.jackson
-import java.net.URI
 import no.nav.helse.rapids_rivers.RapidApplication
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -24,11 +21,7 @@ fun main() {
 
 fun launchApplication(environment: Environment) {
     val azureClient = environment.tokenEndpoint?.let {
-        InMemoryAzureTokenCache(AzureTokenClient(
-            tokenEndpoint = URI(environment.tokenEndpoint),
-            clientId = environment.clientId!!,
-            authMethod = AzureAuthMethod.Secret(environment.clientSecret!!)
-        ))
+        createAzureTokenClientFromEnvironment()
     }
     val sts = environment.securityTokenServiceUrl?.let {
         val serviceUser = readServiceUserCredentials()

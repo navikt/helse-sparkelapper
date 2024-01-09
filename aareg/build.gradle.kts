@@ -2,7 +2,7 @@ val ktorVersion: String by project
 val tbdLibsVersion: String by project
 val arrowVersion = "0.12.1"
 dependencies {
-    implementation("com.github.navikt.tbd-libs:azure-token-client:$tbdLibsVersion")
+    implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
     implementation("io.arrow-kt:arrow-core-data:$arrowVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")

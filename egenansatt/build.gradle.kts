@@ -3,7 +3,7 @@ val cxfVersion: String by project
 
 val tbdLibsVersion: String by project
 dependencies {
-    implementation("com.github.navikt.tbd-libs:azure-token-client:$tbdLibsVersion")
+    implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-jackson:$ktorVersion")

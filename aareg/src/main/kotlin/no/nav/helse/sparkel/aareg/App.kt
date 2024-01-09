@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.github.navikt.tbd_libs.azure.AzureAuthMethod
-import com.github.navikt.tbd_libs.azure.AzureTokenClient
-import com.github.navikt.tbd_libs.azure.InMemoryAzureTokenCache
+import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
@@ -45,7 +43,7 @@ internal fun createApp(environment: Environment): RapidsConnection {
         }
         expectSuccess = false
     }
-    val azureAD = InMemoryAzureTokenCache(AzureTokenClient(environment.tokenEndpointURL, environment.clientId, AzureAuthMethod.Secret(environment.clientSecret), objectMapper = objectMapper))
+    val azureAD = createAzureTokenClientFromEnvironment(environment.raw)
 
     val kodeverkClient = KodeverkClient(
         kodeverkBaseUrl = environment.kodeverkBaseUrl,
