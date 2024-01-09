@@ -1,0 +1,13 @@
+kafkaPool: nav-prod
+azure:
+  enabled: true
+accessPolicy:
+  outbound:
+    rules:
+      - application: skjermede-personer-pip
+        namespace: nom
+env:
+- name: SKJERMEDE_BASE_URL
+  value: http://skjermede-personer-pip.nom.svc.cluster.local
+- name: SKJERMEDE_OAUTH_SCOPE
+  value: api://prod-gcp.nom.skjermede-personer-pip/.default

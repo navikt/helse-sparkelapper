@@ -118,7 +118,7 @@ spec:
         {{# each accessPolicy.outbound.rules as |item|}}
         - application: {{ item.application }}
           namespace: {{ item.namespace }}
-          cluster: {{ item.cluster }}
+          {{#if item.cluster}}cluster: {{ item.cluster }}{{/if}}
         {{/each}}
       {{/if}}
   {{/if}}
