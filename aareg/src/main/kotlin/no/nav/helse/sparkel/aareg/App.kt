@@ -16,6 +16,7 @@ import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.aareg.arbeidsforhold.AaregClient
 import no.nav.helse.sparkel.aareg.arbeidsforhold.ArbeidsforholdLøserV2
+import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdbehovløser
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.Arbeidsgiverinformasjonsbehovløser
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.EregClient
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
@@ -56,6 +57,7 @@ internal fun createApp(environment: Environment): RapidsConnection {
 
     val rapidsConnection = RapidApplication.create(environment.raw)
     Arbeidsgiverinformasjonsbehovløser(rapidsConnection, kodeverkClient, eregClient)
+    Arbeidsforholdbehovløser(rapidsConnection, aaregClient)
     ArbeidsforholdLøserV2(rapidsConnection, aaregClient)
 
     return rapidsConnection
