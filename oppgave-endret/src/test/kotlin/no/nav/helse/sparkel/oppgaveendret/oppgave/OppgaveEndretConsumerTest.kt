@@ -43,7 +43,7 @@ class OppgaveEndretConsumerTest {
                 kafkaConsumer,
                 gosysOppgaveEndretProducer,
                 objectMapper,
-                manipulerbarKlokke,
+                manipulerbarKlokke
             )
 
         assertTrue(oppgaveEndretConsumer.åpentVindu())
