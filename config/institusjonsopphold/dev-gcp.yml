@@ -1,0 +1,17 @@
+kafkaPool: nav-dev
+replicas:
+  min: 1
+  max: 1
+azure:
+  enabled: true
+  tenant: trygdeetaten.no
+accessPolicy:
+  outbound:
+    external:
+      - host: institusjon-opphold-proxy-q2.dev-fss-pub.nais.io
+env:
+  - name: INSTITUSJONSOPPHOLD_URL
+    value: https://institusjon-opphold-proxy-q2.dev-fss-pub.nais.io
+  - name: INSTITUSJONSOPPHOLD_SCOPE
+    value: api://dev-fss.team-rocket.inst2-q2/.default
+

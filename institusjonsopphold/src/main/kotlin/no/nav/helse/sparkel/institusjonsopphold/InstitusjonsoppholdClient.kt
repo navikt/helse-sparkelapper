@@ -2,13 +2,16 @@ package no.nav.helse.sparkel.institusjonsopphold
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
 internal class InstitusjonsoppholdClient(
     private val baseUrl: String,
-    private val stsClient: StsRestClient
+    private val scope: String?,
+    private val stsClient: StsRestClient?,
+    private val azureClient: AzureTokenProvider?
 ) {
 
     companion object {
@@ -25,10 +28,10 @@ internal class InstitusjonsoppholdClient(
             requestMethod = "GET"
             connectTimeout = 10000
             readTimeout = 10000
-            setRequestProperty("Authorization", "Bearer ${stsClient.token()}")
+            setRequestProperty("Authorization", "Bearer ${stsClient?.token() ?: azureClient?.bearerToken(scope ?: "")?.token}")
             setRequestProperty("Accept", "application/json")
             setRequestProperty("Nav-Call-Id", behovId)
-            setRequestProperty("Nav-Consumer-Id", "srvsparkelinst")
+            System.getenv("NAIS_APP_NAME")?.also { setRequestProperty("Nav-Consumer-Id", it) }
             setRequestProperty("Nav-Personident", fødselsnummer)
 
             val stream: InputStream? = if (responseCode < 300) this.inputStream else this.errorStream
