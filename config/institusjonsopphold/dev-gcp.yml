@@ -1,0 +1,17 @@
+kafkaPool: nav-dev
+replicas:
+  min: 1
+  max: 1
+azure:
+  enabled: true
+  tenant: trygdeetaten.no
+accessPolicy:
+  outbound:
+    external:
+      - host: inst2-q2.dev.intern.nav.no
+env:
+  - name: INSTITUSJONSOPPHOLD_URL
+    value: https://inst2-q2.dev.intern.nav.no
+  - name: INSTITUSJONSOPPHOLD_SCOPE
+    value: api://dev-fss.team-rocket.inst2-q2/.default
+
