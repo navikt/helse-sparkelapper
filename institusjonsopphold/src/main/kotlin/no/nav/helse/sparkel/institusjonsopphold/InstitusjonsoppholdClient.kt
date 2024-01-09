@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import java.io.InputStream
 import java.net.HttpURLConnection
-import java.net.URL
+import java.net.URI
 
 internal class InstitusjonsoppholdClient(
     private val baseUrl: String,
@@ -24,7 +24,7 @@ internal class InstitusjonsoppholdClient(
     ): JsonNode {
         val url = "${baseUrl}/api/v1/person/institusjonsopphold"
 
-        val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
+        val (responseCode, responseBody) = with(URI(url).toURL().openConnection() as HttpURLConnection) {
             requestMethod = "GET"
             connectTimeout = 10000
             readTimeout = 10000
