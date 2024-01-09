@@ -2,13 +2,16 @@ package no.nav.helse.sparkel.gosys
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
 internal class OppgaveClient(
     private val baseUrl: String,
-    private val stsClient: StsRestClient
+    private val scope: String?,
+    private val stsClient: StsRestClient?,
+    private val azureClient: AzureTokenProvider?
 ) : Oppgavehenter {
 
     companion object {
@@ -19,15 +22,13 @@ internal class OppgaveClient(
         aktørId: String,
         behovId: String
     ): JsonNode {
-
-        val url =
-            "${baseUrl}/api/v1/oppgaver?statuskategori=AAPEN&tema=SYK&aktoerId=${aktørId}"
+        val url = "${baseUrl}/api/v1/oppgaver?statuskategori=AAPEN&tema=SYK&aktoerId=${aktørId}"
 
         val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
             requestMethod = "GET"
             connectTimeout = 10000
             readTimeout = 10000
-            setRequestProperty("Authorization", "Bearer ${stsClient.token()}")
+            setRequestProperty("Authorization", "Bearer ${stsClient?.token() ?: azureClient?.bearerToken(scope ?: "")}")
             setRequestProperty("Accept", "application/json")
             setRequestProperty("X-Correlation-ID", behovId)
 

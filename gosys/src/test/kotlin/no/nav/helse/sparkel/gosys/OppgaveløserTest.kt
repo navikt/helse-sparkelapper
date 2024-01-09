@@ -4,9 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.azure.AzureAuthMethod
+import com.github.navikt.tbd_libs.azure.AzureTokenClient
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import java.net.URI
 import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.junit.jupiter.api.*
@@ -57,9 +60,12 @@ internal class OppgaveløserTest {
         service = OppgaveService(
             OppgaveClient(
                 baseUrl = wireMockServer.baseUrl(),
-                stsClient = StsRestClient(
-                    baseUrl = wireMockServer.baseUrl(),
-                    serviceUser = ServiceUser("", "")
+                scope = "oppgave-scope",
+                stsClient = null,
+                azureClient = AzureTokenClient(
+                    tokenEndpoint = URI(wireMockServer.baseUrl() + "/token"),
+                    clientId = "a client id",
+                    authMethod = AzureAuthMethod.Secret("my secret")
                 )
             )
         )
@@ -131,7 +137,7 @@ internal class OppgaveløserTest {
 
     private fun stubEksterneEndepunkt() {
         stubFor(
-            get(urlPathEqualTo("/rest/v1/sts/token"))
+            post(urlPathEqualTo("/token"))
                 .willReturn(
                     aResponse()
                         .withStatus(200)
