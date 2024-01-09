@@ -1,17 +1,17 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 
-val jvmTarget = 17
-val gradleWrapperVersion = "8.3"
+val jvmTarget = 21
+val gradleWrapperVersion = "8.5"
 
 plugins {
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm") version "1.9.22"
 }
 
 val junitJupiterVersion = "5.8.2"
 val rapidsAndRiversVersion = "2023093008351696055717.ffdec6aede3d"
 val ktorVersion = "2.1.1"
 val cxfVersion = "3.5.3"
-val mockkVersion = "1.12.0"
+val mockkVersion = "1.13.9"
 val wiremockVersion = "2.27.2"
 
 buildscript {
@@ -92,22 +92,17 @@ allprojects {
     }
 
     repositories {
-        val githubPassword: String by project
         maven("https://packages.confluent.io/maven/")
         maven("https://oss.sonatype.org")
         mavenCentral()
-        maven {
-            url = uri("https://maven.pkg.github.com/navikt/*")
-            credentials {
-                username = "x-access-token"
-                password = githubPassword
-            }
-        }
+        maven("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
     }
 
     tasks {
-        kotlin {
-            jvmToolchain(jvmTarget)
+        java {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(jvmTarget)
+            }
         }
         withType<Wrapper> {
             gradleVersion = gradleWrapperVersion
