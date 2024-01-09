@@ -3,6 +3,8 @@ package no.nav.helse.sparkel.sigrun
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.apache.Apache
@@ -11,6 +13,7 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.accept
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareGet
 import io.ktor.http.ContentType
@@ -57,13 +60,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
             }
         }
 
-        val tokenClient = AccessTokenClient(
-            aadAccessTokenUrl = env.getValue("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
-            clientId = env.getValue("AZURE_APP_CLIENT_ID"),
-            clientSecret = env.getValue("AZURE_APP_CLIENT_SECRET"),
-            httpClient = httpClient
-        )
-
+        val tokenClient = createAzureTokenClientFromEnvironment(env)
         PensjonsgivendeInntekt(this, SigrunClient(
             env.getValue("SIGRUN_URL"),
             httpClient,
@@ -132,16 +129,15 @@ private class PensjonsgivendeInntekt(
 private class SigrunClient(
     private val sigrunBaseUrl: String,
     private val httpClient: HttpClient,
-    private val tokenClient: AccessTokenClient,
+    private val tokenClient: AzureTokenProvider,
     private val scope: String
 ) {
     fun hentBeregnetSkatt(fnr: String, år: Int): Map<String, Int> {
-        val accessToken = runBlocking { tokenClient.hentAccessToken(scope) } ?: return emptyMap()
         return runBlocking {
             val response = httpClient.prepareGet("$sigrunBaseUrl/api/beregnetskatt") {
                 accept(ContentType.Application.Json)
                 method = HttpMethod.Post
-                accessToken.berikRequestMedBearer(headers)
+                bearerAuth(tokenClient.bearerToken(scope).token)
                 header("x-naturligident", fnr)
                 header("x-aktoerid", "")
                 header("x-filter", "BeregnetSkattPensjonsgivendeInntekt")

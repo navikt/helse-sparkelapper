@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.dokumenter
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -29,26 +30,18 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
             }
         }
 
+        val azureClient = createAzureTokenClientFromEnvironment(env)
+
         val søknadClient = SøknadClient(
             baseUrl = env.getValue("SOKNAD_API_URL"),
-            AccessTokenClient(
-                aadAccessTokenUrl = env.getValue("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
-                clientId = env.getValue("AZURE_APP_CLIENT_ID"),
-                clientSecret = env.getValue("AZURE_APP_CLIENT_SECRET"),
-                httpClient = httpClient
-            ),
+            tokenClient = azureClient,
             httpClient = httpClient,
             scope = env.getValue("ACCESS_TOKEN_SCOPE")
         )
 
         val inntektsmeldingClient = InntektsmeldingClient(
             baseUrl = env.getValue("IM_API_URL"),
-            AccessTokenClient(
-                aadAccessTokenUrl = env.getValue("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
-                clientId = env.getValue("AZURE_APP_CLIENT_ID"),
-                clientSecret = env.getValue("AZURE_APP_CLIENT_SECRET"),
-                httpClient = httpClient
-            ),
+            tokenClient = azureClient,
             httpClient = httpClient,
             scope = env.getValue("ACCESS_TOKEN_SCOPE_IM")
         )
