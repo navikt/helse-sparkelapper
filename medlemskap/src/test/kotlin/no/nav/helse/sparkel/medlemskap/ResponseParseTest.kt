@@ -10,8 +10,8 @@ class ResponseParseTest {
 
     @Test
     fun `ny og gammel response skal tolkes helt likt`() {
-        val speilVurdering = MedlemskapClient.parseSvar(jacksonObjectMapper().readTree(speilvurderingResponse))
-        val vurdering = MedlemskapClient.parseSvar(jacksonObjectMapper().readTree(vurderingResponse))
+        val speilVurdering = MedlemskapClient.parseSvar(objectMapper, objectMapper.readTree(speilvurderingResponse))
+        val vurdering = MedlemskapClient.parseSvar(objectMapper, objectMapper.readTree(vurderingResponse))
 
         assertEquals(speilVurdering, vurdering)
         assertEquals("JA", speilVurdering.path("resultat").path("svar").asText())
@@ -20,8 +20,12 @@ class ResponseParseTest {
     @Test
     fun `rart svar gir exception`() {
         assertThrows<MedlemskapException> {
-            MedlemskapClient.parseSvar(jacksonObjectMapper().readTree(crazyRespone))
+            MedlemskapClient.parseSvar(objectMapper, objectMapper.readTree(crazyRespone))
         }
+    }
+
+    private companion object {
+        private val objectMapper = jacksonObjectMapper()
     }
 }
 

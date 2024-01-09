@@ -1,27 +1,28 @@
 package no.nav.helse.sparkel.medlemskap
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.net.HttpURLConnection
-import java.net.URL
+import java.net.URI
 import java.time.LocalDate
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.rapids_rivers.isMissingOrNull
 import org.intellij.lang.annotations.Language
 
 internal class MedlemskapClient(
-    private val baseUrl: String,
-    private val azureClient: AzureClient,
-    private val accesstokenScope: String = "??"
+    private val baseUrl: URI,
+    private val azureClient: AzureTokenProvider,
+    private val scope: String
 ) {
 
     internal fun hentMedlemskapsvurdering(fnr: String, fom: LocalDate, tom: LocalDate): JsonNode {
         val (responseCode, responseBody) =
-            with(URL(baseUrl).openConnection() as HttpURLConnection) {
+            with(baseUrl.toURL().openConnection() as HttpURLConnection) {
                 requestMethod = "POST"
-                setRequestProperty("Authorization", "Bearer ${azureClient.getToken(accesstokenScope).accessToken}")
+                setRequestProperty("Authorization", "Bearer ${azureClient.bearerToken(scope).token}")
                 setRequestProperty("Accept", "application/json")
                 setRequestProperty("Content-Type", "application/json")
                 connectTimeout = 10000
@@ -48,7 +49,7 @@ internal class MedlemskapClient(
             throw MedlemskapException("unknown error (responseCode=$responseCode) from medlemskap", responseBody)
         }
 
-        return parseSvar(responseJson)
+        return parseSvar(objectMapper, responseJson)
     }
 
     internal companion object {
@@ -64,8 +65,8 @@ internal class MedlemskapClient(
         }
         """
 
-        fun parseSvar(root: JsonNode): JsonNode {
-            return jacksonObjectMapper().createObjectNode().set("resultat", jacksonObjectMapper().createObjectNode().put("svar", finnSvar(root)))
+        fun parseSvar(objectMapper: ObjectMapper, root: JsonNode): JsonNode {
+            return objectMapper.createObjectNode().set("resultat", objectMapper.createObjectNode().put("svar", finnSvar(root)))
         }
 
         private fun finnSvar(root: JsonNode): String {
