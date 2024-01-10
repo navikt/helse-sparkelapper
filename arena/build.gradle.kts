@@ -2,7 +2,8 @@ val cxfVersion: String by project
 val tjenestespesifikasjonerVersion = "1.2019.09.25-00.21-49b69f0625e0"
 
 dependencies {
-    implementation("com.sun.xml.ws:jaxws-ri:2.3.3")
+    implementation("com.sun.xml.ws:jaxws-ri:4.0.2")
+    implementation("javax.xml.ws:jaxws-api:2.3.1")
     implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
