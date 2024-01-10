@@ -46,7 +46,7 @@ class InntektsmeldingClient(
                     log.info(it)
                     sikkerlog.info("$it response: $response")
                 }
-                objectMapper.createObjectNode()
+                objectMapper.createObjectNode().put("error", response.status.value)
             } else response.body<JsonNode>()
         }
     }
