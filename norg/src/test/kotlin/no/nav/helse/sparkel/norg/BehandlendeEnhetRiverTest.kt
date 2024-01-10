@@ -73,14 +73,14 @@ class BehandlendeEnhetRiverTest {
         engine {
             addHandler { request ->
                 when (request.url.encodedPath) {
-                    "/baseurl/enhet/navkontor/SWE" -> {
+                    "/baseurl/norg2/api/v1/enhet/navkontor/SWE" -> {
                         respond(
                             "{\"field\":null,\"message\":\"Enheten med nummeret ''{0}'' eksisterer ikke\"}",
                             status = HttpStatusCode.NotFound,
                             headersOf(name = HttpHeaders.ContentType, value = "application/json")
                         )
                     }
-                    "/baseurl/enhet/navkontor/3407" -> {
+                    "/baseurl/norg2/api/v1/enhet/navkontor/3407" -> {
                         respond(
                             "{\"enhetNr\": $NAV_GØVIK }",
                             status = HttpStatusCode.OK,

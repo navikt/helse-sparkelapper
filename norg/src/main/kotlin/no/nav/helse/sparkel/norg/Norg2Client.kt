@@ -16,16 +16,16 @@ import org.slf4j.LoggerFactory
 
 class Norg2Client(
     private val baseUrl: String,
-    private val scope: String?,
-    private val azureClient: AzureTokenProvider?,
+    private val scope: String,
+    private val azureClient: AzureTokenProvider,
     private val httpClient: HttpClient
 ) {
     private val log: Logger = LoggerFactory.getLogger(Norg2Client::class.java)
 
     suspend fun finnBehandlendeEnhet(geografiskOmraade: String, adresseBeskyttelse: String?): Enhet =
         retry("find_local_nav_office") {
-            val httpResponse = httpClient.prepareGet("$baseUrl/enhet/navkontor/$geografiskOmraade") {
-                azureClient?.also { bearerAuth(it.bearerToken(scope!!).token) }
+            val httpResponse = httpClient.prepareGet("$baseUrl/norg2/api/v1/enhet/navkontor/$geografiskOmraade") {
+                bearerAuth(azureClient.bearerToken(scope).token)
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
                 if (!adresseBeskyttelse.isNullOrEmpty()) {

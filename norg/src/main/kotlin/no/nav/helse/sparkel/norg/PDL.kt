@@ -4,23 +4,22 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
-import no.nav.helse.rapids_rivers.isMissingOrNull
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.helse.rapids_rivers.isMissingOrNull
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 private const val dollar = '$'
 
 class PDL(
-    private val azureClient: AzureTokenProvider?,
-    private val sts: STS?,
+    private val azureClient: AzureTokenProvider,
     private val baseUrl: String,
-    private val scope: String?,
+    private val scope: String,
     private val httpClient: HttpClient = HttpClient.newHttpClient()
 
 ) {
@@ -54,14 +53,14 @@ class PDL(
             IOException::class,
             retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L)
         ) {
-            val accessToken = azureClient?.bearerToken(scope ?: "")?.token ?: sts?.token()
+            val accessToken = azureClient.bearerToken(scope).token
 
             val body =
                 objectMapper.writeValueAsString(
                     PdlQuery(query = query.onOneLine(), variables = Variables(fødselsnummer))
                 )
 
-            val request = HttpRequest.newBuilder(URI.create(baseUrl))
+            val request = HttpRequest.newBuilder(URI.create("$baseUrl/graphql"))
                 .header("TEMA", "SYK")
                 .header("Authorization", "Bearer $accessToken")
                 .header("Content-Type", "application/json")

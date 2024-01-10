@@ -20,13 +20,7 @@ fun main() {
 }
 
 fun launchApplication(environment: Environment) {
-    val azureClient = environment.tokenEndpoint?.let {
-        createAzureTokenClientFromEnvironment()
-    }
-    val sts = environment.securityTokenServiceUrl?.let {
-        val serviceUser = readServiceUserCredentials()
-        STS(it, serviceUser)
-    }
+    val azureClient = createAzureTokenClientFromEnvironment()
     val norgRestClient = Norg2Client(
         baseUrl = environment.norg2BaseUrl,
         scope = environment.norg2Scope,
@@ -34,7 +28,7 @@ fun launchApplication(environment: Environment) {
         httpClient = simpleHttpClient()
     )
 
-    val pdl = PDL(azureClient, sts, environment.pdlUrl, environment.pdlScope)
+    val pdl = PDL(azureClient, environment.pdlUrl, environment.pdlScope)
 
     val behandlendeEnhetService = PersoninfoService(norgRestClient, pdl)
 

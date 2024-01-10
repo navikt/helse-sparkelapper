@@ -1,0 +1,18 @@
+kafkaPool: nav-prod
+azure:
+  enabled: true
+accessPolicy:
+  outbound:
+    external:
+      - host: norg2.prod-fss-pub.nais.io
+      - host: pdl-api.prod-fss-pub.nais.io
+env:
+  - name: NORG2_BASE_URL
+    value: https://norg2.prod-fss-pub.nais.io
+  - name: NORG2_SCOPE
+    value: api://prod-fss.org.norg2/.default
+  - name: PDL_URL
+    value: https://pdl-api.prod-fss-pub.nais.io
+  - name: PDL_SCOPE
+    value: api://prod-fss.pdl.pdl-api/.default
+

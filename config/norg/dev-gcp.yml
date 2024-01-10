@@ -12,10 +12,10 @@ accessPolicy:
       - host: pdl-api.dev-fss-pub.nais.io
 env:
 - name: NORG2_BASE_URL
-  value: https://norg2.dev-fss-pub.nais.io/norg2/api/v1
+  value: https://norg2.dev-fss-pub.nais.io
 - name: NORG2_SCOPE
   value: api://dev-fss.org.norg2/.default
 - name: PDL_URL
-  value: https://pdl-api.dev-fss-pub.nais.io/graphql
+  value: https://pdl-api.dev-fss-pub.nais.io
 - name: PDL_SCOPE
   value: api://dev-fss.pdl.pdl-api/.default
