@@ -117,7 +117,8 @@ jobs:
         id: docker-build-push
         with:
           team: ${{ needs.generate_vars.outputs.team }}
-          tag: ${{ env.DOCKER_IMAGE_PREFIX }}${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}
+          image_suffix: ${{ env.DOCKER_IMAGE_PREFIX }}${{ matrix.project }}
+          tag: ${{ needs.generate_vars.outputs.tag }}
           docker_context: ${{ matrix.project }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
@@ -138,7 +139,7 @@ jobs:
           # VARS og IMAGE er miljøvariabler som leses automatisk av nais/deploy/actions/deploy
           VARS_FILE="config/${{ matrix.project }}/${{ matrix.cluster }}.yml"
           echo "VARS=$VARS_FILE" >> $GITHUB_ENV
-          echo "IMAGE=${CONTAINER_REGISTRY}/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/${{ needs.generate_vars.outputs.team }}/${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}" >> $GITHUB_ENV
+          echo "IMAGE=${{ env.CONTAINER_REGISTRY }}/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/${{ needs.generate_vars.outputs.team }}/${{ github.repository }}/${{ env.DOCKER_IMAGE_PREFIX }}${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}" >> $GITHUB_ENV
       - name: Fetch sources
         uses: actions/checkout@v3
       - name: Check for vars yml
