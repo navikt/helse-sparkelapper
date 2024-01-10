@@ -116,8 +116,8 @@ jobs:
         uses: nais/docker-build-push@v0
         id: docker-build-push
         with:
-          team: ${{ needs.set_version.outputs.team }}
-          tag: ${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.set_version.outputs.image }}
+          team: ${{ needs.generate_vars.outputs.team }}
+          tag: ${DOCKER_IMAGE_PREFIX}${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}
           docker_context: ${{ matrix.project }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
