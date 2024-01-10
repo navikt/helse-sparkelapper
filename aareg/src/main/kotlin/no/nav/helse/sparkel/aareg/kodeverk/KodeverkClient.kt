@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.ktor.http.encodeURLPath
 import java.io.InputStream
 import java.net.HttpURLConnection
+import java.net.URI
 import java.net.URL
 import java.time.LocalDate
 import java.util.UUID
@@ -41,7 +42,7 @@ class KodeverkClient(
     }
 
     private fun hentFraKodeverk(path: String): String {
-        val (responseCode, body) = URL("$kodeverkBaseUrl$path?spraak=nb&ekskluderUgyldige=true&oppslagsdato=${LocalDate.now()}").get(
+        val (responseCode, body) = URI("$kodeverkBaseUrl$path?spraak=nb&ekskluderUgyldige=true&oppslagsdato=${LocalDate.now()}").toURL().get(
             "Nav-Call-Id" to "${UUID.randomUUID()}",
             "Nav-Consumer-Id" to appName
         )

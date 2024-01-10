@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import java.io.InputStream
 import java.net.HttpURLConnection
+import java.net.URI
 import java.net.URL
 import org.slf4j.LoggerFactory
 
@@ -24,7 +25,7 @@ internal class OppgaveClient(
     ): JsonNode {
         val url = "${baseUrl}/api/v1/oppgaver?statuskategori=AAPEN&tema=SYK&aktoerId=${aktørId}"
 
-        val (responseCode, responseBody) = with(URL(url).openConnection() as HttpURLConnection) {
+        val (responseCode, responseBody) = with(URI(url).toURL().openConnection() as HttpURLConnection) {
             requestMethod = "GET"
             connectTimeout = 10000
             readTimeout = 10000

@@ -29,7 +29,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import java.io.File
-import java.net.URL
+import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
 import no.nav.helse.sparkel.infotrygd.api.Infotrygdperiode
@@ -97,7 +97,7 @@ private fun Application.sykepengeperioderApi() {
 
     authentication {
         jwt {
-            val jwkProvider = JwkProviderBuilder(URL("AZURE_OPENID_CONFIG_JWKS_URI".env))
+            val jwkProvider = JwkProviderBuilder(URI("AZURE_OPENID_CONFIG_JWKS_URI".env).toURL())
                 .proxied(ProxyBuilder.http(Url("HTTP_PROXY".env)))
                 .build()
 

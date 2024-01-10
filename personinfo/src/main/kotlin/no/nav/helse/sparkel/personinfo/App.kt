@@ -1,14 +1,6 @@
 package no.nav.helse.sparkel.personinfo
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.http.ContentType
-import io.ktor.serialization.jackson.JacksonConverter
-import java.io.File
 import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -23,17 +15,6 @@ fun main() {
 }
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
-    val azureAdClient = HttpClient(Apache) {
-        install(ContentNegotiation) {
-            register(
-                ContentType.Application.Json, JacksonConverter(
-                    jacksonObjectMapper()
-                        .registerModule(JavaTimeModule())
-                )
-            )
-        }
-    }
-
     val azureClient = createAzureTokenClientFromEnvironment(env)
     val pdlClient = PdlClient(
         baseUrl = env.getValue("PDL_URL"),
@@ -64,5 +45,3 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         Vergemålløser(this, personinfoService)
     }
 }
-
-private fun String.readFile() = File(this).readText(Charsets.UTF_8)
