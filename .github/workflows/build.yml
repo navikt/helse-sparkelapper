@@ -5,7 +5,6 @@ on:
       - main
 env:
   CONTAINER_REGISTRY: europe-north1-docker.pkg.dev
-  DOCKER_IMAGE_PREFIX: sparkel-
   RESOURCE: config/nais.yml
   TEAM: tbd
   ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
@@ -117,7 +116,7 @@ jobs:
         id: docker-build-push
         with:
           team: ${{ needs.generate_vars.outputs.team }}
-          image_suffix: ${{ env.DOCKER_IMAGE_PREFIX }}${{ matrix.project }}
+          image_suffix: ${{ matrix.project }}
           tag: ${{ needs.generate_vars.outputs.tag }}
           docker_context: ${{ matrix.project }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
@@ -139,7 +138,7 @@ jobs:
           # VARS og IMAGE er miljøvariabler som leses automatisk av nais/deploy/actions/deploy
           VARS_FILE="config/${{ matrix.project }}/${{ matrix.cluster }}.yml"
           echo "VARS=$VARS_FILE" >> $GITHUB_ENV
-          echo "IMAGE=${{ env.CONTAINER_REGISTRY }}/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/${{ needs.generate_vars.outputs.team }}/${{ github.repository }}/${{ env.DOCKER_IMAGE_PREFIX }}${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}" >> $GITHUB_ENV
+          echo "IMAGE=${{ env.CONTAINER_REGISTRY }}/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/${{ needs.generate_vars.outputs.team }}/${{ github.repository }}-${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}" >> $GITHUB_ENV
       - name: Fetch sources
         uses: actions/checkout@v3
       - name: Check for vars yml
