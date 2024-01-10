@@ -38,14 +38,6 @@ fun launchApplication(environment: Environment) {
 }
 
 private fun simpleHttpClient() = HttpClient {
-    install(Logging) {
-        level = LogLevel.BODY
-        logger = object : io.ktor.client.plugins.logging.Logger {
-            override fun log(message: String) {
-                sikkerLogg.debug(message)
-            }
-        }
-    }
     install(ContentNegotiation) {
         jackson()
     }
