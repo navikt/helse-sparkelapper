@@ -138,7 +138,7 @@ jobs:
           # VARS og IMAGE er miljøvariabler som leses automatisk av nais/deploy/actions/deploy
           VARS_FILE="config/${{ matrix.project }}/${{ matrix.cluster }}.yml"
           echo "VARS=$VARS_FILE" >> $GITHUB_ENV
-          echo "IMAGE=${{ env.CONTAINER_REGISTRY }}/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/${{ needs.generate_vars.outputs.team }}/${{ github.repository }}-${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}" >> $GITHUB_ENV
+          echo "IMAGE=${{ env.CONTAINER_REGISTRY }}/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/${{ needs.generate_vars.outputs.team }}/${{ github.event.repository.name }}-${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}" >> $GITHUB_ENV
       - name: Fetch sources
         uses: actions/checkout@v3
       - name: Check for vars yml
