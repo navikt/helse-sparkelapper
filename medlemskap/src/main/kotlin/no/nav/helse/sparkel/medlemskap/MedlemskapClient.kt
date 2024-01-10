@@ -20,7 +20,7 @@ internal class MedlemskapClient(
 
     internal fun hentMedlemskapsvurdering(fnr: String, fom: LocalDate, tom: LocalDate): JsonNode {
         val (responseCode, responseBody) =
-            with(URI("$baseUrl/speilvurdering").toURL().openConnection() as HttpURLConnection) {
+            with(baseUrl.toURL().openConnection() as HttpURLConnection) {
                 requestMethod = "POST"
                 setRequestProperty("Authorization", "Bearer ${azureClient.bearerToken(scope).token}")
                 setRequestProperty("Accept", "application/json")
