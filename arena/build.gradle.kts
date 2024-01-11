@@ -1,18 +1,25 @@
-val cxfVersion: String by project
-val tjenestespesifikasjonerVersion = "1.2019.09.25-00.21-49b69f0625e0"
+val cxfVersion = "4.0.0"
 
 dependencies {
-    implementation("com.sun.xml.ws:jaxws-ri:2.3.3")
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0")
+    implementation("jakarta.xml.ws:jakarta.xml.ws-api:4.0.0")
+    implementation("org.glassfish.jaxb:jaxb-runtime:4.0.1")
+
     implementation("org.apache.cxf:cxf-rt-frontend-jaxws:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-features-logging:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
-    implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion") {
-        exclude("commons-collections", "commons-collections")
-    }
-    implementation("commons-collections:commons-collections:3.2.2")
-    implementation("javax.activation:activation:1.1.1")
-
-    implementation("no.nav.tjenestespesifikasjoner:ytelseskontrakt-v3-tjenestespesifikasjon:$tjenestespesifikasjonerVersion")
-    implementation("no.nav.tjenestespesifikasjoner:nav-meldekortUtbetalingsgrunnlag-v1-tjenestespesifikasjon:$tjenestespesifikasjonerVersion")
+    implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
     implementation(project(":felles"))
+}
+
+repositories {
+    // cxf versjon >= 4.0.3 er avhengig av org.opensaml:opensaml-saml-impl:4.3.0
+    // som i skrivende stund ikke er tilgjengelig på maven central, men i shibboleth
+    maven("https://build.shibboleth.net/maven/releases/") // så lenge vi er avhengig av cxf
+}
+
+configure<SourceSetContainer> {
+    named("main") {
+        java.srcDir("src/main/java")
+    }
 }

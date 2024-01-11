@@ -1,5 +1,4 @@
 val ktorVersion: String by project
-val cxfVersion: String by project
 
 val tbdLibsVersion: String by project
 dependencies {

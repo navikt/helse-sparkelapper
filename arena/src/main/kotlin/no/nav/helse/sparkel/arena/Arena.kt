@@ -9,13 +9,13 @@ import no.nav.tjeneste.virksomhet.meldekortutbetalingsgrunnlag.v1.informasjon.Pe
 import no.nav.tjeneste.virksomhet.meldekortutbetalingsgrunnlag.v1.informasjon.Tema
 import no.nav.tjeneste.virksomhet.meldekortutbetalingsgrunnlag.v1.meldinger.FinnMeldekortUtbetalingsgrunnlagListeRequest
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.YtelseskontraktV3
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSPeriode
 import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.meldinger.WSHentYtelseskontraktListeRequest
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import java.time.LocalDate
 import java.time.Period
 import javax.xml.datatype.XMLGregorianCalendar
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.ytelseskontrakt.WSPeriode
 
 internal class Arena(
     rapidsConnection: RapidsConnection,
