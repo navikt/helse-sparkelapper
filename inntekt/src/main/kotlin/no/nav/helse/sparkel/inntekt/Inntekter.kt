@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import java.time.YearMonth
 import java.util.UUID
+import net.logstash.logback.argument.StructuredArguments.kv
 
 class Inntekter(
     rapidsConnection: RapidsConnection,
@@ -123,6 +124,7 @@ class Inntekter(
                 log.info("Genererer en ny callId: $it i hentInntekter")
             } else packet["vedtaksperiodeId"].asText()
 
+            log.info("Behandler behov {}", kv("id", packet["@id"].asText()))
             packet["@løsning"] = mapOf<String, Any>(
                 type.name to inntektsRestClient.hentInntektsliste(
                     fnr = packet["fødselsnummer"].asText(),
