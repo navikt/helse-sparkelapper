@@ -27,7 +27,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Beslutning2", propOrder = {
+@XmlType(name = "Beslutning", propOrder = {
     "beslutningsdato"
 })
 @XmlSeeAlso({

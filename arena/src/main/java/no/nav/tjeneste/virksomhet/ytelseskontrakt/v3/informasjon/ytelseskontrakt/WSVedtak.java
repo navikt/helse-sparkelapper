@@ -37,7 +37,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Vedtak2", propOrder = {
+@XmlType(name = "Vedtak", propOrder = {
     "periodetypeForYtelse",
     "uttaksgrad",
     "vedtakBruttoBeloep",

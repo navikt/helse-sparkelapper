@@ -32,7 +32,7 @@ import java.util.Collection;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Dagpengekontrakt2", propOrder = {
+@XmlType(name = "Dagpengekontrakt", propOrder = {
     "antallDagerIgjen",
     "antallUkerIgjen",
     "antallDagerIgjenUnderPermittering",

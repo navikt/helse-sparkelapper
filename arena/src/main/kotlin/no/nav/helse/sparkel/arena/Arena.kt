@@ -15,7 +15,7 @@ import org.slf4j.MDC
 import java.time.LocalDate
 import java.time.Period
 import javax.xml.datatype.XMLGregorianCalendar
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.ytelseskontrakt.WSPeriode
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSPeriode
 
 internal class Arena(
     rapidsConnection: RapidsConnection,

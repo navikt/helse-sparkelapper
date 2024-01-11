@@ -8,8 +8,8 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
 
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.ytelseskontrakt.WSBruker;
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.ytelseskontrakt.WSYtelseskontrakt;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSBruker;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSYtelseskontrakt;
 
 
 /**

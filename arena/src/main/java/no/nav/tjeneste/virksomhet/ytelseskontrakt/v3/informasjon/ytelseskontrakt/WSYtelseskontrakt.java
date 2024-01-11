@@ -36,7 +36,7 @@ import java.util.List;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Ytelseskontrakt2", propOrder = {
+@XmlType(name = "Ytelseskontrakt", propOrder = {
     "datoKravMottatt",
     "fagsystemSakId",
     "status",

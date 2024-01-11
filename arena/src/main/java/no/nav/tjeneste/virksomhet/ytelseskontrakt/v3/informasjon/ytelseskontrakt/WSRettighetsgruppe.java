@@ -28,7 +28,7 @@ import jakarta.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Rettighetsgruppe2", propOrder = {
+@XmlType(name = "Rettighetsgruppe", propOrder = {
     "rettighetsGruppe"
 })
 public class WSRettighetsgruppe 

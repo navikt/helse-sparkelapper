@@ -32,7 +32,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Periode2", propOrder = {
+@XmlType(name = "Periode", propOrder = {
     "fom",
     "tom"
 })

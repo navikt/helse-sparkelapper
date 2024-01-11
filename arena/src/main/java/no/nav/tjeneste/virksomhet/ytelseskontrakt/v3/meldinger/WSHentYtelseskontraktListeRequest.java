@@ -6,7 +6,7 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.ytelseskontrakt.WSPeriode;
+import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt.WSPeriode;
 
 
 /**
