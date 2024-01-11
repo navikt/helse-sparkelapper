@@ -13,6 +13,7 @@ fun setUpEnvironment() = Environment(
 private fun fromEnv(name: String) = System.getenv(name) ?: error("Mangler env var $name")
 
 data class Environment(
+    val raw: Map<String, String> = System.getenv(),
     val aadTokenEndpoint: URI,
     val aadClientId: String,
     val aadClientSecret: Any,

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import io.ktor.client.*
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -20,18 +21,20 @@ val objectMapper: ObjectMapper = jacksonObjectMapper()
 
 fun main() {
     val env = setUpEnvironment()
-    val azureAd = AzureAd(env)
+    val tokenProvider = createAzureTokenClientFromEnvironment(env.raw)
     val inntektRestClient = InntektRestClient(
         baseUrl = env.inntektRestUrl,
         inntektskomponentenOAuthScope = env.inntektOAuthScope,
         httpClient = simpleHttpClient(),
-        tokenSupplier = azureAd::accessToken,
+        tokenSupplier = { tokenProvider.bearerToken(it).token },
     )
 
     RapidApplication.create(System.getenv()).apply {
         Inntekter(this, inntektRestClient)
     }.start()
 }
+
+internal typealias TokenSupplier = (String) -> String
 
 private fun simpleHttpClient() = HttpClient {
     val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
