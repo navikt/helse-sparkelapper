@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - inntekt-i-skyen
 env:
   CONTAINER_REGISTRY: europe-north1-docker.pkg.dev
   RESOURCE: config/nais.yml
