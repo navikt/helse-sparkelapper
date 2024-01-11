@@ -10,7 +10,7 @@ import javax.xml.namespace.QName
 object MeldekortUtbetalingsgrunnlagV1Factory {
 
     private val ServiceClass = MeldekortUtbetalingsgrunnlagV1::class.java
-    private val Wsdl = "wsdl/no/nav/tjeneste/virksomhet/meldekortUtbetalingsgrunnlag/v1/Binding.wsdl"
+    private val Wsdl = "wsdl/tjenestespesifikasjon/no/nav/tjeneste/virksomhet/meldekortUtbetalingsgrunnlag/v1/Binding.wsdl"
     private val Namespace = "http://nav.no/tjeneste/virksomhet/meldekortUtbetalingsgrunnlag/v1/Binding"
     private val ServiceName = QName(Namespace, "MeldekortUtbetalingsgrunnlag_v1")
     private val EndpointName = QName(Namespace, "meldekortUtbetalingsgrunnlag_v1Port")
