@@ -88,7 +88,7 @@ data class FinnMeldekortResponse(
 data class FinnMeldekortResponseResponse(
     @JacksonXmlProperty(localName = "meldekortUtbetalingsgrunnlagListe")
     @JacksonXmlElementWrapper(useWrapping = false)
-    val meldekortUtbetalingsgrunnlagListe: List<ArenaSak>
+    val meldekortUtbetalingsgrunnlagListe: List<ArenaSak> = emptyList()
 )
 
 data class ArenaSak(

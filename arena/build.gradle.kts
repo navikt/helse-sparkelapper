@@ -13,6 +13,8 @@ dependencies {
     implementation("org.apache.cxf:cxf-rt-transports-http:$cxfVersion")
     implementation("org.apache.cxf:cxf-rt-ws-security:$cxfVersion")
     implementation(project(":felles"))
+
+    testImplementation("com.github.navikt.tbd-libs:mock-http-client:$tbdLibsVersion")
 }
 
 repositories {
