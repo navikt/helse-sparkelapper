@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.arena
 
+import com.github.navikt.tbd_libs.soap.InMemoryStsClient
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.MinimalStsClient
 import com.github.navikt.tbd_libs.soap.samlStrategy
@@ -23,7 +24,7 @@ fun main() {
         val meldekortUtbetalingsgrunnlagV1 = MeldekortUtbetalingsgrunnlagV1Factory.create(env.getValue("MELDEKORT_UTBETALINGSGRUNNLAG_ENDPOINTURL"), stsClientWs)
 
         val httpClient = HttpClient.newHttpClient()
-        val samlTokenClient = MinimalStsClient(URI(env.getValue("GANDALF_BASE_URL")), httpClient)
+        val samlTokenClient = InMemoryStsClient(MinimalStsClient(URI(env.getValue("GANDALF_BASE_URL")), httpClient))
         val meldekortSoapClient = MinimalSoapClient(URI(env.getValue("MELDEKORT_UTBETALINGSGRUNNLAG_ENDPOINTURL")), samlTokenClient, httpClient)
         val assertionStrategoy = samlStrategy(username, password)
         val meldekortUtbetalingsgrunnlagClient = MeldekortUtbetalingsgrunnlagClient(meldekortSoapClient, assertionStrategoy)
