@@ -6,9 +6,10 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.SoapAssertionStrategy
-import com.github.navikt.tbd_libs.soap.SoapResponseHandler
+import com.github.navikt.tbd_libs.soap.deserializeSoapBody
 import java.time.LocalDate
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
@@ -20,12 +21,12 @@ class MeldekortUtbetalingsgrunnlagClient(
     private companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     }
-    private val responseHandler = SoapResponseHandler(FinnMeldekortUtbetalingsgrunnlagListeResponse.bodyHandler())
+    private val mapper = FinnMeldekortUtbetalingsgrunnlagListeResponse.bodyHandler()
 
     fun hentMeldekortutbetalingsgrunnlag(tema: String, ident: String, fom: LocalDate, tom: LocalDate): FinnMeldekortUtbetalingsgrunnlagListeResponse {
         val response = executeHttpRequest(createXmlBody(tema, ident, fom, tom))
         sikkerlogg.info("RESPONSE FRA ARENA:\n$response")
-        return responseHandler.deserializeSoapBody(response, FinnMeldekortUtbetalingsgrunnlagListeResponse::class)
+        return deserializeSoapBody(mapper, response)
     }
 
     private fun executeHttpRequest(requestBody: String): String {
@@ -71,6 +72,7 @@ data class FinnMeldekortUtbetalingsgrunnlagListeResponse(
         fun bodyHandler(): ObjectMapper {
             return XmlMapper.builder()
                 .addModules(JavaTimeModule())
+                .addModule(kotlinModule())
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                 // issue: https://github.com/FasterXML/jackson-module-kotlin/issues/138
                 // workaround: https://github.com/FasterXML/jackson-module-kotlin/issues/138#issuecomment-576484905
@@ -123,9 +125,9 @@ data class ArenaTema(
 )
 
 data class ArenaVedtak(
-    @JacksonXmlProperty(localName = "meldekortListe")
     @JacksonXmlElementWrapper(useWrapping = false)
-    val meldekortliste: List<ArenaMeldekort>,
+    @JacksonXmlProperty(localName = "meldekortListe")
+    val meldekortliste: List<ArenaMeldekort> = emptyList(),
     @JacksonXmlProperty(localName = "vedtaksperiode")
     val vedtaksperiode: ArenaPeriode,
     @JacksonXmlProperty(localName = "vedtaksstatus")

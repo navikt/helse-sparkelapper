@@ -142,7 +142,7 @@ internal class Arena(
             ?.meldekortUtbetalingsgrunnlagListe
             ?.flatMap { sak ->
                 sak.vedtaksliste.flatMap { vedtak ->
-                    vedtak.meldekortliste.map { meldekort ->
+                    vedtak.meldekortliste?.map { meldekort ->
                         mapOf(
                             "fom" to meldekort.meldekortperiode.fom,
                             "tom" to meldekort.meldekortperiode.tom,
@@ -150,7 +150,7 @@ internal class Arena(
                             "beløp" to meldekort.beløp,
                             "utbetalingsgrad" to meldekort.utbetalingsgrad
                         )
-                    }
+                    } ?: emptyList()
                 }
             }
     private fun hentMeldekortUtbetalingsgrunnlag(fødselsnummer: String, søkevindu: Pair<LocalDate, LocalDate>, tema: Tema) =
