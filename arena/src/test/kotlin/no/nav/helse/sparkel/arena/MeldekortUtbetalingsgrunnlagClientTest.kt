@@ -64,6 +64,30 @@ class MeldekortUtbetalingsgrunnlagClientTest {
         val result = meldekortClient.hentMeldekortutbetalingsgrunnlag("AAP", "12345678911", LocalDate.EPOCH, LocalDate.EPOCH)
         assertEquals(2, result.finnMeldekortResponse.response?.meldekortUtbetalingsgrunnlagListe?.single()?.vedtaksliste?.size)
     }
+    @Test
+    fun `mapper vedtak uten vedtaksperiode`() {
+        @Language("XML")
+        val response = """<ns2:finnMeldekortUtbetalingsgrunnlagListeResponse xmlns:ns2="https://nav.no/tjeneste/virksomhet/meldekortUtbetalingsgrunnlag/v1">
+    <response>
+        <meldekortUtbetalingsgrunnlagListe>
+            <vedtakListe>
+                <vedtaksperiode/>
+                <vedtaksstatus termnavn="Avsluttet">AVSLU</vedtaksstatus>
+                <vedtaksdato>2018-01-01</vedtaksdato>
+                <datoKravMottatt>2018-01-01</datoKravMottatt>
+                <dagsats>0.0</dagsats>
+            </vedtakListe>
+            <fagsystemSakId>1234567</fagsystemSakId>
+            <saksstatus termnavn="Inaktiv">INAKT</saksstatus>
+            <tema termnavn="Dagpenger">DAG</tema>
+        </meldekortUtbetalingsgrunnlagListe>
+    </response>
+</ns2:finnMeldekortUtbetalingsgrunnlagListeResponse>"""
+
+        val (_, meldekortClient) = mockClient(xmlResponse(response))
+        val result = meldekortClient.hentMeldekortutbetalingsgrunnlag("DAG", "12345678911", LocalDate.EPOCH, LocalDate.EPOCH)
+        assertEquals(1, result.finnMeldekortResponse.response?.meldekortUtbetalingsgrunnlagListe?.single()?.vedtaksliste?.size)
+    }
 
     private fun xmlResponse(body: String): String {
         @Language("XML")

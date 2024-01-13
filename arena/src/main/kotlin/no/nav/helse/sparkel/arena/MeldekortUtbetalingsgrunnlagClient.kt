@@ -160,7 +160,7 @@ data class ArenaMeldekort(
 
 data class ArenaPeriode(
     @JacksonXmlProperty(localName = "fom")
-    val fom: LocalDate,
+    val fom: LocalDate?,
     @JacksonXmlProperty(localName = "tom")
-    val tom: LocalDate
+    val tom: LocalDate?
 )
