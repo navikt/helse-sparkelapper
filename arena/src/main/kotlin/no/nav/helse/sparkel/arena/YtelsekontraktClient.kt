@@ -5,10 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.SoapAssertionStrategy
+import com.github.navikt.tbd_libs.soap.SoapResponse
+import com.github.navikt.tbd_libs.soap.SoapResponseHandlerException
 import com.github.navikt.tbd_libs.soap.deserializeSoapBody
 import java.time.LocalDate
 import org.intellij.lang.annotations.Language
@@ -41,7 +45,7 @@ class YtelsekontraktClient(
         @Language("XML")
         val requestBody = """<ns2:hentYtelseskontraktListe xmlns:ns2="http://nav.no/tjeneste/virksomhet/ytelseskontrakt/v3">
     <request>
-        <personidentifikator$ident</personidentifikator>
+        <personidentifikator>$ident</personidentifikator>
         <periode>
             <fom>$fom</fom>
             <tom>$tom</tom>
@@ -51,7 +55,6 @@ class YtelsekontraktClient(
         return requestBody
     }
 }
-
 
 data class HentYtelseskontraktListeResponse(
     @JacksonXmlProperty(
