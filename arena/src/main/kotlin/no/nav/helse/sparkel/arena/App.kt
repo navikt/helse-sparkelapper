@@ -26,11 +26,13 @@ fun main() {
         val httpClient = HttpClient.newHttpClient()
         val samlTokenClient = InMemoryStsClient(MinimalStsClient(URI(env.getValue("GANDALF_BASE_URL")), httpClient))
         val meldekortSoapClient = MinimalSoapClient(URI(env.getValue("MELDEKORT_UTBETALINGSGRUNNLAG_ENDPOINTURL")), samlTokenClient, httpClient)
+        val ytelsekontraktSoapClient = MinimalSoapClient(URI(env.getValue("YTELSESKONTRAKT_BASE_URL")), samlTokenClient, httpClient)
         val assertionStrategoy = samlStrategy(username, password)
+        val ytelsekontraktClient = YtelsekontraktClient(ytelsekontraktSoapClient, assertionStrategoy)
         val meldekortUtbetalingsgrunnlagClient = MeldekortUtbetalingsgrunnlagClient(meldekortSoapClient, assertionStrategoy)
 
-        Arena(this, meldekortUtbetalingsgrunnlagClient, ytelseskontraktV3, meldekortUtbetalingsgrunnlagV1, "Dagpenger", "DAG", "Dagpenger")
-        Arena(this, meldekortUtbetalingsgrunnlagClient, ytelseskontraktV3, meldekortUtbetalingsgrunnlagV1, "Arbeidsavklaringspenger", "AAP", "Arbeidsavklaringspenger")
+        Arena(this, ytelsekontraktClient, meldekortUtbetalingsgrunnlagClient, ytelseskontraktV3, meldekortUtbetalingsgrunnlagV1, "Dagpenger", "DAG", "Dagpenger")
+        Arena(this, ytelsekontraktClient, meldekortUtbetalingsgrunnlagClient, ytelseskontraktV3, meldekortUtbetalingsgrunnlagV1, "Arbeidsavklaringspenger", "AAP", "Arbeidsavklaringspenger")
     }.start()
 }
 

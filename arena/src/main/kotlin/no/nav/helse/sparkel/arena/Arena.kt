@@ -23,6 +23,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt
 
 internal class Arena(
     rapidsConnection: RapidsConnection,
+    private val ytelsekontraktClient: YtelsekontraktClient,
     private val meldekortUtbetalingsgrunnlagClient: MeldekortUtbetalingsgrunnlagClient,
     private val ytelseskontraktV3: YtelseskontraktV3,
     private val meldekortUtbetalingsgrunnlagV1: MeldekortUtbetalingsgrunnlagV1,
@@ -76,6 +77,10 @@ internal class Arena(
         val fødselsnummer = packet["fødselsnummer"].asText()
         val søkevindu = packet["$behov.periodeFom"].asLocalDate() to packet["$behov.periodeTom"].asLocalDate()
 
+        val hentYtelsekontraktV1 = hentYtelsekontrakt(
+            fødselsnummer = fødselsnummer,
+            søkevindu = søkevindu
+        )
         val hentMeldekortUtbetalingsgrunnlagV1 = hentMeldekortUtbetalingsgrunnlag(
             fødselsnummer = fødselsnummer,
             søkevindu = søkevindu,
@@ -85,25 +90,20 @@ internal class Arena(
         )
         try {
             val hentMeldekortUtbetalingsgrunnlagV2 = hentMeldekortUtbetalingsgrunnlagV2(fødselsnummer, søkevindu, tematype) ?: emptyList()
-            if (hentMeldekortUtbetalingsgrunnlagV1 != hentMeldekortUtbetalingsgrunnlagV2) {
-                sikkerlogg.info("$tematype hentMeldekortUtbetalingsgrunnlagV2 er ulik hentMeldekortUtbetalingsgrunnlagV1:\n" +
-                        "hentMeldekortUtbetalingsgrunnlagV1:\n" +
-                        "${objectMapper.writeValueAsString(hentMeldekortUtbetalingsgrunnlagV1)}\n\n" +
-                        "hentMeldekortUtbetalingsgrunnlagV2:\n" +
-                        "${objectMapper.writeValueAsString(hentMeldekortUtbetalingsgrunnlagV2)}"
-                )
-            } else {
-                sikkerlogg.info("$tematype hentMeldekortUtbetalingsgrunnlagV1 og hentMeldekortUtbetalingsgrunnlagV2 er helt like")
-            }
+            evaluerModenhet("hentMeldekortUtbetalingsgrunnlagV1", hentMeldekortUtbetalingsgrunnlagV1, "hentMeldekortUtbetalingsgrunnlagV2", hentMeldekortUtbetalingsgrunnlagV2)
         } catch (err: Exception) {
             sikkerlogg.info("$tematype hentMeldekortUtbetalingsgrunnlagV2 feilet med: ${err.message}", err)
         }
+        try {
+            val hentYtelsekontraktV2 = hentYtelsekontraktV2(fødselsnummer, søkevindu)
+            evaluerModenhet("hentYtelsekontraktV1", hentYtelsekontraktV1, "hentYtelsekontraktV2", hentYtelsekontraktV2)
+        } catch (err: Exception) {
+            sikkerlogg.info("$tematype hentYtelsekontraktV2 feilet med: ${err.message}", err)
+        }
+
         packet["@løsning"] = mapOf(
             behov to mapOf(
-                "vedtaksperioder" to hentYtelsekontrakt(
-                    fødselsnummer = fødselsnummer,
-                    søkevindu = søkevindu
-                ),
+                "vedtaksperioder" to hentYtelsekontraktV1,
                 "meldekortperioder" to hentMeldekortUtbetalingsgrunnlagV1
             )
         )
@@ -111,6 +111,34 @@ internal class Arena(
             sikkerlogg.info("sender {} som {}", keyValue("id", packet["@id"].asText()), packet.toJson())
         }
     }
+
+    private fun evaluerModenhet(navn1: String, verdi1: Any, navn2: String, verdi2: Any) {
+        if (verdi1 == verdi2) return sikkerlogg.info("$tematype $navn1 og $navn2 er helt like")
+        sikkerlogg.info("$tematype $navn2 er ulik $navn1:\n" +
+                "$navn1:\n" +
+                "${objectMapper.writeValueAsString(verdi1)}\n\n" +
+                "$navn2:\n" +
+                "${objectMapper.writeValueAsString(verdi2)}"
+        )
+    }
+
+    private fun hentYtelsekontraktV2(fødselsnummer: String, søkevindu: Pair<LocalDate, LocalDate>) =
+        ytelsekontraktClient.hentYtelsekontrakt(fødselsnummer, søkevindu.first, søkevindu.second)
+            .hentYtelseskontraktListeResponse
+            .response
+            .ytelseskontraktListe
+            .filter { ytelsetype == it.ytelsestype }
+            .flatMap {
+                it.vedtaksliste
+                    .filter { it.periodetypeForYtelse != "Stans" }
+                    .filterNot { it.vedtaksperiode.tom != null && it.vedtaksperiode.tom isOneDayBefore it.vedtaksperiode.fom }
+                    .map {
+                        mapOf(
+                            "fom" to it.vedtaksperiode.fom,
+                            "tom" to (it.vedtaksperiode.tom ?: LocalDate.now())
+                        )
+                    }
+            }
 
     private fun hentYtelsekontrakt(fødselsnummer: String, søkevindu: Pair<LocalDate, LocalDate>) =
         ytelseskontraktV3.hentYtelseskontraktListe(WSHentYtelseskontraktListeRequest().apply {
@@ -134,6 +162,7 @@ internal class Arena(
 
     private infix fun XMLGregorianCalendar.isOneDayBefore(other: XMLGregorianCalendar) =
         asLocalDate().until(other.asLocalDate()) == Period.ofDays(1)
+    private infix fun LocalDate.isOneDayBefore(other: LocalDate) = this.plusDays(1L) == other
 
     private fun hentMeldekortUtbetalingsgrunnlagV2(fødselsnummer: String, søkevindu: Pair<LocalDate, LocalDate>, tematype: String) =
         meldekortUtbetalingsgrunnlagClient.hentMeldekortutbetalingsgrunnlag(tematype, fødselsnummer, søkevindu.first, søkevindu.second)
@@ -142,7 +171,7 @@ internal class Arena(
             ?.meldekortUtbetalingsgrunnlagListe
             ?.flatMap { sak ->
                 sak.vedtaksliste.flatMap { vedtak ->
-                    vedtak.meldekortliste?.map { meldekort ->
+                    vedtak.meldekortliste.map { meldekort ->
                         mapOf(
                             "fom" to meldekort.meldekortperiode.fom,
                             "tom" to meldekort.meldekortperiode.tom,
@@ -150,7 +179,7 @@ internal class Arena(
                             "beløp" to meldekort.beløp,
                             "utbetalingsgrad" to meldekort.utbetalingsgrad
                         )
-                    } ?: emptyList()
+                    }
                 }
             }
     private fun hentMeldekortUtbetalingsgrunnlag(fødselsnummer: String, søkevindu: Pair<LocalDate, LocalDate>, tema: Tema) =
