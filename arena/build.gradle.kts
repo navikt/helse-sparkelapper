@@ -1,6 +1,9 @@
 val cxfVersion = "4.0.0"
+val tbdLibsVersion: String by project
 
 dependencies {
+    implementation("com.github.navikt.tbd-libs:minimal-soap-client:$tbdLibsVersion")
+
     implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0")
     implementation("jakarta.xml.ws:jakarta.xml.ws-api:4.0.0")
     implementation("org.glassfish.jaxb:jaxb-runtime:4.0.1")

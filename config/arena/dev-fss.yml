@@ -8,6 +8,8 @@ mountPaths:
 env:
 - name: STS_URL
   value: https://sts-q2.preprod.local/SecurityTokenServiceProvider/
+- name: GANDALF_BASE_URL
+  value: https://security-token-service.nais.preprod.local
 - name: YTELSESKONTRAKT_BASE_URL
   value: https://arena-q2.adeo.no/ail_ws/Ytelseskontrakt_v3
 - name: MELDEKORT_UTBETALINGSGRUNNLAG_ENDPOINTURL

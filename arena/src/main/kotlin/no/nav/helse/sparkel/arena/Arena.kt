@@ -1,6 +1,10 @@
 package no.nav.helse.sparkel.arena
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
 import no.nav.tjeneste.virksomhet.meldekortutbetalingsgrunnlag.v1.binding.MeldekortUtbetalingsgrunnlagV1
@@ -19,6 +23,7 @@ import no.nav.tjeneste.virksomhet.ytelseskontrakt.v3.informasjon.ytelseskontrakt
 
 internal class Arena(
     rapidsConnection: RapidsConnection,
+    private val meldekortUtbetalingsgrunnlagClient: MeldekortUtbetalingsgrunnlagClient,
     private val ytelseskontraktV3: YtelseskontraktV3,
     private val meldekortUtbetalingsgrunnlagV1: MeldekortUtbetalingsgrunnlagV1,
     private val ytelsetype: String,
@@ -29,6 +34,10 @@ internal class Arena(
     private companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private val log = LoggerFactory.getLogger(Arena::class.java)
+        private val objectMapper = jacksonObjectMapper()
+            .registerKotlinModule()
+            .registerModule(JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     }
 
     init {
@@ -66,19 +75,36 @@ internal class Arena(
     private fun håndter(packet: JsonMessage, context: MessageContext) {
         val fødselsnummer = packet["fødselsnummer"].asText()
         val søkevindu = packet["$behov.periodeFom"].asLocalDate() to packet["$behov.periodeTom"].asLocalDate()
+
+        val hentMeldekortUtbetalingsgrunnlagV1 = hentMeldekortUtbetalingsgrunnlag(
+            fødselsnummer = fødselsnummer,
+            søkevindu = søkevindu,
+            tema = Tema().apply {
+                value = tematype
+            }
+        )
+        try {
+            val hentMeldekortUtbetalingsgrunnlagV2 = hentMeldekortUtbetalingsgrunnlagV2(fødselsnummer, søkevindu, tematype) ?: emptyList()
+            if (hentMeldekortUtbetalingsgrunnlagV1 != hentMeldekortUtbetalingsgrunnlagV2) {
+                sikkerlogg.info("$tematype hentMeldekortUtbetalingsgrunnlagV2 er ulik hentMeldekortUtbetalingsgrunnlagV1:\n" +
+                        "hentMeldekortUtbetalingsgrunnlagV1:\n" +
+                        "${objectMapper.writeValueAsString(hentMeldekortUtbetalingsgrunnlagV1)}\n\n" +
+                        "hentMeldekortUtbetalingsgrunnlagV2:\n" +
+                        "${objectMapper.writeValueAsString(hentMeldekortUtbetalingsgrunnlagV2)}"
+                )
+            } else {
+                sikkerlogg.info("$tematype hentMeldekortUtbetalingsgrunnlagV1 og hentMeldekortUtbetalingsgrunnlagV2 er helt like")
+            }
+        } catch (err: Exception) {
+            sikkerlogg.info("$tematype hentMeldekortUtbetalingsgrunnlagV2 feilet med: ${err.message}", err)
+        }
         packet["@løsning"] = mapOf(
             behov to mapOf(
                 "vedtaksperioder" to hentYtelsekontrakt(
                     fødselsnummer = fødselsnummer,
                     søkevindu = søkevindu
                 ),
-                "meldekortperioder" to hentMeldekortUtbetalingsgrunnlag(
-                    fødselsnummer = fødselsnummer,
-                    søkevindu = søkevindu,
-                    tema = Tema().apply {
-                        value = tematype
-                    }
-                )
+                "meldekortperioder" to hentMeldekortUtbetalingsgrunnlagV1
             )
         )
         context.publish(packet.toJson()).also {
@@ -109,6 +135,24 @@ internal class Arena(
     private infix fun XMLGregorianCalendar.isOneDayBefore(other: XMLGregorianCalendar) =
         asLocalDate().until(other.asLocalDate()) == Period.ofDays(1)
 
+    private fun hentMeldekortUtbetalingsgrunnlagV2(fødselsnummer: String, søkevindu: Pair<LocalDate, LocalDate>, tematype: String) =
+        meldekortUtbetalingsgrunnlagClient.hentMeldekortutbetalingsgrunnlag(tematype, fødselsnummer, søkevindu.first, søkevindu.second)
+            .finnMeldekortResponse
+            .response
+            ?.meldekortUtbetalingsgrunnlagListe
+            ?.flatMap { sak ->
+                sak.vedtaksliste.flatMap { vedtak ->
+                    vedtak.meldekortliste.map { meldekort ->
+                        mapOf(
+                            "fom" to meldekort.meldekortperiode.fom,
+                            "tom" to meldekort.meldekortperiode.tom,
+                            "dagsats" to meldekort.dagsats,
+                            "beløp" to meldekort.beløp,
+                            "utbetalingsgrad" to meldekort.utbetalingsgrad
+                        )
+                    }
+                }
+            }
     private fun hentMeldekortUtbetalingsgrunnlag(fødselsnummer: String, søkevindu: Pair<LocalDate, LocalDate>, tema: Tema) =
         meldekortUtbetalingsgrunnlagV1.finnMeldekortUtbetalingsgrunnlagListe(FinnMeldekortUtbetalingsgrunnlagListeRequest().apply {
             ident = Bruker().apply {
