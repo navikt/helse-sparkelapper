@@ -131,7 +131,8 @@ internal class Arena(
             .flatMap {
                 it.vedtaksliste
                     .filter { it.periodetypeForYtelse != "Stans" }
-                    .filterNot { it.vedtaksperiode.tom != null && it.vedtaksperiode.tom isOneDayBefore it.vedtaksperiode.fom }
+                    .filter { it.vedtaksperiode.fom != null }
+                    .filterNot { it.vedtaksperiode.tom != null && it.vedtaksperiode.tom isOneDayBefore it.vedtaksperiode.fom!! }
                     .map {
                         mapOf(
                             "fom" to it.vedtaksperiode.fom,

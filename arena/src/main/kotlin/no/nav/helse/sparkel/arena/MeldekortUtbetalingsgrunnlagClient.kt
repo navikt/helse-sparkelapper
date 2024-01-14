@@ -133,7 +133,7 @@ data class ArenaVedtak(
     @JacksonXmlProperty(localName = "vedtaksstatus")
     val vedtaksstatus: ArenaVedtaksstatus,
     @JacksonXmlProperty(localName = "vedtaksdato")
-    val vedtaksdato: LocalDate,
+    val vedtaksdato: LocalDate?,
     @JacksonXmlProperty(localName = "datoKravMottatt")
     val datoKravMottatt: LocalDate,
     @JacksonXmlProperty(localName = "dagsats")

@@ -11,7 +11,9 @@ import java.net.http.HttpClient
 import java.time.LocalDate
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 
 class MeldekortUtbetalingsgrunnlagClientTest {
 
@@ -64,8 +66,9 @@ class MeldekortUtbetalingsgrunnlagClientTest {
         val result = meldekortClient.hentMeldekortutbetalingsgrunnlag("AAP", "12345678911", LocalDate.EPOCH, LocalDate.EPOCH)
         assertEquals(2, result.finnMeldekortResponse.response?.meldekortUtbetalingsgrunnlagListe?.single()?.vedtaksliste?.size)
     }
+
     @Test
-    fun `mapper vedtak uten vedtaksperiode`() {
+    fun `mapper verdier som kan være null`() {
         @Language("XML")
         val response = """<ns2:finnMeldekortUtbetalingsgrunnlagListeResponse xmlns:ns2="https://nav.no/tjeneste/virksomhet/meldekortUtbetalingsgrunnlag/v1">
     <response>
@@ -73,7 +76,6 @@ class MeldekortUtbetalingsgrunnlagClientTest {
             <vedtakListe>
                 <vedtaksperiode/>
                 <vedtaksstatus termnavn="Avsluttet">AVSLU</vedtaksstatus>
-                <vedtaksdato>2018-01-01</vedtaksdato>
                 <datoKravMottatt>2018-01-01</datoKravMottatt>
                 <dagsats>0.0</dagsats>
             </vedtakListe>
@@ -86,7 +88,12 @@ class MeldekortUtbetalingsgrunnlagClientTest {
 
         val (_, meldekortClient) = mockClient(xmlResponse(response))
         val result = meldekortClient.hentMeldekortutbetalingsgrunnlag("DAG", "12345678911", LocalDate.EPOCH, LocalDate.EPOCH)
-        assertEquals(1, result.finnMeldekortResponse.response?.meldekortUtbetalingsgrunnlagListe?.single()?.vedtaksliste?.size)
+        val arenaSak = result.finnMeldekortResponse.response?.meldekortUtbetalingsgrunnlagListe?.single() ?: fail { "Forventet en sak" }
+        assertEquals(1, arenaSak.vedtaksliste.size)
+        val arenaVedtak = arenaSak.vedtaksliste.single()
+        assertNull(arenaVedtak.vedtaksperiode.fom)
+        assertNull(arenaVedtak.vedtaksperiode.tom)
+        assertNull(arenaVedtak.vedtaksdato)
     }
 
     private fun xmlResponse(body: String): String {

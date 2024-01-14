@@ -11,6 +11,7 @@ import java.net.http.HttpClient
 import java.time.LocalDate
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class YtelsekontraktClientTest {
@@ -74,6 +75,45 @@ class YtelsekontraktClientTest {
         val vedtaksperiode = result.hentYtelseskontraktListeResponse.response.ytelseskontraktListe.single().vedtaksliste.single().vedtaksperiode
         assertEquals(LocalDate.of(2018, 1, 1), vedtaksperiode.fom)
         assertEquals(LocalDate.of(2018, 12, 31), vedtaksperiode.tom)
+    }
+
+    @Test
+    fun `mapper verdier som kan være null`() {
+        @Language("XML")
+        val response = """<ns2:hentYtelseskontraktListeResponse xmlns:ns2="http://nav.no/tjeneste/virksomhet/ytelseskontrakt/v3">
+    <response>
+        <bruker>
+            <rettighetsgruppe>
+                <rettighetsGruppe>Arbeidsavklaringspenger</rettighetsGruppe>
+            </rettighetsgruppe>
+        </bruker>
+        <ytelseskontraktListe fomGyldighetsperiode="2018-01-01T00:00:00">
+            <datoKravMottatt>2018-01-01</datoKravMottatt>
+            <fagsystemSakId>123456789</fagsystemSakId>
+            <status>Aktiv</status>
+            <ytelsestype>Arbeidsavklaringspenger</ytelsestype>
+            <ihtVedtak>
+                <beslutningsdato>2018-01-01</beslutningsdato>
+                <periodetypeForYtelse>Ny rettighet</periodetypeForYtelse>
+                <uttaksgrad>100</uttaksgrad>
+                <vedtakBruttoBeloep>50000</vedtakBruttoBeloep>
+                <vedtakNettoBeloep>50000</vedtakNettoBeloep>
+                <vedtaksperiode />
+                <status>Iverksatt</status>
+                <vedtakstype>Arbeidsavklaringspenger / Ny rettighet</vedtakstype>
+                <dagsats>1500</dagsats>
+            </ihtVedtak>
+        </ytelseskontraktListe>
+    </response>
+</ns2:hentYtelseskontraktListeResponse>"""
+
+        val (_, meldekortClient) = mockClient(xmlResponse(response))
+        val result = meldekortClient.hentYtelsekontrakt("12345678911", LocalDate.EPOCH, LocalDate.EPOCH)
+        val ytelsekontrakt = result.hentYtelseskontraktListeResponse.response.ytelseskontraktListe.single()
+        assertNull(ytelsekontrakt.tomGyldighetsperiode)
+        val ytelsevedtak = ytelsekontrakt.vedtaksliste.single()
+        assertNull(ytelsevedtak.aktivitetsfase)
+        assertNull(ytelsevedtak.vedtaksperiode.fom)
     }
 
     private fun xmlResponse(body: String): String {

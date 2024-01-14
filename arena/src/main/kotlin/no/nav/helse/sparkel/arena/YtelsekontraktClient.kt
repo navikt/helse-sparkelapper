@@ -102,7 +102,7 @@ data class Ytelsekontrakt(
     val fomGyldighetsperiode: LocalDate,
 
     @JacksonXmlProperty(localName = "tomGyldighetsperiode")
-    val tomGyldighetsperiode: LocalDate,
+    val tomGyldighetsperiode: LocalDate?,
 
     @JacksonXmlProperty(localName = "bortfallsprosentDagerIgjen")
     val bortfallsprosentDagerIgjen: Int,
@@ -141,7 +141,7 @@ data class Ytelsevedtak(
     val vedtakstype: String,
 
     @JacksonXmlProperty(localName = "aktivitetsfase")
-    val aktivitetsfase: String,
+    val aktivitetsfase: String?,
 
     @JacksonXmlProperty(localName = "dagsats")
     val dagsats: Int
@@ -149,7 +149,7 @@ data class Ytelsevedtak(
 
 data class YtelsePeriode(
     @JacksonXmlProperty(localName = "fom")
-    val fom: LocalDate,
+    val fom: LocalDate?,
     @JacksonXmlProperty(localName = "tom")
     val tom: LocalDate?
 )
