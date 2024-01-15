@@ -93,7 +93,6 @@ class YtelsekontraktClientTest {
             <status>Aktiv</status>
             <ytelsestype>Arbeidsavklaringspenger</ytelsestype>
             <ihtVedtak>
-                <beslutningsdato>2018-01-01</beslutningsdato>
                 <periodetypeForYtelse>Ny rettighet</periodetypeForYtelse>
                 <uttaksgrad>100</uttaksgrad>
                 <vedtakBruttoBeloep>50000</vedtakBruttoBeloep>
@@ -114,6 +113,7 @@ class YtelsekontraktClientTest {
         val ytelsevedtak = ytelsekontrakt.vedtaksliste.single()
         assertNull(ytelsevedtak.aktivitetsfase)
         assertNull(ytelsevedtak.vedtaksperiode.fom)
+        assertNull(ytelsevedtak.beslutningsdato)
     }
 
     private fun xmlResponse(body: String): String {
