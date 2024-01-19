@@ -7,15 +7,13 @@ import com.github.navikt.tbd_libs.soap.MinimalStsClient
 import com.github.navikt.tbd_libs.soap.samlStrategy
 import java.net.URI
 import java.net.http.HttpClient
-import java.nio.file.Files
-import java.nio.file.Paths
 import no.nav.helse.rapids_rivers.RapidApplication
 
 fun main() {
     val env = System.getenv()
     RapidApplication.create(env).apply {
-        val username = env["SERVICEUSER_NAME"] ?: "/var/run/secrets/nais.io/service_user/username".readFile()
-        val password = env["SERVICEUSER_PASSWORD"] ?: "/var/run/secrets/nais.io/service_user/password".readFile()
+        val username = env.getValue("SERVICEUSER_NAME")
+        val password = env.getValue("SERVICEUSER_PASSWORD")
 
         val azureClient = createAzureTokenClientFromEnvironment(env)
         val proxyAuthorization = {
@@ -47,6 +45,4 @@ fun main() {
         Arena(this, ytelsekontraktClient, meldekortUtbetalingsgrunnlagClient, "Arbeidsavklaringspenger", "AAP", "Arbeidsavklaringspenger")
     }.start()
 }
-
-private fun String.readFile() = Files.readString(Paths.get(this))
 
