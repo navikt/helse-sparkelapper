@@ -10,6 +10,7 @@ accessPolicy:
   outbound:
     rules:
       - application: ws-proxy
+        namespace: tbd
         cluster: dev-fss
 env:
 - name: GANDALF_BASE_URL
