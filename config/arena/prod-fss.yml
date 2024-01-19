@@ -1,4 +1,6 @@
 kafkaPool: nav-prod
+azure:
+  enabled: true
 mountPaths:
 - mountPath: /var/run/secrets/nais.io/service_user
   kvPath: /serviceuser/data/prod/srvsparkelarena
