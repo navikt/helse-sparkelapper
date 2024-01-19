@@ -3,8 +3,6 @@ mountPaths:
 - mountPath: /var/run/secrets/nais.io/service_user
   kvPath: /serviceuser/data/prod/srvsparkelarena
 env:
-- name: STS_URL
-  value: https://sts.adeo.no/SecurityTokenServiceProvider/
 - name: GANDALF_BASE_URL
   value: https://security-token-service.nais.adeo.no
 - name: YTELSESKONTRAKT_BASE_URL
