@@ -18,8 +18,8 @@ fun main() {
         val password = env["SERVICEUSER_PASSWORD"] ?: "/var/run/secrets/nais.io/service_user/password".readFile()
 
         val azureClient = createAzureTokenClientFromEnvironment(env)
-        val proxyAuthorization = env["WS_PROXY_SCOPE"]?.let { scope ->
-            { "Bearer ${azureClient.bearerToken(scope).token}" }
+        val proxyAuthorization = {
+            "Bearer ${azureClient.bearerToken(env.getValue("WS_PROXY_SCOPE")).token}"
         }
         val httpClient = HttpClient.newHttpClient()
         val samlTokenClient = InMemoryStsClient(MinimalStsClient(
