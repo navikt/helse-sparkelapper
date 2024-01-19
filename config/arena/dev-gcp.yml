@@ -6,6 +6,11 @@ azure:
   enabled: true
 envFrom:
   - sparkel-arena
+accessPolicy:
+  outbound:
+    rules:
+      - application: ws-proxy
+        cluster: dev-fss
 env:
 - name: GANDALF_BASE_URL
   value: https://ws-proxy.dev-fss-pub.nais.io/gandalf
