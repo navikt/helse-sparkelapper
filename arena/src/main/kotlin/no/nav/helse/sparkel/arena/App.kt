@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.arena
 
+import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import com.github.navikt.tbd_libs.soap.InMemoryStsClient
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.MinimalStsClient
@@ -13,13 +14,31 @@ import no.nav.helse.rapids_rivers.RapidApplication
 fun main() {
     val env = System.getenv()
     RapidApplication.create(env).apply {
-        val username = "/var/run/secrets/nais.io/service_user/username".readFile()
-        val password = "/var/run/secrets/nais.io/service_user/password".readFile()
+        val username = env["SERVICEUSER_NAME"] ?: "/var/run/secrets/nais.io/service_user/username".readFile()
+        val password = env["SERVICEUSER_PASSWORD"] ?: "/var/run/secrets/nais.io/service_user/password".readFile()
 
+        val azureClient = createAzureTokenClientFromEnvironment(env)
+        val proxyAuthorization = env["WS_PROXY_SCOPE"]?.let { scope ->
+            { "Bearer ${azureClient.bearerToken(scope).token}" }
+        }
         val httpClient = HttpClient.newHttpClient()
-        val samlTokenClient = InMemoryStsClient(MinimalStsClient(URI(env.getValue("GANDALF_BASE_URL")), httpClient))
-        val meldekortSoapClient = MinimalSoapClient(URI(env.getValue("MELDEKORT_UTBETALINGSGRUNNLAG_ENDPOINTURL")), samlTokenClient, httpClient)
-        val ytelsekontraktSoapClient = MinimalSoapClient(URI(env.getValue("YTELSESKONTRAKT_BASE_URL")), samlTokenClient, httpClient)
+        val samlTokenClient = InMemoryStsClient(MinimalStsClient(
+            baseUrl = URI(env.getValue("GANDALF_BASE_URL")),
+            httpClient = httpClient,
+            proxyAuthorization = proxyAuthorization
+        ))
+        val meldekortSoapClient = MinimalSoapClient(
+            serviceUrl = URI(env.getValue("MELDEKORT_UTBETALINGSGRUNNLAG_ENDPOINTURL")),
+            tokenProvider = samlTokenClient,
+            httpClient = httpClient,
+            proxyAuthorization = proxyAuthorization
+        )
+        val ytelsekontraktSoapClient = MinimalSoapClient(
+            serviceUrl = URI(env.getValue("YTELSESKONTRAKT_BASE_URL")),
+            tokenProvider = samlTokenClient,
+            httpClient = httpClient,
+            proxyAuthorization = proxyAuthorization
+        )
         val assertionStrategoy = samlStrategy(username, password)
         val ytelsekontraktClient = YtelsekontraktClient(ytelsekontraktSoapClient, assertionStrategoy)
         val meldekortUtbetalingsgrunnlagClient = MeldekortUtbetalingsgrunnlagClient(meldekortSoapClient, assertionStrategoy)
