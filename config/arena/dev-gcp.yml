@@ -8,6 +8,8 @@ envFrom:
   - sparkel-arena
 accessPolicy:
   outbound:
+    external:
+      - host: ws-proxy.dev-fss-pub.nais.io
     rules:
       - application: ws-proxy
         namespace: tbd
