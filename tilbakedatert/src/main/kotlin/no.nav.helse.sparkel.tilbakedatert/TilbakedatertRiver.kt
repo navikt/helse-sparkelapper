@@ -34,7 +34,7 @@ internal class TilbakedatertRiver(
     }
 
     private fun håndter(packet: JsonMessage, context: MessageContext) {
-        sikkerlogg.info("Leser melding ${objectMapper.readTree(packet.toJson())}")
+        sikkerlogg.info("Leser melding ${packet.toJson()}")
         return;
 //        val fnr = packet["fødselsnummer"].asText()
 //        val id = packet["@id"].asText()
