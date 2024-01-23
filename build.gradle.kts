@@ -13,6 +13,13 @@ val tbdLibsVersion = "2024.01.19-14.15-4080c4c8"
 val ktorVersion = "2.3.7"
 val mockkVersion = "1.13.9"
 val wiremockVersion = "2.27.2"
+val jsonAssertVersion = "1.5.0"
+val avroVersion = "1.11.3"
+val kotliqueryVersion = "1.9.0"
+val testcontainersPostgresqlVersion = "1.19.3"
+val postgresqlVersion = "42.7.1"
+val flyAwayCoreVersion = "9.19.4"
+val hikariCPVersion = "5.1.0"
 
 buildscript {
     repositories { mavenCentral() }
@@ -130,6 +137,15 @@ subprojects {
     ext.set("ktorVersion", ktorVersion)
     ext.set("rapidsAndRiversVersion", rapidsAndRiversVersion)
     ext.set("tbdLibsVersion", tbdLibsVersion)
+    ext.set("junitJupiterVersion", junitJupiterVersion)
+    ext.set("mockkVersion", mockkVersion)
+    ext.set("jsonAssertVersion", jsonAssertVersion)
+    ext.set("avroVersion", avroVersion)
+    ext.set("testcontainersPostgresqlVersion", testcontainersPostgresqlVersion)
+    ext.set("postgresqlVersion", postgresqlVersion)
+    ext.set("flyAwayCoreVersion", flyAwayCoreVersion)
+    ext.set("hikariCPVersion", hikariCPVersion)
+    ext.set("kotliqueryVersion", kotliqueryVersion)
 
     dependencies {
         testImplementation("io.mockk:mockk:$mockkVersion")

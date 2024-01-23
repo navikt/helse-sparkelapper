@@ -1,10 +1,10 @@
 
-val avroVersion = "1.11.0"
-val flyAwayCoreVersion = "8.5.13"
-val kotliqueryVersion = "1.8.0"
-val postgresqlVersion = "42.4.0"
-val hikariCPVersion = "5.0.1"
-val testcontainersOostgresqlVersion = "1.17.2"
+val avroVersion: String by project
+val kotliqueryVersion: String by project
+val testcontainersPostgresqlVersion: String by project
+val postgresqlVersion: String by project
+val flyAwayCoreVersion: String by project
+val hikariCPVersion: String by project
 
 dependencies {
     implementation("org.apache.avro:avro:$avroVersion")
@@ -14,5 +14,5 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")
     implementation(project(":felles"))
 
-    testImplementation("org.testcontainers:postgresql:$testcontainersOostgresqlVersion")
+    testImplementation("org.testcontainers:postgresql:$testcontainersPostgresqlVersion")
 }

@@ -1,6 +1,4 @@
-
-val avroVersion = "1.11.0"
-
+val avroVersion: String by project
 dependencies {
     implementation("org.apache.avro:avro:$avroVersion")
     implementation(project(":felles"))

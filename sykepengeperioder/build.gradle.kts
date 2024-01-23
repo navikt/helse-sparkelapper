@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val hikariCPVersion = "5.0.1"
-val h2Version = "2.0.206"
-val flywayVersion = "8.4.1"
+val hikariCPVersion: String by project
+val flyAwayCoreVersion: String by project
+val h2Version = "2.2.220"
 
 dependencies{
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")
@@ -10,7 +10,7 @@ dependencies{
     implementation(project(":infotrygd"))
 
     testImplementation("com.h2database:h2:$h2Version")
-    testImplementation("org.flywaydb:flyway-core:$flywayVersion")
+    testImplementation("org.flywaydb:flyway-core:$flyAwayCoreVersion")
 
 }
 val compileTestKotlin: KotlinCompile by tasks

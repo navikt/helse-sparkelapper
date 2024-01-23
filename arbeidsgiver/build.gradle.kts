@@ -1,7 +1,7 @@
-val flyAwayCoreVersion = "9.19.4"
-val postgresqlVersion = "42.6.0"
-val hikariCPVersion = "5.0.1"
-val testcontainersPostgresqlVersion = "1.18.3"
+val testcontainersPostgresqlVersion: String by project
+val postgresqlVersion: String by project
+val flyAwayCoreVersion: String by project
+val hikariCPVersion: String by project
 val exposedVersion = "0.41.1"
 
 dependencies {
