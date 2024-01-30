@@ -83,7 +83,7 @@ class Arbeidsforholdbehovløser(
             sikkerlogg.error(
                 "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Svarer med tom liste. Response:\n\t{}",
                 keyValue("id", id),
-                err.responseValue().toString(),
+                err.responseValue(),
                 err,
             )
             emptyList()

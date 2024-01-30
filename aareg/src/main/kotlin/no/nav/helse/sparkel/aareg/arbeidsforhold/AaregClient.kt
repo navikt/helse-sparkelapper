@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -32,15 +33,20 @@ class AaregClient(
             "$baseUrl/api/v2/arbeidstaker/arbeidsforhold?sporingsinformasjon=false&arbeidsforholdstatus=AKTIV,FREMTIDIG,AVSLUTTET"
         )
 
-        sikkerlogg.info("AaregResponse status:\n${response.bodyAsText()}")
+        val responseBody = response.bodyAsText()
+        sikkerlogg.info("AaregResponse: ${response.status}\n$responseBody")
 
         return try {
             response.body<List<AaregArbeidsforhold>>()
         } catch (e: JsonConvertException) {
-            val responseValue = objectMapper.readTree(response.bodyAsText())
-            throw AaregException(
-                responseValue.path("melding").asText("Ukjent respons fra Aareg"), responseValue
-            )
+            val melding = try {
+                objectMapper.readValue<AaregMeldingerResponse>(responseBody)
+                    .meldinger
+                    .joinToString()
+            } catch (_: Exception) {
+                "Ukjent respons fra Aareg"
+            }
+            throw AaregException(melding, responseBody)
         }
     }
 
@@ -54,9 +60,13 @@ class AaregClient(
         }
 }
 
-class AaregException(message: String, private val responseValue: JsonNode) : RuntimeException(message) {
+class AaregException(message: String, private val responseValue: String) : RuntimeException(message) {
     fun responseValue() = responseValue
 }
+
+data class AaregMeldingerResponse(
+    val meldinger: List<String>
+)
 
 data class Arbeidsforhold(
     val orgnummer: String,
