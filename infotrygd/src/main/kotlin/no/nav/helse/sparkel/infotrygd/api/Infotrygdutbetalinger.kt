@@ -30,10 +30,13 @@ class Infotrygdutbetalinger (dataSource: DataSource) {
                     grad = it.grad.somGrad
                 )
             }
-        }
+        }.filtrer(fom, tom)
     }
 
-    private companion object {
+    internal companion object {
         private val String.somGrad get() = takeUnless { it.isBlank() }?.toInt() ?: 0
+
+        internal fun List<Infotrygdperiode>.filtrer(fom: LocalDate, tom: LocalDate) =
+            filterNot { it.tom < fom }.filterNot { it.fom > tom }
     }
 }
