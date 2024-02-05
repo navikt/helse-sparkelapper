@@ -8,7 +8,7 @@ plugins {
 }
 
 val junitJupiterVersion = "5.10.1"
-val rapidsAndRiversVersion = "2024020422121707081126.d834a5d05bb2"
+val rapidsAndRiversVersion = "2024020507581707116327.1c34df474331"
 val tbdLibsVersion = "2024.01.19-14.15-4080c4c8"
 val ktorVersion = "2.3.8"
 val mockkVersion = "1.13.9"

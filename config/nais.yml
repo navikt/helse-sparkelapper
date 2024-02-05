@@ -34,6 +34,9 @@ spec:
   readiness:
     path: isready
     initialDelay: 5
+  preStopHook:
+    http:
+      path: /stop
   resources:
     limits:
       cpu: 2000m
