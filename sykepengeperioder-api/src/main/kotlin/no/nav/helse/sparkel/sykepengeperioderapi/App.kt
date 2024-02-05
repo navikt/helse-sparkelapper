@@ -62,7 +62,6 @@ private val List<Infotrygdperiode>.response get() = objectMapper.createObjectNod
 }
 
 private fun Application.sykepengeperioderApi() {
-
     install(CallId) {
         header("x-callId")
         verify { it.isNotEmpty() }
