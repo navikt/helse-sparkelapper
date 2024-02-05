@@ -21,7 +21,7 @@ class Infotrygdutbetalinger (dataSource: DataSource) {
             }
 
       return fnrTilUtbetalinger.flatMap { (fnr, utbetalingsperioder) ->
-            utbetalingsperioder.map {
+            utbetalingsperioder.filter { it.periodeType in utbetalingstyper }.map {
                 Infotrygdperiode(
                     personidentifikator = Personidentifikator(fnr.toString()),
                     organisasjonsnummer = it.arbOrgnr.organisasjosnummerOrNull,
@@ -34,6 +34,7 @@ class Infotrygdutbetalinger (dataSource: DataSource) {
     }
 
     internal companion object {
+        private val utbetalingstyper = setOf("0", "1", "5", "6")
         private val String.somGrad get() = takeUnless { it.isBlank() }?.toInt() ?: 0
 
         internal fun List<Infotrygdperiode>.filtrer(fom: LocalDate, tom: LocalDate) =
