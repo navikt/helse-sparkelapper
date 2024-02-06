@@ -48,6 +48,10 @@ spec:
     min: {{#if replicas.min }}{{ replicas.min }}{{else}}4{{/if}}
     max: {{#if replicas.max }}{{ replicas.max }}{{else}}8{{/if}}
     cpuThresholdPercentage: 50
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 2
   {{#if kafkaPool}}
   kafka:
     pool: {{ kafkaPool }}
