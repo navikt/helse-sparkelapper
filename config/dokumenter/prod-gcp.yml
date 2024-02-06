@@ -14,14 +14,15 @@ accessPolicy:
       - application: sykepengesoknad-backend
         namespace: flex
         cluster: prod-gcp
-    external:
-      - host: syfoinntektsmelding.prod-fss-pub.nais.io
+      - application: spinosaurus
+        namespace: helsearbeidsgiver
+        cluster: prod-gcp
 env:
   - name: SOKNAD_API_URL
     value: http://sykepengesoknad-backend.flex
   - name: ACCESS_TOKEN_SCOPE
     value: api://prod-gcp.flex.sykepengesoknad-backend/.default
   - name: IM_API_URL
-    value: https://syfoinntektsmelding.prod-fss-pub.nais.io
+    value: http://spinosaurus.helsearbeidsgiver
   - name: ACCESS_TOKEN_SCOPE_IM
-    value: api://prod-fss.helsearbeidsgiver.syfoinntektsmelding/.default
+    value: api://prod-gcp.helsearbeidsgiver.spinosaurus/.default
