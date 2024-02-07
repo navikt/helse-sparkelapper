@@ -5,6 +5,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments
+import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
@@ -47,7 +48,6 @@ internal class TilbakedatertRiver(
     }
 
     private fun håndter(packet: JsonMessage, context: MessageContext) {
-        sikkerlogg.info("Leser melding ${packet.toJson()}")
         val fødselsnummer = packet["personNrPasient"].asText()
         val sykmeldingId = packet["sykmelding"]["id"].asText()
         val syketilfelleStartDato = packet["sykmelding"]["syketilfelleStartDato"].asLocalDate()
@@ -56,6 +56,8 @@ internal class TilbakedatertRiver(
         val erUnderManuellBehandling = packet["merknader"].takeUnless { it.isMissingOrNull() }?.find {
             it["type"].asText() == "UNDER_BEHANDLING"
         } ?: false
+
+        sikkerlogg.info("Leser melding {}, {}, {}, {}", kv("fødselsnummer", fødselsnummer), kv("sykmeldingId", sykmeldingId), kv("erTilbakedatert", erTilbakedatert), kv("erUnderManuellBehandling", erUnderManuellBehandling))
 
         if (erTilbakedatert && erUnderManuellBehandling == false) {
             val returEvent = objectMapper.createObjectNode()
