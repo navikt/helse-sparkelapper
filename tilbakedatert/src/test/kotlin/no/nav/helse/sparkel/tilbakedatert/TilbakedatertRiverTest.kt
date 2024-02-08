@@ -67,4 +67,10 @@ internal class TilbakedatertRiverTest {
         testEvent(enkeltEvent(merknader = "[{\"type\":\"UNDER_BEHANDLING\"}]"))
         assertEquals(0, rapid.inspektør.size)
     }
+
+    @Test
+    fun `Sender ikke tilbakedatering_behandlet dersom UGYLDIG_TILBAKEDATERING`() {
+        testEvent(enkeltEvent(merknader = "[{\"type\":\"UGYLDIG_TILBAKEDATERING\"}]"))
+        assertEquals(0, rapid.inspektør.size)
+    }
 }
