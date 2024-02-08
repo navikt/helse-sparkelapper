@@ -59,10 +59,13 @@ internal class TilbakedatertRiver(
         val erUgyldigTilbakedaterting = packet["merknader"].takeUnless { it.isMissingOrNull() }?.find {
             it["type"].asText() == "UGYLDIG_TILBAKEDATERING"
         } ?: false
+        val flereOpplysninger = packet["merknader"].takeUnless { it.isMissingOrNull() }?.find {
+            it["type"].asText() == "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
+        } ?: false
 
-        sikkerlogg.info("Leser melding {}, {}, {}, {}, {}", kv("fødselsnummer", fødselsnummer), kv("sykmeldingId", sykmeldingId), kv("erTilbakedatert", erTilbakedatert), kv("erUnderManuellBehandling", erUnderManuellBehandling), kv("erUgyldigTilbakedatering", erUgyldigTilbakedaterting))
+        sikkerlogg.info("Leser melding {}, {}, {}, {}, {}, {}", kv("fødselsnummer", fødselsnummer), kv("sykmeldingId", sykmeldingId), kv("erTilbakedatert", erTilbakedatert), kv("erUnderManuellBehandling", erUnderManuellBehandling), kv("erUgyldigTilbakedatering", erUgyldigTilbakedaterting), kv("flereOpplysninger", flereOpplysninger))
 
-        if (erTilbakedatert && erUnderManuellBehandling == false && erUgyldigTilbakedaterting == false) {
+        if (erTilbakedatert && erUnderManuellBehandling == false && erUgyldigTilbakedaterting == false && flereOpplysninger == false) {
             val returEvent = objectMapper.createObjectNode()
                 .put("@event_name", "tilbakedatering_behandlet")
                 .put("@id", "${UUID.randomUUID()}")
