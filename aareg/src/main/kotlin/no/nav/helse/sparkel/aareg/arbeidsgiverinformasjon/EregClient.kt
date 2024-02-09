@@ -9,6 +9,7 @@ import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.sparkel.aareg.objectMapper
 import java.util.*
 import no.nav.helse.sparkel.aareg.sikkerlogg
+import no.nav.helse.sparkel.retry
 
 class EregClient(
     private val baseUrl: String,
@@ -23,7 +24,7 @@ class EregClient(
     private suspend fun hentFraEreg(
         organisasjonsnummer: String,
         callId: UUID,
-    ): EregResponse {
+    ): EregResponse = retry("ereg") {
         val response: HttpResponse =
             httpClient.get("$baseUrl/api/v1/organisasjon/$organisasjonsnummer?inkluderHierarki=true&inkluderHistorikk=true") {
                 header("Nav-Consumer-Id", appName)
@@ -31,15 +32,15 @@ class EregClient(
                 accept(ContentType.Application.Json)
             }
 
-        sikkerlogg.info("EregResponse status: " + response.status )
+        sikkerlogg.info("EregResponse status: " + response.status)
 
         if (response.status.isSuccess()) {
             val json = objectMapper.readTree(response.bodyAsText())
-            return EregResponse(
-                    navn = trekkUtNavn(json),
-                    næringer = json.path("organisasjonDetaljer").path("naeringer").takeIf { !it.isMissingNode }
-                        ?.map { it["naeringskode"].asText() } ?: emptyList()
-                )
+            EregResponse(
+                navn = trekkUtNavn(json),
+                næringer = json.path("organisasjonDetaljer").path("naeringer").takeIf { !it.isMissingNode }
+                    ?.map { it["naeringskode"].asText() } ?: emptyList()
+            )
         } else throw FeilVedHenting("ereg svarte med ${response.status.value}")
     }
 
@@ -58,4 +59,4 @@ data class EregResponse(
     val næringer: List<String>,
 )
 
-class FeilVedHenting(msg: String): RuntimeException(msg)
+class FeilVedHenting(msg: String) : RuntimeException(msg)

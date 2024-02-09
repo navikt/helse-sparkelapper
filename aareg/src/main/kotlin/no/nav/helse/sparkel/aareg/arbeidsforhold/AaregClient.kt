@@ -16,6 +16,7 @@ import java.util.UUID
 import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforhold
 import no.nav.helse.sparkel.aareg.objectMapper
 import no.nav.helse.sparkel.aareg.sikkerlogg
+import no.nav.helse.sparkel.retry
 
 class AaregClient(
     private val baseUrl: String,
@@ -25,8 +26,8 @@ class AaregClient(
 ) {
     suspend fun hentFraAareg(
         fnr: String,
-        callId: UUID
-    ): List<AaregArbeidsforhold> {
+        callId: UUID,
+    ): List<AaregArbeidsforhold> = retry("arbeidsforhold") {
         val response = hent(
             fnr,
             callId,
@@ -36,13 +37,11 @@ class AaregClient(
         val responseBody = response.bodyAsText()
         sikkerlogg.info("AaregResponse: ${response.status}\n$responseBody")
 
-        return try {
+        try {
             response.body<List<AaregArbeidsforhold>>()
         } catch (e: JsonConvertException) {
             val melding = try {
-                objectMapper.readValue<AaregMeldingerResponse>(responseBody)
-                    .meldinger
-                    .joinToString()
+                objectMapper.readValue<AaregMeldingerResponse>(responseBody).meldinger.joinToString()
             } catch (_: Exception) {
                 "Ukjent respons fra Aareg"
             }
