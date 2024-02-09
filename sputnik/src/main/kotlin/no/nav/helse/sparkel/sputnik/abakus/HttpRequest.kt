@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.sputnik.abakus
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.retry.retryBlocking
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.HttpURLConnection
@@ -16,7 +17,7 @@ internal object HttpRequest {
         method: String,
         body: ((outputStream: OutputStream) -> Unit)?,
         vararg headers: Pair<String, String>
-    ) = with(toURL().openConnection() as HttpURLConnection) {
+    ) = retryBlocking { with(toURL().openConnection() as HttpURLConnection) {
         requestMethod = method
         connectTimeout = 10000
         readTimeout = 10000
@@ -37,7 +38,7 @@ internal object HttpRequest {
             sikkerlogg.info("Klarte ikke mappe response til JSON.\nBody:\n $responseBody")
             throw IllegalStateException("Klarte ikke å mappe response til JSON fra $url")
         }
-    }
+    }}
 
     internal fun URI.get(
         vararg headers: Pair<String, String>
