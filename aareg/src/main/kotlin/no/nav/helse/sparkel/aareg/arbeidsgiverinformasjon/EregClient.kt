@@ -34,15 +34,19 @@ class EregClient(
 
         sikkerlogg.info("EregResponse status: " + response.status)
 
-        if (response.status.isSuccess()) {
-            val json = objectMapper.readTree(response.bodyAsText())
+        if (!response.status.isSuccess()) throw FeilVedHenting("ereg svarte med ${response.status.value}")
+
+        mapResponse(response)
+    }
+
+    private suspend fun mapResponse(response: HttpResponse) =
+        objectMapper.readTree(response.bodyAsText()).let { json ->
             EregResponse(
                 navn = trekkUtNavn(json),
                 næringer = json.path("organisasjonDetaljer").path("naeringer").takeIf { !it.isMissingNode }
                     ?.map { it["naeringskode"].asText() } ?: emptyList()
             )
-        } else throw FeilVedHenting("ereg svarte med ${response.status.value}")
-    }
+        }
 
     private fun trekkUtNavn(organisasjon: JsonNode) =
         organisasjon["navn"].let { navn ->

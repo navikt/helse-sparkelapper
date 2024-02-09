@@ -23,8 +23,6 @@ import org.slf4j.LoggerFactory
 
 val sikkerlogg: Logger = LoggerFactory.getLogger("tjenestekall")
 
-internal val logger: Logger = LoggerFactory.getLogger("sparkel-aareg")
-
 internal val objectMapper: ObjectMapper = jacksonObjectMapper()
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
