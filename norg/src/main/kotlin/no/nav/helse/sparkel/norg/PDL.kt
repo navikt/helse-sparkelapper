@@ -11,6 +11,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.isMissingOrNull
+import no.nav.helse.sparkel.retry
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

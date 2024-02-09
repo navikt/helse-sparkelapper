@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.norg
 
 import java.io.IOException
+import no.nav.helse.sparkel.retry
 
 class PersoninfoService(private val norg2Client: Norg2Client, private val pdl: PDL) {
     suspend fun finnBehandlendeEnhet(fødselsnummer: String, behovId: String): String {

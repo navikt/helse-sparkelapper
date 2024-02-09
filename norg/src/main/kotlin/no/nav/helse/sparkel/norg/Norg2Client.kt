@@ -11,6 +11,7 @@ import io.ktor.client.request.parameter
 import io.ktor.client.request.prepareGet
 import io.ktor.http.*
 import io.ktor.http.HttpStatusCode.Companion.NotFound
+import no.nav.helse.sparkel.retry
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
