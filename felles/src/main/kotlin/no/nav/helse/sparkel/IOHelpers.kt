@@ -5,13 +5,19 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
+import javax.net.ssl.SSLHandshakeException
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlin.reflect.KClass
 
 private val log: Logger = LoggerFactory.getLogger("SoapHelpers")
 
 suspend fun <T> retry(
     callName: String,
-    vararg legalExceptions: KClass<out Throwable> = arrayOf(IOException::class),
+    vararg legalExceptions: KClass<out Throwable> = arrayOf(
+        IOException::class,
+        ClosedReceiveChannelException::class,
+        SSLHandshakeException::class,
+    ),
     retryIntervals: Array<Long> = arrayOf(500, 1000, 3000, 5000, 10000),
     exceptionCausedByDepth: Int = 3,
     block: suspend () -> T

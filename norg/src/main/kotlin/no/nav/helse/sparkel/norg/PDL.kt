@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
-import java.io.IOException
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -51,7 +50,6 @@ class PDL(
     private suspend fun <T> httpKall(fødselsnummer: String, query: String, behovId: String, responseMapper: (JsonNode) -> T): T =
         retry(
             "pdl",
-            IOException::class,
             retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L)
         ) {
             val accessToken = azureClient.bearerToken(scope).token
