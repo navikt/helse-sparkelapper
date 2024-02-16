@@ -71,7 +71,7 @@ class Arbeidsforholdbehovløser(
                 val løsning = arbeidsforholdFraAareg.toLøsningDto()
 
                 if (løsning.isEmpty())
-                    sikkerlogg.error("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg, fikk svar:\n$arbeidsforholdFraAareg")
+                    sikkerlogg.info("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg, fikk svar:\n$arbeidsforholdFraAareg")
 
                 løsning
             }
