@@ -17,7 +17,7 @@ val jsonAssertVersion = "1.5.0"
 val avroVersion = "1.11.3"
 val kotliqueryVersion = "1.9.0"
 val testcontainersPostgresqlVersion = "1.19.3"
-val postgresqlVersion = "42.7.1"
+val postgresqlVersion = "42.7.2"
 val flyAwayCoreVersion = "9.19.4"
 val hikariCPVersion = "5.1.0"
 
