@@ -72,6 +72,7 @@ internal class TrengerPotensieltArbeidsgiveropplysningerRiverTest {
                 "skjæringstidspunkt" to LocalDate.MIN,
                 "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
                 "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
+                "førsteFraværsdager" to listOf(mapOf("organisasjonsnummer" to ORGNUMMER, "førsteFraværsdag" to LocalDate.MIN))
             )
         ).toString()
 }

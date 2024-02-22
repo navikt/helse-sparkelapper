@@ -46,7 +46,7 @@ internal fun JsonMessage.toPotensiellTrengerArbeidsgiveropplysningerDto(): Treng
         organisasjonsnummer = this["organisasjonsnummer"].asText(),
         vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
         skjæringstidspunkt = this["skjæringstidspunkt"].asLocalDate(),
-        bestemmendeFraværsdager = emptyMap(),
+        bestemmendeFraværsdager = this["førsteFraværsdager"].asBestemmendeFraværsdager(),
         sykmeldingsperioder = this["sykmeldingsperioder"].toPerioder(),
         egenmeldingsperioder = this["egenmeldingsperioder"].toPerioder(),
         forespurtData = emptyList(),
