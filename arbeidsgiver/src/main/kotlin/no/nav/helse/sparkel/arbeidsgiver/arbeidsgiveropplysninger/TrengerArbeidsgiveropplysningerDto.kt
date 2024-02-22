@@ -25,7 +25,7 @@ internal data class TrengerArbeidsgiveropplysningerDto(
     val meldingstype get() = type.name.lowercase().toByteArray()
 }
 
-internal fun JsonMessage.toKomplettTrengerArbeidsgiverDto(): TrengerArbeidsgiveropplysningerDto =
+internal fun JsonMessage.toKomplettTrengerArbeidsgiveropplysningerDto(): TrengerArbeidsgiveropplysningerDto =
     TrengerArbeidsgiveropplysningerDto(
         type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
         fødselsnummer = this["fødselsnummer"].asText(),
@@ -39,7 +39,21 @@ internal fun JsonMessage.toKomplettTrengerArbeidsgiverDto(): TrengerArbeidsgiver
         opprettet = this["@opprettet"].asLocalDateTime()
     )
 
-internal fun JsonMessage.toBegrensetTrengerArbeidsgiverDto(): TrengerArbeidsgiveropplysningerDto =
+internal fun JsonMessage.toPotensiellTrengerArbeidsgiveropplysningerDto(): TrengerArbeidsgiveropplysningerDto =
+    TrengerArbeidsgiveropplysningerDto(
+        type = Meldingstype.TRENGER_POTENSIELT_OPPLYSNINGER_FRA_ARBEIDSGIVER,
+        fødselsnummer = this["fødselsnummer"].asText(),
+        organisasjonsnummer = this["organisasjonsnummer"].asText(),
+        vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
+        skjæringstidspunkt = this["skjæringstidspunkt"].asLocalDate(),
+        bestemmendeFraværsdager = emptyMap(),
+        sykmeldingsperioder = this["sykmeldingsperioder"].toPerioder(),
+        egenmeldingsperioder = this["egenmeldingsperioder"].toPerioder(),
+        forespurtData = emptyList(),
+        opprettet = this["@opprettet"].asLocalDateTime()
+    )
+
+internal fun JsonMessage.toBegrensetTrengerArbeidsgiveropplysningerDto(): TrengerArbeidsgiveropplysningerDto =
     TrengerArbeidsgiveropplysningerDto(
         type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_BEGRENSET,
         fødselsnummer = this["fødselsnummer"].asText(),

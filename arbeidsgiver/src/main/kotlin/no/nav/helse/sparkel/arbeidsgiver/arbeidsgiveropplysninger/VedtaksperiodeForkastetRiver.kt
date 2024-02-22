@@ -50,7 +50,7 @@ internal class VedtaksperiodeForkastetRiver(
                 sikkerlogg.info("$it med data :\n{}", packet.toJson())
             }
 
-            val payload = packet.toBegrensetTrengerArbeidsgiverDto()
+            val payload = packet.toBegrensetTrengerArbeidsgiveropplysningerDto()
             arbeidsgiverProducer.send(
                 ProducerRecord(
                     "tbd.arbeidsgiveropplysninger",

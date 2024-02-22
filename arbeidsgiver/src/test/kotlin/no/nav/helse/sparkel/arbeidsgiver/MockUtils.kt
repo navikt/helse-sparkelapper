@@ -140,6 +140,13 @@ internal fun mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId: UU
     )
 )
 
+internal fun mockTrengerPotensieltArbeidsgiveropplysninger(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerDto(
+    vedtaksperiodeId = vedtaksperiodeId,
+    type = Meldingstype.TRENGER_POTENSIELT_OPPLYSNINGER_FRA_ARBEIDSGIVER,
+    forespurtData = emptyList(),
+    bestemmendeFraværsdager = emptyMap()
+)
+
 internal fun mockInntektsmeldingHåndtert(vedtaksperiodeId: UUID, dokumentId: UUID?) = InntektsmeldingHåndtertDto(
     type = Meldingstype.INNTEKTSMELDING_HÅNDTERT,
     fødselsnummer = FNR,

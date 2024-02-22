@@ -13,14 +13,14 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.internals.RecordHeader
 import org.slf4j.LoggerFactory
 
-internal class TrengerArbeidsgiveropplysningerRiver(
+internal class TrengerPotensieltArbeidsgiveropplysningerRiver(
     rapidsConnection: RapidsConnection,
     private val arbeidsgiverProducer: KafkaProducer<String, TrengerArbeidsgiveropplysningerDto>
 ) : River.PacketListener {
     private companion object {
         val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         val logg = LoggerFactory.getLogger(this::class.java)
-        const val eventName = "trenger_opplysninger_fra_arbeidsgiver"
+        const val eventName = "trenger_potensielt_opplysninger_fra_arbeidsgiver"
     }
 
     init {
@@ -36,11 +36,6 @@ internal class TrengerArbeidsgiveropplysningerRiver(
                 require("fom", JsonNode::asLocalDate)
                 require("tom", JsonNode::asLocalDate)
             }}
-            validate { it.requireArray("førsteFraværsdager") {
-                require("organisasjonsnummer", JsonNode::asText)
-                require("førsteFraværsdag", JsonNode::asLocalDate)
-            }}
-            validate { it.require("forespurteOpplysninger", JsonNode::validateForespurteOpplysninger) }
             validate { it.requireKey("organisasjonsnummer", "fødselsnummer", "vedtaksperiodeId") }
         }.register(this)
     }
@@ -56,11 +51,11 @@ internal class TrengerArbeidsgiveropplysningerRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        "Mottok trenger_opplysninger_fra_arbeidsgiver-event fra spleis".let {
+        "Mottok $eventName-event fra spleis".let {
             logg.info("$it:\n{}", loggVennligPacket(packet))
             sikkerlogg.info("$it med data:\n{}", packet.toJson())
         }
-        val payload = packet.toKomplettTrengerArbeidsgiveropplysningerDto()
+        val payload = packet.toPotensiellTrengerArbeidsgiveropplysningerDto()
         arbeidsgiverProducer.send(
             ProducerRecord(
                 "tbd.arbeidsgiveropplysninger",
@@ -71,11 +66,9 @@ internal class TrengerArbeidsgiveropplysningerRiver(
             )
         ).get()
 
-        "Publiserte komplett forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger".let {
+        "Publiserte potensiell forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger".let {
             logg.info(it)
             sikkerlogg.info("$it med data :\n{}", payload)
         }
     }
 }
-
-private fun JsonNode.validateForespurteOpplysninger() = all { it.asForespurtOpplysning() != null }
