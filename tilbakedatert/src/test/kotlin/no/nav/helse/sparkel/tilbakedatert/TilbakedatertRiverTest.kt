@@ -79,4 +79,10 @@ internal class TilbakedatertRiverTest {
         testEvent(enkeltEvent(merknader = "[{\"type\":\"TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER\"}]"))
         assertEquals(0, rapid.inspektør.size)
     }
+
+    @Test
+    fun `Sender ikke tilbakedatering_behandlet dersom DELVIS_GODKJENT`() {
+        testEvent(enkeltEvent(merknader = "[{\"type\":\"DELVIS_GODKJENT\"}]"))
+        assertEquals(0, rapid.inspektør.size)
+    }
 }

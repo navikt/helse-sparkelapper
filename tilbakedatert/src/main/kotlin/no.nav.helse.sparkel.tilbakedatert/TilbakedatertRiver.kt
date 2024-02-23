@@ -62,10 +62,22 @@ internal class TilbakedatertRiver(
         val flereOpplysninger = packet["merknader"].takeUnless { it.isMissingOrNull() }?.find {
             it["type"].asText() == "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
         } ?: false
+        val delvisGodkjent = packet["merknader"].takeUnless { it.isMissingOrNull() }?.find {
+            it["type"].asText() == "DELVIS_GODKJENT"
+        } ?: false
 
-        sikkerlogg.info("Leser melding {}, {}, {}, {}, {}, {}", kv("fødselsnummer", fødselsnummer), kv("sykmeldingId", sykmeldingId), kv("erTilbakedatert", erTilbakedatert), kv("erUnderManuellBehandling", erUnderManuellBehandling), kv("erUgyldigTilbakedatering", erUgyldigTilbakedaterting), kv("flereOpplysninger", flereOpplysninger))
+        sikkerlogg.info(
+            "Leser melding {}, {}, {}, {}, {}, {}, {}",
+            kv("fødselsnummer", fødselsnummer),
+            kv("sykmeldingId", sykmeldingId),
+            kv("erTilbakedatert", erTilbakedatert),
+            kv("erUnderManuellBehandling", erUnderManuellBehandling),
+            kv("erUgyldigTilbakedatering", erUgyldigTilbakedaterting),
+            kv("flereOpplysninger", flereOpplysninger),
+            kv("delvisGodkjent", delvisGodkjent)
+        )
 
-        if (erTilbakedatert && erUnderManuellBehandling == false && erUgyldigTilbakedaterting == false && flereOpplysninger == false) {
+        if (erTilbakedatert && erUnderManuellBehandling == false && erUgyldigTilbakedaterting == false && flereOpplysninger == false && delvisGodkjent == false) {
             val returEvent = objectMapper.createObjectNode()
                 .put("@event_name", "tilbakedatering_behandlet")
                 .put("@id", "${UUID.randomUUID()}")
