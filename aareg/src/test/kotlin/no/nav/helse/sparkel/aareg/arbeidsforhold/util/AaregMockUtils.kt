@@ -9,6 +9,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.http.fullPath
 import io.ktor.http.headersOf
 import io.ktor.serialization.jackson.JacksonConverter
@@ -22,7 +23,7 @@ fun azureTokenStub() = object : AzureTokenProvider {
         throw NotImplementedError("Ikke implementert i mock")
 }
 
-fun aaregMockClient(aaregResponse: String = defaultArbeidsforholdResponse()) = HttpClient(MockEngine) {
+fun aaregMockClient(aaregResponse: String = defaultArbeidsforholdResponse(), status: HttpStatusCode = OK) = HttpClient(MockEngine) {
     install(ContentNegotiation) {
         register(ContentType.Application.Json, JacksonConverter(objectMapper))
     }
@@ -32,7 +33,7 @@ fun aaregMockClient(aaregResponse: String = defaultArbeidsforholdResponse()) = H
             when {
                 request.url.fullPath.startsWith("/api/v2/arbeidstaker/arbeidsforhold") -> respond(
                     content = aaregResponse,
-                    status = HttpStatusCode.OK,
+                    status = status,
                     headers = headersOf(HttpHeaders.ContentType, "application/json")
                 )
 

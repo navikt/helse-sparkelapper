@@ -50,6 +50,9 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
                     .hentFraAareg(packet["fødselsnummer"].asText(), UUID.fromString(packet["@id"].asText()))
                     .toArbeidsforhold()
             }
+        } catch (exception: UkjentIdentException) {
+            log.warn("Ignorerer behov={}, personen finnes ikke", packet["@id"].asText())
+            return
         } catch (err: AaregException) {
             log.error(
                 "Feilmelding for behov={} ved oppslag i AAreg. Ignorerer behov",

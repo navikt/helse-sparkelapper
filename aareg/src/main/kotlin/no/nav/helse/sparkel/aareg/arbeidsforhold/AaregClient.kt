@@ -10,6 +10,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.JsonConvertException
 import java.time.LocalDate
 import java.util.UUID
@@ -45,7 +46,8 @@ class AaregClient(
             } catch (_: Exception) {
                 "Ukjent respons fra Aareg"
             }
-            throw AaregException(melding, responseBody)
+            throw if (response.status == HttpStatusCode.NotFound && melding == "Ukjent ident") UkjentIdentException()
+            else AaregException(melding, responseBody)
         }
     }
 
@@ -62,6 +64,8 @@ class AaregClient(
 class AaregException(message: String, private val responseValue: String) : RuntimeException(message) {
     fun responseValue() = responseValue
 }
+
+class UkjentIdentException : RuntimeException()
 
 data class AaregMeldingerResponse(
     val meldinger: List<String>
