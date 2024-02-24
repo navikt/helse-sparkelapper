@@ -6,45 +6,24 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import java.util.UUID
-import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.azureTokenStub
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 
 internal class ArbeidsforholdLøserV2Test {
-    private val objectMapper = jacksonObjectMapper()
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        .registerModule(JavaTimeModule())
 
-    private lateinit var sendtMelding: JsonNode
+    private val sendtMelding get() = rapid.inspektør.message(rapid.inspektør.size - 1)
 
-    private val rapid = object : RapidsConnection() {
-        fun sendTestMessage(message: String) {
-            notifyMessage(message, this)
-        }
-
-        override fun publish(message: String) { sendtMelding = objectMapper.readTree(message) }
-        override fun rapidName(): String {
-            return "Test"
-        }
-
-        override fun publish(key: String, message: String) {}
-
-        override fun start() {}
-
-        override fun stop() {}
-    }
+    private val rapid = TestRapid()
 
     @Test
     internal fun `løser ArbeidsforholdV2`() {
@@ -53,8 +32,7 @@ internal class ArbeidsforholdLøserV2Test {
         val behov = """{"@id": "${UUID.randomUUID()}", "@behov":["ArbeidsforholdV2"], "fødselsnummer": "fnr", "vedtaksperiodeId": "id" }"""
         rapid.sendTestMessage(behov)
 
-        val løsning = sendtMelding.løsning("ArbeidsforholdV2")
-        assertTrue(løsning.isNotEmpty())
+        assertNotNull(sendtMelding.løsning("AlleArbeidsforhold"))
     }
 
     @Test
@@ -77,7 +55,7 @@ internal class ArbeidsforholdLøserV2Test {
         rapid.sendTestMessage(behov)
 
         assertEquals(1, logglytter.list.filter { it.level == ERROR }.size)
-        assertFalse(this::sendtMelding.isInitialized)
+        assertEquals(0, rapid.inspektør.size)
     }
 
     @Test
@@ -91,7 +69,7 @@ internal class ArbeidsforholdLøserV2Test {
 
         assertEquals(1, logglytter.list.filter { it.message.contains("personen finnes ikke") && it.level == WARN }.size)
         assertEquals(0, logglytter.list.filter { it.level == ERROR }.size)
-        assertFalse(this::sendtMelding.isInitialized)
+        assertEquals(0, rapid.inspektør.size)
     }
 
     data class AaregSvar(val response: String, val status: HttpStatusCode)
