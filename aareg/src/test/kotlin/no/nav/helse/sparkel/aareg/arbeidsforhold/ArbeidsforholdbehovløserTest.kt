@@ -3,7 +3,7 @@ package no.nav.helse.sparkel.aareg.arbeidsforhold
 import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
-import no.nav.helse.sparkel.aareg.arbeidsforhold.util.azureTokenMock
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.azureTokenStub
 import no.nav.helse.sparkel.aareg.objectMapper
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
@@ -15,7 +15,7 @@ internal class ArbeidsforholdbehovløserTest {
         val aaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             scope = "aareg-scope",
-            tokenSupplier = azureTokenMock(),
+            tokenSupplier = azureTokenStub(),
             httpClient = aaregMockClient()
         )
         Arbeidsforholdbehovløser(testRapid, aaregClient)

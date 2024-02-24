@@ -12,18 +12,14 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.fullPath
 import io.ktor.http.headersOf
 import io.ktor.serialization.jackson.JacksonConverter
-import io.mockk.every
-import io.mockk.mockk
 import java.time.LocalDateTime
 import no.nav.helse.sparkel.aareg.objectMapper
 import org.intellij.lang.annotations.Language
 
-
-
-fun azureTokenMock(): AzureTokenProvider {
-    val azureAdMock = mockk<AzureTokenProvider>()
-    every { azureAdMock.bearerToken(any()) } returns AzureToken("superToken", LocalDateTime.MAX)
-    return azureAdMock
+fun azureTokenStub() = object : AzureTokenProvider {
+    override fun bearerToken(scope: String) = AzureToken("superToken", LocalDateTime.MAX)
+    override fun onBehalfOfToken(scope: String, token: String): AzureToken =
+        throw NotImplementedError("Ikke implementert i mock")
 }
 
 fun aaregMockClient(aaregResponse: String = defaultArbeidsforholdResponse()) = HttpClient(MockEngine) {

@@ -4,14 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.github.navikt.tbd_libs.azure.AzureToken
-import com.github.navikt.tbd_libs.azure.AzureTokenProvider
-import io.mockk.every
-import io.mockk.mockk
-import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.azureTokenStub
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -45,7 +41,7 @@ internal class ArbeidsforholdLøserV2Test {
         val mockAaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             scope = "aareg-scope",
-            tokenSupplier = azureTokenMock(),
+            tokenSupplier = azureTokenStub(),
             httpClient = aaregMockClient()
         )
         ArbeidsforholdLøserV2(rapid, mockAaregClient)
@@ -60,19 +56,13 @@ internal class ArbeidsforholdLøserV2Test {
         val mockAaregClient = AaregClient(
             baseUrl = "http://baseUrl.local",
             scope = "aareg-scope",
-            tokenSupplier = azureTokenMock(),
+            tokenSupplier = azureTokenStub(),
             httpClient = aaregMockClient()
         )
         ArbeidsforholdLøserV2(rapid, mockAaregClient)
         rapid.sendTestMessage(behov)
         val løsning = sendtMelding.løsning("AlleArbeidsforhold")
         assertTrue(løsning.isNotEmpty())
-    }
-
-    private fun azureTokenMock(): AzureTokenProvider {
-        val azureAdMock = mockk<AzureTokenProvider>()
-        every { azureAdMock.bearerToken(any()) } returns AzureToken("superToken", LocalDateTime.MAX)
-        return azureAdMock
     }
 
     private fun JsonNode.løsning(behov: String): List<Arbeidsforhold> =
