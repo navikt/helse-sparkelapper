@@ -47,7 +47,7 @@ class AaregClient(
                 "Ukjent respons fra Aareg"
             }
             throw if (response.status == HttpStatusCode.NotFound && melding == "Ukjent ident") UkjentIdentException()
-            else AaregException(melding, responseBody)
+            else AaregException(melding, responseBody, response.status)
         }
     }
 
@@ -61,8 +61,13 @@ class AaregClient(
         }
 }
 
-class AaregException(message: String, private val responseValue: String) : RuntimeException(message) {
+class AaregException(
+    message: String,
+    private val responseValue: String,
+    private val status: HttpStatusCode
+) : RuntimeException(message) {
     fun responseValue() = responseValue
+    fun statusFromAareg() = status.value.toString()
 }
 
 class UkjentIdentException : RuntimeException()

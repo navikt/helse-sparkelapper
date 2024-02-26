@@ -77,8 +77,9 @@ class Arbeidsforholdbehovløser(
             }
         } catch (err: AaregException) {
             log.error(
-                "Feilmelding for behov={} ved oppslag i AAreg. Svarer med tom liste",
-                keyValue("id", id)
+                "Feilmelding for behov={} ved oppslag i AAreg, fikk status={}. Svarer med tom liste",
+                keyValue("id", id),
+                err.statusFromAareg()
             )
             sikkerlogg.error(
                 "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Svarer med tom liste. Response:\n\t{}",
@@ -100,7 +101,7 @@ class Arbeidsforholdbehovløser(
             )
             emptyList()
         } catch (err: Exception) {
-            sikkerlogg.info("What now? \n${packet.toJson()} \n{}", err)
+            sikkerlogg.info("What now? \n${packet.toJson()}", err)
             emptyList()
         }
     }

@@ -55,8 +55,9 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
             return
         } catch (err: AaregException) {
             log.error(
-                "Feilmelding for behov={} ved oppslag i AAreg. Ignorerer behov",
-                keyValue("id", packet["@id"].asText())
+                "Feilmelding for behov={} ved oppslag i AAreg, fikk status={}. Ignorerer behov",
+                keyValue("id", packet["@id"].asText()),
+                err.statusFromAareg()
             )
             sikkerlogg.error(
                 "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Ignorerer behov. Response:\n\t{}",
