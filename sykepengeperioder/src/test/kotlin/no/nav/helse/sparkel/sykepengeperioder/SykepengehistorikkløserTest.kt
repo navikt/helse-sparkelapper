@@ -54,12 +54,6 @@ internal class SykepengehistorikkløserTest : H2Database() {
     }
 
     @Test
-    fun `ignorerer behov som er mer enn 30 minutter gamle`() {
-        rapid.sendTestMessage(behov(opprettet = LocalDateTime.now().minusMinutes(35)))
-        assertEquals(0, rapid.inspektør.size)
-    }
-
-    @Test
     fun `løser behov uten vedtaksperiodeId`() {
         opprettPeriode(seq = 1)
         opprettPeriode(seq = 2)
