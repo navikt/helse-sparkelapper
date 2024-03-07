@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import no.nav.helse.rapids_rivers.asLocalDate
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -33,13 +34,20 @@ internal class TilbakedatertRiverTest {
         rapid.sendTestMessage(behov)
     }
 
+    @Language("JSON")
     private fun enkeltEvent(fom: LocalDate? = LocalDate.now().minusDays(4), signaturDato: LocalDateTime? = LocalDateTime.now(), merknader: String? = null) =
         """
         {
              "sykmelding": {
                 "id": "${UUID.randomUUID()}",
                 "syketilfelleStartDato": "$fom",
-                "signaturDato": "$signaturDato"
+                "signaturDato": "$signaturDato",
+                "perioder": [
+                    {
+                        "fom": "$fom",
+                        "tom": "${fom?.plusDays(30)}"
+                    }
+                ]
             },
             "personNrPasient": "12345678910",
             "merknader": $merknader
