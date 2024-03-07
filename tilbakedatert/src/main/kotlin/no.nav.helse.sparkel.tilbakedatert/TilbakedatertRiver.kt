@@ -97,7 +97,7 @@ internal class TilbakedatertRiver(
                 sikkerlogg.info(
                     "sender tilbakedatering_behandlet for {}: {}",
                     keyValue("sykmeldingId", sykmeldingId),
-                    packet.toJson()
+                    returEvent
                 )
             }
         }
