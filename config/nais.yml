@@ -70,7 +70,7 @@ spec:
   webproxy: true
   secureLogs:
     enabled: true
-  {{#if onprem }}{{ else }}
+  {{#if onprem }}{{else}}
   observability:
     autoInstrumentation:
       enabled: true
