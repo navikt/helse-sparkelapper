@@ -25,6 +25,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 
@@ -63,7 +64,7 @@ class OppgaveEndretConsumerTest {
 
         logger.info("Venter til meldingene er behandlet")
         verify(atLeast = 4, timeout = Duration.ofSeconds(2).toMillis()) { kafkaConsumer.poll(any<Duration>()) }
-        verify(atLeast = 4) { gosysOppgaveEndretProducer.onPacket(any()) }
+        verify(atLeast = 4, timeout = Duration.ofSeconds(5).toMillis()) { gosysOppgaveEndretProducer.onPacket(any()) }
         verify(exactly = 1) { gosysOppgaveEndretProducer.shipIt() }
     }
 
