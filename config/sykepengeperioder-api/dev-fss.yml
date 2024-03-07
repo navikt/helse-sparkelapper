@@ -19,3 +19,4 @@ mountPaths:
 env:
   - name: DATABASE_SCHEMA
     value: INFOTRYGD_SPQ
+onprem: true

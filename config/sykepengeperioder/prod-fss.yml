@@ -9,3 +9,4 @@ mountPaths:
 env:
 - name: DATABASE_SCHEMA
   value: INFOTRYGD_SPP
+onprem: true
