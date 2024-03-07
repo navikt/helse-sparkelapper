@@ -56,6 +56,12 @@ spec:
   kafka:
     pool: {{ kafkaPool }}
   {{/if}}
+  {{#if onprem}}{{else}}
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+  {{/if}}
   {{#if azure}}
   azure:
     application:
@@ -70,12 +76,6 @@ spec:
   webproxy: true
   secureLogs:
     enabled: true
-  {{#if onprem }}{{else}}
-  observability:
-    autoInstrumentation:
-      enabled: true
-      runtime: java
-  {{/if}}
   vault:
     enabled: true
     {{#if mountPaths}}
