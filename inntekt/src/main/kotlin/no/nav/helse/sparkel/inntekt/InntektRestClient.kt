@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.inntekt
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.client.*
+import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -39,6 +40,7 @@ class InntektRestClient(
     ) = clientLatencyStats.startTimer().use {
         runBlocking {
             httpClient.preparePost("$baseUrl/api/v1/hentinntektliste") {
+                expectSuccess = true
                 header("Authorization", "Bearer ${tokenSupplier(inntektskomponentenOAuthScope)}")
                 header("Nav-Consumer-Id", "sparkel-inntekt")
                 header("Nav-Call-Id", callId)
