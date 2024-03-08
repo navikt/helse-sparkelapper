@@ -2,16 +2,20 @@ package no.nav.helse.sparkel.inntekt
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.client.*
+import com.github.navikt.tbd_libs.retry.retry
+import io.ktor.client.HttpClient
 import io.ktor.client.plugins.expectSuccess
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
+import io.ktor.client.request.accept
+import io.ktor.client.request.header
+import io.ktor.client.request.preparePost
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import io.prometheus.client.Summary
-import kotlinx.coroutines.runBlocking
-import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlag
 import java.time.YearMonth
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlag
 import org.slf4j.LoggerFactory
 
 private const val INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME = "inntektskomponent_client_seconds"
@@ -31,14 +35,14 @@ class InntektRestClient(
     private val httpClient: HttpClient,
     private val tokenSupplier: TokenSupplier,
 ) {
-    fun hentInntektsliste(
+    suspend fun hentInntektsliste(
         fnr: String,
         fom: YearMonth,
         tom: YearMonth,
         filter: String,
         callId: String
     ) = clientLatencyStats.startTimer().use {
-        runBlocking {
+        retry {
             httpClient.preparePost("$baseUrl/api/v1/hentinntektliste") {
                 expectSuccess = true
                 header("Authorization", "Bearer ${tokenSupplier(inntektskomponentenOAuthScope)}")
@@ -46,19 +50,25 @@ class InntektRestClient(
                 header("Nav-Call-Id", callId)
                 contentType(ContentType.Application.Json)
                 accept(ContentType.Application.Json)
-                setBody(mapOf(
-                    "ident" to mapOf(
-                        "identifikator" to fnr,
-                        "aktoerType" to "NATURLIG_IDENT"
-                    ),
-                    "ainntektsfilter" to filter,
-                    "formaal" to "Sykepenger",
-                    "maanedFom" to fom,
-                    "maanedTom" to tom
-                ))
+                setBody(
+                    mapOf(
+                        "ident" to mapOf(
+                            "identifikator" to fnr,
+                            "aktoerType" to "NATURLIG_IDENT"
+                        ),
+                        "ainntektsfilter" to filter,
+                        "formaal" to "Sykepenger",
+                        "maanedFom" to fom,
+                        "maanedTom" to tom
+                    )
+                )
             }.execute {
                 val content = it.bodyAsText()
-                sikkerlogg.info("inntektskomponenten svarte for filter=$filter med:\n\t$content", keyValue("callId", callId), keyValue("fødselsnummer", fnr))
+                sikkerlogg.info(
+                    "inntektskomponenten svarte for filter=$filter med:\n\t$content",
+                    keyValue("callId", callId),
+                    keyValue("fødselsnummer", fnr)
+                )
                 tilMånedListe(objectMapper.readValue(content), filter)
             }
         }

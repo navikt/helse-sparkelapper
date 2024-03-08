@@ -126,14 +126,15 @@ class Inntekter(
 
             log.info("Behandler behov {}", kv("id", packet["@id"].asText()))
             packet["@løsning"] = mapOf<String, Any>(
-                type.name to inntektsRestClient.hentInntektsliste(
-                    fnr = packet["fødselsnummer"].asText(),
-                    fom = beregningStart,
-                    tom = beregningSlutt,
-                    filter = type.ainntektfilter,
-                    callId = "$callId-${packet["@id"].asText()}"
-                )
-            )
+                type.name to runBlocking {
+                    inntektsRestClient.hentInntektsliste(
+                        fnr = packet["fødselsnummer"].asText(),
+                        fom = beregningStart,
+                        tom = beregningSlutt,
+                        filter = type.ainntektfilter,
+                        callId = "$callId-${packet["@id"].asText()}"
+                    )
+                })
             context.publish(packet.toJson().also {
                 log.info("løser behov: {}", keyValue("id", packet["@id"].asText()))
                 sikkerlogg.info("svarer behov {} med {}", keyValue("id", packet["@id"].asText()), it)
