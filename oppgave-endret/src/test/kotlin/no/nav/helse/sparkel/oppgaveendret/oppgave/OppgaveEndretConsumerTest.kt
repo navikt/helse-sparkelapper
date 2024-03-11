@@ -25,7 +25,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 
@@ -34,7 +33,6 @@ class OppgaveEndretConsumerTest {
     private val kafkaConsumer = mockk<KafkaConsumer<String, String>>()
     private val logger = LoggerFactory.getLogger(this::class.java)
 
-    @Disabled("Disabler test som feiler på Github actions, for å få app'en opp igjen i prod.")
     @Test
     fun `happy case`() {
         val gosysOppgaveEndretProducer = mockk<GosysOppgaveEndretProducer>(relaxed = true)
