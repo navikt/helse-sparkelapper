@@ -35,7 +35,7 @@ class Arbeidsgiverinformasjonsbehovløser(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.requireContains("@behov", behov) }
+            validate { it.demandAll("@behov", listOf(behov)) }
             validate { it.forbid("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("$behov.organisasjonsnummer") }
