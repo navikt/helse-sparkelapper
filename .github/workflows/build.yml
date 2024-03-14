@@ -121,8 +121,16 @@ jobs:
           docker_context: ${{ matrix.project }}
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
-      - run: |
-          echo "Imagenavn: ${{ steps.docker-build-push.outputs.image }}"
+      - name: lage build-fil
+        if: ${{ always() }}
+        run: |
+          echo oui > "${{ matrix.project }}_build_${{ steps.docker-build-push.outcome }}.txt"
+      - name: laste opp build-fil
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ matrix.project }}_build_result"
+          path: "${{ matrix.project }}_build_${{ steps.docker-build-push.outcome }}.txt"
 
   deploy:
     needs: [generate_vars, build]
@@ -141,13 +149,17 @@ jobs:
           echo "IMAGE=${{ env.CONTAINER_REGISTRY }}/${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}/${{ needs.generate_vars.outputs.team }}/${{ github.event.repository.name }}-${{ matrix.project }}:${{ needs.generate_vars.outputs.tag }}" >> $GITHUB_ENV
       - name: Fetch sources
         uses: actions/checkout@v4
-      - name: Check for vars yml
-        id: vars_file
+      - name: laste ned build-fil
+        uses: actions/download-artifact@v4
+        with:
+          name: "${{ matrix.project }}_build_result"
+      - name: ser om vi har nais config og at bygget gikk bra
+        id: deploy-files
         uses: andstor/file-existence-action@v3
         with:
-          files: "${{ env.VARS }}"
+          files: "${{ env.VARS }}, ${{ matrix.project }}_build_success.txt"
       - name: deploy
-        if: steps.vars_file.outputs.files_exists == 'true'
+        if: steps.deploy-files.outputs.files_exists == 'true'
         uses: nais/deploy/actions/deploy@v2
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}

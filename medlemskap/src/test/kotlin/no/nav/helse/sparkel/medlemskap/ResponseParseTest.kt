@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.medlemskap
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -10,6 +11,7 @@ class ResponseParseTest {
 
     @Test
     fun `ny og gammel response skal tolkes helt likt`() {
+        assertTrue(false)
         val speilVurdering = MedlemskapClient.parseSvar(objectMapper, objectMapper.readTree(speilvurderingResponse))
         val vurdering = MedlemskapClient.parseSvar(objectMapper, objectMapper.readTree(vurderingResponse))
 
