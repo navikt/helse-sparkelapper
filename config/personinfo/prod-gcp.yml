@@ -2,6 +2,9 @@ kafkaPool: nav-prod
 replicas:
   min: "1"
   max: "12"
+memory:
+  min: "320Mi"
+  max: "320Mi"
 azure:
   enabled: true
   claims:
