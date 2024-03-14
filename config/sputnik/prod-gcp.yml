@@ -1,4 +1,6 @@
 kafkaPool: nav-prod
+cpu:
+  max: 2000m
 azure:
   enabled: true
   tenant: nav.no

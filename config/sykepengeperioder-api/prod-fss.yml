@@ -1,6 +1,8 @@
 replicas:
   min: 2
   max: 4
+cpu:
+  max: 2000m
 azure:
   enabled: true
   tenant: nav.no
