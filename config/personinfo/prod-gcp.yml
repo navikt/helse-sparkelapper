@@ -2,8 +2,6 @@ kafkaPool: nav-prod
 replicas:
   min: "1"
   max: "12"
-cpu:
-  max: 2000m
 memory:
   min: "320Mi"
   max: "320Mi"
