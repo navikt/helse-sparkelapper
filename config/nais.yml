@@ -40,10 +40,10 @@ spec:
   resources:
     limits:
       cpu: 2000m
-      memory: 512Mi
+      memory: {{#if memory.max }}{{ memory.max }}{{else}}512Mi{{/if}}
     requests:
       cpu: 50m
-      memory: 128Mi
+      memory: {{#if memory.min }}{{ memory.min }}{{else}}128Mi{{/if}}
   replicas:
     min: {{#if replicas.min }}{{ replicas.min }}{{else}}4{{/if}}
     max: {{#if replicas.max }}{{ replicas.max }}{{else}}8{{/if}}
