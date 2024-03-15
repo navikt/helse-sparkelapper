@@ -47,7 +47,7 @@ spec:
       cpu: {{#if cpu.min }}{{ cpu.min }}{{else}}50m{{/if}}
       memory: {{#if memory.min }}{{ memory.min }}{{else}}128Mi{{/if}}
   replicas:
-    min: {{#if replicas.min }}{{ replicas.min }}{{else}}4{{/if}}
+    min: {{#if replicas.min }}{{ replicas.min }}{{else}}2{{/if}}
     max: {{#if replicas.max }}{{ replicas.max }}{{else}}8{{/if}}
     cpuThresholdPercentage: {{#if replicas.cpuThresholdPercentage }}{{ replicas.cpuThresholdPercentage }}{{else}}50{{/if}}
   strategy:
