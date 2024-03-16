@@ -1,8 +1,8 @@
 kafkaPool: nav-prod
 replicas:
   max: "12"
-cpu:
-  max: 2000m
+limits:
+  cpu: 2000m
 azure:
   enabled: true
   claims:

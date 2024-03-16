@@ -2,11 +2,11 @@ kafkaPool: nav-prod
 replicas:
   max: "12"
   cpuThresholdPercentage: 200
-cpu:
-  min: "100m"
-memory:
-  min: "320Mi"
-  max: "320Mi"
+requests:
+  cpu: 100m
+  memory: 320Mi
+limits:
+  memory: 320Mi
 azure:
   enabled: true
   claims:
