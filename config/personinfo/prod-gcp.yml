@@ -1,7 +1,7 @@
 kafkaPool: nav-prod
 replicas:
   max: "12"
-  cpuThresholdPercentage: 300
+  cpuThresholdPercentage: 500
 requests:
   cpu: 100m
   memory: 320Mi
