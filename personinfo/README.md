@@ -1,5 +1,7 @@
 # Personinfo
 
+Jeg er en app som snakker med PDL for å hente ut personinfo. Jeg er blant annet interessert i dødsinfo, historiske identer og hente ut personinfo for visning i saksbehandlingsflaten.
+
 ## Feil ved deserialisering av Personhendelse fra Leesah
 
 Hva gjør jeg når tjenesten stopper og vi får warning i tjenestekall `Klarte ikke å deserialisere Personhendelse-melding fra Leesah*`?
