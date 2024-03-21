@@ -39,13 +39,13 @@ spec:
       path: /stop
   resources:
     limits:
-      memory: {{#if limits.memory }}{{ limits.memory }}{{else}}512Mi{{/if}}
+      memory: {{#if limits.memory }}{{ limits.memory }}{{else}}320Mi{{/if}}
       {{#if limits.cpu }}
       cpu: {{ limits.cpu }}
       {{/if}}
     requests:
       cpu: {{#if requests.cpu }}{{ requests.cpu }}{{else}}50m{{/if}}
-      memory: {{#if requests.memory }}{{ requests.memory }}{{else}}128Mi{{/if}}
+      memory: {{#if requests.memory }}{{ requests.memory }}{{else}}320Mi{{/if}}
   replicas:
     min: {{#if replicas.min }}{{ replicas.min }}{{else}}2{{/if}}
     max: {{#if replicas.max }}{{ replicas.max }}{{else}}8{{/if}}
