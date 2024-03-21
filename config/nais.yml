@@ -58,13 +58,6 @@ spec:
   kafka:
     pool: {{ kafkaPool }}
   {{/if}}
-  {{#if onprem}}{{else}}
-  observability:
-    autoInstrumentation:
-      enabled: true
-      runtime: java
-  {{/if}}
-  {{#if azure}}
   azure:
     application:
       enabled: {{azure.enabled}}
