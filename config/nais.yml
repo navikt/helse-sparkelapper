@@ -58,6 +58,7 @@ spec:
   kafka:
     pool: {{ kafkaPool }}
   {{/if}}
+  {{#if azure}}
   azure:
     application:
       enabled: {{azure.enabled}}
