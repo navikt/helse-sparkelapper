@@ -1,7 +1,10 @@
 package no.nav.helse.sparkel.gosys
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -19,12 +22,12 @@ class OppgaveServiceTest {
                 putNull("behandlingstema")
                 putNull("behandlingstype")
             }
-        )
+        ).leggPåOpprettetTidspunkter()
         val oppgaverSomIkkeSkalTellesMed = listOf(
             objectNode().run {
                 put("behandlingstype", "ae0046") // Anke
             },
-        )
+        ).leggPåOpprettetTidspunkter()
         val oppgavehenter = Oppgavehenter { _, _ ->
             objectNode().run {
                 set("oppgaver", jacksonObjectMapper().createArrayNode().run {
@@ -55,7 +58,7 @@ class OppgaveServiceTest {
             objectNode().run {
                 put("behandlingstema", "ab0200")
             }
-        )
+        ).leggPåOpprettetTidspunkter()
         val oppgavehenter = Oppgavehenter { _, _ ->
             objectNode().run {
                 set("oppgaver", jacksonObjectMapper().createArrayNode().run {
@@ -90,7 +93,7 @@ class OppgaveServiceTest {
                 putNull("behandlingstype")
             },
             objectNode()
-        )
+        ).leggPåOpprettetTidspunkter()
         val oppgavehenter = Oppgavehenter { _, _ ->
             objectNode().run {
                 set("oppgaver", jacksonObjectMapper().createArrayNode().run {
@@ -107,6 +110,44 @@ class OppgaveServiceTest {
     }
 
     @Test
+    fun `Teller ikke med feilutbetalingsoppgaver som er mer enn et år gamle`() {
+        val forventetAntall = 4 // Forventet skal være 2 når vi bytter til å bruke antallRelevanteOppgaverUtenFeilutbetalingsoppgaver
+        val oppgaverSomSkalTellesMed = listOf(
+            objectNode().run {
+                put("behandlingstema", "ab0455") // Overgangssak fra Speil (skal gi varsel - ikke i enum)
+                put("opprettetTidspunkt", OffsetDateTime.now().format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
+            },
+            objectNode().run {
+                put("behandlingstype", "ae0161") // Feilutbetaling
+                put("opprettetTidspunkt", OffsetDateTime.now().minusYears(1).format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
+            },
+        )
+        val oppgaverSomIkkeSkalTellesMed = listOf(
+                objectNode().run {
+                    put("behandlingstype", "ae0161") // Feilutbetaling
+                },
+                objectNode().run {
+                    put("behandlingstype", "ae0160") // Feilutbetaling - utland
+                },
+            ).map { it.put("opprettetTidspunkt", OffsetDateTime.now().minusYears(1).minusDays(1).format(DateTimeFormatter.ISO_ZONED_DATE_TIME)) }
+        val oppgavehenter = Oppgavehenter { _, _ ->
+            objectNode().run {
+                put("antallTreffTotalt", 3)
+                set("oppgaver", jacksonObjectMapper().createArrayNode().run {
+                    addAll(oppgaverSomSkalTellesMed)
+                    addAll(oppgaverSomIkkeSkalTellesMed)
+                })
+            }
+        }
+
+        val service = OppgaveService(oppgavehenter)
+
+        val svar = service.løsningForBehov("behovId", "aktørId", LocalDate.now().minusYears(1))
+
+        assertEquals(forventetAntall, svar)
+    }
+
+    @Test
     fun `oppgaver-feltet mangler i responsen`() {
         val oppgavehenter = Oppgavehenter { _, _ -> objectNode() }
         val service = OppgaveService(oppgavehenter)
@@ -116,4 +157,7 @@ class OppgaveServiceTest {
 
     private fun objectNode() = jacksonObjectMapper().createObjectNode()
 }
+
+private fun List<ObjectNode>.leggPåOpprettetTidspunkter() =
+    map { it.put("opprettetTidspunkt", OffsetDateTime.now().format(DateTimeFormatter.ISO_ZONED_DATE_TIME)) }
 

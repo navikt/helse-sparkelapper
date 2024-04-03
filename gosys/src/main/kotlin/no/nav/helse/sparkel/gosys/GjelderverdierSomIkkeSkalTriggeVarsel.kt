@@ -26,3 +26,17 @@ enum class GjelderverdierSomIkkeSkalTriggeVarsel(val behandlingstype: String?, v
         }
     }
 }
+
+enum class GjelderverdierSomIkkeSkalTriggeVarselHvisOppgavenOverEtÅrGammel(val behandlingstype: String?, val behandlingstema: String?) {
+    FEILUTBETALING("ae0161", null),
+    FEILUTBETALING_UTLAND("ae0160", null);
+
+    companion object {
+        fun inneholder(behandlingstype: String?, behandlingstema: String?): Boolean {
+            entries.forEach {
+                if (it.behandlingstype == behandlingstype && it.behandlingstema == behandlingstema) return true
+            }
+            return false
+        }
+    }
+}

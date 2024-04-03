@@ -5,7 +5,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import net.logstash.logback.argument.StructuredArguments.kv
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 
@@ -71,47 +70,30 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
             )
         }.size
 
+    private fun JsonNode.antallForGamleFeilutbetalingsoppgaver(ikkeEldreEnn: LocalDate) =
+        get("oppgaver").filter { oppgave ->
+            val behandlingstype = oppgave.finnVerdi("behandlingstype")
+            val behandlingstema = oppgave.finnVerdi("behandlingstema")
+            val opprettetTidspunkt = oppgave.opprettetTidspunkt()
+
+            opprettetTidspunkt.isBefore(ikkeEldreEnn) && GjelderverdierSomIkkeSkalTriggeVarselHvisOppgavenOverEtÅrGammel.inneholder(
+                behandlingstype, behandlingstema
+            )
+        }.size
+
+    private fun JsonNode.antallRelevanteOppgaverUtenFeilutbetalingsoppgaver(ikkeEldreEnn: LocalDate): Int =
+        antallRelevanteOppgaver() - antallForGamleFeilutbetalingsoppgaver(ikkeEldreEnn)
+
     private fun JsonNode.loggDatoer(ikkeEldreEnn: LocalDate) {
         val opprinneligAntall = antallRelevanteOppgaver()
         if (path("antallTreffTotalt").intValue() < 1 || opprinneligAntall == 0) return
 
-        val oppgaverOgOpprettetTidspunkt = get("oppgaver").filterNot { oppgave ->
-            GjelderverdierSomIkkeSkalTriggeVarsel.inneholder(
-                oppgave.finnVerdi("behandlingstype"),
-                oppgave.finnVerdi("behandlingstema"),
-            )
-        }.filterNot {
-            it.finnVerdi("opprettetTidspunkt") == null
-        }.map { oppgave ->
-            val textValue = oppgave.finnVerdi("opprettetTidspunkt")
-            Triple(
-                LocalDateTime.parse(textValue, ISO_ZONED_DATE_TIME).toLocalDate(),
-                oppgave.finnVerdi("behandlingstype"),
-                oppgave.finnVerdi("behandlingstema")
-            )
-        }
-        val (forGamle, relevante) = oppgaverOgOpprettetTidspunkt.partition { it.first.isBefore(ikkeEldreEnn) }
-        if (oppgaverOgOpprettetTidspunkt.size != opprinneligAntall) log.debug("{}, {}, {}",
-            kv("opprinneligAntall", opprinneligAntall),
-            kv("forGamle", forGamle),
-            kv("relevante", relevante),
-        )
-        if (opprinneligAntall == forGamle.size) {
-            log.debug(
-                "Kandidat for automatisering pga. alle åpne og aktuelle Gosys-oppgaver er eldre enn 12 måneder. {}\n{}",
-                kv("ikkeEldreEnn", ikkeEldreEnn),
-                kv("behandlingstype og -tema for forGamle oppgaver", forGamle.map { it.second to it.third })
-            )
-        } else {
-            log.debug(
-                "Ikke kandidat for automatisering pga. aktuelle Gosys-oppgaver er ikke eldre enn 12 måneder. {}\n{}\n{}",
-                kv("ikkeEldreEnn", ikkeEldreEnn),
-                kv("behandlingstype og -tema for forGamle oppgaver", forGamle.map { it.second to it.third }),
-                kv("opprettet, behandlingstype, og -tema for relevante oppgaver", relevante),
-            )
-        }
+        val antallUtenGamleFeilutbetalinger = antallRelevanteOppgaverUtenFeilutbetalingsoppgaver(ikkeEldreEnn)
+        if (antallUtenGamleFeilutbetalinger < opprinneligAntall) sikkerlogg.info("Her er det feilutbetalingsoppgave(r) som er over et år eldre enn ikkeEldreEnn\n{}", this)
+        else sikkerlogg.info("Ingen gamle feilutbetalingsoppgaver her\n{}", this)
     }
 
+    private fun JsonNode.opprettetTidspunkt() = LocalDateTime.parse(finnVerdi("opprettetTidspunkt"), ISO_ZONED_DATE_TIME).toLocalDate()
     private fun JsonNode.finnVerdi(key: String): String? = path(key).textValue()
 }
 
