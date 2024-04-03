@@ -111,7 +111,7 @@ class OppgaveServiceTest {
 
     @Test
     fun `Teller ikke med feilutbetalingsoppgaver som er mer enn et år gamle`() {
-        val forventetAntall = 4 // Forventet skal være 2 når vi bytter til å bruke antallRelevanteOppgaverUtenFeilutbetalingsoppgaver
+        val forventetAntall = 2
         val oppgaverSomSkalTellesMed = listOf(
             objectNode().run {
                 put("behandlingstema", "ab0455") // Overgangssak fra Speil (skal gi varsel - ikke i enum)

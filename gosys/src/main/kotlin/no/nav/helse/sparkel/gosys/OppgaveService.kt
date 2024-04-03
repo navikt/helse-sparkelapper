@@ -41,8 +41,7 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
                 return@withMDC null
             }
             sikkerlogg.info("Åpne oppgaver, respons: $response")
-            response.loggDatoer(ikkeEldreEnn)
-            response.antallRelevanteOppgaver().also { antallEtterFiltrering ->
+            response.antallRelevanteOppgaver(ikkeEldreEnn).also { antallEtterFiltrering ->
                 if (antallEtterFiltrering == 0 && response["oppgaver"].size() > 0) {
                     log.info("Gosys-oppgaver ble filtrert ned til 0 slik at varsel ikke vil bli laget for $aktørId.")
                 }
@@ -62,38 +61,23 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
         }
     }
 
-    private fun JsonNode.antallRelevanteOppgaver(): Int =
+    private fun JsonNode.antallRelevanteOppgaver(ikkeEldreEnn: LocalDate): Int =
         get("oppgaver").filterNot { oppgave ->
-            GjelderverdierSomIkkeSkalTriggeVarsel.inneholder(
-                oppgave.finnVerdi("behandlingstype"),
-                oppgave.finnVerdi("behandlingstema"),
-            )
+            oppgave.harIgnorerbarGjelderverdi() || oppgave.erFeilutbetalingsoppgaveSomErForGammel(ikkeEldreEnn)
         }.size
 
-    private fun JsonNode.antallForGamleFeilutbetalingsoppgaver(ikkeEldreEnn: LocalDate) =
-        get("oppgaver").filter { oppgave ->
-            val behandlingstype = oppgave.finnVerdi("behandlingstype")
-            val behandlingstema = oppgave.finnVerdi("behandlingstema")
-            val opprettetTidspunkt = oppgave.opprettetTidspunkt()
+    private fun JsonNode.harIgnorerbarGjelderverdi() = GjelderverdierSomIkkeSkalTriggeVarsel.inneholder(
+        finnVerdi("behandlingstype"), finnVerdi("behandlingstema"),
+    )
 
-            opprettetTidspunkt.isBefore(ikkeEldreEnn) && GjelderverdierSomIkkeSkalTriggeVarselHvisOppgavenOverEtÅrGammel.inneholder(
-                behandlingstype, behandlingstema
-            )
-        }.size
+    private fun JsonNode.erFeilutbetalingsoppgaveSomErForGammel(ikkeEldreEnn: LocalDate) =
+        opprettetTidspunkt().isBefore(ikkeEldreEnn) && GjelderverdierSomIkkeSkalTriggeVarselHvisOppgavenOverEtÅrGammel.inneholder(
+            finnVerdi("behandlingstype"), finnVerdi("behandlingstema")
+        )
 
-    private fun JsonNode.antallRelevanteOppgaverUtenFeilutbetalingsoppgaver(ikkeEldreEnn: LocalDate): Int =
-        antallRelevanteOppgaver() - antallForGamleFeilutbetalingsoppgaver(ikkeEldreEnn)
+    private fun JsonNode.opprettetTidspunkt() =
+        LocalDateTime.parse(finnVerdi("opprettetTidspunkt"), ISO_ZONED_DATE_TIME).toLocalDate()
 
-    private fun JsonNode.loggDatoer(ikkeEldreEnn: LocalDate) {
-        val opprinneligAntall = antallRelevanteOppgaver()
-        if (path("antallTreffTotalt").intValue() < 1 || opprinneligAntall == 0) return
-
-        val antallUtenGamleFeilutbetalinger = antallRelevanteOppgaverUtenFeilutbetalingsoppgaver(ikkeEldreEnn)
-        if (antallUtenGamleFeilutbetalinger < opprinneligAntall) sikkerlogg.info("Her er det feilutbetalingsoppgave(r) som er over et år eldre enn ikkeEldreEnn\n{}", this)
-        else sikkerlogg.info("Ingen gamle feilutbetalingsoppgaver her\n{}", this)
-    }
-
-    private fun JsonNode.opprettetTidspunkt() = LocalDateTime.parse(finnVerdi("opprettetTidspunkt"), ISO_ZONED_DATE_TIME).toLocalDate()
     private fun JsonNode.finnVerdi(key: String): String? = path(key).textValue()
 }
 
