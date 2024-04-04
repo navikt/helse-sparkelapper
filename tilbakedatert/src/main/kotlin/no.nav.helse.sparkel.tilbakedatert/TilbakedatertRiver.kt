@@ -93,7 +93,7 @@ internal class TilbakedatertRiver(
                 )
             )
 
-            context.publish(returEvent.toJson()).also {
+            context.publish(fødselsnummer, returEvent.toJson()).also {
                 sikkerlogg.info(
                     "sender tilbakedatering_behandlet for {}: {}",
                     keyValue("sykmeldingId", sykmeldingId),
