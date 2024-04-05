@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-private val String.env get() = checkNotNull(System.getenv(this)) { "Fant ikke environment variable $this" }
+private val String.env get() = checkNotNull(System.getenv(this)) { "Fant ikke environment variablen $this" }
 private val objectMapper = jacksonObjectMapper()
 
 fun main() {
