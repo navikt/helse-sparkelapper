@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.aareg.kodeverk
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import io.ktor.http.encodeURLPath
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -17,7 +18,9 @@ private val log = LoggerFactory.getLogger("sparkel-aareg")
 
 class KodeverkClient(
     private val kodeverkBaseUrl: String,
-    private val appName: String
+    private val appName: String,
+    private val kodeverkOauthScope: String,
+    private val azureTokenProvider: AzureTokenProvider
 ) {
     private fun ObjectMapper.readTreeLogError(response: String) = try {
         readTree(response)
@@ -43,6 +46,7 @@ class KodeverkClient(
 
     private fun hentFraKodeverk(path: String): String {
         val (responseCode, body) = URI("$kodeverkBaseUrl$path?spraak=nb&ekskluderUgyldige=true&oppslagsdato=${LocalDate.now()}").toURL().get(
+            "Authorization" to "Bearer ${azureTokenProvider.bearerToken(kodeverkOauthScope).token}",
             "Nav-Call-Id" to "${UUID.randomUUID()}",
             "Nav-Consumer-Id" to appName
         )

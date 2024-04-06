@@ -16,6 +16,8 @@ accessPolicy:
 env:
 - name: KODEVERK_BASE_URL
   value: https://kodeverk-api.nav.no
+- name: KODEVERK_OAUTH_SCOPE
+  value: api://dev-gcp.team-rocket.kodeverk-api/.default
 - name: ORGANISASJON_BASE_URL
   value: https://ereg-services-q1.dev-fss-pub.nais.io
 - name: AAREG_BASE_URL_REST

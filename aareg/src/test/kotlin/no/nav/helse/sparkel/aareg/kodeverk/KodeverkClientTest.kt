@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import io.ktor.http.encodeURLPath
+import no.nav.helse.sparkel.aareg.arbeidsforhold.util.azureTokenStub
 import no.nav.helse.sparkel.aareg.objectMapper
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -42,7 +43,9 @@ internal class KodeverkClientTest {
     fun `henter næring`() {
         val kodeverkClient = KodeverkClient(
             kodeverkBaseUrl = server.baseUrl(),
-            appName = "sparkel-aareg"
+            appName = "sparkel-aareg",
+            kodeverkOauthScope = "kodeverk-oauth-scope",
+            azureTokenProvider = azureTokenStub()
         )
 
         assertEquals(kodeverkverdi, kodeverkClient.getNæring(kodeverkRef))
@@ -52,7 +55,9 @@ internal class KodeverkClientTest {
     fun `henter yrke`() {
         val kodeverkClient = KodeverkClient(
             kodeverkBaseUrl = server.baseUrl(),
-            appName = "sparkel-aareg"
+            appName = "sparkel-aareg",
+            kodeverkOauthScope = "kodeverk-oauth-scope",
+            azureTokenProvider = azureTokenStub()
         )
 
         assertEquals(yrkeverdi, kodeverkClient.getYrke(yrkeRef))
@@ -62,7 +67,9 @@ internal class KodeverkClientTest {
     fun `cacher responsen`() {
         val kodeverkClient = KodeverkClient(
             kodeverkBaseUrl = server.baseUrl(),
-            appName = "sparkel-aareg"
+            appName = "sparkel-aareg",
+            kodeverkOauthScope = "kodeverk-oauth-scope",
+            azureTokenProvider = azureTokenStub()
         )
 
         assertEquals(kodeverkverdi, kodeverkClient.getNæring(kodeverkRef))

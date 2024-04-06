@@ -45,7 +45,9 @@ internal fun createApp(environment: Environment): RapidsConnection {
 
     val kodeverkClient = KodeverkClient(
         kodeverkBaseUrl = environment.kodeverkBaseUrl,
-        appName = environment.appName
+        appName = environment.appName,
+        environment.kodeverkOauthScope,
+        azureAD,
     )
 
     val eregClient = EregClient(environment.organisasjonBaseUrl, environment.appName, httpClient)
