@@ -7,7 +7,8 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import org.slf4j.LoggerFactory
 
-internal class StoppknappRiver(rapidsConnection: RapidsConnection) : River.PacketListener {
+internal class StoppknappRiver(rapidsConnection: RapidsConnection, private val mediator: Mediator) :
+    River.PacketListener {
     private companion object {
         private val logg = LoggerFactory.getLogger(this::class.java)
     }

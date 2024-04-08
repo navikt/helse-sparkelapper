@@ -4,6 +4,13 @@ replicas:
   max: "1"
 limits:
   cpu: 2000m
+gcp:
+  sqlInstances:
+    - type: POSTGRES_15
+      diskAutoresize: true
+      databases:
+        - name: sparkelstoppknapp
+          envVarPrefix: DATABASE
 env:
   - name: KAFKA_EXTRA_TOPIC
     value: teamsykefravr.apen-isyfo-stoppautomatikk

@@ -18,7 +18,7 @@ val avroVersion = "1.11.3"
 val kotliqueryVersion = "1.9.0"
 val testcontainersPostgresqlVersion = "1.19.5"
 val postgresqlVersion = "42.7.2"
-val flyAwayCoreVersion = "9.19.4"
+val flywayCoreVersion = "9.19.4"
 val hikariCPVersion = "5.1.0"
 
 buildscript {
@@ -30,59 +30,75 @@ val mapper = ObjectMapper()
 
 fun getBuildableProjects(): List<Project> {
     val changedFiles = System.getenv("CHANGED_FILES")?.split(",") ?: emptyList()
-    val commonChanges = changedFiles.any {
-        it.startsWith("felles/") || it.contains("config/nais.yml")
-                || it.startsWith("build.gradle.kts")
-                || it == ".github/workflows/build.yml"
-                || it == "Dockerfile"
-                || it == "settings.gradle.kts"
-    }
+    val commonChanges =
+        changedFiles.any {
+            it.startsWith("felles/") || it.contains("config/nais.yml") ||
+                it.startsWith("build.gradle.kts") ||
+                it == ".github/workflows/build.yml" ||
+                it == "Dockerfile" ||
+                it == "settings.gradle.kts"
+        }
     if (changedFiles.isEmpty() || commonChanges) return subprojects.toList()
     return subprojects.filter { project -> changedFiles.any { path -> path.contains("${project.name}/") } }
 }
 
-fun getDeployableProjects() = getBuildableProjects()
-    .filter { project -> File("config", project.name).isDirectory }
+fun getDeployableProjects() =
+    getBuildableProjects()
+        .filter { project -> File("config", project.name).isDirectory }
 
 tasks.create("buildMatrix") {
     doLast {
-        println(mapper.writeValueAsString(mapOf(
-            "project" to getBuildableProjects().map { it.name }
-        )))
+        println(
+            mapper.writeValueAsString(
+                mapOf(
+                    "project" to getBuildableProjects().map { it.name },
+                ),
+            ),
+        )
     }
 }
 tasks.create("deployMatrix") {
     doLast {
         // map of cluster to list of apps
         val deployableProjects = getDeployableProjects().map { it.name }
-        val environments = deployableProjects
-            .map { project ->
-                project to (File("config", project)
-                    .listFiles()
-                    ?.filter { it.isFile && it.name.endsWith(".yml") }
-                    ?.filterNot { it.name.contains("aiven") }
-                    ?.map { it.name.removeSuffix(".yml") }
-                    ?: emptyList())
-            }.toMap()
+        val environments =
+            deployableProjects
+                .map { project ->
+                    project to (
+                        File("config", project)
+                            .listFiles()
+                            ?.filter { it.isFile && it.name.endsWith(".yml") }
+                            ?.filterNot { it.name.contains("aiven") }
+                            ?.map { it.name.removeSuffix(".yml") }
+                            ?: emptyList()
+                    )
+                }.toMap()
 
         val clusters = environments.flatMap { it.value }.distinct()
-        val exclusions = environments
-            .mapValues { (_, configs) ->
-                clusters.filterNot { it in configs }
-            }
-            .filterValues { it.isNotEmpty() }
-            .flatMap { (app, clusters) ->
-                clusters.map { cluster -> mapOf(
-                    "project" to app,
-                    "cluster" to cluster
-                )}
-            }
+        val exclusions =
+            environments
+                .mapValues { (_, configs) ->
+                    clusters.filterNot { it in configs }
+                }
+                .filterValues { it.isNotEmpty() }
+                .flatMap { (app, clusters) ->
+                    clusters.map { cluster ->
+                        mapOf(
+                            "project" to app,
+                            "cluster" to cluster,
+                        )
+                    }
+                }
 
-        println(mapper.writeValueAsString(mapOf(
-            "cluster" to clusters,
-            "project" to deployableProjects,
-            "exclude" to exclusions
-        )))
+        println(
+            mapper.writeValueAsString(
+                mapOf(
+                    "cluster" to clusters,
+                    "project" to deployableProjects,
+                    "exclude" to exclusions,
+                ),
+            ),
+        )
     }
 }
 
@@ -143,7 +159,7 @@ subprojects {
     ext.set("avroVersion", avroVersion)
     ext.set("testcontainersPostgresqlVersion", testcontainersPostgresqlVersion)
     ext.set("postgresqlVersion", postgresqlVersion)
-    ext.set("flyAwayCoreVersion", flyAwayCoreVersion)
+    ext.set("flywayCoreVersion", flywayCoreVersion)
     ext.set("hikariCPVersion", hikariCPVersion)
     ext.set("kotliqueryVersion", kotliqueryVersion)
 
@@ -163,9 +179,10 @@ subprojects {
                 val mainClass = project.mainClass()
 
                 doLast {
-                    val mainClassFound = this.project.sourceSets.findByName("main")?.let {
-                        it.output.classesDirs.asFileTree.any { it.path.contains(mainClass.replace(".", File.separator)) }
-                    } ?: false
+                    val mainClassFound =
+                        this.project.sourceSets.findByName("main")?.let {
+                            it.output.classesDirs.asFileTree.any { it.path.contains(mainClass.replace(".", File.separator)) }
+                        } ?: false
 
                     if (!mainClassFound) throw RuntimeException("Kunne ikke finne main class: $mainClass")
                 }
@@ -178,8 +195,9 @@ subprojects {
                 doLast {
                     configurations.runtimeClasspath.get().forEach {
                         val file = File("${layout.buildDirectory.get()}/libs/${it.name}")
-                        if (!file.exists())
+                        if (!file.exists()) {
                             it.copyTo(file)
+                        }
                     }
                 }
             }
@@ -187,7 +205,6 @@ subprojects {
     }
 }
 
-fun Project.mainClass() =
-    "$group.${name.replace("-", "")}.AppKt"
+fun Project.mainClass() = "$group.${name.replace("-", "")}.AppKt"
 
 fun Project.skalLagAppJar() = name !in listOf("felles", "infotrygd")

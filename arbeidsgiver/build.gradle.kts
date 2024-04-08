@@ -1,11 +1,11 @@
 val testcontainersPostgresqlVersion: String by project
 val postgresqlVersion: String by project
-val flyAwayCoreVersion: String by project
+val flywayCoreVersion: String by project
 val hikariCPVersion: String by project
 val exposedVersion = "0.41.1"
 
 dependencies {
-    implementation("org.flywaydb:flyway-core:$flyAwayCoreVersion")
+    implementation("org.flywaydb:flyway-core:$flywayCoreVersion")
     implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
