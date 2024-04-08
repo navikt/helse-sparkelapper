@@ -16,13 +16,12 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection, private val m
     init {
         River(rapidsConnection).apply {
             validate {
-                it.demandAny("@event_name", listOf("test_stoppknapp_river"))
-//                it.demandKey("veilederIdent")
-//                it.demandKey("sykmeldtFnr")
-//                it.demandKey("status")
-//                it.demandKey("virksomhetNr")
-//                it.demandKey("enhetNr")
-//                it.demandKey("opprettet")
+                it.demandKey("veilederIdent")
+                it.demandKey("sykmeldtFnr")
+                it.demandKey("status")
+                it.demandKey("virksomhetNr")
+                it.demandKey("enhetNr")
+                it.demandKey("opprettet")
             }
         }.register(this)
     }
