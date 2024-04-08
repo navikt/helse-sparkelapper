@@ -11,6 +11,3 @@ gcp:
       databases:
         - name: sparkelstoppknapp
           envVarPrefix: DATABASE
-#env:
-#  - name: KAFKA_EXTRA_TOPIC
-#    value: teamsykefravr.apen-isyfo-stoppautomatikk
