@@ -14,7 +14,7 @@ internal object Testdata {
         StoppknappMeldingTilDatabase(
             fødselsnummer = FØDSELSNUMMER,
             status = STATUS,
-            årsaker = listOf(ÅRSAK, "MANGLENDE_MEDVIRKING"),
+            årsaker = listOf(ÅRSAK),
             tidsstempel = TIDSSTEMPEL,
             originalMelding = stoppknappMelding(),
         )
