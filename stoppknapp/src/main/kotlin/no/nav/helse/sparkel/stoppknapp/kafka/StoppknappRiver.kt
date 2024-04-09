@@ -1,10 +1,12 @@
-package no.nav.helse.sparkel.stoppknapp
+package no.nav.helse.sparkel.stoppknapp.kafka
 
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.helse.sparkel.stoppknapp.Mediator
+import no.nav.helse.sparkel.stoppknapp.kafka.StoppknappMessage.Companion.tilDatabase
 import org.slf4j.LoggerFactory
 
 internal class StoppknappRiver(rapidsConnection: RapidsConnection, private val mediator: Mediator) :
@@ -36,5 +38,6 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection, private val m
         context: MessageContext,
     ) {
         logg.info("Leser stoppknapp-melding: ${packet.toJson()}")
+        mediator.lagre(StoppknappMessage(packet).tilDatabase())
     }
 }
