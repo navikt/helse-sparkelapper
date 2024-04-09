@@ -11,6 +11,7 @@ dependencies {
 
     testImplementation("com.h2database:h2:$h2Version")
     testImplementation("org.flywaydb:flyway-core:$flywayCoreVersion")
+    testImplementation("org.flywaydb:flyway-database-postgresql:$flywayCoreVersion")
 }
 val compileTestKotlin: KotlinCompile by tasks
 compileTestKotlin.kotlinOptions {

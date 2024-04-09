@@ -18,7 +18,7 @@ val avroVersion = "1.11.3"
 val kotliqueryVersion = "1.9.0"
 val testcontainersPostgresqlVersion = "1.19.5"
 val postgresqlVersion = "42.7.2"
-val flywayCoreVersion = "9.19.4"
+val flywayCoreVersion = "10.11.0"
 val hikariCPVersion = "5.1.0"
 
 buildscript {

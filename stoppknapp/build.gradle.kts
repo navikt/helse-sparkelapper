@@ -1,9 +1,8 @@
 val ktorVersion: String by project
 val postgresqlVersion: String by project
+val flywayCoreVersion: String by project
 val hikariCPVersion: String by project
 val testcontainersPostgresqlVersion: String by project
-
-private val flywayCoreVersion = "10.7.1"
 
 dependencies {
     implementation("org.postgresql:postgresql:$postgresqlVersion")
