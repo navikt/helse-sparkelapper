@@ -16,4 +16,17 @@ internal class Dao(dataSource: DataSource) : AbstractDao(dataSource) {
             "originalMelding" to stoppknappMelding.originalMelding,
         ).update()
     }
+
+    internal fun hent(fødselsnummer: String) =
+        query(
+            "select * from stoppknapp_melding where fødselsnummer = :fodselsnummer",
+            "fodselsnummer" to fødselsnummer,
+        ).list {
+            StoppknappMeldingFraDatabase(
+                fødselsnummer = it.string("fødselsnummer"),
+                status = it.string("status"),
+                årsaker = it.array<String>("årsaker").toList(),
+                tidsstempel = it.localDateTime("tidsstempel"),
+            )
+        }
 }

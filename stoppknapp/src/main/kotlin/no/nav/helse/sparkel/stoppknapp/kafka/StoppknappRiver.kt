@@ -11,10 +11,8 @@ import org.slf4j.LoggerFactory
 
 internal class StoppknappRiver(rapidsConnection: RapidsConnection, private val mediator: Mediator) :
     River.PacketListener {
-    private companion object {
-        private val logg = LoggerFactory.getLogger(this::class.java)
-        private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-    }
+    private val logg = LoggerFactory.getLogger(this::class.java)
+    private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
     init {
         River(rapidsConnection).apply {

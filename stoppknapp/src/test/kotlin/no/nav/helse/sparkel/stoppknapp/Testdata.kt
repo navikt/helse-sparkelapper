@@ -10,11 +10,11 @@ internal object Testdata {
     internal const val ÅRSAK: String = "MEDISINSK_VILKAR"
     internal val TIDSSTEMPEL: LocalDateTime = LocalDateTime.now()
 
-    internal fun stoppknappMeldingTilDatabase() =
+    internal fun stoppknappMeldingTilDatabase(årsaker: List<String> = listOf(ÅRSAK)) =
         StoppknappMeldingTilDatabase(
             fødselsnummer = FØDSELSNUMMER,
             status = STATUS,
-            årsaker = listOf(ÅRSAK),
+            årsaker = årsaker,
             tidsstempel = TIDSSTEMPEL,
             originalMelding = stoppknappMelding(),
         )
