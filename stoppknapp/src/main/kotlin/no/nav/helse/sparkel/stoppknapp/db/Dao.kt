@@ -7,7 +7,7 @@ internal class Dao(dataSource: DataSource) : AbstractDao(dataSource) {
         val årsakerForDatabase = stoppknappMelding.årsaker.joinToString { """ $it """ }
         query(
             """
-            insert into stoppknapp_meldinger(fødselsnummer, status, årsaker, tidsstempel, original_melding)
+            insert into stoppknapp_melding(fødselsnummer, status, årsaker, tidsstempel, original_melding)
             values (:fodselsnummer, :status, '{$årsakerForDatabase}', :tidsstempel, CAST(:originalMelding as json))
             """.trimIndent(),
             "fodselsnummer" to stoppknappMelding.fødselsnummer,

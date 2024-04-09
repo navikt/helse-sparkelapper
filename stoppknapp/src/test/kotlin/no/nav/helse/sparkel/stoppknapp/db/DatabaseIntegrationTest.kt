@@ -30,7 +30,7 @@ internal abstract class DatabaseIntegrationTest : AbstractDatabaseTest() {
     protected fun assertLagret(fødselsnummer: String = FØDSELSNUMMER) {
         val fødselsnummerFraDb =
             query(
-                "select * from stoppknapp_meldinger where fødselsnummer = :fodselsnummer",
+                "select * from stoppknapp_melding where fødselsnummer = :fodselsnummer",
                 "fodselsnummer" to fødselsnummer,
             ).single {
                 it.string("fødselsnummer")
