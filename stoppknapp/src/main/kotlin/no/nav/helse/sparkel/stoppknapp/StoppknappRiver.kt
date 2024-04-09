@@ -16,11 +16,9 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection, private val m
     init {
         River(rapidsConnection).apply {
             validate {
-                it.demandKey("veilederIdent")
                 it.demandKey("sykmeldtFnr")
                 it.demandKey("status")
-                it.demandKey("virksomhetNr")
-                it.demandKey("enhetNr")
+                it.demandKey("arsakList")
                 it.demandKey("opprettet")
             }
         }.register(this)
