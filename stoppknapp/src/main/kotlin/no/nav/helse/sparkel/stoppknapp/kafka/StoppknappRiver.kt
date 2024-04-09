@@ -13,6 +13,7 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection, private val m
     River.PacketListener {
     private companion object {
         private val logg = LoggerFactory.getLogger(this::class.java)
+        private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     }
 
     init {
@@ -37,7 +38,7 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection, private val m
         packet: JsonMessage,
         context: MessageContext,
     ) {
-        logg.info("Leser stoppknapp-melding: ${packet.toJson()}")
+        sikkerlogg.info("Leser stoppknapp-melding: ${packet.toJson()}")
         mediator.lagre(StoppknappMessage(packet).tilDatabase())
     }
 }
