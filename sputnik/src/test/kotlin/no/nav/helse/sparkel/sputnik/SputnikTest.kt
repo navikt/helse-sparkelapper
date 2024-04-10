@@ -37,10 +37,12 @@ internal class SputnikTest {
                     "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2018-01-01",
-                        "tom": "2018-01-16"
+                        "tom": "2018-01-16",
+                        "grad": "100"
                     }, {
                         "fom": "2018-01-17",
-                        "tom": "2018-01-31"
+                        "tom": "2018-01-31",
+                        "grad": "50"
                     }]
                 },
                 "Svangerskapsytelse": null
@@ -65,10 +67,12 @@ internal class SputnikTest {
                     "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2018-01-01",
-                        "tom": "2018-01-16"
+                        "tom": "2018-01-16",
+                        "grad": "100"
                     },{
                         "fom": "2018-01-17",
-                        "tom": "2018-01-31"
+                        "tom": "2018-01-31",
+                        "grad": "50"
                     }]
                 }
             }
@@ -91,10 +95,12 @@ internal class SputnikTest {
                     "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2018-01-01",
-                        "tom": "2018-01-16"
+                        "tom": "2018-01-16",
+                        "grad": "100"
                     }, {
                         "fom": "2018-01-17",
-                        "tom": "2018-01-31"
+                        "tom": "2018-01-31",
+                        "grad": "50"
                     }]
                 },
                 "Svangerskapsytelse": {
@@ -103,10 +109,12 @@ internal class SputnikTest {
                     "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2018-01-01",
-                        "tom": "2018-01-16"
+                        "tom": "2018-01-16",
+                        "grad": "100"
                     }, {
                         "fom": "2018-01-17",
-                        "tom": "2018-01-31"
+                        "tom": "2018-01-31",
+                        "grad": "50"
                     }]
                 }
             }
@@ -148,7 +156,8 @@ internal class SputnikTest {
                     "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2018-01-01",
-                        "tom": "2018-07-16"
+                        "tom": "2018-07-16",
+                        "grad": "100"
                     }]
                 },
                 "Svangerskapsytelse": {
@@ -157,7 +166,8 @@ internal class SputnikTest {
                     "vedtatt": "2023-02-16T09:52:35.255",
                     "perioder": [{
                         "fom": "2018-01-01",
-                        "tom": "2018-07-16"
+                        "tom": "2018-07-16",
+                        "grad": "100"
                     }]
                 }
             }

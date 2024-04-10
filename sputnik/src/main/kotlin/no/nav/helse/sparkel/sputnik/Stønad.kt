@@ -64,7 +64,8 @@ internal class Stønad private constructor(
                 "vedtatt" to "${aktuelle.first().vedtatt}",
                 "perioder" to aktuelle.map { mapOf(
                     "fom" to "${it.fom}",
-                    "tom" to "${it.tom}"
+                    "tom" to "${it.tom}",
+                    "grad" to "${it.grad}"
                 )}
             )
         }
