@@ -3,16 +3,10 @@ package no.nav.helse.sparkel.norg
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.jackson.jackson
 import no.nav.helse.rapids_rivers.RapidApplication
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 internal const val NAV_OPPFOLGING_UTLAND_KONTOR_NR = "0393"
-
-private val sikkerLogg: Logger = LoggerFactory.getLogger("tjenestekall")
 
 fun main() {
     val environment = readEnvironment()
