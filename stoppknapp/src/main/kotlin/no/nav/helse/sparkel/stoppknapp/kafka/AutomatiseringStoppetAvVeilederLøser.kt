@@ -25,7 +25,7 @@ internal class AutomatiseringStoppetAvVeilederLøser(
         River(rapidsConnection).apply {
             validate {
                 it.demandAll("@behov", listOf(BEHOV))
-                it.forbid("@løsning")
+                it.rejectKey("@løsning")
                 it.requireKey("@id")
                 it.requireKey("fødselsnummer")
             }
