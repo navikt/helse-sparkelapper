@@ -1,5 +1,7 @@
 package no.nav.helse.sparkel.stoppknapp
 
+import java.time.LocalDateTime
+import java.time.ZoneId
 import no.nav.helse.sparkel.stoppknapp.Testdata.FØDSELSNUMMER
 import no.nav.helse.sparkel.stoppknapp.Testdata.STATUS
 import no.nav.helse.sparkel.stoppknapp.Testdata.TIDSSTEMPEL
@@ -31,7 +33,7 @@ internal object Testmeldinger {
             "virksomhetNr": {
                 "value": "TULLE_VIRKSOMHET"
             },
-            "opprettet": "$TIDSSTEMPEL",
+            "opprettet": "${TIDSSTEMPEL.toInstant()}",
             "enhetNr": {
                 "value": "TULLE_ENHET"
             }
@@ -50,4 +52,6 @@ internal object Testmeldinger {
             "fødselsnummer": "$FØDSELSNUMMER"
         }
         """.trimIndent()
+
+    private fun LocalDateTime.toInstant() = toInstant(ZoneId.systemDefault().rules.getOffset(this))
 }
