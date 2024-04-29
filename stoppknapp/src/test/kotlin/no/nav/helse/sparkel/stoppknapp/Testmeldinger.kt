@@ -41,6 +41,30 @@ internal object Testmeldinger {
         """.trimIndent()
 
     @Language("JSON")
+    internal fun opphevingAvStansMelding(
+    ): String =
+        """
+        {
+            "uuid": "${UUID.randomUUID()}",
+            "veilederIdent": {
+                "value": "TULLE_IDENT"
+            },
+            "sykmeldtFnr": {
+                "value": "$FØDSELSNUMMER"
+            },
+            "status": "NORMAL",
+            "virksomhetNr": {
+                "value": "TULLE_VIRKSOMHET"
+            },
+            "opprettet": "${TIDSSTEMPEL.toInstant()}",
+            "enhetNr": {
+                "value": "TULLE_ENHET"
+            }
+        }
+        """.trimIndent()
+
+
+    @Language("JSON")
     internal fun automatiseringStoppetAvVeilederBehov(): String =
         """
         {

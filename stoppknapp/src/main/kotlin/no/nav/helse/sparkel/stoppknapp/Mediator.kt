@@ -16,7 +16,7 @@ internal class Mediator(
     private val logg = LoggerFactory.getLogger(this::class.java)
 
     init {
-        StoppknappRiver(rapidsConnection, this)
+        StoppknappRiver(rapidsConnection)
         AutomatiseringStoppetAvVeilederLøser(rapidsConnection, this)
     }
 
