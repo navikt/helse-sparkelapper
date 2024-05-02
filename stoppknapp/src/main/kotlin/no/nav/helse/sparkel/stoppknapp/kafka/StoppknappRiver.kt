@@ -39,17 +39,11 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
         context: MessageContext,
     ) {
         sikkerlogg.info("Leser stoppknapp-melding: ${packet.toJson()}")
-        håndter(packet, context)
-    }
 
-    private fun håndter(
-        packet: JsonMessage,
-        context: MessageContext,
-    ) {
         val fødselsnummer: String = packet["sykmeldtFnr"]["value"].asText()
         val status: String = packet["status"].asText()
         val årsaker: List<String> = packet["arsakList"].map { it["type"].asText() }
-        val tidsstempel: LocalDateTime = utcToLocalDateTime(packet["opprettet"].asText())
+        val opprettet: LocalDateTime = utcToLocalDateTime(packet["opprettet"].asText())
         val originalMelding: String = packet.toJson()
 
         val returEvent =
@@ -60,12 +54,12 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
                         "fødselsnummer" to fødselsnummer,
                         "status" to status,
                         "årsaker" to årsaker,
-                        "tidsstempel" to tidsstempel,
+                        "opprettet" to opprettet,
                         "originalMelding" to originalMelding,
                     ),
             )
 
-        context.publish(returEvent.toJson()).also {
+        context.publish(fødselsnummer, returEvent.toJson()).also {
             sikkerlogg.info(
                 "sender stans_automatisk_behandling: {}",
                 kv("stans_automatisk_behandling", returEvent),
