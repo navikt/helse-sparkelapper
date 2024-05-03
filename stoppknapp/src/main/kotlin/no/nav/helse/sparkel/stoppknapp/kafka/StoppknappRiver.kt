@@ -12,7 +12,6 @@ import java.time.ZoneId
 
 internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
     River.PacketListener {
-    private val logg = LoggerFactory.getLogger(this::class.java)
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
     init {
@@ -30,7 +29,7 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
         problems: MessageProblems,
         context: MessageContext,
     ) {
-        logg.error("Forstod ikke stoppknapp-melding:\n${problems.toExtendedReport()}")
+        sikkerlogg.error("Forstod ikke stoppknapp-melding:\n${problems.toExtendedReport()}")
     }
 
     override fun onPacket(
