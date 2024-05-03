@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.stoppknapp.kafka
 
-import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
@@ -60,10 +59,7 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
             )
 
         context.publish(fødselsnummer, returEvent.toJson()).also {
-            sikkerlogg.info(
-                "sender stans_automatisk_behandling: {}",
-                kv("stans_automatisk_behandling", returEvent),
-            )
+            sikkerlogg.info("sender stans_automatisk_behandling: ${returEvent.toJson()}")
         }
     }
 
