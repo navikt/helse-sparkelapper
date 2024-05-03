@@ -37,7 +37,7 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
         packet: JsonMessage,
         context: MessageContext,
     ) {
-        sikkerlogg.info("Leser stoppknapp-melding: ${packet.toJson()}")
+        sikkerlogg.info("Leser stoppknapp-melding:\n{}", packet.toJson())
 
         val fødselsnummer: String = packet["sykmeldtFnr"]["value"].asText()
         val status: String = packet["status"].asText()
@@ -59,7 +59,7 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
             )
 
         context.publish(fødselsnummer, returEvent.toJson()).also {
-            sikkerlogg.info("sender stans_automatisk_behandling: ${returEvent.toJson()}")
+            sikkerlogg.info("sender stans_automatisk_behandling:\n{}", returEvent.toJson())
         }
     }
 
