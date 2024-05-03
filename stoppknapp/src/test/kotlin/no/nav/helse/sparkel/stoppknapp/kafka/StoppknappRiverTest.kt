@@ -1,13 +1,14 @@
 package no.nav.helse.sparkel.stoppknapp.kafka
 
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.helse.sparkel.stoppknapp.Testdata.FØDSELSNUMMER
-import no.nav.helse.sparkel.stoppknapp.Testdata.STATUS
-import no.nav.helse.sparkel.stoppknapp.Testdata.ÅRSAK
-import no.nav.helse.sparkel.stoppknapp.Testmeldinger.opphevingAvStansMelding
-import no.nav.helse.sparkel.stoppknapp.Testmeldinger.stoppknappMelding
+import no.nav.helse.sparkel.stoppknapp.StoppknappRiver
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
+import java.time.LocalDateTime.now
+import java.time.ZoneId
+import java.util.UUID.randomUUID
 
 internal class StoppknappRiverTest {
     private val testRapid = TestRapid()
@@ -17,23 +18,75 @@ internal class StoppknappRiverTest {
     }
 
     @Test
-    fun `Kan lese inn stoppknappmeldinger fra iSyfo`() {
+    fun `Videresender stoppknappmeldinger fra isyfo`() {
         testRapid.sendTestMessage(stoppknappMelding())
         val svar = testRapid.inspektør.message(0)
 
-        assertEquals(svar["@event_name"].asText(), "stans_automatisk_behandling")
-        assertEquals(svar["status"].asText(), STATUS)
-        assertEquals(svar["årsaker"].map { it.asText() }, listOf(ÅRSAK))
-        assertEquals(svar["fødselsnummer"].asText(), FØDSELSNUMMER)
+        assertEquals("stans_automatisk_behandling", svar["@event_name"].asText())
+        assertEquals("STOPP_AUTOMATIKK", svar["status"].asText())
+        assertEquals(listOf("MEDISINSK_VILKAR"), svar["årsaker"].map { it.asText() })
+        assertEquals("12345678910", svar["fødselsnummer"].asText())
     }
 
     @Test
-    fun `Kan lese inn melding om oppheving av stans fra isyfo`() {
+    fun `Videresender melding om oppheving av stans fra isyfo`() {
         testRapid.sendTestMessage(opphevingAvStansMelding())
         val svar = testRapid.inspektør.message(0)
 
-        assertEquals(svar["@event_name"].asText(), "stans_automatisk_behandling")
-        assertEquals(svar["status"].asText(), "NORMAL")
-        assertEquals(svar["fødselsnummer"].asText(), FØDSELSNUMMER)
+        assertEquals("stans_automatisk_behandling", svar["@event_name"].asText())
+        assertEquals("NORMAL", svar["status"].asText())
+        assertEquals(emptyList<String>(), svar["årsaker"].map { it.asText() })
+        assertEquals("12345678910", svar["fødselsnummer"].asText())
     }
+
+    @Language("JSON")
+    private fun stoppknappMelding(): String =
+        """
+        {
+            "uuid": "${randomUUID()}",
+            "veilederIdent": {
+                "value": "TULLE_IDENT"
+            },
+            "sykmeldtFnr": {
+                "value": "12345678910"
+            },
+            "status": "STOPP_AUTOMATIKK",
+            "arsakList": [
+                {
+                    "type": "MEDISINSK_VILKAR"
+                }
+            ],
+            "virksomhetNr": {
+                "value": "TULLE_VIRKSOMHET"
+            },
+            "opprettet": "${now().toInstant()}",
+            "enhetNr": {
+                "value": "TULLE_ENHET"
+            }
+        }
+        """.trimIndent()
+
+    @Language("JSON")
+    private fun opphevingAvStansMelding(): String =
+        """
+        {
+            "uuid": "${randomUUID()}",
+            "veilederIdent": {
+                "value": "TULLE_IDENT"
+            },
+            "sykmeldtFnr": {
+                "value": "12345678910"
+            },
+            "status": "NORMAL",
+            "virksomhetNr": {
+                "value": "TULLE_VIRKSOMHET"
+            },
+            "opprettet": "${now().toInstant()}",
+            "enhetNr": {
+                "value": "TULLE_ENHET"
+            }
+        }
+        """.trimIndent()
+
+    private fun LocalDateTime.toInstant() = toInstant(ZoneId.systemDefault().rules.getOffset(this))
 }

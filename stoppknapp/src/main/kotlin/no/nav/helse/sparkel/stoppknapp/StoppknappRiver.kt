@@ -1,4 +1,4 @@
-package no.nav.helse.sparkel.stoppknapp.kafka
+package no.nav.helse.sparkel.stoppknapp
 
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
