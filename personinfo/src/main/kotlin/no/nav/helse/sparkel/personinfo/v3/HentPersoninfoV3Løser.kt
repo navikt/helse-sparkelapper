@@ -57,6 +57,14 @@ internal class HentPersoninfoV3Løser(
                 packet["@løsning"] = mapOf("HentPersoninfoV3" to løsning)
                 sikkerLogg.info("Løsning for HentPersoninfoV3:\n${packet.toJson()}")
                 context.publish(folkeregisterident, packet.toJson())
+
+                // ørlite hack for å få spedisjon til å pulsere og slippe berikede meldinger med en gang
+                val erDev = System.getenv()["NAIS_CLUSTER_NAME"] == "dev-gcp"
+                if (erDev) {
+                    val puls = JsonMessage.newMessage(eventName = "spedisjon_pulser")
+                    context.publish(puls.toJson())
+                }
+
             } catch (e: Exception) {
                 sikkerLogg.warn("Feil under løsing av HentPersoninfoV3: ${e.message}", e)
                 log.warn("Feil under løsing av HentPersoninfoV3: ${e.message}", e)
