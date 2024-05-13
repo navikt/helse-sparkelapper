@@ -21,7 +21,6 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
                 it.demandKey("status")
                 it.interestedIn("arsakList")
                 it.demandKey("opprettet")
-                it.interestedIn("@id")
             }
         }.register(this)
     }
