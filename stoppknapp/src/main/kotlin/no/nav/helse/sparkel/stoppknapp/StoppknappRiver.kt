@@ -36,7 +36,6 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
         packet: JsonMessage,
         context: MessageContext,
     ) {
-        if (packet["@id"].asText() == "586438c3-c139-4126-ad98-32286ce89f8c") return
         sikkerlogg.info("Leser stoppknapp-melding:\n{}", packet.toJson())
 
         val fødselsnummer: String = packet["sykmeldtFnr"]["value"].asText()
