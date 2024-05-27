@@ -15,7 +15,12 @@ enum class GjelderverdierSomIkkeSkalTriggeVarsel(val behandlingstype: String?, v
     RISIKO_SYKEFRAVÆR(null, "ab0200"),
     UNNTAK_FRA_ARBEIDSGIVERPERIODE(null, "ab0338"),
     DIGITAL_SØKNAD_UNNTAK_FRA_ARBEIDSGIVERPERIODE("ae0227", "ab0338"), // Denne har teksten "Fritak fra arbeidsgiverperiode" i Gosys
-    KLAGE_UNNTAK_FRA_ARBEIDSGIVERPERIODE("ae0058", "ab0338");
+    KLAGE_UNNTAK_FRA_ARBEIDSGIVERPERIODE("ae0058", "ab0338"),
+    TIDLIGERE_HJEMSENDT_SAK("ae0114", null),
+    VETERANSAK("ae0117", null),
+    MANGLENDE_INNBETALING_PARAGRAF_8_22(null, "ab0446"),
+    DOKUMENTINNSYN("ae0042", null),
+    ERSTATNINGSKRAV("ae0071", null);
 
     companion object {
         fun inneholder(behandlingstype: String?, behandlingstema: String?): Boolean {
@@ -29,7 +34,8 @@ enum class GjelderverdierSomIkkeSkalTriggeVarsel(val behandlingstype: String?, v
 
 enum class GjelderverdierSomIkkeSkalTriggeVarselHvisOppgavenOverEtÅrGammel(val behandlingstype: String?, val behandlingstema: String?) {
     FEILUTBETALING("ae0161", null),
-    FEILUTBETALING_UTLAND("ae0160", null);
+    FEILUTBETALING_UTLAND("ae0160", null),
+    IKKE_OPPRETTET_T_SAK(null, "ab0449");
 
     companion object {
         fun inneholder(behandlingstype: String?, behandlingstema: String?): Boolean {

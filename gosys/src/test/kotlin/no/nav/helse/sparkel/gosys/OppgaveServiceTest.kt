@@ -57,7 +57,10 @@ class OppgaveServiceTest {
             },
             objectNode().run {
                 put("behandlingstema", "ab0200")
-            }
+            },
+            objectNode().run {
+                put("behandlingstema", "ab0446")
+            },
         ).leggPåOpprettetTidspunkter()
         val oppgavehenter = Oppgavehenter { _, _ ->
             objectNode().run {
@@ -110,8 +113,8 @@ class OppgaveServiceTest {
     }
 
     @Test
-    fun `Teller ikke med feilutbetalingsoppgaver som er mer enn et år gamle`() {
-        val forventetAntall = 2
+    fun `Teller ikke med feilutbetaling og ikke opprettet t-sak-oppgaver som er mer enn et år gamle`() {
+        val forventetAntall = 3
         val oppgaverSomSkalTellesMed = listOf(
             objectNode().run {
                 put("behandlingstema", "ab0455") // Overgangssak fra Speil (skal gi varsel - ikke i enum)
@@ -121,6 +124,10 @@ class OppgaveServiceTest {
                 put("behandlingstype", "ae0161") // Feilutbetaling
                 put("opprettetTidspunkt", OffsetDateTime.now().minusYears(1).format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
             },
+            objectNode().run {
+                put("behandlingstema", "ab0449") // Ikke opprettet T-sak
+                put("opprettetTidspunkt", OffsetDateTime.now().minusYears(1).format(DateTimeFormatter.ISO_ZONED_DATE_TIME))
+            },
         )
         val oppgaverSomIkkeSkalTellesMed = listOf(
                 objectNode().run {
@@ -128,6 +135,9 @@ class OppgaveServiceTest {
                 },
                 objectNode().run {
                     put("behandlingstype", "ae0160") // Feilutbetaling - utland
+                },
+                objectNode().run {
+                    put("behandlingstema", "ab0449") // Ikke opprettet T-sak
                 },
             ).map { it.put("opprettetTidspunkt", OffsetDateTime.now().minusYears(1).minusDays(1).format(DateTimeFormatter.ISO_ZONED_DATE_TIME)) }
         val oppgavehenter = Oppgavehenter { _, _ ->
