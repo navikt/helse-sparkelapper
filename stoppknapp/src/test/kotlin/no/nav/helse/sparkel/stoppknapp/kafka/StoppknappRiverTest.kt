@@ -29,6 +29,13 @@ internal class StoppknappRiverTest {
     }
 
     @Test
+    fun `Videresender ikke stoppknappmeldinger eldre enn 180 dager`() {
+        testRapid.sendTestMessage(stoppknappMelding(opprettet = now().minusDays(181)))
+
+        assertEquals(0, testRapid.inspektør.size)
+    }
+
+    @Test
     fun `Videresender melding om oppheving av stans fra isyfo`() {
         testRapid.sendTestMessage(opphevingAvStansMelding())
         val svar = testRapid.inspektør.message(0)
@@ -40,7 +47,7 @@ internal class StoppknappRiverTest {
     }
 
     @Language("JSON")
-    private fun stoppknappMelding(): String =
+    private fun stoppknappMelding(opprettet: LocalDateTime = now()): String =
         """
         {
             "uuid": "${randomUUID()}",
@@ -59,7 +66,7 @@ internal class StoppknappRiverTest {
             "virksomhetNr": {
                 "value": "TULLE_VIRKSOMHET"
             },
-            "opprettet": "${now().toInstant()}",
+            "opprettet": "${opprettet.toInstant()}",
             "enhetNr": {
                 "value": "TULLE_ENHET"
             }
