@@ -32,6 +32,19 @@ enum class GjelderverdierSomIkkeSkalTriggeVarsel(val behandlingstype: String?, v
     }
 }
 
+enum class OppgavetypeSomIkkeSkalTriggeVarsel(val oppgavetype: String?) {
+    NØKKELKONTROLL("NOEK");
+
+    companion object {
+        fun inneholder(oppgavetype: String?): Boolean {
+            entries.forEach {
+                if (it.oppgavetype == oppgavetype) return true
+            }
+            return false
+        }
+    }
+}
+
 enum class GjelderverdierSomIkkeSkalTriggeVarselHvisOppgavenOverEtÅrGammel(val behandlingstype: String?, val behandlingstema: String?) {
     FEILUTBETALING("ae0161", null),
     FEILUTBETALING_UTLAND("ae0160", null),

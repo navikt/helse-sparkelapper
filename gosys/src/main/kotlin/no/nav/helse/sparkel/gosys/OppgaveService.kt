@@ -63,12 +63,16 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
 
     private fun JsonNode.antallRelevanteOppgaver(ikkeEldreEnn: LocalDate): Int =
         get("oppgaver").filterNot { oppgave ->
-            oppgave.harIgnorerbarGjelderverdi() || oppgave.erFeilutbetalingsoppgaveSomErForGammel(ikkeEldreEnn)
+            oppgave.harIgnorerbarGjelderverdi() || oppgave.erFeilutbetalingsoppgaveSomErForGammel(ikkeEldreEnn) || oppgave.harIgnorerbarOppgavetype()
         }.size
 
     private fun JsonNode.harIgnorerbarGjelderverdi() = GjelderverdierSomIkkeSkalTriggeVarsel.inneholder(
         finnVerdi("behandlingstype"), finnVerdi("behandlingstema"),
     )
+
+    private fun JsonNode.harIgnorerbarOppgavetype() = OppgavetypeSomIkkeSkalTriggeVarsel.inneholder(
+            finnVerdi("oppgavetype"),
+        )
 
     private fun JsonNode.erFeilutbetalingsoppgaveSomErForGammel(ikkeEldreEnn: LocalDate) =
         opprettetTidspunkt().isBefore(ikkeEldreEnn) && GjelderverdierSomIkkeSkalTriggeVarselHvisOppgavenOverEtÅrGammel.inneholder(
