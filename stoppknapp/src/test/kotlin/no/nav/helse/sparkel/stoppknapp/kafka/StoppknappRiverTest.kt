@@ -29,13 +29,6 @@ internal class StoppknappRiverTest {
     }
 
     @Test
-    fun `Videresender ikke stoppknappmeldinger eldre enn 180 dager`() {
-        testRapid.sendTestMessage(stoppknappMelding(opprettet = now().minusDays(181)))
-
-        assertEquals(0, testRapid.inspektør.size)
-    }
-
-    @Test
     fun `Videresender melding om oppheving av stans fra isyfo`() {
         testRapid.sendTestMessage(opphevingAvStansMelding())
         val svar = testRapid.inspektør.message(0)

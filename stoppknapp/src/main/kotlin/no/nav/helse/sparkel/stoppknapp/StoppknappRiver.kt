@@ -44,14 +44,6 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
         val årsaker: List<String> = packet["arsakList"].map { it["type"].asText() }
         val originalMelding: String = packet.toJson()
 
-        if (opprettet.isBefore(LocalDateTime.now().minusDays(180))) {
-            sikkerlogg.info(
-                "Videresender ikke stoppknapp-melding for fnr={}, da den er mer enn 180 dager gammel",
-                fødselsnummer,
-            )
-            return
-        }
-
         val returEvent =
             JsonMessage.newMessage(
                 eventName = "stans_automatisk_behandling",
