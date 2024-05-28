@@ -4,8 +4,6 @@ enum class GjelderverdierSomIkkeSkalTriggeVarsel(val behandlingstype: String?, v
     ANKE("ae0046", null),
     FORKORTET_VENTETID("ae0247", null),
     HJEMSENDT_TIL_NY_BEHANDLING("ae0115", null),
-    KLAGE_YRKESSKADE("ae0058","ab0339"),
-    YRKESSKADE(null, "ab0339"),
     LØNNSKOMPENSASJON(null, "ab0438"),
     MANGLENDE_INNBETALING(null, "ab0446"),
     PARTSINNSYN("ae0224", null),
