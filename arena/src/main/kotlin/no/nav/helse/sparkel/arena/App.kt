@@ -41,8 +41,8 @@ fun main() {
         val ytelsekontraktClient = YtelsekontraktClient(ytelsekontraktSoapClient, assertionStrategoy)
         val meldekortUtbetalingsgrunnlagClient = MeldekortUtbetalingsgrunnlagClient(meldekortSoapClient, assertionStrategoy)
 
-        Arena(this, ytelsekontraktClient, meldekortUtbetalingsgrunnlagClient, "Dagpenger", "DAG", "Dagpenger")
-        Arena(this, ytelsekontraktClient, meldekortUtbetalingsgrunnlagClient, "Arbeidsavklaringspenger", "AAP", "Arbeidsavklaringspenger")
+        //Arena(this, ytelsekontraktClient, meldekortUtbetalingsgrunnlagClient, "Dagpenger", "DAG", "Dagpenger")
+        //Arena(this, ytelsekontraktClient, meldekortUtbetalingsgrunnlagClient, "Arbeidsavklaringspenger", "AAP", "Arbeidsavklaringspenger")
     }.start()
 }
 
