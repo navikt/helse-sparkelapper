@@ -1,0 +1,19 @@
+kafkaPool: nav-prod
+replicas:
+  max: 12
+azure:
+  enabled: true
+  claims:
+    extra:
+      - azp_name
+  tenant: nav.no
+accessPolicy:
+  outbound:
+    rules:
+      - application: pdl-fullmakt-api
+        namespace: repr
+env:
+  - name: PDL_FULLMAKT_URL
+    value: http://pdl-fullmakt-api.repr
+  - name: PDL_FULLMAKT_SCOPE
+    value: prod-gcp:pdl:pdl-fullmakt

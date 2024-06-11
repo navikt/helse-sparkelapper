@@ -1,0 +1,20 @@
+kafkaPool: nav-dev
+replicas:
+  min: 1
+  max: 1
+azure:
+  enabled: true
+  claims:
+    extra:
+      - azp_name
+  tenant: trygdeetaten.no
+accessPolicy:
+  outbound:
+    rules:
+      - application: pdl-fullmakt-api
+        namespace: repr
+env:
+  - name: PDL_FULLMAKT_URL
+    value: http://pdl-fullmakt-api.repr
+  - name: PDL_FULLMAKT_SCOPE
+    value: dev-gcp:pdl:pdl-fullmakt
