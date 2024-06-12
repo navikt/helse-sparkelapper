@@ -4,26 +4,19 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.every
 import io.mockk.mockk
+import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.util.UUID
-import org.junit.jupiter.api.TestInstance
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class RepresentasjonRiverTest {
     private val representasjonClient: RepresentasjonClient = mockk(relaxed = true)
     private val rapid: TestRapid = TestRapid().apply {
         RepresentasjonRiver(this, representasjonClient)
     }
     private val objectMapper = ObjectMapper()
-
-    @BeforeEach
-    fun clear() {
-        rapid.reset()
-    }
 
     @Test
     fun `svarer ut behov for fullmakt`() {
