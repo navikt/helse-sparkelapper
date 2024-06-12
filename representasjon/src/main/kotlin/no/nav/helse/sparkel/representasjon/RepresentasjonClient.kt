@@ -28,6 +28,7 @@ class RepresentasjonClient(
     }
 
     fun hentFullmakt(fnr: String): JsonNode? {
+        val callId = UUID.randomUUID()
         return try {
             runBlocking {
                 val response = httpClient.prepareGet("$baseUrl/api/internbruker/fullmaktsgiver") {
@@ -35,7 +36,6 @@ class RepresentasjonClient(
                     method = HttpMethod.Post
                     setBody("""{"ident": "$fnr"}""")
                     bearerAuth(tokenClient.bearerToken(scope).token)
-                    val callId = UUID.randomUUID()
                     header("Nav-Callid", "$callId")
                     header("no.nav.callid", "$callId")
                     header("Nav-Consumer-Id", "sparkel-representasjon")
@@ -43,7 +43,7 @@ class RepresentasjonClient(
                 }.execute()
 
                 if (response.status != HttpStatusCode.OK) {
-                    "Feil ved kall mot fullmakt-api, http-status: ${response.status.value}, returnerer tomt resultat".also {
+                    "Feil ved kall mot fullmakt-api, http-status: ${response.status.value}, returnerer tomt resultat. CallId=$callId".also {
                         log.info(it)
                         sikkerlog.info("$it, response:\n$response")
                     }
@@ -51,8 +51,8 @@ class RepresentasjonClient(
                 } else response.body()
             }
         } catch (e: Exception) {
-            log.warn("Feil mot fullmakt-api, se sikker logg for exception")
-            sikkerlog.warn("Feil mot fullmakt-api", e)
+            log.warn("Feil mot fullmakt-api, callId=$callId, se sikker logg for exception")
+            sikkerlog.warn("Feil mot fullmakt-api, callId=$callId", e)
             null
         }
     }
