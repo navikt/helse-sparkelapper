@@ -17,4 +17,4 @@ env:
   - name: PDL_FULLMAKT_URL
     value: https://pdl-fullmakt.dev.intern.nav.no
   - name: PDL_FULLMAKT_SCOPE
-    value: api://dev-fss:pdl:pdl-fullmakt/.default
+    value: api://dev-fss.pdl.pdl-fullmakt/.default
