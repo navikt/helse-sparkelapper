@@ -20,7 +20,7 @@ internal class PersonhendelseAvroDeserializerTest {
     @Test
     fun `klarer å parse personhendelsedokument fra leesah (base64)`() {
         val melding = adressebeskyttelseV1(fodselsnummer = "20046913337", hendelseId = UUID.fromString("c2e5e1c1-1c86-42cc-95ba-12c3880d4f3c"))
-        val base64melding = "AAAAAABIYzJlNWUxYzEtMWM4Ni00MmNjLTk1YmEtMTJjMzg4MGQ0ZjNjAhYyMDA0NjkxMzMzNwAKc2thdHTIBipBRFJFU1NFQkVTS1lUVEVMU0VfVjECAAIGAAAAAAAAAAAAAAAAAAAAAA=="
+        val base64melding = "AAAAAABIYzJlNWUxYzEtMWM4Ni00MmNjLTk1YmEtMTJjMzg4MGQ0ZjNjAhYyMDA0NjkxMzMzNwAKc2thdHTIBipBRFJFU1NFQkVTS1lUVEVMU0VfVjECAAIGAAAAAAAAAAAAAAAAAAAAAAA="
         assertEquals(melding, serialize(melding).deserialiser())
         assertEquals(melding, Base64.getDecoder().decode(base64melding).deserialiser())
     }
