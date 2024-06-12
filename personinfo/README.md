@@ -10,12 +10,15 @@ Du kan gjenskap feilen med `Base64='<melding>'` meldingen fra logglinjen og kjø
 
 Hvordan oppdaterer jeg skjemaet til en ny versjon?
 
-Legg til nyeste skjema i resources. Dette finner du i attributten `schema` på responsen på linken under. Versjonen er i `version`.
+Legg til nyeste skjema i resources. Dette finner du i attributten `schema` på responsen på linken under.
 
-Lenkene nås ikke med naisdevice, du må `exec`-e inn i en pod som bruker kafka. Kjør fra en pod i dev eller prod, alt ettersom.
-
-```shell
-curl -u $KAFKA_SCHEMA_REGISTRY_USER:$KAFKA_SCHEMA_REGISTRY_PASSWORD $KAFKA_SCHEMA_REGISTRY/subjects/pdl.leesah-v1-value/versions[/<versjon]
-```
+Man kan hente skjema på flere måter, her er tre:
+1. Bruk skriptet `hent_pdl_leesah_schema.sh`, se videre instruksjoner i fila
+2. Fra lokal maskin med naisdevice tilkoblet:
+   1. Stjel URL og credentials fra en aiven-secret
+   2. Kjør kommando:
+      - `curl -v -u <username>:<password> https://nav-dev-kafka-nav-dev.aivencloud.com:26487/subjects/pdl.leesah-v1-value/versions/<version>`
+3. `exec` inn i en pod som har shell (altså ikke distroless) og bruker kafka, og kjør:
+   - `curl -u $KAFKA_SCHEMA_REGISTRY_USER:$KAFKA_SCHEMA_REGISTRY_PASSWORD $KAFKA_SCHEMA_REGISTRY/subjects/pdl.leesah-v1-value/versions/<versjon>`
 
 Behold de to siste versjonene av skjemaet og endre i `PersonhendelseAvroDeserializer`
