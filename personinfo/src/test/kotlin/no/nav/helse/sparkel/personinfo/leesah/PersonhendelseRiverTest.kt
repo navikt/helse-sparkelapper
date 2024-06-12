@@ -5,10 +5,17 @@ import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import io.mockk.every
 import io.mockk.mockk
+import java.time.Duration
+import java.time.LocalDate
+import java.util.UUID
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.helse.sparkel.personinfo.FantIkkeIdenter
+import no.nav.helse.sparkel.personinfo.Identer
 import no.nav.helse.sparkel.personinfo.PdlClient
-import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.adressebeskyttelseV1
+import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.adressebeskyttelse
+import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.dødsfall
+import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.folkeregisteridentifikator
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.serialize
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -16,13 +23,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.slf4j.LoggerFactory
-import java.time.Duration
-import java.time.LocalDate
-import java.util.*
-import no.nav.helse.sparkel.personinfo.FantIkkeIdenter
-import no.nav.helse.sparkel.personinfo.Identer
-import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.dødsfallV1
-import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.folkeregisteridentifikatorV1
 
 class PersonhendelseRiverTest {
     private val FNR = "20046913337"
@@ -54,7 +54,7 @@ class PersonhendelseRiverTest {
             aktørId = AKTØRID
         )
         val dødsdato = LocalDate.of(2018, 1, 1)
-        personhendelseRiver.onPackage(dødsfallV1(FNR, dødsdato))
+        personhendelseRiver.onPackage(dødsfall(FNR, dødsdato))
         assertEquals(1, testRapid.inspektør.size)
         val melding = testRapid.inspektør.message(0)
         assertEquals(FNR, melding["fødselsnummer"].asText())
@@ -73,7 +73,7 @@ class PersonhendelseRiverTest {
             fødselsnummer = nyttFnr,
             aktørId = nyAktørId
         ), emptyList())
-        personhendelseRiver.onPackage(folkeregisteridentifikatorV1(FNR))
+        personhendelseRiver.onPackage(folkeregisteridentifikator(FNR))
         assertEquals(1, testRapid.inspektør.size)
         val melding = testRapid.inspektør.message(0)
         assertEquals(FNR, melding["fødselsnummer"].asText())
@@ -92,7 +92,7 @@ class PersonhendelseRiverTest {
             aktørId = AKTØRID
         )
         personhendelseRiver.onPackage(
-            adressebeskyttelseV1(
+            adressebeskyttelse(
                 FNR,
                 gradering = PersonhendelseOversetter.Gradering.FORTROLIG
             )
@@ -108,7 +108,7 @@ class PersonhendelseRiverTest {
             aktørId = AKTØRID
         )
         personhendelseRiver.onPackage(
-            adressebeskyttelseV1(
+            adressebeskyttelse(
                 FNR,
                 gradering = PersonhendelseOversetter.Gradering.FORTROLIG
             )
@@ -129,7 +129,7 @@ class PersonhendelseRiverTest {
             aktørId = AKTØRID
         )
 
-        val dokument = adressebeskyttelseV1(FNR, PersonhendelseOversetter.Gradering.FORTROLIG)
+        val dokument = adressebeskyttelse(FNR, PersonhendelseOversetter.Gradering.FORTROLIG)
         val deserialisertDokument = PersonhendelseAvroDeserializer().deserialize("leesah", serialize(dokument))
 
         personhendelseRiver.onPackage(deserialisertDokument)
@@ -144,7 +144,7 @@ class PersonhendelseRiverTest {
         )
         repeat(5) {
             personhendelseRiver.onPackage(
-                adressebeskyttelseV1(
+                adressebeskyttelse(
                     FNR,
                     gradering = PersonhendelseOversetter.Gradering.FORTROLIG
                 )
@@ -161,7 +161,7 @@ class PersonhendelseRiverTest {
         )
         repeat(5) {
             personhendelseRiver.onPackage(
-                adressebeskyttelseV1(
+                adressebeskyttelse(
                     FNR,
                     gradering = PersonhendelseOversetter.Gradering.FORTROLIG
                 )
@@ -169,7 +169,7 @@ class PersonhendelseRiverTest {
         }
         Thread.sleep(600)
         personhendelseRiver.onPackage(
-            adressebeskyttelseV1(
+            adressebeskyttelse(
                 FNR,
                 gradering = PersonhendelseOversetter.Gradering.FORTROLIG
             )
@@ -187,7 +187,7 @@ class PersonhendelseRiverTest {
     fun `Foreløpig støtter vi ikke personer som ikke har fnr`() {
         every { pdlClient.hentIdenter(FNR, any()) } returns FantIkkeIdenter()
         personhendelseRiver.onPackage(
-            adressebeskyttelseV1(
+            adressebeskyttelse(
                 FNR,
                 gradering = PersonhendelseOversetter.Gradering.FORTROLIG
             )

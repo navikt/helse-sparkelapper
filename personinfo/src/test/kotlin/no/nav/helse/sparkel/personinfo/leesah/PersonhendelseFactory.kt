@@ -7,54 +7,58 @@ import org.apache.avro.io.EncoderFactory
 import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.util.UUID
+import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseAvroDeserializer.Companion.sisteSkjema
 
+/**
+ * Oppretter testdata på siste/nyeste versjon av skjemaet
+ */
 internal object PersonhendelseFactory {
     private val encoderFactory = EncoderFactory.get()
 
-    internal fun adressebeskyttelseV1(
+    internal fun adressebeskyttelse(
         fodselsnummer: String,
         gradering: PersonhendelseOversetter.Gradering = PersonhendelseOversetter.Gradering.UGRADERT,
         hendelseId: UUID = UUID.randomUUID()
-    ): GenericRecord = GenericData.Record(PersonhendelseAvroDeserializer.sisteSkjema).apply {
-        val addressebeskyttelseSchema =
-            PersonhendelseAvroDeserializer.sisteSkjema.getField("adressebeskyttelse").schema().types.last()
+    ): GenericRecord = GenericData.Record(sisteSkjema).apply {
+        val addressebeskyttelseSchema = sisteSkjema.getField("adressebeskyttelse").schema().types.last()
         put("opplysningstype", "ADRESSEBESKYTTELSE_V1")
         put("hendelseId", "$hendelseId")
         put("personidenter", listOf(fodselsnummer))
         put("master", "skatt")
         put("opprettet", 420L)
-        put("endringstype", GenericData.EnumSymbol(PersonhendelseAvroDeserializer.sisteSkjema, "KORRIGERT"))
+        put("endringstype", GenericData.EnumSymbol(sisteSkjema, "KORRIGERT"))
         put("adressebeskyttelse", GenericData.Record(addressebeskyttelseSchema).apply {
             put("gradering", GenericData.EnumSymbol(addressebeskyttelseSchema, gradering.name))
         })
     }
 
-    internal fun dødsfallV1(
+    internal fun dødsfall(
         fodselsnummer: String,
         dødsdato: LocalDate,
         hendelseId: UUID = UUID.randomUUID()
-    ): GenericRecord = GenericData.Record(PersonhendelseAvroDeserializer.sisteSkjema).apply {
-        val schema =
-            PersonhendelseAvroDeserializer.sisteSkjema.getField("doedsfall").schema().types.last()
+    ): GenericRecord = GenericData.Record(sisteSkjema).apply {
+        val schema = sisteSkjema.getField("doedsfall").schema().types.last()
         put("opplysningstype", "DOEDSFALL_V1")
         put("hendelseId", "$hendelseId")
         put("personidenter", listOf(fodselsnummer))
         put("master", "skatt")
         put("opprettet", 420L)
-        put("endringstype", GenericData.EnumSymbol(PersonhendelseAvroDeserializer.sisteSkjema, "KORRIGERT"))
+        put("endringstype", GenericData.EnumSymbol(sisteSkjema, "KORRIGERT"))
         put("doedsfall", GenericData.Record(schema).apply {
             put("doedsdato", dødsdato.toEpochDay())
         })
     }
-    internal fun folkeregisteridentifikatorV1(fodselsnummer: String, hendelseId: UUID = UUID.randomUUID()): GenericRecord = GenericData.Record(PersonhendelseAvroDeserializer.sisteSkjema).apply {
-        val schema =
-            PersonhendelseAvroDeserializer.sisteSkjema.getField("Folkeregisteridentifikator").schema().types.last()
+
+    internal fun folkeregisteridentifikator(
+        fodselsnummer: String, hendelseId: UUID = UUID.randomUUID()
+    ): GenericRecord = GenericData.Record(sisteSkjema).apply {
         put("opplysningstype", "FOLKEREGISTERIDENTIFIKATOR_V1")
         put("hendelseId", "$hendelseId")
         put("personidenter", listOf(fodselsnummer))
         put("master", "skatt")
         put("opprettet", 420L)
-        put("endringstype", GenericData.EnumSymbol(PersonhendelseAvroDeserializer.sisteSkjema, "KORRIGERT"))
+        put("endringstype", GenericData.EnumSymbol(sisteSkjema, "KORRIGERT"))
+        val schema = sisteSkjema.getField("Folkeregisteridentifikator").schema().types.last()
         put("Folkeregisteridentifikator", GenericData.Record(schema).apply {
             put("identifikasjonsnummer", fodselsnummer)
             put("type", "FNR")
