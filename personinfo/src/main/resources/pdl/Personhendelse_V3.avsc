@@ -10,8 +10,8 @@
         {
             "name": "personidenter",
             "type": {
-                "type": "array",
-                "items": "string"
+                "items": "string",
+                "type": "array"
             }
         },
         {
@@ -21,8 +21,8 @@
         {
             "name": "opprettet",
             "type": {
-                "type": "long",
-                "logicalType": "timestamp-millis"
+                "logicalType": "timestamp-millis",
+                "type": "long"
             }
         },
         {
@@ -32,274 +32,305 @@
         {
             "name": "endringstype",
             "type": {
-                "type": "enum",
                 "name": "Endringstype",
                 "symbols": [
                     "OPPRETTET",
                     "KORRIGERT",
                     "ANNULLERT",
                     "OPPHOERT"
-                ]
+                ],
+                "type": "enum"
             }
         },
         {
+            "default": null,
             "name": "tidligereHendelseId",
             "type": [
                 "null",
                 "string"
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "adressebeskyttelse",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "Adressebeskyttelse",
-                    "namespace": "no.nav.person.pdl.leesah.adressebeskyttelse",
                     "fields": [
                         {
                             "name": "gradering",
                             "type": {
-                                "type": "enum",
                                 "name": "Gradering",
                                 "symbols": [
                                     "STRENGT_FORTROLIG_UTLAND",
                                     "STRENGT_FORTROLIG",
                                     "FORTROLIG",
                                     "UGRADERT"
-                                ]
+                                ],
+                                "type": "enum"
                             }
                         }
-                    ]
+                    ],
+                    "name": "Adressebeskyttelse",
+                    "namespace": "no.nav.person.pdl.leesah.adressebeskyttelse",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "doedfoedtBarn",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "DoedfoedtBarn",
-                    "namespace": "no.nav.person.pdl.leesah.doedfoedtbarn",
                     "fields": [
                         {
+                            "default": null,
                             "name": "dato",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "DoedfoedtBarn",
+                    "namespace": "no.nav.person.pdl.leesah.doedfoedtbarn",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "doedsfall",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "Doedsfall",
-                    "namespace": "no.nav.person.pdl.leesah.doedsfall",
                     "fields": [
                         {
+                            "default": null,
                             "name": "doedsdato",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "Doedsfall",
+                    "namespace": "no.nav.person.pdl.leesah.doedsfall",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "foedsel",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "Foedsel",
-                    "namespace": "no.nav.person.pdl.leesah.foedsel",
                     "fields": [
                         {
+                            "default": null,
                             "name": "foedselsaar",
                             "type": [
                                 "null",
                                 "int"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "foedselsdato",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "foedeland",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "foedested",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "foedekommune",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "Foedsel",
+                    "namespace": "no.nav.person.pdl.leesah.foedsel",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
+            "name": "foedselsdato",
+            "type": [
+                "null",
+                {
+                    "fields": [
+                        {
+                            "default": null,
+                            "name": "foedselsaar",
+                            "type": [
+                                "null",
+                                "int"
+                            ]
+                        },
+                        {
+                            "default": null,
+                            "name": "foedselsdato",
+                            "type": [
+                                "null",
+                                {
+                                    "logicalType": "date",
+                                    "type": "int"
+                                }
+                            ]
+                        }
+                    ],
+                    "name": "Foedselsdato",
+                    "namespace": "no.nav.person.pdl.leesah.foedselsdato",
+                    "type": "record"
+                }
+            ]
+        },
+        {
+            "default": null,
             "name": "forelderBarnRelasjon",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "ForelderBarnRelasjon",
-                    "namespace": "no.nav.person.pdl.leesah.forelderbarnrelasjon",
                     "fields": [
                         {
+                            "default": null,
                             "name": "relatertPersonsIdent",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
                             "name": "relatertPersonsRolle",
                             "type": "string"
                         },
                         {
+                            "default": null,
                             "name": "minRolleForPerson",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "relatertPersonUtenFolkeregisteridentifikator",
                             "type": [
                                 "null",
                                 {
-                                    "type": "record",
-                                    "name": "RelatertBiPerson",
-                                    "namespace": "no.nav.person.identhendelse.v1.common",
                                     "fields": [
                                         {
                                             "name": "navn",
                                             "type": {
-                                                "type": "record",
-                                                "name": "Personnavn",
                                                 "fields": [
                                                     {
                                                         "name": "fornavn",
                                                         "type": "string"
                                                     },
                                                     {
+                                                        "default": null,
                                                         "name": "mellomnavn",
                                                         "type": [
                                                             "null",
                                                             "string"
-                                                        ],
-                                                        "default": null
+                                                        ]
                                                     },
                                                     {
                                                         "name": "etternavn",
                                                         "type": "string"
                                                     }
-                                                ]
+                                                ],
+                                                "name": "Personnavn",
+                                                "type": "record"
                                             }
                                         },
                                         {
+                                            "default": null,
                                             "name": "foedselsdato",
                                             "type": [
                                                 "null",
                                                 {
-                                                    "type": "int",
-                                                    "logicalType": "date"
+                                                    "logicalType": "date",
+                                                    "type": "int"
                                                 }
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "statsborgerskap",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "kjoenn",
                                             "type": [
                                                 "null",
                                                 {
-                                                    "type": "enum",
                                                     "name": "KjoennType",
                                                     "symbols": [
                                                         "MANN",
                                                         "KVINNE",
                                                         "UKJENT"
-                                                    ]
+                                                    ],
+                                                    "type": "enum"
                                                 }
-                                            ],
-                                            "default": null
+                                            ]
                                         }
-                                    ]
+                                    ],
+                                    "name": "RelatertBiPerson",
+                                    "namespace": "no.nav.person.identhendelse.v1.common",
+                                    "type": "record"
                                 }
-                            ],
-                            "default": null
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "ForelderBarnRelasjon",
+                    "namespace": "no.nav.person.pdl.leesah.forelderbarnrelasjon",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "familierelasjon",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "Familierelasjon",
-                    "namespace": "no.nav.person.pdl.leesah.familierelasjon",
                     "fields": [
                         {
                             "name": "relatertPersonsIdent",
@@ -310,238 +341,238 @@
                             "type": "string"
                         },
                         {
+                            "default": null,
                             "name": "minRolleForPerson",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "Familierelasjon",
+                    "namespace": "no.nav.person.pdl.leesah.familierelasjon",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "sivilstand",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "Sivilstand",
-                    "namespace": "no.nav.person.pdl.leesah.sivilstand",
                     "fields": [
                         {
                             "name": "type",
                             "type": "string"
                         },
                         {
+                            "default": null,
                             "name": "gyldigFraOgMed",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "relatertVedSivilstand",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "bekreftelsesdato",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "Sivilstand",
+                    "namespace": "no.nav.person.pdl.leesah.sivilstand",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "vergemaalEllerFremtidsfullmakt",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "VergemaalEllerFremtidsfullmakt",
-                    "namespace": "no.nav.person.pdl.leesah.verge",
                     "fields": [
                         {
+                            "default": null,
                             "name": "type",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "embete",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
                             "name": "vergeEllerFullmektig",
                             "type": {
-                                "type": "record",
-                                "name": "VergeEllerFullmektig",
                                 "fields": [
                                     {
+                                        "default": null,
                                         "name": "navn",
                                         "type": [
                                             "null",
                                             {
-                                                "type": "record",
-                                                "name": "Personnavn",
-                                                "namespace": "no.nav.person.pdl.leesah.common",
                                                 "fields": [
                                                     {
                                                         "name": "fornavn",
                                                         "type": "string"
                                                     },
                                                     {
+                                                        "default": null,
                                                         "name": "mellomnavn",
                                                         "type": [
                                                             "null",
                                                             "string"
-                                                        ],
-                                                        "default": null
+                                                        ]
                                                     },
                                                     {
                                                         "name": "etternavn",
                                                         "type": "string"
                                                     }
-                                                ]
+                                                ],
+                                                "name": "Personnavn",
+                                                "namespace": "no.nav.person.pdl.leesah.common",
+                                                "type": "record"
                                             }
-                                        ],
-                                        "default": null
+                                        ]
                                     },
                                     {
+                                        "default": null,
                                         "name": "motpartsPersonident",
                                         "type": [
                                             "null",
                                             "string"
-                                        ],
-                                        "default": null
+                                        ]
                                     },
                                     {
+                                        "default": null,
                                         "name": "omfang",
                                         "type": [
                                             "null",
                                             "string"
-                                        ],
-                                        "default": null
+                                        ]
                                     },
                                     {
+                                        "default": null,
                                         "name": "omfangetErInnenPersonligOmraade",
                                         "type": [
                                             "null",
                                             "boolean"
-                                        ],
-                                        "default": null
+                                        ]
                                     }
-                                ]
+                                ],
+                                "name": "VergeEllerFullmektig",
+                                "type": "record"
                             }
                         }
-                    ]
+                    ],
+                    "name": "VergemaalEllerFremtidsfullmakt",
+                    "namespace": "no.nav.person.pdl.leesah.verge",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "utflyttingFraNorge",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "UtflyttingFraNorge",
-                    "namespace": "no.nav.person.pdl.leesah.utflytting",
                     "fields": [
                         {
+                            "default": null,
                             "name": "tilflyttingsland",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "tilflyttingsstedIUtlandet",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "utflyttingsdato",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "UtflyttingFraNorge",
+                    "namespace": "no.nav.person.pdl.leesah.utflytting",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "InnflyttingTilNorge",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "InnflyttingTilNorge",
-                    "namespace": "no.nav.person.pdl.leesah.innflytting",
                     "fields": [
                         {
+                            "default": null,
                             "name": "fraflyttingsland",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "fraflyttingsstedIUtlandet",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "InnflyttingTilNorge",
+                    "namespace": "no.nav.person.pdl.leesah.innflytting",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "Folkeregisteridentifikator",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "Folkeregisteridentifikator",
-                    "namespace": "no.nav.person.pdl.leesah.folkeregisteridentifikator",
                     "fields": [
                         {
                             "name": "identifikasjonsnummer",
@@ -555,134 +586,134 @@
                             "name": "status",
                             "type": "string"
                         }
-                    ]
+                    ],
+                    "name": "Folkeregisteridentifikator",
+                    "namespace": "no.nav.person.pdl.leesah.folkeregisteridentifikator",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "navn",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "Navn",
-                    "namespace": "no.nav.person.pdl.leesah.navn",
                     "fields": [
                         {
                             "name": "fornavn",
                             "type": "string"
                         },
                         {
+                            "default": null,
                             "name": "mellomnavn",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
                             "name": "etternavn",
                             "type": "string"
                         },
                         {
+                            "default": null,
                             "name": "forkortetNavn",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "originaltNavn",
                             "type": [
                                 "null",
                                 {
-                                    "type": "record",
-                                    "name": "OriginaltNavn",
                                     "fields": [
                                         {
+                                            "default": null,
                                             "name": "fornavn",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "mellomnavn",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "etternavn",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         }
-                                    ]
+                                    ],
+                                    "name": "OriginaltNavn",
+                                    "type": "record"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "gyldigFraOgMed",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "Navn",
+                    "namespace": "no.nav.person.pdl.leesah.navn",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "sikkerhetstiltak",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "Sikkerhetstiltak",
-                    "namespace": "no.nav.person.pdl.leesah.sikkerhetstiltak",
                     "fields": [
                         {
+                            "default": null,
                             "name": "kontaktperson",
                             "type": [
                                 "null",
                                 {
-                                    "type": "record",
-                                    "name": "Kontaktperson",
                                     "fields": [
                                         {
+                                            "default": null,
                                             "name": "personident",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "norgEnhet",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         }
-                                    ]
+                                    ],
+                                    "name": "Kontaktperson",
+                                    "type": "record"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
                             "name": "type",
@@ -695,640 +726,642 @@
                         {
                             "name": "gyldigFom",
                             "type": {
-                                "type": "int",
-                                "logicalType": "date"
+                                "logicalType": "date",
+                                "type": "int"
                             }
                         },
                         {
                             "name": "gyldigTom",
                             "type": {
-                                "type": "int",
-                                "logicalType": "date"
+                                "logicalType": "date",
+                                "type": "int"
                             }
                         }
-                    ]
+                    ],
+                    "name": "Sikkerhetstiltak",
+                    "namespace": "no.nav.person.pdl.leesah.sikkerhetstiltak",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "statsborgerskap",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "Statsborgerskap",
-                    "namespace": "no.nav.person.pdl.leesah.statsborgerskap",
                     "fields": [
                         {
                             "name": "land",
                             "type": "string"
                         },
                         {
+                            "default": null,
                             "name": "gyldigFom",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "gyldigTom",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "bekreftelsesdato",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "Statsborgerskap",
+                    "namespace": "no.nav.person.pdl.leesah.statsborgerskap",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "telefonnummer",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "Telefonnummer",
-                    "namespace": "no.nav.person.pdl.leesah.telefonnummer",
                     "fields": [
                         {
+                            "default": null,
                             "name": "landskode",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "nummer",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "prioritet",
                             "type": [
                                 "null",
                                 "int"
-                            ],
-                            "default": null
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "Telefonnummer",
+                    "namespace": "no.nav.person.pdl.leesah.telefonnummer",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "kontaktadresse",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "Kontaktadresse",
-                    "namespace": "no.nav.person.pdl.leesah.kontaktadresse",
                     "fields": [
                         {
+                            "default": null,
                             "name": "gyldigFraOgMed",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "gyldigTilOgMed",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
                             "name": "type",
                             "type": "string"
                         },
                         {
+                            "default": null,
                             "name": "coAdressenavn",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "postboksadresse",
                             "type": [
                                 "null",
                                 {
-                                    "type": "record",
-                                    "name": "Postboksadresse",
-                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
                                     "fields": [
                                         {
+                                            "default": null,
                                             "name": "postbokseier",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
                                             "name": "postboks",
                                             "type": "string"
                                         },
                                         {
+                                            "default": null,
                                             "name": "postnummer",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         }
-                                    ]
+                                    ],
+                                    "name": "Postboksadresse",
+                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
+                                    "type": "record"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "vegadresse",
                             "type": [
                                 "null",
                                 {
-                                    "type": "record",
-                                    "name": "Vegadresse",
-                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
                                     "fields": [
                                         {
+                                            "default": null,
                                             "name": "matrikkelId",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "husnummer",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "husbokstav",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "bruksenhetsnummer",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "adressenavn",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "kommunenummer",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "bydelsnummer",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "tilleggsnavn",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "postnummer",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "koordinater",
                                             "type": [
                                                 "null",
                                                 {
-                                                    "type": "record",
-                                                    "name": "Koordinater",
                                                     "fields": [
                                                         {
+                                                            "default": null,
                                                             "name": "x",
                                                             "type": [
                                                                 "null",
                                                                 "float"
-                                                            ],
-                                                            "default": null
+                                                            ]
                                                         },
                                                         {
+                                                            "default": null,
                                                             "name": "y",
                                                             "type": [
                                                                 "null",
                                                                 "float"
-                                                            ],
-                                                            "default": null
+                                                            ]
                                                         },
                                                         {
+                                                            "default": null,
                                                             "name": "z",
                                                             "type": [
                                                                 "null",
                                                                 "float"
-                                                            ],
-                                                            "default": null
+                                                            ]
                                                         }
-                                                    ]
+                                                    ],
+                                                    "name": "Koordinater",
+                                                    "type": "record"
                                                 }
-                                            ],
-                                            "default": null
+                                            ]
                                         }
-                                    ]
+                                    ],
+                                    "name": "Vegadresse",
+                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
+                                    "type": "record"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "postadresseIFrittFormat",
                             "type": [
                                 "null",
                                 {
-                                    "type": "record",
-                                    "name": "PostadresseIFrittFormat",
-                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
                                     "fields": [
                                         {
+                                            "default": null,
                                             "name": "adresselinje1",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "adresselinje2",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "adresselinje3",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "postnummer",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         }
-                                    ]
+                                    ],
+                                    "name": "PostadresseIFrittFormat",
+                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
+                                    "type": "record"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "utenlandskAdresse",
                             "type": [
                                 "null",
                                 {
-                                    "type": "record",
-                                    "name": "UtenlandskAdresse",
-                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
                                     "fields": [
                                         {
+                                            "default": null,
                                             "name": "adressenavnNummer",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "bygningEtasjeLeilighet",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "postboksNummerNavn",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "postkode",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "bySted",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "regionDistriktOmraade",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
                                             "name": "landkode",
                                             "type": "string"
                                         }
-                                    ]
+                                    ],
+                                    "name": "UtenlandskAdresse",
+                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
+                                    "type": "record"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "utenlandskAdresseIFrittFormat",
                             "type": [
                                 "null",
                                 {
-                                    "type": "record",
-                                    "name": "UtenlandskAdresseIFrittFormat",
-                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
                                     "fields": [
                                         {
+                                            "default": null,
                                             "name": "adresselinje1",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "adresselinje2",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "adresselinje3",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "postkode",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "byEllerStedsnavn",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
                                             "name": "landkode",
                                             "type": "string"
                                         }
-                                    ]
+                                    ],
+                                    "name": "UtenlandskAdresseIFrittFormat",
+                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
+                                    "type": "record"
                                 }
-                            ],
-                            "default": null
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "Kontaktadresse",
+                    "namespace": "no.nav.person.pdl.leesah.kontaktadresse",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         },
         {
+            "default": null,
             "name": "bostedsadresse",
             "type": [
                 "null",
                 {
-                    "type": "record",
-                    "name": "Bostedsadresse",
-                    "namespace": "no.nav.person.pdl.leesah.bostedsadresse",
                     "fields": [
                         {
+                            "default": null,
                             "name": "angittFlyttedato",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "gyldigFraOgMed",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "gyldigTilOgMed",
                             "type": [
                                 "null",
                                 {
-                                    "type": "int",
-                                    "logicalType": "date"
+                                    "logicalType": "date",
+                                    "type": "int"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "coAdressenavn",
                             "type": [
                                 "null",
                                 "string"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "vegadresse",
                             "type": [
                                 "null",
                                 "no.nav.person.pdl.leesah.common.adresse.Vegadresse"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "matrikkeladresse",
                             "type": [
                                 "null",
                                 {
-                                    "type": "record",
-                                    "name": "Matrikkeladresse",
-                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
                                     "fields": [
                                         {
+                                            "default": null,
                                             "name": "matrikkelId",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "bruksenhetsnummer",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "tilleggsnavn",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "postnummer",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "kommunenummer",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         },
                                         {
+                                            "default": null,
                                             "name": "koordinater",
                                             "type": [
                                                 "null",
                                                 "Koordinater"
-                                            ],
-                                            "default": null
+                                            ]
                                         }
-                                    ]
+                                    ],
+                                    "name": "Matrikkeladresse",
+                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
+                                    "type": "record"
                                 }
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "utenlandskAdresse",
                             "type": [
                                 "null",
                                 "no.nav.person.pdl.leesah.common.adresse.UtenlandskAdresse"
-                            ],
-                            "default": null
+                            ]
                         },
                         {
+                            "default": null,
                             "name": "ukjentBosted",
                             "type": [
                                 "null",
                                 {
-                                    "type": "record",
-                                    "name": "UkjentBosted",
-                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
                                     "fields": [
                                         {
+                                            "default": null,
                                             "name": "bostedskommune",
                                             "type": [
                                                 "null",
                                                 "string"
-                                            ],
-                                            "default": null
+                                            ]
                                         }
-                                    ]
+                                    ],
+                                    "name": "UkjentBosted",
+                                    "namespace": "no.nav.person.pdl.leesah.common.adresse",
+                                    "type": "record"
                                 }
-                            ],
-                            "default": null
+                            ]
                         }
-                    ]
+                    ],
+                    "name": "Bostedsadresse",
+                    "namespace": "no.nav.person.pdl.leesah.bostedsadresse",
+                    "type": "record"
                 }
-            ],
-            "default": null
+            ]
         }
     ]
 }
