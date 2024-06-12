@@ -17,4 +17,4 @@ env:
   - name: PDL_FULLMAKT_URL
     value: http://pdl-fullmakt-api.repr
   - name: PDL_FULLMAKT_SCOPE
-    value: prod-gcp:pdl:pdl-fullmakt
+    value: api://prod-gcp:pdl:pdl-fullmakt/.default
