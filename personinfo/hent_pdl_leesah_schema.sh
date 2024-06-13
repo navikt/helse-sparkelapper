@@ -39,7 +39,17 @@ function validate {
    test -n "${(P)1}" || (echo "${1}" er påkrevet && exit 1)
 }
 
+function check_context {
+   if [[ "$(kubectl config current-context)" =~ prod.* ]]; then
+     printf "\n**************************************************************\n"
+     printf "Du er i prod, da må du være koblet til aiven-prod i naisdevice"
+     printf "\n**************************************************************\n\n"
+   fi
+}
+
 validate SECRET_NAME
 validate VERSION
+
+check_context
 
 main
