@@ -1,7 +1,6 @@
 package no.nav.helse.sparkel.personinfo.v3
 
 import com.fasterxml.jackson.databind.JsonNode
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
@@ -58,16 +57,6 @@ internal class HentPersoninfoV3Løser(
                 packet["@løsning"] = mapOf("HentPersoninfoV3" to løsning)
                 sikkerLogg.info("Løsning for HentPersoninfoV3:\n${packet.toJson()}")
                 context.publish(folkeregisterident, packet.toJson())
-
-                // ørlite hack for å få spedisjon til å pulsere og slippe berikede meldinger med en gang
-                val erDev = System.getenv()["NAIS_CLUSTER_NAME"] == "dev-gcp"
-                if (erDev) {
-                    // ørlikte hack nr 2 for å sikre at pulseringen sendes ut etter at behovakkumulatoren leser inn/videresender berikelsen
-                    runBlocking { delay(500) }
-                    val puls = JsonMessage.newMessage(eventName = "spedisjon_pulser")
-                    context.publish(puls.toJson())
-                }
-
             } catch (e: Exception) {
                 sikkerLogg.warn("Feil under løsing av HentPersoninfoV3: ${e.message}", e)
                 log.warn("Feil under løsing av HentPersoninfoV3: ${e.message}", e)
