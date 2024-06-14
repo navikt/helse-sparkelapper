@@ -11,6 +11,7 @@ import io.ktor.client.request.preparePost
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
@@ -31,6 +32,7 @@ class RepresentasjonClient(
         return try {
             runBlocking {
                 val response = httpClient.preparePost("$baseUrl/api/internbruker/fullmaktsgiver") {
+                    contentType(ContentType.Application.Json)
                     accept(ContentType.Application.Json)
                     bearerAuth(tokenClient.bearerToken(scope).token)
                     setBody(mapOf("ident" to fnr))
