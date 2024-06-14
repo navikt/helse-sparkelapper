@@ -12,6 +12,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import java.util.Base64
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
@@ -35,7 +36,7 @@ class RepresentasjonClient(
                     contentType(ContentType.Application.Json)
                     accept(ContentType.Application.Json)
                     bearerAuth(tokenClient.bearerToken(scope).token)
-                    setBody(mapOf("ident" to fnr))
+                    setBody(mapOf("ident" to Base64.getEncoder().encodeToString(fnr.toByteArray())))
                     header("Nav-Callid", "$callId")
                     header("no.nav.callid", "$callId")
                     header("Nav-Consumer-Id", "sparkel-representasjon")
