@@ -7,10 +7,9 @@ import io.ktor.client.call.body
 import io.ktor.client.request.accept
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.header
-import io.ktor.client.request.prepareGet
+import io.ktor.client.request.preparePost
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
@@ -31,11 +30,10 @@ class RepresentasjonClient(
         val callId = UUID.randomUUID()
         return try {
             runBlocking {
-                val response = httpClient.prepareGet("$baseUrl/api/internbruker/fullmaktsgiver") {
+                val response = httpClient.preparePost("$baseUrl/api/internbruker/fullmaktsgiver") {
                     accept(ContentType.Application.Json)
-                    method = HttpMethod.Post
-                    setBody("""{"ident": "$fnr"}""")
                     bearerAuth(tokenClient.bearerToken(scope).token)
+                    setBody(mapOf("ident" to fnr))
                     header("Nav-Callid", "$callId")
                     header("no.nav.callid", "$callId")
                     header("Nav-Consumer-Id", "sparkel-representasjon")
