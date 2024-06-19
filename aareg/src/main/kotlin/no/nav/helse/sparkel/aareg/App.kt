@@ -15,6 +15,7 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.aareg.arbeidsforhold.AaregClient
 import no.nav.helse.sparkel.aareg.arbeidsforhold.ArbeidsforholdLøserV2
 import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdbehovløser
+import no.nav.helse.sparkel.aareg.arbeidsforhold.OrgnummerbytterLøser
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.Arbeidsgiverinformasjonsbehovløser
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.EregClient
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
@@ -57,6 +58,7 @@ internal fun createApp(environment: Environment): RapidsConnection {
     Arbeidsgiverinformasjonsbehovløser(rapidsConnection, kodeverkClient, eregClient)
     Arbeidsforholdbehovløser(rapidsConnection, aaregClient)
     ArbeidsforholdLøserV2(rapidsConnection, aaregClient)
+    OrgnummerbytterLøser(rapidsConnection, aaregClient)
 
     return rapidsConnection
 }

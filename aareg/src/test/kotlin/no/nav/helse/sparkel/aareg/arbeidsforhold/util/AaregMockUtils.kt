@@ -214,3 +214,96 @@ fun defaultArbeidsforholdResponse() = """[
     }
 ]
 """
+@Language("JSON")
+fun orgnummerbytteArbeidsforholdResponse() = """[
+    {
+        "id": "1",
+        "type": {
+            "kode": "ordinaertArbeidsforhold",
+            "beskrivelse": "Ordinært arbeidsforhold"
+        },
+        "arbeidstaker": {
+            "identer": [
+                {
+                    "type": "AKTORID",
+                    "ident": "aktorid",
+                    "gjeldende": true
+                },
+                {
+                    "type": "FOLKEREGISTERIDENT",
+                    "ident": "fnr",
+                    "gjeldende": true
+                }
+            ]
+        },
+        "arbeidssted": {
+            "type": "Underenhet",
+            "identer": [
+                {
+                    "type": "ORGANISASJONSNUMMER",
+                    "ident": "underenhet1"
+                }
+            ]
+        },
+        "opplysningspliktig": {
+            "type": "Hovedenhet",
+            "identer": [
+                {
+                    "type": "ORGANISASJONSNUMMER",
+                    "ident": "hovedenhet"
+                }
+            ]
+        },
+        "ansettelsesperiode": {
+            "startdato": "2003-08-03",
+            "sluttdato": "2024-01-01",
+            "sluttaarsak": {
+                "kode": "endringIOrganisasjonsstrukturEllerByttetJobbInternt",
+                "beskrivelse": "Endring i organisasjonsstruktur eller byttet jobb internt"
+            }
+        }
+    },
+        {
+        "id": "2",
+        "type": {
+            "kode": "ordinaertArbeidsforhold",
+            "beskrivelse": "Ordinært arbeidsforhold"
+        },
+        "arbeidstaker": {
+            "identer": [
+                {
+                    "type": "AKTORID",
+                    "ident": "aktorid",
+                    "gjeldende": true
+                },
+                {
+                    "type": "FOLKEREGISTERIDENT",
+                    "ident": "fnr",
+                    "gjeldende": true
+                }
+            ]
+        },
+        "arbeidssted": {
+            "type": "Underenhet",
+            "identer": [
+                {
+                    "type": "ORGANISASJONSNUMMER",
+                    "ident": "underenhet2"
+                }
+            ]
+        },
+        "opplysningspliktig": {
+            "type": "Hovedenhet",
+            "identer": [
+                {
+                    "type": "ORGANISASJONSNUMMER",
+                    "ident": "hovedenhet"
+                }
+            ]
+        },
+        "ansettelsesperiode": {
+            "startdato": "2024-01-02"
+        }
+    }
+]
+"""

@@ -83,6 +83,21 @@ data class Arbeidsforhold(
     val type: Arbeidsforholdtype
 )
 
+data class Orgnummerbytte(
+    val byttetFra: ByttetFra,
+    val byttetTil: ByttetTil
+)
+
+data class ByttetFra(
+    val orgnummer: String,
+    val sluttDato: LocalDate
+)
+
+data class ByttetTil(
+    val orgnummer: String,
+    val startDato: LocalDate
+)
+
 enum class Arbeidsforholdtype {
     FORENKLET_OPPGJØRSORDNING,
     FRILANSER,
