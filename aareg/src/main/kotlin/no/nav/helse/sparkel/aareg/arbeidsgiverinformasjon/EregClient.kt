@@ -36,7 +36,7 @@ class EregClient(
                 accept(ContentType.Application.Json)
             }
 
-        sikkerlogg.info("EregResponse: ${response.status}\n$response")
+        sikkerlogg.info("EregResponse: ${response.status}\n${response.bodyAsText()}")
 
         if (!response.status.isSuccess()) throw FeilVedHenting("ereg svarte med ${response.status.value}")
 
