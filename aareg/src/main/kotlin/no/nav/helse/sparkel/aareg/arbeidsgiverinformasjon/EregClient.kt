@@ -1,13 +1,17 @@
 package no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
+import io.ktor.client.HttpClient
+import io.ktor.client.request.accept
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.isSuccess
+import java.util.UUID
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.sparkel.aareg.objectMapper
-import java.util.*
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import no.nav.helse.sparkel.retry
 
@@ -32,7 +36,7 @@ class EregClient(
                 accept(ContentType.Application.Json)
             }
 
-        sikkerlogg.info("EregResponse status: " + response.status)
+        sikkerlogg.info("EregResponse: ${response.status}\n$response")
 
         if (!response.status.isSuccess()) throw FeilVedHenting("ereg svarte med ${response.status.value}")
 
