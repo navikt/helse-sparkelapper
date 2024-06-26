@@ -184,6 +184,32 @@ class OppgaveServiceTest {
     }
 
     @Test
+    fun `teller ikke med oppgaver med oppgavetype retur`() {
+        val forventetAntall = 0
+        val oppgaverSomIkkeSkalTellesMed =
+            listOf(
+                objectNode().run {
+                    put("oppgavetype", "RETUR")
+                },
+            ).leggPåOpprettetTidspunkter()
+        val oppgavehenter =
+            Oppgavehenter { _, _ ->
+                objectNode().run {
+                    set(
+                        "oppgaver",
+                        jacksonObjectMapper().createArrayNode().run {
+                            addAll(oppgaverSomIkkeSkalTellesMed)
+                        },
+                    )
+                }
+            }
+        val service = OppgaveService(oppgavehenter)
+
+        val svar = service.løsningForBehov("behovId", "aktørId", LocalDate.now())
+        assertEquals(forventetAntall, svar)
+    }
+
+    @Test
     fun `oppgaver-feltet mangler i responsen`() {
         val oppgavehenter = Oppgavehenter { _, _ -> objectNode() }
         val service = OppgaveService(oppgavehenter)

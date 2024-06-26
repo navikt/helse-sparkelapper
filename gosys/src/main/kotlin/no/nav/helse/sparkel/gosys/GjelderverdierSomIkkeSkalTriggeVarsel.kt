@@ -18,7 +18,9 @@ enum class GjelderverdierSomIkkeSkalTriggeVarsel(val behandlingstype: String?, v
     VETERANSAK("ae0117", null),
     MANGLENDE_INNBETALING_PARAGRAF_8_22(null, "ab0446"),
     DOKUMENTINNSYN("ae0042", null),
-    ERSTATNINGSKRAV("ae0071", null);
+    ERSTATNINGSKRAV("ae0071", null),
+    KLAGE_YRKESSKADE("ae0058","ab0339"),
+    YRKESSKADE(null, "ab0339");
 
     companion object {
         fun inneholder(behandlingstype: String?, behandlingstema: String?): Boolean {
@@ -31,7 +33,8 @@ enum class GjelderverdierSomIkkeSkalTriggeVarsel(val behandlingstype: String?, v
 }
 
 enum class OppgavetypeSomIkkeSkalTriggeVarsel(val oppgavetype: String?) {
-    NØKKELKONTROLL("NOEK");
+    NØKKELKONTROLL("NOEK"),
+    RETUR("RETUR");
 
     companion object {
         fun inneholder(oppgavetype: String?): Boolean {
