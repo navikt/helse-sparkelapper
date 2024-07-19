@@ -711,4 +711,43 @@ fun ogranisasjonsleddOgJuridiskEnhetResponse() = """
         }
     ]
 }
+
+"""@Language("JSON")
+fun ogranisasjonsleddResponse() = """
+{
+    "organisasjonsnummer": "123",
+    "type": "Virksomhet",
+    "bestaarAvOrganisasjonsledd": [
+        {
+            "organisasjonsledd": {
+                "organisasjonsnummer": "456",
+                "type": "Organisasjonsledd",
+                "navn": {
+                    "navnelinje1": "NAVN OG",
+                    "navnelinje2": "MESTRING",
+                    "gyldighetsperiode": {
+                        "fom": "2019-12-31"
+                    }
+                },
+                "inngaarIJuridiskEnheter": [
+                    {
+                        "organisasjonsnummer": "678",
+                        "navn": {
+                            "navnelinje1": "NAVN JURIDISK ENHET",
+                            "gyldighetsperiode": {
+                                "fom": "2019-12-21"
+                            }
+                        },
+                        "gyldighetsperiode": {
+                            "fom": "2019-12-31"
+                        }
+                    }
+                ]
+            },
+            "gyldighetsperiode": {
+                "fom": "2019-12-31"
+            }
+        }
+    ]
+}
 """

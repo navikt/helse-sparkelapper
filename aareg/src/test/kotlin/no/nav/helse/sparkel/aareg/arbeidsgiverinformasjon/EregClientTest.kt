@@ -87,8 +87,26 @@ internal class EregClientTest {
 
     }
     @Test
-    fun `bestaarAvOrganisasjonsledd uten jurdisk enhet`() {
+    fun `bestaarAvOrganisasjonsledd uten jurdisk enhet direkte på rotnivå`() {
+        val ogranisasjonsleddResponse = ogranisasjonsleddResponse()
+        every { mockGenerator.organisasjonResponse() } returns ogranisasjonsleddResponse
 
+        val eregClient = EregClient(
+            baseUrl = "http://baseUrl.local",
+            httpClient = eregMockClient(mockGenerator),
+            appName = "appens navn",
+        )
+        val eregResponse = runBlocking { eregClient.hentOverOgUnderenheterForOrganisasjon("organisasjon", randomUUID()) }
+
+        val expected = listOf(
+            Enhet(
+                orgnummer = "678", navn = "NAVN JURIDISK ENHET", gyldighetsperiode = Gyldighetsperiode(
+                    fom = "2019-12-31".let { LocalDate.parse(it) },
+                    tom = null)
+            )
+        )
+        assertEquals(expected, eregResponse.overenheter)
+        assertEquals(emptyList<Enhet>(), eregResponse.underenheter)
     }
 
     @Test
