@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon
 
 import io.mockk.every
+import java.time.LocalDate
 import java.util.UUID.randomUUID
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -40,7 +41,7 @@ internal class EregClientTest {
     }
 
     @Test
-    fun `underenhet henter juridisk overenhet`() {
+    fun `virksomhet med en juridisk enhet`() {
         val organisasjonMedJuridiskEnhetResponse = organisasjonMedJuridiskEnhetResponse()
         every { mockGenerator.organisasjonResponse() } returns organisasjonMedJuridiskEnhetResponse
 
@@ -56,4 +57,53 @@ internal class EregClientTest {
         assertEquals(null, eregResponse.overenheter.single().gyldighetsperiode.tom)
         assertEquals(emptyList<Enhet>(), eregResponse.underenheter)
     }
+
+    @Test
+    fun `bestaarAvOrganisasjonsledd med jurdisk enhet`() {
+        val ogranisasjonsleddOgJuridiskEnhetResponse = ogranisasjonsleddOgJuridiskEnhetResponse()
+        every { mockGenerator.organisasjonResponse() } returns ogranisasjonsleddOgJuridiskEnhetResponse
+
+        val eregClient = EregClient(
+            baseUrl = "http://baseUrl.local",
+            httpClient = eregMockClient(mockGenerator),
+            appName = "appens navn",
+        )
+        val eregResponse = runBlocking { eregClient.hentOverOgUnderenheterForOrganisasjon("organisasjon", randomUUID()) }
+
+        val expected = listOf(
+            Enhet(
+                orgnummer = "981", navn = "KOMMUNE, UNDER SLETTING FRA 01.01.2020", gyldighetsperiode = Gyldighetsperiode(
+                    fom = "2005-05-23".let { LocalDate.parse(it) },
+                    tom = "2017-03-29".let { LocalDate.parse(it) })
+            ),
+            Enhet(
+                orgnummer = "678", navn = "NAVN JURIDISK ENHET", gyldighetsperiode = Gyldighetsperiode(
+                    fom = "2019-12-31".let { LocalDate.parse(it) },
+                    tom = null)
+            )
+        )
+        assertEquals(expected, eregResponse.overenheter)
+        assertEquals(emptyList<Enhet>(), eregResponse.underenheter)
+
+    }
+    @Test
+    fun `bestaarAvOrganisasjonsledd uten jurdisk enhet`() {
+
+    }
+
+    @Test
+    fun `bestaarAvOrganisasjonsledd med organisasjonsleddOver`() {
+
+    }
+
+    @Test
+    fun `bestaarAvOrganisasjonsledd med organisasjonsleddUnder`() {
+        // Har ikke sett i loggene. Er dette mulig for juridisk enhet?
+    }
+
+    @Test
+    fun `juridisk enhet`() {
+        // Hvordan ser dette ut? Er det en egen type JuridiskEnhet? Må gjøre en get av juridisk enhet
+    }
+
 }

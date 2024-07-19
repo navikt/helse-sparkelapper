@@ -54,13 +54,25 @@ class EregClient(
     }
 
     private fun trekkUtJuridiskeEnheter(json: JsonNode): List<Enhet> {
-        return json["inngaarIJuridiskEnheter"].map { enhet ->
+        val jurudiskEnhetDirekte = json["inngaarIJuridiskEnheter"].map { enhet ->
             Enhet(
                 orgnummer = enhet["organisasjonsnummer"].asText(),
                 navn = trekkUtNavn(enhet),
                 gyldighetsperiode = trekkUtGyldighetspriode(enhet)
             )
         }
+        val juridiskEnhetFraOrganisasjonsledd = json["bestaarAvOrganisasjonsledd"]?.mapNotNull { organisasjonsledd ->
+            organisasjonsledd["organisasjonsledd"]["inngaarIJuridiskEnheter"]?.map { enhet ->
+                Enhet(
+                    orgnummer = enhet["organisasjonsnummer"].asText(),
+                    navn = trekkUtNavn(enhet),
+                    gyldighetsperiode = trekkUtGyldighetspriode(enhet)
+                )
+            }
+        }?.flatten()
+
+        if (juridiskEnhetFraOrganisasjonsledd == null) return jurudiskEnhetDirekte
+        return jurudiskEnhetDirekte + juridiskEnhetFraOrganisasjonsledd
     }
 
 

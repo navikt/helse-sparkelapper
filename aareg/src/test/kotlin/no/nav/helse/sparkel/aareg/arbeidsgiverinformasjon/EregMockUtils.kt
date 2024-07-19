@@ -612,9 +612,6 @@ fun organisasjonMedJuridiskEnhetResponse() = """
     "type": "Virksomhet",
     "navn": {
         "navnelinje1": "navnelinje",
-        "bruksperiode": {
-            "fom": "2015-03-23T09:04:53.2"
-        },
         "gyldighetsperiode": {
             "fom": "2000-09-11"
         }
@@ -654,6 +651,62 @@ fun organisasjonMedJuridiskEnhetResponse() = """
             },
             "gyldighetsperiode": {
                 "fom": "2000-09-11"
+            }
+        }
+    ]
+}
+"""
+
+@Language("JSON")
+fun ogranisasjonsleddOgJuridiskEnhetResponse() = """
+{
+    "organisasjonsnummer": "123",
+    "type": "Virksomhet",
+    "bestaarAvOrganisasjonsledd": [
+        {
+            "organisasjonsledd": {
+                "organisasjonsnummer": "456",
+                "type": "Organisasjonsledd",
+                "navn": {
+                    "navnelinje1": "NAVN OG",
+                    "navnelinje2": "MESTRING",
+                    "gyldighetsperiode": {
+                        "fom": "2019-12-31"
+                    }
+                },
+                "inngaarIJuridiskEnheter": [
+                    {
+                        "organisasjonsnummer": "678",
+                        "navn": {
+                            "navnelinje1": "NAVN JURIDISK ENHET",
+                            "gyldighetsperiode": {
+                                "fom": "2019-12-21"
+                            }
+                        },
+                        "gyldighetsperiode": {
+                            "fom": "2019-12-31"
+                        }
+                    }
+                ]
+            },
+            "gyldighetsperiode": {
+                "fom": "2019-12-31"
+            }
+        }
+    ],
+    "inngaarIJuridiskEnheter": [
+        {
+            "organisasjonsnummer": "981",
+            "navn": {
+                "navnelinje1": "KOMMUNE",
+                "navnelinje2": "UNDER SLETTING FRA 01.01.2020",
+                "gyldighetsperiode": {
+                    "fom": "2020-02-03"
+                }
+            },
+            "gyldighetsperiode": {
+                "fom": "2005-05-23",
+                "tom": "2017-03-29"
             }
         }
     ]
