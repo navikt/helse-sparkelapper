@@ -8,7 +8,8 @@ import io.mockk.mockk
 import org.intellij.lang.annotations.Language
 
 val mockGenerator = mockk<ResponseGenerator>(relaxed = true) {
-    every { organisasjonResponse() }.returns(defaultOrganisasjonResponse())
+    val defaultOrganisasjonResponse = defaultOrganisasjonResponse()
+    every { organisasjonResponse() }.returns(defaultOrganisasjonResponse)
 }
 
 interface ResponseGenerator {
@@ -602,5 +603,59 @@ fun organisasjonUtenNæringerResponse() = """{
     },
     "organisasjonsnummer": 990983666,
     "type": "Virksomhet"
+}
+"""
+@Language("JSON")
+fun organisasjonMedJuridiskEnhetResponse() = """
+    {
+    "organisasjonsnummer": "orgnummer",
+    "type": "Virksomhet",
+    "navn": {
+        "navnelinje1": "navnelinje",
+        "bruksperiode": {
+            "fom": "2015-03-23T09:04:53.2"
+        },
+        "gyldighetsperiode": {
+            "fom": "2000-09-11"
+        }
+    },
+    "organisasjonDetaljer": {
+        "registreringsdato": "2000-09-11T00:00:00",
+        "enhetstyper": [
+            {
+                "enhetstype": "BEDR",
+                "bruksperiode": {
+                    "fom": "2015-05-21T15:30:46.546"
+                },
+                "gyldighetsperiode": {
+                    "fom": "2000-09-11"
+                }
+            }
+        ]
+    },
+    "virksomhetDetaljer": {
+        "enhetstype": "BEDR",
+        "oppstartsdato": "2000-08-01"
+    },
+    "inngaarIJuridiskEnheter": [
+        {
+            "organisasjonsnummer": "orgnummerJuridiskEnhet",
+            "navn": {
+                "navnelinje1": "navnOgnummerJuridisk",
+                "bruksperiode": {
+                    "fom": "2015-03-23T08:04:53.2"
+                },
+                "gyldighetsperiode": {
+                    "fom": "2000-08-10"
+                }
+            },
+            "bruksperiode": {
+                "fom": "2014-03-23T18:45:53.408"
+            },
+            "gyldighetsperiode": {
+                "fom": "2000-09-11"
+            }
+        }
+    ]
 }
 """

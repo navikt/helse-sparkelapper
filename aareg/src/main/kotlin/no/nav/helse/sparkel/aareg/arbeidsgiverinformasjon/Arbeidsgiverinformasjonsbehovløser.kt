@@ -69,7 +69,7 @@ class Arbeidsgiverinformasjonsbehovløser(
         }
 
     private suspend fun løsningFor(organisasjonsnummer: String, callId: UUID) =
-        eregClient.hentOrganisasjon(organisasjonsnummer, callId)
+        eregClient.hentNavnOgNæringForOrganisasjon(organisasjonsnummer, callId)
             .let { eregResponse ->
                 LøsningDto(
                     orgnummer = organisasjonsnummer,

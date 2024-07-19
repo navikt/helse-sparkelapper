@@ -26,9 +26,9 @@ internal class ArbeidsgiverinformasjonsbehovløserTest {
     init {
         Arbeidsgiverinformasjonsbehovløser(testRapid, kodeverkClient, eregClient)
 
-        coEvery { eregClient.hentOrganisasjon(any(), any()) } returns EregResponse("Plantasjen Gaming",
+        coEvery { eregClient.hentNavnOgNæringForOrganisasjon(any(), any()) } returns NavnOgNæring("Plantasjen Gaming",
             listOf("123", "345", "567"))
-        coEvery { eregClient.hentOrganisasjon(gyldigOrganisasjonsnummer1, any()) } returns EregResponse("Grisesmugling",
+        coEvery { eregClient.hentNavnOgNæringForOrganisasjon(gyldigOrganisasjonsnummer1, any()) } returns NavnOgNæring("Grisesmugling",
             listOf("789", "890"))
         kodeverkClient.run {
             every { getNæring("123") } returns "Gartneri"
