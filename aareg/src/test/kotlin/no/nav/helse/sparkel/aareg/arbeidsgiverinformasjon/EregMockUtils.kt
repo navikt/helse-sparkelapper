@@ -750,4 +750,57 @@ fun ogranisasjonsleddResponse() = """
         }
     ]
 }
+"""@Language("JSON")
+fun ogranisasjonsleddOverResponse() = """
+{
+    "organisasjonsnummer": "123",
+    "type": "Virksomhet",
+    "bestaarAvOrganisasjonsledd": [
+        {
+            "organisasjonsledd": {
+                "organisasjonsnummer": "456",
+                "type": "Organisasjonsledd",
+                "navn": {
+                    "navnelinje1": "NAVN OG",
+                    "navnelinje2": "MESTRING",
+                    "gyldighetsperiode": {
+                        "fom": "2019-12-31"
+                    }
+                },
+                "organisasjonsleddOver": [
+                    {
+                        "organisasjonsledd": {
+                            "organisasjonsnummer": "789",
+                            "type": "Organisasjonsledd",
+                            "navn": {
+                                "navnelinje1": "NAVN LEDD",
+                                    "fom": "2024-01-04T04:02:47.786"
+                                },
+                                "gyldighetsperiode": {
+                                    "fom": "2024-01-02"
+                                }
+                            },
+                            "inngaarIJuridiskEnheter": [
+                                {
+                                    "organisasjonsnummer": "111",
+                                    "navn": {
+                                        "navnelinje1": "SJEF",
+                                        "gyldighetsperiode": {
+                                            "fom": "1997-08-30"
+                                        }
+                                    },
+                                    "gyldighetsperiode": {
+                                        "fom": "1997-10-29"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+            },
+            "gyldighetsperiode": {
+                "fom": "2019-12-31"
+            }
+        }
+    ]
+}
 """

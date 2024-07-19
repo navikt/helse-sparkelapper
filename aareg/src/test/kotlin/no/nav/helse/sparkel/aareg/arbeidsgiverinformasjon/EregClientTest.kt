@@ -111,7 +111,25 @@ internal class EregClientTest {
 
     @Test
     fun `bestaarAvOrganisasjonsledd med organisasjonsleddOver`() {
+        val ogranisasjonsleddOverResponse = ogranisasjonsleddOverResponse()
+        every { mockGenerator.organisasjonResponse() } returns ogranisasjonsleddOverResponse
 
+        val eregClient = EregClient(
+            baseUrl = "http://baseUrl.local",
+            httpClient = eregMockClient(mockGenerator),
+            appName = "appens navn",
+        )
+        val eregResponse = runBlocking { eregClient.hentOverOgUnderenheterForOrganisasjon("organisasjon", randomUUID()) }
+
+        val expected = listOf(
+            Enhet(
+                orgnummer = "111", navn = "SJEF", gyldighetsperiode = Gyldighetsperiode(
+                    fom = "1997-10-29".let { LocalDate.parse(it) },
+                    tom = null)
+            )
+        )
+        assertEquals(expected, eregResponse.overenheter)
+        assertEquals(emptyList<Enhet>(), eregResponse.underenheter)
     }
 
     @Test
