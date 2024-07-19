@@ -9,6 +9,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.isSuccess
+import java.time.LocalDate
 import java.util.UUID
 import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.sparkel.aareg.objectMapper
@@ -56,7 +57,8 @@ class EregClient(
         return json["inngaarIJuridiskEnheter"].map { enhet ->
             Enhet(
                 orgnummer = enhet["organisasjonsnummer"].asText(),
-                navn = trekkUtNavn(enhet)
+                navn = trekkUtNavn(enhet),
+                gyldighetsperiode = trekkUtGyldighetspriode(enhet)
             )
         }
     }
@@ -79,6 +81,11 @@ class EregClient(
                 .filterNot(String::isBlank)
         }.joinToString()
 
+    private fun trekkUtGyldighetspriode(enhet: JsonNode): Gyldighetsperiode {
+        val fom = enhet["gyldighetsperiode"]["fom"].let { LocalDate.parse(it.asText()) }
+        val tom = enhet["gyldighetsperiode"]["tom"]?.let { LocalDate.parse(it.asText()) }
+        return Gyldighetsperiode(fom, tom)
+    }
 }
 
 data class NavnOgNæring(
@@ -93,7 +100,13 @@ data class OverOgUnderenheter(
 
 data class Enhet(
     val orgnummer: String,
-    val navn: String
+    val navn: String,
+    val gyldighetsperiode: Gyldighetsperiode,
+)
+
+data class Gyldighetsperiode(
+    val fom: LocalDate,
+    val tom: LocalDate?
 )
 
 class FeilVedHenting(msg: String) : RuntimeException(msg)

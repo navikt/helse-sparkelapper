@@ -52,6 +52,8 @@ internal class EregClientTest {
         val eregResponse = runBlocking { eregClient.hentOverOgUnderenheterForOrganisasjon("organisasjon", randomUUID()) }
         assertEquals("orgnummerJuridiskEnhet", eregResponse.overenheter.single().orgnummer)
         assertEquals("navnOgnummerJuridisk", eregResponse.overenheter.single().navn)
+        assertEquals("2000-09-11", eregResponse.overenheter.single().gyldighetsperiode.fom.toString())
+        assertEquals(null, eregResponse.overenheter.single().gyldighetsperiode.tom)
         assertEquals(emptyList<Enhet>(), eregResponse.underenheter)
     }
 }
