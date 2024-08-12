@@ -15,9 +15,8 @@ accessPolicy:
         namespace: tbd
         cluster: dev-gcp
   outbound:
-    rules:
-      - application: pdl-fullmakt-api
-        namespace: repr
+    external:
+      - host: pdl-fullmakt.dev.intern.nav.no
 env:
   - name: PDL_FULLMAKT_URL
     value: https://pdl-fullmakt.dev.intern.nav.no
