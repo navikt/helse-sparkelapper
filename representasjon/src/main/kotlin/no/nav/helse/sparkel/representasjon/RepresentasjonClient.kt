@@ -36,7 +36,7 @@ class RepresentasjonClient(
                     contentType(ContentType.Application.Json)
                     accept(ContentType.Application.Json)
                     bearerAuth(tokenClient.bearerToken(scope).token)
-                    setBody("""{"ident": "${Base64.getEncoder().encodeToString(fnr.toByteArray())}"}""")
+                    setBody(mapOf("ident" to Base64.getEncoder().encodeToString(fnr.toByteArray())))
                     header("Nav-Callid", "$callId")
                     header("no.nav.callid", "$callId")
                     header("Nav-Consumer-Id", "sparkel-representasjon")
