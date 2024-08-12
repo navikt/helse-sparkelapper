@@ -31,11 +31,13 @@ class RepresentasjonClient(
     fun hentFullmakt(fnr: String): JsonNode? {
         val callId = UUID.randomUUID()
         return try {
+            log.info("Bearer lagt på token: ${tokenClient.bearerToken(scope).token.startsWith("Bearer")}")
             runBlocking {
                 val response = httpClient.preparePost("$baseUrl/api/internbruker/fullmaktsgiver") {
                     contentType(ContentType.Application.Json)
                     accept(ContentType.Application.Json)
-                    bearerAuth(tokenClient.bearerToken(scope).token)
+                    //bearerAuth(tokenClient.bearerToken(scope).token)
+                    header("Authorization", tokenClient.bearerToken(scope).token)
                     setBody(mapOf("ident" to Base64.getEncoder().encodeToString(fnr.toByteArray())))
                     header("Nav-Callid", "$callId")
                     header("no.nav.callid", "$callId")
