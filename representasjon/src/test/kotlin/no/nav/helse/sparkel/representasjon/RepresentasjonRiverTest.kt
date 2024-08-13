@@ -20,7 +20,17 @@ internal class RepresentasjonRiverTest {
 
     @Test
     fun `svarer ut behov for fullmakt`() {
-        every { representasjonClient.hentFullmakt(any()) } returns objectMapper.readTree("""{"fullmakt": "yes"}""")
+        @Language("JSON")
+        val fullmaktJson = """
+               [
+                    {
+                        "omraade": [{"tema": "SYK"}], 
+                        "gyldigFraOgMed": "2020-01-01", 
+                        "gyldigTilOgMed": "2020-12-31"
+                    }
+                ]
+            """.trimIndent()
+        every { representasjonClient.hentFullmakt(any()) } returns objectMapper.readTree(fullmaktJson)
         rapid.sendTestMessage(behov())
         val svar = rapid.inspektør.message(0)
         val løsning = svar.fullmaktløsning()
@@ -40,7 +50,8 @@ internal class RepresentasjonRiverTest {
     @Language("JSON")
     fun behov() = """
         {
-            "@event_name" : "fullmakt",
+            "@event_name" : "behov",
+            "@behov" : ["Fullmakt"],
             "@id" : "${UUID.randomUUID()}",
             "@opprettet" : "2020-05-18",
             "fødselsnummer" : "fnr"
