@@ -16,9 +16,9 @@ accessPolicy:
         cluster: dev-gcp
   outbound:
     external:
-      - host: pdl-fullmakt.dev.intern.nav.no
+      - host: pdl-fullmakt.dev-fss-pub.nais.io
 env:
   - name: PDL_FULLMAKT_URL
-    value: https://pdl-fullmakt.dev.intern.nav.no
+    value: https://pdl-fullmakt.dev-fss-pub.nais.io/
   - name: PDL_FULLMAKT_SCOPE
     value: api://dev-fss.pdl.pdl-fullmakt/.default
