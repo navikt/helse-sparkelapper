@@ -5,6 +5,7 @@ import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.accept
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.header
 import io.ktor.client.request.preparePost
 import io.ktor.client.request.setBody
@@ -34,8 +35,7 @@ class RepresentasjonClient(
                 val response = httpClient.preparePost("$baseUrl/api/internbruker/fullmaktsgiver") {
                     contentType(ContentType.Application.Json)
                     accept(ContentType.Application.Json)
-                    // Representasjon forventer Bearer token, men uten "Bearer" som prefix
-                    header("Authorization", tokenClient.bearerToken(scope).token)
+                    bearerAuth(tokenClient.bearerToken(scope).token)
                     setBody(mapOf("ident" to Base64.getEncoder().encodeToString(fnr.toByteArray())))
                     header("Nav-Call-Id", "$callId")
                     header("no.nav.callid", "$callId")
