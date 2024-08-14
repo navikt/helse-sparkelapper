@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class RepresentasjonRiverTest {
@@ -30,7 +30,7 @@ internal class RepresentasjonRiverTest {
                     }
                 ]
             """.trimIndent()
-        every { representasjonClient.hentFullmakt(any()) } returns objectMapper.readTree(fullmaktJson)
+        every { representasjonClient.hentFullmakt(any()) } returns Result.success(objectMapper.readTree(fullmaktJson))
         rapid.sendTestMessage(behov())
         val svar = rapid.inspektør.message(0)
         val løsning = svar.fullmaktløsning()
@@ -39,12 +39,10 @@ internal class RepresentasjonRiverTest {
 
     @Test
     fun `svarer med oppslagFeilet ved feil mot fullmakt-api`() {
-        every { representasjonClient.hentFullmakt(any()) } returns null
+        every { representasjonClient.hentFullmakt(any()) } returns Result.failure(RuntimeException())
         rapid.sendTestMessage(behov())
-        val svar = rapid.inspektør.message(0)
-        val løsning = svar.fullmaktløsning()
-        assertEquals(1, løsning?.size())
-        assertTrue(løsning["oppslagFeilet"].asBoolean())
+        assertEquals(0, rapid.inspektør.size)
+        verify (exactly = 1) { representasjonClient.hentFullmakt("fnr") }
     }
 
     @Language("JSON")

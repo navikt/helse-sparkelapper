@@ -28,7 +28,7 @@ class RepresentasjonClient(
         private val sikkerlog = LoggerFactory.getLogger("tjenestekall")
     }
 
-    fun hentFullmakt(fnr: String): JsonNode? {
+    fun hentFullmakt(fnr: String): Result<JsonNode> {
         val callId = UUID.randomUUID()
         return try {
             runBlocking {
@@ -45,16 +45,16 @@ class RepresentasjonClient(
 
                 if (response.status != HttpStatusCode.OK) {
                     "Feil ved kall mot fullmakt-api, http-status: ${response.status.value}, returnerer tomt resultat. CallId=$callId".also {
-                        log.info(it)
-                        sikkerlog.info("$it, response:\n$response")
+                        log.warn(it)
+                        sikkerlog.warn("$it, response:\n$response")
                     }
-                    null
-                } else response.body()
+                    Result.failure(RuntimeException("Feil ved kall mot fullmakt-api"))
+                } else Result.success(response.body())
             }
         } catch (e: Exception) {
             log.warn("Feil mot fullmakt-api, callId=$callId, se sikker logg for exception")
             sikkerlog.warn("Feil mot fullmakt-api, callId=$callId", e)
-            null
+            Result.failure(e)
         }
     }
 }
