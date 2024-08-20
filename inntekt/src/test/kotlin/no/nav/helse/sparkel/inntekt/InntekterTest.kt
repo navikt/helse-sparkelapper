@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.YearMonth
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 internal class InntekterTest {
@@ -25,6 +26,11 @@ internal class InntekterTest {
                         .getFilter() == Inntekter.Type.InntekterForSykepengegrunnlag.ainntektfilter
                 ) {
                     respond(sykepengegrunnlagResponse())
+                }  else if (request.url.fullPath.startsWith("/api/v1/hentinntektliste") && request.body.toByteArray()
+                        .getFilter() == Inntekter.Type.InntekterForOpptjeningsvurdering.ainntektfilter
+                    && request.body.toByteArray().getAntallMåneder() == 1
+                ) {
+                    respond(opptjeningsvurderingResponse())
                 } else if (request.url.fullPath.startsWith("/api/v1/hentinntektliste") && request.body.toByteArray()
                         .getFilter() == Inntekter.Type.InntekterForSammenligningsgrunnlag.ainntektfilter
                 ) {
@@ -38,6 +44,13 @@ internal class InntekterTest {
 
     private fun ByteArray.getFilter() = objectMapper.readTree(this).get("ainntektsfilter").asText()
 
+    private fun ByteArray.getAntallMåneder(): Int {
+        val månedFom = objectMapper.readTree(this).get("maanedFom").asYearMonth()
+        val månedTom = objectMapper.readTree(this).get("maanedTom").asYearMonth()
+        if (månedFom == månedTom) return 1
+        return ChronoUnit.MONTHS.between(månedFom, månedTom).toInt() + 1
+    }
+
     init {
         Inntekter(testRapid, inntektRestClient)
     }
@@ -45,6 +58,15 @@ internal class InntekterTest {
     @BeforeEach
     fun beforeEach() {
         testRapid.reset()
+    }
+
+    @Test
+    fun `Inntekter for opptjeningsvurdering`() {
+        val start = YearMonth.of(2024, 7)
+        val slutt = YearMonth.of(2024, 7)
+        testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForOpptjeningsvurdering))
+        assertEquals(1, testRapid.inspektør.size)
+        assertLøsning(Inntekter.Type.InntekterForOpptjeningsvurdering, YearMonth.of(2024, 7))
     }
 
     @Test
@@ -216,6 +238,49 @@ internal class InntekterTest {
                               "aktoerType": "NATURLIG_IDENT"
                             }
                       }
+                    ]
+                }
+            }
+        ],
+        "ident": {
+            "identifikator": "aktørId",
+            "aktoerType": "AKTOER_ID"
+        }
+    }
+"""
+    fun opptjeningsvurderingResponse() = """
+    {
+        "arbeidsInntektMaaned": [
+            {
+                "aarMaaned": "2024-07",
+                "arbeidsInntektInformasjon": {
+                    "inntektListe": [
+                        {
+                            "inntektType": "LOENNSINNTEKT",
+                            "beloep": 25000,
+                            "fordel": "kontantytelse",
+                            "inntektskilde": "A-ordningen",
+                            "inntektsperiodetype": "Maaned",
+                            "inntektsstatus": "LoependeInnrapportert",
+                            "leveringstidspunkt": "2020-01",
+                            "utbetaltIMaaned": "2019-05",
+                            "opplysningspliktig": {
+                                "identifikator": "orgnummer2",
+                                "aktoerType": "ORGANISASJON"
+                            },
+                            "virksomhet": {
+                                "identifikator": "orgnummer2",
+                                "aktoerType": "ORGANISASJON"
+                            },
+                            "inntektsmottaker": {
+                                "identifikator": "aktørId",
+                                "aktoerType": "AKTOER_ID"
+                            },
+                            "inngaarIGrunnlagForTrekk": true,
+                            "utloeserArbeidsgiveravgift": true,
+                            "informasjonsstatus": "InngaarAlltid",
+                            "beskrivelse": "fastloenn"
+                        }
                     ]
                 }
             }

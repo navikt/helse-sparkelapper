@@ -13,6 +13,7 @@ import org.slf4j.MDC
 import java.time.YearMonth
 import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.kv
+import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForOpptjeningsvurdering
 
 class Inntekter(
     rapidsConnection: RapidsConnection,
@@ -25,11 +26,36 @@ class Inntekter(
     init {
         Sykepengegrunnlag(rapidsConnection)
         Sammenligningsgrunnlag(rapidsConnection)
+        Opptjeningsvurdering(rapidsConnection)
     }
 
     enum class Type(val ainntektfilter: String) {
         InntekterForSykepengegrunnlag("8-28"),
-        InntekterForSammenligningsgrunnlag("8-30")
+        InntekterForSammenligningsgrunnlag("8-30"),
+        InntekterForOpptjeningsvurdering("8-30")
+    }
+
+    inner class Opptjeningsvurdering(rapidsConnection: RapidsConnection) :
+        River.PacketListener {
+
+        init {
+            River(rapidsConnection).apply {
+                validate { it.demandAll("@behov", listOf(InntekterForOpptjeningsvurdering.name)) }
+                validate { it.requireKey("@id", "fødselsnummer") }
+                validate { it.interestedIn("vedtaksperiodeId") }
+                validate { it.require("${InntekterForOpptjeningsvurdering.name}.beregningStart", JsonNode::asYearMonth) }
+                validate { it.require("${InntekterForOpptjeningsvurdering.name}.beregningSlutt", JsonNode::asYearMonth) }
+                validate { it.rejectKey("@løsning") }
+            }.register(this)
+        }
+
+        override fun onPacket(packet: JsonMessage, context: MessageContext) {
+            this@Inntekter.onOpptjeningsvurderingPacket(packet, context)
+        }
+
+        override fun onError(problems: MessageProblems, context: MessageContext) {
+            log.error(problems.toString())
+        }
     }
 
     inner class Sykepengegrunnlag(rapidsConnection: RapidsConnection) :
@@ -109,6 +135,22 @@ class Inntekter(
             val beregningSlutt = packet["${InntekterForSykepengegrunnlag.name}.beregningSlutt"].asYearMonth()
 
             hentInntekter(packet, InntekterForSykepengegrunnlag, beregningStart, beregningSlutt, context)
+        }
+    }
+    private fun onOpptjeningsvurderingPacket(
+        packet: JsonMessage,
+        context: MessageContext
+    ) {
+        withMDC(
+            mapOf(
+                "behovId" to packet["@id"].asText(),
+                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asText()
+            )
+        ) {
+            val beregningStart = packet["${InntekterForOpptjeningsvurdering.name}.beregningStart"].asYearMonth()
+            val beregningSlutt = packet["${InntekterForOpptjeningsvurdering.name}.beregningSlutt"].asYearMonth()
+
+            hentInntekter(packet, InntekterForOpptjeningsvurdering, beregningStart, beregningSlutt, context)
         }
     }
 
