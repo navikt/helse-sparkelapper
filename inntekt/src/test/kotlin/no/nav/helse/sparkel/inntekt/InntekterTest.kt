@@ -155,6 +155,18 @@ internal class InntekterTest {
         assertTrue(arbeidsforhold.isEmpty)
     }
 
+    @Test
+    fun `Mapper ikke ut arbeidsforholdliste for opptjeningsvurdering`() {
+        val start = YearMonth.of(2024, 7)
+        val slutt = YearMonth.of(2024, 7)
+        testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForOpptjeningsvurdering))
+        val inntekt =
+            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForOpptjeningsvurdering.name)[0]
+
+        val arbeidsforhold = inntekt.path("arbeidsforholdliste")
+        assertTrue(arbeidsforhold.isEmpty)
+    }
+
     private fun assertLøsning(behovType: Inntekter.Type, vararg yearsMonths: YearMonth) {
         assertTrue(testRapid.inspektør.message(0).hasNonNull("@løsning"))
         assertEquals(yearsMonths.toList(),
