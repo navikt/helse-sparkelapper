@@ -42,7 +42,7 @@ internal class RepresentasjonRiver(
         log.info("Leser melding {}", id)
         val fnr = packet["fødselsnummer"].asText()
 
-        val svar = representasjonClient.hentFullmakt(fnr).map { fullmakt ->
+        val svar = representasjonClient.hentFullmakt(fnr).mapCatching { fullmakt ->
             fullmakt.map {
                 Fullmakt(
                     områder = it["omraade"].map { område -> Område.fra(område["tema"].asText()) },
@@ -51,7 +51,6 @@ internal class RepresentasjonRiver(
                 )
             }.filter { it.områder.any { område -> område in listOf(Syk, Sym, Alle) } }
         }
-
         svar.fold(
             onSuccess = { fullmakt: List<Fullmakt> ->
                 packet["@løsning"] = mapOf("fullmakt" to fullmakt)
@@ -76,7 +75,7 @@ internal class RepresentasjonRiver(
     internal data class Fullmakt(
         val områder: List<Område>,
         val gyldigFraOgMed: LocalDate,
-        val gyldigTilOgMed: LocalDate
+        val gyldigTilOgMed: LocalDate?
     )
 
     enum class Område {
