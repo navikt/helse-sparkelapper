@@ -8,6 +8,7 @@ import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
+import no.nav.helse.rapids_rivers.asOptionalLocalDate
 import no.nav.helse.sparkel.representasjon.RepresentasjonRiver.Område.Alle
 import no.nav.helse.sparkel.representasjon.RepresentasjonRiver.Område.Syk
 import no.nav.helse.sparkel.representasjon.RepresentasjonRiver.Område.Sym
@@ -47,7 +48,7 @@ internal class RepresentasjonRiver(
                 Fullmakt(
                     områder = it["omraade"].map { område -> Område.fra(område["tema"].asText()) },
                     gyldigFraOgMed = it["gyldigFraOgMed"].asLocalDate(),
-                    gyldigTilOgMed = it["gyldigTilOgMed"].asLocalDate()
+                    gyldigTilOgMed = it["gyldigTilOgMed"].asOptionalLocalDate()
                 )
             }.filter { it.områder.any { område -> område in listOf(Syk, Sym, Alle) } }
         }
