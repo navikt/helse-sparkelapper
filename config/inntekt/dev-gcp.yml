@@ -13,6 +13,6 @@ accessPolicy:
       - host: team-inntekt-proxy.dev-fss-pub.nais.io
 env:
   - name: INNTEKTSKOMPONENTEN_BASE_URL
-    value: https://team-inntekt-proxy.dev-fss-pub.nais.io/proxy/inntektskomponenten-q1/rs
+    value: https://team-inntekt-proxy.dev-fss-pub.nais.io/proxy/inntektskomponenten-q2/rs
   - name: INNTEKTSKOMPONENTEN_OAUTH_SCOPE
     value: api://dev-fss.team-inntekt.inntektskomponenten/.default
