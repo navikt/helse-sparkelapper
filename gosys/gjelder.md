@@ -1,14 +1,79 @@
 Liste over "gjelder"-verdier i Gosys for tema SYK.
-Hentet fra `https://oppgave.dev.intern.nav.no/api/v1/kodeverk/gjelder/SYK`
+
+Hentet vha. https://oppgave.dev.intern.nav.no, /api/v1/kodeverk/gjelder/SYK
+
+Lage token med trygdeetaten-bruker på https://azure-token-generator.intern.dev.nav.no/api/obo?aud=dev-fss:oppgavehandtering:oppgave
+
+Eller be om hjelp i #team-oppgavehåndtering.
 
 ```
 
 [
   {
+    "behandlingstema": "ab0494",
+    "behandlingstemaTerm": "Utenlandsk sykmelding",
+    "behandlingstype": null,
+    "behandlingstypeTerm": null
+  },
+  {
+    "behandlingstema": "ab0472",
+    "behandlingstemaTerm": "Renter, erstatning og saksomkostninger",
+    "behandlingstype": null,
+    "behandlingstypeTerm": null
+  },
+  {
+    "behandlingstema": "ab0472",
+    "behandlingstemaTerm": "Renter, erstatning og saksomkostninger",
+    "behandlingstype": "ae0058",
+    "behandlingstypeTerm": "Klage"
+  },
+  {
+    "behandlingstema": "ab0471",
+    "behandlingstemaTerm": "Behandlingsdager",
+    "behandlingstype": "ae0058",
+    "behandlingstypeTerm": "Klage"
+  },
+  {
+    "behandlingstema": "ab0470",
+    "behandlingstemaTerm": "Speil",
+    "behandlingstype": "ae0058",
+    "behandlingstypeTerm": "Klage"
+  },
+  {
+    "behandlingstema": "ab0469",
+    "behandlingstemaTerm": "Refusjonskrav §8-20",
+    "behandlingstype": "ae0058",
+    "behandlingstypeTerm": "Klage"
+  },
+  {
     "behandlingstema": null,
     "behandlingstemaTerm": null,
-    "behandlingstype": "ae0265",
-    "behandlingstypeTerm": "Samhandling AAP-SP"
+    "behandlingstype": "ae0042",
+    "behandlingstypeTerm": "Dokumentinnsyn"
+  },
+  {
+    "behandlingstema": null,
+    "behandlingstemaTerm": null,
+    "behandlingstype": "ae0071",
+    "behandlingstypeTerm": "Erstatningskrav"
+  },
+  {
+    "behandlingstema": "ab0463",
+    "behandlingstemaTerm": "Feilsendt refusjonskrav",
+    "behandlingstype": null,
+    "behandlingstypeTerm": null
+  },
+  {
+    "behandlingstema": null,
+    "behandlingstemaTerm": null,
+    "behandlingstype": "ae0267",
+    "behandlingstypeTerm": "Forsinket behandling"
+  },
+  {
+    "behandlingstema": null,
+    "behandlingstemaTerm": null,
+    "behandlingstype": "ae0266",
+    "behandlingstypeTerm": "Samhandling AAP-SP-DP"
   },
   {
     "behandlingstema": null,
@@ -55,12 +120,6 @@ Hentet fra `https://oppgave.dev.intern.nav.no/api/v1/kodeverk/gjelder/SYK`
   {
     "behandlingstema": null,
     "behandlingstemaTerm": null,
-    "behandlingstype": "ae0116",
-    "behandlingstypeTerm": "Meldekort"
-  },
-  {
-    "behandlingstema": null,
-    "behandlingstemaTerm": null,
     "behandlingstype": "ae0117",
     "behandlingstypeTerm": "Veteran sak"
   },
@@ -87,12 +146,6 @@ Hentet fra `https://oppgave.dev.intern.nav.no/api/v1/kodeverk/gjelder/SYK`
     "behandlingstemaTerm": null,
     "behandlingstype": "ae0161",
     "behandlingstypeTerm": "Feilutbetaling"
-  },
-  {
-    "behandlingstema": null,
-    "behandlingstemaTerm": null,
-    "behandlingstype": "ae0173",
-    "behandlingstypeTerm": "Klage/anke"
   },
   {
     "behandlingstema": "ab0351",
@@ -183,12 +236,6 @@ Hentet fra `https://oppgave.dev.intern.nav.no/api/v1/kodeverk/gjelder/SYK`
     "behandlingstemaTerm": null,
     "behandlingstype": "ae0247",
     "behandlingstypeTerm": "Forkortet ventetid"
-  },
-  {
-    "behandlingstema": "ab0433",
-    "behandlingstemaTerm": "Refusjonskrav dag 4",
-    "behandlingstype": null,
-    "behandlingstypeTerm": null
   },
   {
     "behandlingstema": "ab0434",
@@ -299,14 +346,20 @@ Hentet fra `https://oppgave.dev.intern.nav.no/api/v1/kodeverk/gjelder/SYK`
     "behandlingstypeTerm": null
   },
   {
-    "behandlingstema": "ab0456",
-    "behandlingstemaTerm": "Refusjonskrav dag 6",
+    "behandlingstema": "ab0458",
+    "behandlingstemaTerm": "Utbetaling bruker",
     "behandlingstype": null,
     "behandlingstypeTerm": null
   },
   {
-    "behandlingstema": "ab0458",
-    "behandlingstemaTerm": "Utbetaling bruker",
+    "behandlingstema": "ab0474",
+    "behandlingstemaTerm": "Feilutbetaling - Speil",
+    "behandlingstype": null,
+    "behandlingstypeTerm": null
+  },
+  {
+    "behandlingstema": "ab0508",
+    "behandlingstemaTerm": "Samhandling SP-YS",
     "behandlingstype": null,
     "behandlingstypeTerm": null
   }
