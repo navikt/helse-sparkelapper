@@ -54,7 +54,7 @@ internal class RepresentasjonRiver(
         }
         svar.fold(
             onSuccess = { fullmakt: List<Fullmakt> ->
-                packet["@løsning"] = mapOf("fullmakt" to fullmakt)
+                packet["@løsning"] = mapOf("Fullmakt" to fullmakt)
                 context.publish(packet.toJson())
                 sikkerlogg.info(
                     "Besvarte behov {}:\n{}",

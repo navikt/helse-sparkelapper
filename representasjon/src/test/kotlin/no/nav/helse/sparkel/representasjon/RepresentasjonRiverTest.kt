@@ -56,5 +56,5 @@ internal class RepresentasjonRiverTest {
         }
         """.trimIndent()
 
-    private fun JsonNode.fullmaktløsning() = this.path("@løsning")["fullmakt"]
+    private fun JsonNode.fullmaktløsning() = this.path("@løsning")["Fullmakt"]
 }
