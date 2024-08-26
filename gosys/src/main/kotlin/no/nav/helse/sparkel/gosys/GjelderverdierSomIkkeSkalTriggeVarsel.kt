@@ -20,7 +20,9 @@ enum class GjelderverdierSomIkkeSkalTriggeVarsel(val behandlingstype: String?, v
     DOKUMENTINNSYN("ae0042", null),
     ERSTATNINGSKRAV("ae0071", null),
     KLAGE_YRKESSKADE("ae0058","ab0339"),
-    YRKESSKADE(null, "ab0339");
+    YRKESSKADE(null, "ab0339"),
+    KLAGE_BESTRIDELSE_AV_SYKMELDING("ae0058", "ab0421"),
+    KLAGE_BEHANDLINGSDAGER("ae0058", "ab0471");
 
     companion object {
         fun inneholder(behandlingstype: String?, behandlingstema: String?): Boolean {
