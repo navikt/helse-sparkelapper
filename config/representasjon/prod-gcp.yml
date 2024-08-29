@@ -10,11 +10,10 @@ azure:
   tenant: nav.no
 accessPolicy:
   outbound:
-    rules:
-      - application: pdl-fullmakt-api
-        namespace: repr
+    external:
+      - host: pdl-fullmakt.prod-fss-pub.nais.io
 env:
   - name: PDL_FULLMAKT_URL
-    value: http://pdl-fullmakt-api.repr
+    value: https://pdl-fullmakt.prod-fss-pub.nais.io
   - name: PDL_FULLMAKT_SCOPE
     value: api://prod-fss.pdl.pdl-fullmakt/.default
