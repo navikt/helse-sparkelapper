@@ -154,7 +154,7 @@ internal class HentPersoninfoV3LøserTest {
               ]
             },
             "hentPerson": {
-              "foedsel": [
+              "foedselsdato": [
                 {
                   "foedselsdato": "1980-04-09"
                 }
@@ -195,7 +195,7 @@ internal class HentPersoninfoV3LøserTest {
                   "etternavn": "TRANFLASKE"
                 }
               ],
-              "foedsel": [
+              "foedselsdato": [
                 {
                   "foedselsdato": "1980-04-09"
                 }

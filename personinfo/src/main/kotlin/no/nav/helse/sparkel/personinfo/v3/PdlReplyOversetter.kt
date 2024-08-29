@@ -44,7 +44,7 @@ internal object PdlReplyOversetter {
 
     private fun JsonNode.fødselsdato() = path("data")
         .path("hentPerson")
-        .path("foedsel")
+        .path("foedselsdato")
         .firstOrNull()
         ?.path("foedselsdato")
         ?.asText()

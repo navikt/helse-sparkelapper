@@ -18,7 +18,7 @@ internal class PdlQueryBuilderTest {
                     identer { ident, gruppe, historisk } 
                 }
                 hentPerson(ident: ${'$'}ident) { 
-                    foedsel { foedselsdato }, 
+                    foedselsdato { foedselsdato }, 
                     navn(historikk: false) { fornavn, mellomnavn, etternavn }, 
                     adressebeskyttelse(historikk: false) { gradering }, 
                     kjoenn(historikk: false) { kjoenn }, 
@@ -39,7 +39,7 @@ internal class PdlQueryBuilderTest {
                     identer { ident, gruppe, historisk } 
                 }
                 hentPerson(ident: ${'$'}ident) { 
-                    foedsel { foedselsdato }
+                    foedselsdato { foedselsdato }
                 }
             }
         """.formaterQuery()
@@ -58,7 +58,7 @@ internal class PdlQueryBuilderTest {
         val forventet = """
             query(${'$'}ident: ID!) {
                 hentPerson(ident: ${'$'}ident) { 
-                    foedsel { foedselsdato }, 
+                    foedselsdato { foedselsdato }, 
                     navn(historikk: false) { fornavn, mellomnavn, etternavn }, 
                     adressebeskyttelse(historikk: false) { gradering }, 
                     kjoenn(historikk: false) { kjoenn }

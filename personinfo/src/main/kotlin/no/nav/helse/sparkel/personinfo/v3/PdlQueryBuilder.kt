@@ -49,7 +49,7 @@ internal class PdlQueryBuilder(
             else null
 
         private val hentPersonElementer = mapOf(
-            Attributt.fødselsdato to "foedsel { foedselsdato }",
+            Attributt.fødselsdato to "foedselsdato { foedselsdato }",
             Attributt.navn to "navn(historikk: false) { fornavn, mellomnavn, etternavn }",
             Attributt.adressebeskyttelse to "adressebeskyttelse(historikk: false) { gradering }",
             Attributt.støttes to "adressebeskyttelse(historikk: false) { gradering }",

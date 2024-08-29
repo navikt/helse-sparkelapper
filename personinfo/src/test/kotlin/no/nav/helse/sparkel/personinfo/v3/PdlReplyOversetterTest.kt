@@ -136,7 +136,7 @@ internal class PdlReplyOversetterTest {
               ]
             },
             "hentPerson": {
-              "foedsel": [
+              "foedselsdato": [
                 {
                   "foedselsdato": "1980-04-09"
                 }
@@ -182,7 +182,7 @@ internal class PdlReplyOversetterTest {
               ]
             },
             "hentPerson": {
-              "foedsel": [
+              "foedselsdato": [
                 {
                   "foedselsdato": "1980-04-09"
                 }
@@ -206,7 +206,7 @@ internal class PdlReplyOversetterTest {
               ]
             },
             "hentPerson": {
-              "foedsel": [
+              "foedselsdato": [
                 {
                   "foedselsdato": "1980-04-09"
                 }
