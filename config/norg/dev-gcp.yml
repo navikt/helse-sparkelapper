@@ -11,6 +11,9 @@ accessPolicy:
   outbound:
     external:
       - host: pdl-api.dev-fss-pub.nais.io
+    rules:
+      - application: norg2
+        namespace: org
 env:
 - name: NORG2_BASE_URL
   value: http://norg2.org
