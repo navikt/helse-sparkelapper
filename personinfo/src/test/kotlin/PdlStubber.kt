@@ -67,12 +67,11 @@ internal abstract class PdlStubber {
     }
 
     @Language("Json")
-    internal fun utenVergemålOgFullmakt() = """
+    internal fun utenVergemålEllerFremtidsfullmakt() = """
         {
           "data": {
             "hentPerson": {
-              "vergemaalEllerFremtidsfullmakt": [],
-              "fullmakt": []
+              "vergemaalEllerFremtidsfullmakt": []
             }
           }
         }
@@ -88,25 +87,6 @@ internal abstract class PdlStubber {
               "vergemaalEllerFremtidsfullmakt": [
                 {
                   "type": "$type"
-                }
-              ],
-              "fullmakt": []
-            }
-          }
-        }
-    """.trimIndent()
-
-    @Language("Json")
-    internal fun medFullmakt(områder: List<String> = listOf("SYK")) = """
-        {
-          "data": {
-            "hentPerson": {
-              "vergemaalEllerFremtidsfullmakt": [],
-              "fullmakt": [
-                {
-                  "gyldigFraOgMed": "2021-12-01",
-                  "gyldigTilOgMed": "2022-12-30",
-                  "omraader": ${områder.map { """"$it"""" }}
                 }
               ]
             }

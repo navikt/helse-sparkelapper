@@ -2,14 +2,8 @@ package no.nav.helse.sparkel.personinfo
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Adressebeskyttelse.Companion.somAdressebeskyttelse
 import no.nav.helse.sparkel.personinfo.PdlOversetter.Kjønn.Companion.somKjønn
-import no.nav.helse.sparkel.personinfo.Vergemålløser.Fullmakt
-import no.nav.helse.sparkel.personinfo.Vergemålløser.Område
-import no.nav.helse.sparkel.personinfo.Vergemålløser.Område.Alle
-import no.nav.helse.sparkel.personinfo.Vergemålløser.Område.Syk
-import no.nav.helse.sparkel.personinfo.Vergemålløser.Område.Sym
 import no.nav.helse.sparkel.personinfo.Vergemålløser.Resultat
 import no.nav.helse.sparkel.personinfo.Vergemålløser.Vergemål
 import no.nav.helse.sparkel.personinfo.Vergemålløser.VergemålType
@@ -101,7 +95,6 @@ internal object PdlOversetter {
     internal fun oversetterVergemålOgFullmakt(pdlReply: JsonNode): Resultat {
         håndterErrors(pdlReply)
         val vergemålNode = pdlReply["data"]["hentPerson"]["vergemaalEllerFremtidsfullmakt"]
-        val fullmaktNode = pdlReply["data"]["hentPerson"]["fullmakt"]
 
         val (fremtidsfullmakter, vergemål) = vergemålNode
             .partition { it["type"].asText() == VergemålType.stadfestetFremtidsfullmakt.name }
@@ -112,20 +105,9 @@ internal object PdlOversetter {
             sikkerlogg.warn("Fant et vergemål vi ikke forstod: {}", it.toPrettyString())
         }
 
-        val interessanteFullmakter = fullmaktNode
-            .map {
-                Fullmakt(
-                    områder = it["omraader"].map { område -> Område.fra(område.asText()) },
-                    gyldigFraOgMed = it["gyldigFraOgMed"].asLocalDate(),
-                    gyldigTilOgMed = it["gyldigTilOgMed"].asLocalDate()
-                )
-            }
-            .filter { it.områder.any { område -> område in listOf(Syk, Sym, Alle) } }
-
         return Resultat(
             vergemål = gyldigeVergemål.map { Vergemål(type = enumValueOf(it["type"].asText())) },
-            fremtidsfullmakter = fremtidsfullmakter.map { Vergemål(type = enumValueOf(it["type"].asText())) },
-            fullmakter = interessanteFullmakter
+            fremtidsfullmakter = fremtidsfullmakter.map { Vergemål(type = enumValueOf(it["type"].asText())) }
         )
     }
 
@@ -164,7 +146,6 @@ internal object PdlOversetter {
         }
     }
 
-
     private enum class Kjønn {
         Mann,
         Kvinne,
@@ -178,7 +159,6 @@ internal object PdlOversetter {
             }
         }
     }
-
 }
 
 internal interface IdenterResultat

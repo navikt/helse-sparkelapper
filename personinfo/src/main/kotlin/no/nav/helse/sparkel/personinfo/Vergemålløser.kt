@@ -5,9 +5,12 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.rapids_rivers.*
+import no.nav.helse.rapids_rivers.JsonMessage
+import no.nav.helse.rapids_rivers.MessageContext
+import no.nav.helse.rapids_rivers.MessageProblems
+import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.River
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
 
 internal class Vergemålløser(
     rapidsConnection: RapidsConnection,
@@ -76,30 +79,8 @@ internal class Vergemålløser(
         val type: VergemålType
     )
 
-    internal data class Fullmakt(
-        val områder: List<Område>,
-        val gyldigFraOgMed: LocalDate,
-        val gyldigTilOgMed: LocalDate
-    )
-
     internal data class Resultat(
         val vergemål: List<Vergemål>,
-        val fremtidsfullmakter: List<Vergemål>,
-        val fullmakter: List<Fullmakt>
+        val fremtidsfullmakter: List<Vergemål>
     )
-
-    enum class Område {
-        Alle, Syk, Sym, Annet;
-
-        companion object {
-            fun fra(verdi: String): Område {
-                return when (verdi) {
-                    "*" -> Alle
-                    "SYK" -> Syk
-                    "SYM" -> Sym
-                    else -> Annet
-                }
-            }
-        }
-    }
 }

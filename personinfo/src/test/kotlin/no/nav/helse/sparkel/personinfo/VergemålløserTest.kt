@@ -2,15 +2,13 @@ package no.nav.helse.sparkel.personinfo
 
 import PdlStubber
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.asLocalDate
+import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
-import java.util.UUID
 
 internal class VergemålløserTest : PdlStubber() {
 
@@ -29,8 +27,8 @@ internal class VergemålløserTest : PdlStubber() {
     }
 
     @Test
-    fun `svarer ut behov der det ikke foreligger vergemål eller fullmakt`() {
-        stubPdlRespons(utenVergemålOgFullmakt())
+    fun `svarer ut behov der det ikke foreligger vergemål eller fremtidsfullmakt`() {
+        stubPdlRespons(utenVergemålEllerFremtidsfullmakt())
         rapid.sendTestMessage(behov())
         val svar = rapid.inspektør.message(0)
         assertEquals(0, svar.vergemålLøsning()["vergemål"].size())
@@ -44,18 +42,6 @@ internal class VergemålløserTest : PdlStubber() {
         assertEquals(1, svar.vergemålLøsning()["vergemål"].size())
         val vergemål = svar.vergemålLøsning()["vergemål"][0]
         assertEquals("voksen", vergemål["type"].asText())
-    }
-
-    @Test
-    fun `svarer ut behov der det foreligger fullmakt`() {
-        stubPdlRespons(medFullmakt())
-        rapid.sendTestMessage(behov())
-        val svar = rapid.inspektør.message(0)
-        assertEquals(1, svar.vergemålLøsning()["fullmakter"].size())
-        val fullmakter = svar.vergemålLøsning()["fullmakter"][0]
-        assertEquals(Vergemålløser.Område.Syk.name, fullmakter["områder"].first().asText())
-        assertEquals(LocalDate.of(2021,12,1), fullmakter["gyldigFraOgMed"].asLocalDate())
-        assertEquals(LocalDate.of(2022, 12,30), fullmakter["gyldigTilOgMed"].asLocalDate())
     }
 
     @Test
