@@ -9,8 +9,10 @@ import io.ktor.client.request.accept
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.parameter
 import io.ktor.client.request.prepareGet
-import io.ktor.http.*
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode.Companion.NotFound
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import no.nav.helse.sparkel.retry
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -22,11 +24,12 @@ class Norg2Client(
     private val httpClient: HttpClient
 ) {
     private val log: Logger = LoggerFactory.getLogger(Norg2Client::class.java)
+    private val erDev by lazy { "dev-gcp" == System.getenv("NAIS_CLUSTER_NAME") }
 
     suspend fun finnBehandlendeEnhet(geografiskOmraade: String, adresseBeskyttelse: String?): Enhet =
         retry("find_local_nav_office") {
             val httpResponse = httpClient.prepareGet("$baseUrl/norg2/api/v1/enhet/navkontor/$geografiskOmraade") {
-                bearerAuth(azureClient.bearerToken(scope).token)
+                if (!erDev) bearerAuth(azureClient.bearerToken(scope).token)
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
                 if (!adresseBeskyttelse.isNullOrEmpty()) {
