@@ -10,6 +10,7 @@ import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 internal class RepresentasjonRiverTest {
     private val representasjonClient: RepresentasjonClient = mockk(relaxed = true)
@@ -38,9 +39,9 @@ internal class RepresentasjonRiverTest {
     }
 
     @Test
-    fun `svarer med oppslagFeilet ved feil mot fullmakt-api`() {
+    fun `kaster exception ved feil mot fullmakt-api`() {
         every { representasjonClient.hentFullmakt(any()) } returns Result.failure(RuntimeException())
-        rapid.sendTestMessage(behov())
+        assertThrows<RuntimeException> { rapid.sendTestMessage(behov()) }
         assertEquals(0, rapid.inspektør.size)
         verify (exactly = 1) { representasjonClient.hentFullmakt("fnr") }
     }

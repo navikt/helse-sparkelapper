@@ -67,8 +67,7 @@ internal class RepresentasjonRiver(
                     log.error(message)
                     sikkerlogg.error("$message {}", kv("Exception", t))
                 }
-                // Todo: Kommentere inn denne når kallene virker å være stabile
-                //throw t
+                throw t
             }
         )
     }
