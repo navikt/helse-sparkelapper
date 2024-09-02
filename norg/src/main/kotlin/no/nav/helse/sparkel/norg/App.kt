@@ -14,14 +14,11 @@ fun main() {
 }
 
 fun launchApplication(environment: Environment) {
-    val azureClient = createAzureTokenClientFromEnvironment()
     val norgRestClient = Norg2Client(
         baseUrl = environment.norg2BaseUrl,
-        scope = environment.norg2Scope,
-        azureClient = azureClient,
         httpClient = simpleHttpClient()
     )
-
+    val azureClient = createAzureTokenClientFromEnvironment()
     val pdl = PDL(azureClient, environment.pdlUrl, environment.pdlScope)
 
     val behandlendeEnhetService = PersoninfoService(norgRestClient, pdl)

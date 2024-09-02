@@ -17,8 +17,6 @@ accessPolicy:
 env:
 - name: NORG2_BASE_URL
   value: http://norg2.org
-- name: NORG2_SCOPE
-  value: api://dev-fss.org.norg2/.default
 - name: PDL_URL
   value: https://pdl-api.dev-fss-pub.nais.io
 - name: PDL_SCOPE
