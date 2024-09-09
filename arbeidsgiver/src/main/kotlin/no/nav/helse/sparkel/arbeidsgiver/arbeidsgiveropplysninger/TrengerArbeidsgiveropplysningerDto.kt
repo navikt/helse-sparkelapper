@@ -39,20 +39,6 @@ internal fun JsonMessage.toKomplettTrengerArbeidsgiveropplysningerDto(): Trenger
         opprettet = this["@opprettet"].asLocalDateTime()
     )
 
-internal fun JsonMessage.toPotensiellTrengerArbeidsgiveropplysningerDto(): TrengerArbeidsgiveropplysningerDto =
-    TrengerArbeidsgiveropplysningerDto(
-        type = Meldingstype.TRENGER_POTENSIELT_OPPLYSNINGER_FRA_ARBEIDSGIVER,
-        fødselsnummer = this["fødselsnummer"].asText(),
-        organisasjonsnummer = this["organisasjonsnummer"].asText(),
-        vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
-        skjæringstidspunkt = this["skjæringstidspunkt"].asLocalDate(),
-        bestemmendeFraværsdager = this["førsteFraværsdager"].asBestemmendeFraværsdager(),
-        sykmeldingsperioder = this["sykmeldingsperioder"].toPerioder(),
-        egenmeldingsperioder = this["egenmeldingsperioder"].toPerioder(),
-        forespurtData = emptyList(),
-        opprettet = this["@opprettet"].asLocalDateTime()
-    )
-
 internal fun JsonMessage.toBegrensetTrengerArbeidsgiveropplysningerDto(): TrengerArbeidsgiveropplysningerDto =
     TrengerArbeidsgiveropplysningerDto(
         type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_BEGRENSET,

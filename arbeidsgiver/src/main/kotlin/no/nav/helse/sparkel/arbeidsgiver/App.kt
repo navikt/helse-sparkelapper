@@ -10,7 +10,6 @@ import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeids
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerRiver
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerIkkeArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerIkkeArbeidsgiveropplysningerRiver
-import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerPotensieltArbeidsgiveropplysningerRiver
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.VedtaksperiodeForkastetRiver
 import no.nav.helse.sparkel.arbeidsgiver.db.Database
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndertRiver
@@ -43,7 +42,6 @@ fun main() {
     val app = RapidApplication.create(env).apply {
         registerDbLifecycle(database)
         TrengerArbeidsgiveropplysningerRiver(this, trengerForespørselProducer)
-        TrengerPotensieltArbeidsgiveropplysningerRiver(this, trengerForespørselProducer)
         TrengerIkkeArbeidsgiveropplysningerRiver(this, trengerIkkeForespørselProducer)
         VedtaksperiodeForkastetRiver(this, trengerForespørselProducer)
         InntektsmeldingHåndertRiver(this, inntektsmeldingHåndtertProducer, inntektsmeldingRegistrertRepository)
