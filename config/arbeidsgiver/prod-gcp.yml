@@ -11,4 +11,4 @@ gcp:
   type: POSTGRES_15
   name: sparkelarbeidsgiver
   envVarPrefix: DATABASE
-  tier: db-custom-2-7680
+  tier: db-custom-1-3840
