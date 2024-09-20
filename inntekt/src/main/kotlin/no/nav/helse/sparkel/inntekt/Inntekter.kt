@@ -8,6 +8,7 @@ import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.*
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSammenligningsgrunnlag
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlag
+import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlagForArbeidsgiver
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import java.time.YearMonth
@@ -25,12 +26,14 @@ class Inntekter(
 
     init {
         Sykepengegrunnlag(rapidsConnection)
+        SykepengegrunnlagForArbeidsgiver(rapidsConnection)
         Sammenligningsgrunnlag(rapidsConnection)
         Opptjeningsvurdering(rapidsConnection)
     }
 
     enum class Type(val ainntektfilter: String) {
         InntekterForSykepengegrunnlag("8-28"),
+        InntekterForSykepengegrunnlagForArbeidsgiver("8-28"),
         InntekterForSammenligningsgrunnlag("8-30"),
         InntekterForOpptjeningsvurdering("8-30")
     }
@@ -74,6 +77,30 @@ class Inntekter(
 
         override fun onPacket(packet: JsonMessage, context: MessageContext) {
             this@Inntekter.onSykepengegrunnlagPacket(packet, context)
+        }
+
+        override fun onError(problems: MessageProblems, context: MessageContext) {
+            log.error(problems.toString())
+        }
+    }
+
+    inner class SykepengegrunnlagForArbeidsgiver(rapidsConnection: RapidsConnection) :
+        River.PacketListener {
+
+        init {
+            River(rapidsConnection).apply {
+                validate { it.demandAll("@behov", listOf(InntekterForSykepengegrunnlagForArbeidsgiver.name)) }
+                validate { it.requireKey("@id", "fødselsnummer") }
+                validate { it.requireKey("vedtaksperiodeId") }
+                validate { it.requireKey("${InntekterForSykepengegrunnlagForArbeidsgiver.name}.organisasjonsnummer") }
+                validate { it.require("${InntekterForSykepengegrunnlagForArbeidsgiver.name}.beregningStart", JsonNode::asYearMonth) }
+                validate { it.require("${InntekterForSykepengegrunnlagForArbeidsgiver.name}.beregningSlutt", JsonNode::asYearMonth) }
+                validate { it.rejectKey("@løsning") }
+            }.register(this)
+        }
+
+        override fun onPacket(packet: JsonMessage, context: MessageContext) {
+            this@Inntekter.onSykepengegrunnlagForArbeidsgiverPacket(packet, context)
         }
 
         override fun onError(problems: MessageProblems, context: MessageContext) {
@@ -137,6 +164,24 @@ class Inntekter(
             hentInntekter(packet, InntekterForSykepengegrunnlag, beregningStart, beregningSlutt, context)
         }
     }
+
+    private fun onSykepengegrunnlagForArbeidsgiverPacket(
+        packet: JsonMessage,
+        context: MessageContext
+    ) {
+        withMDC(
+            mapOf(
+                "behovId" to packet["@id"].asText(),
+                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asText()
+            )
+        ) {
+            val orgnr = packet["${InntekterForSykepengegrunnlagForArbeidsgiver.name}.organisasjonsnummer"].asText()
+            val beregningStart = packet["${InntekterForSykepengegrunnlagForArbeidsgiver.name}.beregningStart"].asYearMonth()
+            val beregningSlutt = packet["${InntekterForSykepengegrunnlagForArbeidsgiver.name}.beregningSlutt"].asYearMonth()
+
+            hentInntekter(packet, InntekterForSykepengegrunnlagForArbeidsgiver, beregningStart, beregningSlutt, context, orgnr)
+        }
+    }
     private fun onOpptjeningsvurderingPacket(
         packet: JsonMessage,
         context: MessageContext
@@ -159,7 +204,8 @@ class Inntekter(
         type: Type,
         beregningStart: YearMonth,
         beregningSlutt: YearMonth,
-        context: MessageContext
+        context: MessageContext,
+        orgnr: String? = null
     ) {
         try {
             val callId = if (packet["vedtaksperiodeId"].isMissingOrNull()) UUID.randomUUID().toString().also {
@@ -174,7 +220,8 @@ class Inntekter(
                         fom = beregningStart,
                         tom = beregningSlutt,
                         filter = type.ainntektfilter,
-                        callId = "$callId-${packet["@id"].asText()}"
+                        callId = "$callId-${packet["@id"].asText()}",
+                        orgnummer = orgnr
                     )
                 })
             context.publish(packet.toJson().also {

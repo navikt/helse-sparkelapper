@@ -40,7 +40,8 @@ class InntektRestClient(
         fom: YearMonth,
         tom: YearMonth,
         filter: String,
-        callId: String
+        callId: String,
+        orgnummer: String? = null
     ) = clientLatencyStats.startTimer().use {
         retry {
             httpClient.preparePost("$baseUrl/api/v1/hentinntektliste") {
@@ -69,31 +70,36 @@ class InntektRestClient(
                     keyValue("callId", callId),
                     keyValue("fødselsnummer", fnr)
                 )
-                tilMånedListe(objectMapper.readValue(content), filter)
+                tilMånedListe(objectMapper.readValue(content), filter, orgnummer)
             }
         }
     }
 }
 
-private fun tilMånedListe(node: JsonNode, filter: String) = node.path("arbeidsInntektMaaned").map { tilMåned(it, filter) }
+private fun tilMånedListe(node: JsonNode, filter: String, orgnummer: String? = null) = node.path("arbeidsInntektMaaned")
+    .map { tilMåned(it, filter, orgnummer) }
 
-private fun tilInntekt(node: JsonNode) = Inntekt(
-    beløp = node["beloep"].asDouble(),
-    inntektstype = Inntektstype.valueOf(node["inntektType"].textValue()),
-    orgnummer = identifikator(node, "ORGANISASJON"),
-    fødselsnummer = identifikator(node, "NATURLIG_IDENT"),
-    aktørId = identifikator(node, "AKTOER_ID"),
-    beskrivelse = node["beskrivelse"].textValue(),
-    fordel = node["fordel"].textValue()
-)
+private fun tilInntekt(node: JsonNode, inntekterForOrgnummer: String? = null): Inntekt? {
+    val orgnr = identifikator(node, "ORGANISASJON")
+    if (inntekterForOrgnummer != null && inntekterForOrgnummer != orgnr) return null
+    return Inntekt(
+        beløp = node["beloep"].asDouble(),
+        inntektstype = Inntektstype.valueOf(node["inntektType"].textValue()),
+        orgnummer = orgnr,
+        fødselsnummer = identifikator(node, "NATURLIG_IDENT"),
+        aktørId = identifikator(node, "AKTOER_ID"),
+        beskrivelse = node["beskrivelse"].textValue(),
+        fordel = node["fordel"].textValue()
+    )
+}
 
 private fun identifikator(node: JsonNode, type: String) =
     node["virksomhet"].takeIf { it["aktoerType"].asText() == type }?.get("identifikator")?.asText()
 
-private fun tilMåned(node: JsonNode, filter: String) = Måned(
-    YearMonth.parse(node["aarMaaned"].asText()),
-    tilArbeidsforholdliste(filter, node),
-    node.path("arbeidsInntektInformasjon").path("inntektListe").map(::tilInntekt)
+private fun tilMåned(node: JsonNode, filter: String, orgnummer: String?) = Måned(
+    årMåned = YearMonth.parse(node["aarMaaned"].asText()),
+    arbeidsforholdliste = tilArbeidsforholdliste(filter, node),
+    inntektsliste = node.path("arbeidsInntektInformasjon").path("inntektListe").mapNotNull { tilInntekt(it, orgnummer) }
 )
 
 private fun tilArbeidsforholdliste(

@@ -79,6 +79,16 @@ internal class InntekterTest {
     }
 
     @Test
+    fun `Inntekter for sykepengegrunnlag for arbeidsgiver`() {
+        val start = YearMonth.of(2020, 2)
+        val slutt = YearMonth.of(2021, 1)
+        val orgnr = "a3"
+        testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForSykepengegrunnlagForArbeidsgiver, orgnummer = orgnr))
+        assertEquals(1, testRapid.inspektør.size)
+        assertLøsning(Inntekter.Type.InntekterForSykepengegrunnlagForArbeidsgiver, YearMonth.of(2019, 1), YearMonth.of(2019, 2), YearMonth.of(2019, 3))
+    }
+
+    @Test
     fun `Inntekter for sammenligningsgrunnlag`() {
         val start = YearMonth.of(2020, 2)
         val slutt = YearMonth.of(2021, 1)
@@ -175,19 +185,24 @@ internal class InntekterTest {
         )
     }
 
-    private fun behov(start: YearMonth, slutt: YearMonth, type: Inntekter.Type, id: UUID = UUID.randomUUID()) =
-        objectMapper.writeValueAsString(behovMap(start, slutt, id, type))
+    private fun behov(start: YearMonth, slutt: YearMonth, type: Inntekter.Type, id: UUID = UUID.randomUUID(), orgnummer: String? = null) =
+        objectMapper.writeValueAsString(behovMap(start, slutt, id, type, orgnummer))
 
-    private fun behovMap(start: YearMonth, slutt: YearMonth, id: UUID, type: Inntekter.Type) = mapOf(
-        "@id" to id,
-        "@behov" to listOf(type.name),
-        "fødselsnummer" to "123",
-        "vedtaksperiodeId" to "vedtaksperiodeId",
-        type.name to mapOf(
+    private fun behovMap(start: YearMonth, slutt: YearMonth, id: UUID, type: Inntekter.Type, orgnummer: String? = null): Map<String, Any> {
+        val detaljer = mutableMapOf(
             "beregningStart" to "$start",
-            "beregningSlutt" to "$slutt",
+            "beregningSlutt" to "$slutt"
+        ).apply {
+            compute("organisasjonsnummer") { _, _ -> orgnummer }
+        }
+        return mapOf(
+            "@id" to id,
+            "@behov" to listOf(type.name),
+            "fødselsnummer" to "123",
+            "vedtaksperiodeId" to "vedtaksperiodeId",
+            type.name to detaljer
         )
-    )
+    }
 
     fun sammenligningsgrunnlagResponse() = """
     {
