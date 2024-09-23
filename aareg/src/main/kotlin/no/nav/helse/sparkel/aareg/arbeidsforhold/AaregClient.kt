@@ -41,14 +41,17 @@ class AaregClient(
         try {
             response.body<List<AaregArbeidsforhold>>()
         } catch (e: JsonConvertException) {
-            val melding = try {
-                objectMapper.readValue<AaregMeldingerResponse>(responseBody).meldinger.joinToString()
-            } catch (_: Exception) {
-                "Ukjent respons fra Aareg"
-            }
+            sikkerlogg.warn("Feil under deserialisering av svar fra Aareg", e)
+            val melding = feilmeldingFraAaregEllerGenerellTekst(responseBody)
             throw if (response.status == HttpStatusCode.NotFound && melding == "Ukjent ident") UkjentIdentException()
             else AaregException(melding, responseBody, response.status)
         }
+    }
+
+    private fun feilmeldingFraAaregEllerGenerellTekst(responseBody: String) = try {
+        objectMapper.readValue<AaregMeldingerResponse>(responseBody).meldinger.joinToString()
+    } catch (_: Exception) {
+        "Klarte ikke å deserialisere svaret fra Aareg, se sikkerlogg for detaljer"
     }
 
     private suspend fun hent(fnr: String, callId: UUID, url: String) =
