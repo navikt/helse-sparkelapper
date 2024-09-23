@@ -91,9 +91,9 @@ internal class TilbakedatertRiver(
                     "syketilfelleStartDato" to syketilfelleStartDato,
                     "perioder" to perioder,
                 )
-            )
+            ).toJson()
 
-            context.publish(fødselsnummer, returEvent.toJson()).also {
+            context.publish(fødselsnummer, returEvent).also {
                 sikkerlogg.info(
                     "sender tilbakedatering_behandlet for {}: {}",
                     keyValue("sykmeldingId", sykmeldingId),
