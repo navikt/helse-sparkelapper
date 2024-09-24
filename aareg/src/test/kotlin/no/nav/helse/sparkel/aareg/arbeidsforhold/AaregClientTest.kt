@@ -5,6 +5,8 @@ import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.sparkel.aareg.arbeidsforhold.ArbeidsforholdLøserV2.Companion.toArbeidsforhold
 import no.nav.helse.sparkel.aareg.arbeidsforhold.Arbeidsforholdbehovløser.Companion.toLøsningDto
+import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforhold
+import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforholdMedDetaljer
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.azureTokenStub
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,7 +24,7 @@ internal class AaregClientTest {
             httpClient = aaregMockClient()
         )
 
-        val aaregResponse = runBlocking { aaregClient.hentFraAareg("12343555", UUID.randomUUID()) }
+        val aaregResponse = runBlocking { aaregClient.hentFraAareg<AaregArbeidsforhold>("12343555", UUID.randomUUID()) }
         val arbeidsforhold = aaregResponse.toArbeidsforhold()
 
         assertEquals("123456789", arbeidsforhold[0].orgnummer)
@@ -41,7 +43,7 @@ internal class AaregClientTest {
             httpClient = aaregMockClient()
         )
 
-        val aaregResponse = runBlocking { aaregClient.hentFraAareg("12343555", UUID.randomUUID()) }
+        val aaregResponse = runBlocking { aaregClient.hentFraAareg<AaregArbeidsforholdMedDetaljer>("12343555", UUID.randomUUID())  }
         val løsningsDto = aaregResponse.toLøsningDto()
 
 

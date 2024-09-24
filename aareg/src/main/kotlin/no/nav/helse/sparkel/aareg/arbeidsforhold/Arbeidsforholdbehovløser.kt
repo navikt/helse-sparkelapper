@@ -10,7 +10,7 @@ import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
-import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforhold
+import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforholdMedDetaljer
 import no.nav.helse.sparkel.aareg.arbeidsforhold.model.Arbeidsstedtype.Underenhet
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import org.slf4j.LoggerFactory
@@ -22,7 +22,7 @@ class Arbeidsforholdbehovløser(
     companion object {
         internal const val behov = "Arbeidsforhold"
 
-        internal fun List<AaregArbeidsforhold>.toLøsningDto(): List<LøsningDto> = this.map { arbeidsforhold ->
+        internal fun List<AaregArbeidsforholdMedDetaljer>.toLøsningDto(): List<LøsningDto> = this.map { arbeidsforhold ->
             LøsningDto(
                 startdato = arbeidsforhold.ansettelsesperiode.startdato,
                 sluttdato = arbeidsforhold.ansettelsesperiode.sluttdato,
@@ -66,7 +66,7 @@ class Arbeidsforholdbehovløser(
         return try {
             log.info("løser behov={}", keyValue("id", id))
             runBlocking {
-                val arbeidsforholdFraAareg = aaregClient.hentFraAareg(fnr, id)
+                val arbeidsforholdFraAareg = aaregClient.hentFraAareg<AaregArbeidsforholdMedDetaljer>(fnr, id)
                     .filter { arbeidsforhold -> arbeidsforhold.arbeidssted.run { type == Underenhet && getOrgnummer() == organisasjonsnummer } }
                 val løsning = arbeidsforholdFraAareg.toLøsningDto()
 

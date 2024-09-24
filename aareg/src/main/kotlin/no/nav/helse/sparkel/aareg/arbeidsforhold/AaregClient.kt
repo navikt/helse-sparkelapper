@@ -14,7 +14,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.JsonConvertException
 import java.time.LocalDate
 import java.util.UUID
-import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforhold
 import no.nav.helse.sparkel.aareg.objectMapper
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import no.nav.helse.sparkel.retry
@@ -25,10 +24,10 @@ class AaregClient(
     private val tokenSupplier: AzureTokenProvider,
     private val httpClient: HttpClient = HttpClient()
 ) {
-    suspend fun hentFraAareg(
+    internal suspend inline fun <reified T> hentFraAareg(
         fnr: String,
         callId: UUID,
-    ): List<AaregArbeidsforhold> = retry("arbeidsforhold") {
+    ): List<T> = retry("arbeidsforhold") {
         val response = hent(
             fnr,
             callId,
@@ -39,7 +38,7 @@ class AaregClient(
         sikkerlogg.info("AaregResponse: ${response.status}\n$responseBody")
 
         try {
-            response.body<List<AaregArbeidsforhold>>()
+            response.body()
         } catch (e: JsonConvertException) {
             sikkerlogg.warn("Feil under deserialisering av svar fra Aareg", e)
             val melding = feilmeldingFraAaregEllerGenerellTekst(responseBody)

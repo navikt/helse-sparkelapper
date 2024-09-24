@@ -7,6 +7,12 @@ data class AaregArbeidsforhold(
     val type: AaregArbeidsforholdtype,
     val arbeidssted: Arbeidssted,
     val ansettelsesperiode: Ansettelsesperiode,
+)
+
+data class AaregArbeidsforholdMedDetaljer(
+    val type: AaregArbeidsforholdtype,
+    val arbeidssted: Arbeidssted,
+    val ansettelsesperiode: Ansettelsesperiode,
     val ansettelsesdetaljer: List<Ansettelsesdetaljer>,
 )
 

@@ -47,7 +47,7 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
             log.info("løser behov={}", keyValue("id", packet["@id"].asText()))
             runBlocking {
                 aaregClient
-                    .hentFraAareg(packet["fødselsnummer"].asText(), UUID.fromString(packet["@id"].asText()))
+                    .hentFraAareg<AaregArbeidsforhold>(packet["fødselsnummer"].asText(), UUID.fromString(packet["@id"].asText()))
                     .toArbeidsforhold()
             }
         } catch (exception: UkjentIdentException) {
