@@ -51,7 +51,7 @@ class AaregClient(
     private fun feilmeldingFraAaregEllerGenerellTekst(responseBody: String) = try {
         objectMapper.readValue<AaregMeldingerResponse>(responseBody).meldinger.joinToString()
     } catch (_: Exception) {
-        "Klarte ikke å deserialisere svaret fra Aareg, se sikkerlogg for detaljer"
+        "Klarte ikke å deserialisere svaret fra Aareg."
     }
 
     private suspend fun hent(fnr: String, callId: UUID, url: String) =

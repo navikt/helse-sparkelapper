@@ -77,7 +77,7 @@ class Arbeidsforholdbehovløser(
             }
         } catch (err: AaregException) {
             log.error(
-                "Feilmelding for behov={} ved oppslag i AAreg, fikk status={}. Svarer med tom liste",
+                "Feilmelding for behov={} ved oppslag i AAreg, fikk status={}, se sikkerlogg for detaljer. Svarer med tom liste",
                 keyValue("id", id),
                 err.statusFromAareg()
             )
