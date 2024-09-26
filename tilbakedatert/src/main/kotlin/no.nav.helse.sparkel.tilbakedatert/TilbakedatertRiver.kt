@@ -28,6 +28,7 @@ internal class TilbakedatertRiver(
                 it.demandKey("sykmelding")
                 it.demandKey("personNrPasient")
                 it.demandKey("sykmelding.signaturDato")
+                it.requireKey("sykmelding.id")
                 it.requireKey("sykmelding.syketilfelleStartDato")
                 it.requireArray("sykmelding.perioder") {
                     requireKey("fom", "tom")
@@ -48,11 +49,11 @@ internal class TilbakedatertRiver(
 
     private fun håndter(packet: JsonMessage, context: MessageContext) {
         val fødselsnummer = packet["personNrPasient"].asText()
-        val sykmeldingId = packet["sykmelding"]["id"].asText()
-        val syketilfelleStartDato = packet["sykmelding"]["syketilfelleStartDato"].asLocalDate()
-        val signaturDato = packet["sykmelding"]["signaturDato"].asLocalDateTime()
+        val sykmeldingId = packet["sykmelding.id"].asText()
+        val syketilfelleStartDato = packet["sykmelding.syketilfelleStartDato"].asLocalDate()
+        val signaturDato = packet["sykmelding.signaturDato"].asLocalDateTime()
         val erTilbakedatert = syketilfelleStartDato < LocalDate.from(signaturDato.minusDays(3))
-        val perioder = packet["sykmelding"]["perioder"].map {
+        val perioder = packet["sykmelding.perioder"].map {
             mapOf(
                 "fom" to it["fom"].asLocalDate(),
                 "tom" to it["tom"].asLocalDate(),
