@@ -1,5 +1,8 @@
 package no.nav.helse.sparkel.tilbakedatert
 
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.MissingNode
+import com.fasterxml.jackson.databind.node.NullNode
 import java.time.LocalDate
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import net.logstash.logback.argument.StructuredArguments.kv
@@ -10,7 +13,6 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
 import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.rapids_rivers.asLocalDateTime
-import no.nav.helse.rapids_rivers.isMissingOrNull
 import org.slf4j.LoggerFactory
 
 internal class TilbakedatertRiver(
@@ -43,7 +45,7 @@ internal class TilbakedatertRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        log.info("Leser melding for sykmeldingId={}", packet["sykmelding"]["id"])
+        log.info("Leser melding for sykmeldingId={}", packet["sykmelding.id"].asText())
         håndter(packet, context)
     }
 
@@ -59,18 +61,12 @@ internal class TilbakedatertRiver(
                 "tom" to it["tom"].asLocalDate(),
             )
         }
-        val erUnderManuellBehandling = packet["merknader"].takeUnless { it.isMissingOrNull() }?.find {
-            it["type"].asText() == "UNDER_BEHANDLING"
-        } ?: false
-        val erUgyldigTilbakedaterting = packet["merknader"].takeUnless { it.isMissingOrNull() }?.find {
-            it["type"].asText() == "UGYLDIG_TILBAKEDATERING"
-        } ?: false
-        val flereOpplysninger = packet["merknader"].takeUnless { it.isMissingOrNull() }?.find {
-            it["type"].asText() == "TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER"
-        } ?: false
-        val delvisGodkjent = packet["merknader"].takeUnless { it.isMissingOrNull() }?.find {
-            it["type"].asText() == "DELVIS_GODKJENT"
-        } ?: false
+        val erUnderManuellBehandling = packet.harMerknad("UNDER_BEHANDLING")
+        val erUgyldigTilbakedaterting = packet.harMerknad("UGYLDIG_TILBAKEDATERING")
+        val flereOpplysninger = packet.harMerknad("TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER")
+        val delvisGodkjent = packet.harMerknad("DELVIS_GODKJENT")
+        val ferdigbehandlet =
+            !erUnderManuellBehandling && !erUgyldigTilbakedaterting && !flereOpplysninger && !delvisGodkjent
 
         loggDebugInfo(sykmeldingId, packet)
 
@@ -85,7 +81,7 @@ internal class TilbakedatertRiver(
             kv("delvisGodkjent", delvisGodkjent)
         )
 
-        if (erTilbakedatert && erUnderManuellBehandling == false && erUgyldigTilbakedaterting == false && flereOpplysninger == false && delvisGodkjent == false) {
+        if (erTilbakedatert && ferdigbehandlet) {
             val returEvent = JsonMessage.newMessage(
                 eventName = "tilbakedatering_behandlet",
                 map = mapOf(
@@ -107,13 +103,14 @@ internal class TilbakedatertRiver(
     }
 
     private fun loggDebugInfo(sykmeldingId: String, packet: JsonMessage) {
-        val merknaderNode = packet["merknader"]
-        val tekst = when {
-            merknaderNode.isNull -> "<feltet er null i meldingen>"
-            merknaderNode.isMissingNode -> "<feltet mangler i meldingen>"
-            merknaderNode.isArray -> merknaderNode.toString()
+        val tekst = when (val merknaderNode = packet["merknader"]) {
+            is NullNode -> "<feltet er null i meldingen>"
+            is MissingNode -> "<feltet mangler i meldingen>"
+            is ArrayNode -> merknaderNode.toString()
             else -> "<ukjent>"
         }
         sikkerlogg.info("Merknader for $sykmeldingId: $tekst")
     }
+
+    private fun JsonMessage.harMerknad(type: String): Boolean = this["merknader"].any { it["type"].asText() == type }
 }
