@@ -42,7 +42,7 @@ internal class TilbakedatertRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        log.info("Leser melding ${packet["sykmelding"]["id"]}")
+        log.info("Leser melding for sykmeldingId={}", packet["sykmelding"]["id"])
         håndter(packet, context)
     }
 
