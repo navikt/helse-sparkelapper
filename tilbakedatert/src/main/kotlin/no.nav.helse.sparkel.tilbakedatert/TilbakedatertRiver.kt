@@ -71,6 +71,8 @@ internal class TilbakedatertRiver(
             it["type"].asText() == "DELVIS_GODKJENT"
         } ?: false
 
+        loggDebugInfo(sykmeldingId, packet)
+
         sikkerlogg.info(
             "Leser melding {}, {}, {}, {}, {}, {}, {}",
             kv("fødselsnummer", fødselsnummer),
@@ -101,5 +103,16 @@ internal class TilbakedatertRiver(
                 )
             }
         }
+    }
+
+    private fun loggDebugInfo(sykmeldingId: String, packet: JsonMessage) {
+        val merknaderNode = packet["merknader"]
+        val tekst = when {
+            merknaderNode.isNull -> "<feltet er null i meldingen>"
+            merknaderNode.isMissingNode -> "<feltet mangler i meldingen>"
+            merknaderNode.isArray -> merknaderNode.toString()
+            else -> "<ukjent>"
+        }
+        sikkerlogg.info("Merknader for $sykmeldingId: $tekst")
     }
 }
