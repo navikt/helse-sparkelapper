@@ -9,11 +9,6 @@ azure:
       - azp_name
   tenant: trygdeetaten.no
 accessPolicy:
-  inbound:
-    rules:
-      - application: spoken
-        namespace: tbd
-        cluster: dev-gcp
   outbound:
     external:
       - host: pdl-fullmakt.dev-fss-pub.nais.io
