@@ -8,19 +8,19 @@ import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
-import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.VedtaksperiodeForkastetRiver
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerBegrensetRiver
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.internals.RecordHeader
 import org.junit.jupiter.api.Test
 
-internal class ForkastetVedtaksperiodeRiverTest {
+internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
 
     private val testRapid = TestRapid()
     private val mockproducer: KafkaProducer<String, TrengerArbeidsgiveropplysningerDto> = mockk(relaxed = true)
 
     init {
-        VedtaksperiodeForkastetRiver(testRapid, mockproducer)
+        TrengerArbeidsgiveropplysningerBegrensetRiver(testRapid, mockproducer)
     }
 
     @Test

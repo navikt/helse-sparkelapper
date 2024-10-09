@@ -10,7 +10,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.internals.RecordHeader
 import org.slf4j.LoggerFactory
 
-internal class VedtaksperiodeForkastetRiver(
+internal class TrengerArbeidsgiveropplysningerBegrensetRiver(
     rapidsConnection: RapidsConnection,
     private val arbeidsgiverProducer: KafkaProducer<String, TrengerArbeidsgiveropplysningerDto>
 ) : River.PacketListener {
@@ -23,16 +23,16 @@ internal class VedtaksperiodeForkastetRiver(
     init {
         River(rapidsConnection).apply {
             validate { it.demandValue("@event_name", eventName) }
+            validate { it.demandValue("trengerArbeidsgiveropplysninger", true) }
+            validate { it.demandAny("tilstand", listOf("START", "AVVENTER_INFOTRYGDHISTORIKK")) }
             validate { it.rejectValues("organisasjonsnummer", listOf("ARBEIDSLEDIG", "SELVSTENDIG", "FRILANS")) }
             validate {
                 it.requireKey(
                     "fødselsnummer",
                     "organisasjonsnummer",
                     "vedtaksperiodeId",
-                    "tilstand",
                     "fom",
                     "tom",
-                    "trengerArbeidsgiveropplysninger",
                     "sykmeldingsperioder",
                     "@opprettet"
                 )
@@ -41,30 +41,25 @@ internal class VedtaksperiodeForkastetRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
-        val tilstand = packet["tilstand"].asText()
-        val trengerArbeidsgiveropplysninger = packet["trengerArbeidsgiveropplysninger"].asBoolean()
+        "Fant en forkastet periode som trenger forespørsel".let {
+            logg.info(it)
+            sikkerlogg.info("$it med data :\n{}", packet.toJson())
+        }
 
-        if(trengerArbeidsgiveropplysninger && (tilstand == "START" || tilstand == "AVVENTER_INFOTRYGDHISTORIKK")) {
-            "Fant en forkastet periode som trenger forespørsel".let {
-                logg.info(it)
-                sikkerlogg.info("$it med data :\n{}", packet.toJson())
-            }
+        val payload = packet.toBegrensetTrengerArbeidsgiveropplysningerDto()
+        arbeidsgiverProducer.send(
+            ProducerRecord(
+                "tbd.arbeidsgiveropplysninger",
+                null,
+                payload.fødselsnummer,
+                payload,
+                listOf(RecordHeader("type", payload.meldingstype))
+            )
+        ).get()
 
-            val payload = packet.toBegrensetTrengerArbeidsgiveropplysningerDto()
-            arbeidsgiverProducer.send(
-                ProducerRecord(
-                    "tbd.arbeidsgiveropplysninger",
-                    null,
-                    payload.fødselsnummer,
-                    payload,
-                    listOf(RecordHeader("type", payload.meldingstype))
-                )
-            ).get()
-
-            "Publiserte begrenset forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger".let {
-                logg.info(it)
-                sikkerlogg.info("$it med data :\n{}", payload)
-            }
+        "Publiserte begrenset forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger".let {
+            logg.info(it)
+            sikkerlogg.info("$it med data :\n{}", payload)
         }
     }
 
