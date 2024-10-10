@@ -6,16 +6,18 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.util.Properties
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerBegrensetRiver
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerRiver
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerIkkeArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerIkkeArbeidsgiveropplysningerRiver
-import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerBegrensetRiver
 import no.nav.helse.sparkel.arbeidsgiver.db.Database
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndertRiver
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndtertDto
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_registrert.InntektsmeldingRegistrertRepository
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_registrert.InntektsmeldingRegistrertRiver
+import no.nav.helse.sparkel.arbeidsgiver.vedtaksperiode_forkastet.VedtaksperiodeForkastetDto
+import no.nav.helse.sparkel.arbeidsgiver.vedtaksperiode_forkastet.VedtaksperiodeForkastetRiver
 import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -38,6 +40,7 @@ fun main() {
     val trengerForespørselProducer = createAivenProducer<TrengerArbeidsgiveropplysningerDto>(env)
     val trengerIkkeForespørselProducer = createAivenProducer<TrengerIkkeArbeidsgiveropplysningerDto>(env)
     val inntektsmeldingHåndtertProducer = createAivenProducer<InntektsmeldingHåndtertDto>(env)
+    val vedtaksperiodeForkastetProducer = createAivenProducer<VedtaksperiodeForkastetDto>(env)
 
     val app = RapidApplication.create(env).apply {
         registerDbLifecycle(database)
@@ -46,6 +49,7 @@ fun main() {
         TrengerArbeidsgiveropplysningerBegrensetRiver(this, trengerForespørselProducer)
         InntektsmeldingHåndertRiver(this, inntektsmeldingHåndtertProducer, inntektsmeldingRegistrertRepository)
         InntektsmeldingRegistrertRiver(this, inntektsmeldingRegistrertRepository)
+        VedtaksperiodeForkastetRiver(this, vedtaksperiodeForkastetProducer)
     }
     logger.info("Hei, bro!")
     app.start()
