@@ -1,10 +1,10 @@
 FROM gcr.io/distroless/java21-debian12:nonroot
 
-COPY build/libs/*.jar /app/
-
 ENV TZ="Europe/Oslo"
-ENV JAVA_OPTS='-XX:MaxRAMPercentage=75'
+ENV JDK_JAVA_OPTIONS='-XX:MaxRAMPercentage=75'
 
 WORKDIR /app
+
+COPY build/libs/*.jar /app/
 
 CMD ["app.jar"]
