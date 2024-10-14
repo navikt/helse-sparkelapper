@@ -36,7 +36,9 @@ enum class GjelderverdierSomIkkeSkalTriggeVarsel(val behandlingstype: String?, v
 
 enum class OppgavetypeSomIkkeSkalTriggeVarsel(val oppgavetype: String?) {
     NØKKELKONTROLL("NOEK"),
-    RETUR("RETUR");
+    RETUR("RETUR"),
+    KONTROLLERER_UTGÅENDE_SKANNET_DOKUMENT("KON_UTG_SCA_DOK"),
+    VURDER_NOTAT("VURD_NOTAT");
 
     companion object {
         fun inneholder(oppgavetype: String?): Boolean {
