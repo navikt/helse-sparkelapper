@@ -12,4 +12,6 @@ mountPaths:
 env:
 - name: DATABASE_SCHEMA
   value: INFOTRYGD_SPQ
+- name: KAFKA_EXTRA_TOPIC
+  value: tbd.teknisk.v1
 onprem: true
