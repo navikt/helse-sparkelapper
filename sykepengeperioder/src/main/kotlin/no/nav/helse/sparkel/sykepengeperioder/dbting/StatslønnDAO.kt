@@ -7,10 +7,10 @@ import javax.sql.DataSource
 import no.nav.helse.sparkel.infotrygd.Fnr
 
 class StatslønnDAO(
-    private val dataSource: DataSource
+    private val dataSource: () -> DataSource
 ) {
     internal fun harStatslønn(fnr: Fnr, seq: Int): Boolean {
-        return sessionOf(dataSource).use { session ->
+        return sessionOf(dataSource()).use { session ->
             @Language("Oracle")
             val statement = """
                 select

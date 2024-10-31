@@ -8,10 +8,10 @@ import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 
 class PeriodeDAO(
-    private val dataSource: DataSource
+    private val dataSource: () -> DataSource
 ) {
     fun perioder(fnr: Fnr, fom: LocalDate, tom: LocalDate): List<PeriodeDTO> {
-        return sessionOf(dataSource).use { session ->
+        return sessionOf(dataSource()).use { session ->
             @Language("Oracle")
             val statement = """
                     select 

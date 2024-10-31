@@ -27,11 +27,11 @@ internal class SykepengehistorikkløserTest : H2Database() {
     @BeforeAll
     fun setup() {
         infotrygdService = InfotrygdService(
-            PeriodeDAO(dataSource),
-            UtbetalingDAO(dataSource),
-            InntektDAO(dataSource),
-            StatslønnDAO(dataSource),
-            FeriepengeDAO(dataSource)
+            PeriodeDAO { dataSource },
+            UtbetalingDAO { dataSource },
+            InntektDAO { dataSource },
+            StatslønnDAO { dataSource },
+            FeriepengeDAO { dataSource }
         )
         rapid.apply {
             Sykepengehistorikkløser(this, infotrygdService)

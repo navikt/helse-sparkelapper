@@ -7,7 +7,7 @@ import kotliquery.sessionOf
 import org.intellij.lang.annotations.Language
 
 class UtbetalingDAO(
-    private val dataSource: DataSource
+    private val dataSource: () -> DataSource
 ) {
     fun utbetalinger(fnr: Fnr, vararg seq: Int): List<UtbetalingDTO> {
         return utbetalingerSomFunker(fnr, *seq)
@@ -15,7 +15,7 @@ class UtbetalingDAO(
 
     private fun utbetalingerSomFunker(fnr: Fnr, vararg seq: Int): List<UtbetalingDTO> {
         if (seq.isEmpty()) return emptyList()
-        return sessionOf(dataSource).use { session ->
+        return sessionOf(dataSource()).use { session ->
             val antallSpørsmålstegn = seq.joinToString(",") { "?" }
 
             @Language("Oracle")

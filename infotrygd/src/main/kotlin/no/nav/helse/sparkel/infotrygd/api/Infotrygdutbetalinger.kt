@@ -7,9 +7,9 @@ import no.nav.helse.sparkel.infotrygd.PeriodeDAO
 import no.nav.helse.sparkel.infotrygd.UtbetalingDAO
 import no.nav.helse.sparkel.infotrygd.api.Organisasjonsnummer.Companion.organisasjosnummerOrNull
 
-class Infotrygdutbetalinger (dataSource: DataSource) {
-    private val utbetalingDAO = UtbetalingDAO(dataSource)
-    private val periodeDAO = PeriodeDAO(dataSource)
+class Infotrygdutbetalinger(dataSource: DataSource) {
+    private val utbetalingDAO = UtbetalingDAO { dataSource }
+    private val periodeDAO = PeriodeDAO { dataSource }
 
     fun utbetalinger(personidentifikatorer: Set<Personidentifikator>, fom: LocalDate, tom:LocalDate): List<Infotrygdperiode> {
         val fnrTilUtbetalinger = personidentifikatorer

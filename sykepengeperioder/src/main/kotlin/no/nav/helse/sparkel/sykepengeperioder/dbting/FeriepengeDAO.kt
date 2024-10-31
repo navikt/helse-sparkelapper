@@ -11,7 +11,7 @@ import javax.sql.DataSource
 import no.nav.helse.sparkel.infotrygd.Fnr
 
 internal class FeriepengeDAO(
-    private val dataSource: DataSource
+    private val dataSource: () -> DataSource
 ) {
     internal companion object {
         private val log = LoggerFactory.getLogger(FeriepengeDAO::class.java)
@@ -19,7 +19,7 @@ internal class FeriepengeDAO(
     }
 
     internal fun feriepenger(fnr: Fnr, fom: LocalDate, tom: LocalDate): List<FeriepengeDTO> {
-        return sessionOf(dataSource).use { session ->
+        return sessionOf(dataSource()).use { session ->
             @Language("Oracle")
             val statement = """
                 SELECT dy.BELOP,
@@ -51,7 +51,7 @@ internal class FeriepengeDAO(
     }
 
     internal fun feriepengerSkalBeregnesManuelt(fnr: Fnr, fom: LocalDate, tom: LocalDate): Boolean {
-        return sessionOf(dataSource).use { session ->
+        return sessionOf(dataSource()).use { session ->
             @Language("Oracle")
             val statement = """
                 SELECT count(*) as count

@@ -13,7 +13,7 @@ import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
 
 internal class InntektDAO(
-    private val dataSource: DataSource
+    private val dataSource: () -> DataSource
 ) {
     internal companion object {
         private val log = LoggerFactory.getLogger(InntektDAO::class.java)
@@ -22,7 +22,7 @@ internal class InntektDAO(
 
     internal fun inntekter(fnr: Fnr, vararg seq: Int): List<InntektDTO> {
         if (seq.isEmpty()) return emptyList()
-        return sessionOf(dataSource).use { session ->
+        return sessionOf(dataSource()).use { session ->
             val antallSpørsmålstegn = seq.joinToString(",") { "?" }
 
             @Language("Oracle")

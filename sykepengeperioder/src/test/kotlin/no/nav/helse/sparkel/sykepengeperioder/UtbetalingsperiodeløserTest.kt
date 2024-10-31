@@ -49,11 +49,11 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
     @BeforeAll
     fun setup() {
         service = InfotrygdService(
-            PeriodeDAO(dataSource),
-            UtbetalingDAO(dataSource),
-            InntektDAO(dataSource),
-            StatslønnDAO(dataSource),
-            FeriepengeDAO(dataSource)
+            PeriodeDAO { dataSource },
+            UtbetalingDAO { dataSource },
+            InntektDAO { dataSource },
+            StatslønnDAO { dataSource },
+            FeriepengeDAO { dataSource }
         )
     }
 
