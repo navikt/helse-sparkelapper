@@ -38,12 +38,18 @@ import no.nav.helse.sparkel.infotrygd.api.Personidentifikator
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
+private val logg = LoggerFactory.getLogger(::main::class.java)
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 private val String.env get() = checkNotNull(System.getenv(this)) { "Fant ikke environment variablen $this" }
 private val objectMapper = jacksonObjectMapper()
 
 fun main() {
-    embeddedServer(ConfiguredCIO, port = 8080, module = Application::sykepengeperioderApi).start(wait = true)
+    try {
+        embeddedServer(ConfiguredCIO, port = 8080, module = Application::sykepengeperioderApi).start(wait = true)
+    } catch (err: Exception) {
+        sikkerlogg.error("Feil ved oppstart av applikasjonen! ${err.message}", err)
+        logg.error("Feil ved oppstart av applikasjonen! Se sikker logg")
+    }
 }
 
 private val List<Infotrygdperiode>.response get() = objectMapper.createObjectNode().let { json ->
@@ -85,12 +91,16 @@ private fun Application.sykepengeperioderApi() {
         }
     }
 
-    val dataSource = HikariDataSource(HikariConfig().apply {
-        jdbcUrl = File("/var/run/secrets/nais.io/oracle/config/jdbc_url").readText()
-        username = File("/var/run/secrets/nais.io/oracle/creds/username").readText()
-        password = File("/var/run/secrets/nais.io/oracle/creds/password").readText()
-        schema = "DATABASE_SCHEMA".env
-    })
+    val dataSource = try {
+        HikariDataSource(HikariConfig().apply {
+            jdbcUrl = File("/var/run/secrets/nais.io/oracle/config/jdbc_url").readText()
+            username = File("/var/run/secrets/nais.io/oracle/creds/username").readText()
+            password = File("/var/run/secrets/nais.io/oracle/creds/password").readText()
+            schema = "DATABASE_SCHEMA".env
+        })
+    } catch (err: Exception) {
+        throw RuntimeException("Feil ved oppkobling til Oracle", err)
+    }
 
     val infotrygdutbetalinger = Infotrygdutbetalinger(dataSource)
 

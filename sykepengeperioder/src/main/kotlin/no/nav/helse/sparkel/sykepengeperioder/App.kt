@@ -19,22 +19,22 @@ fun main() {
 internal fun createApp(env: Map<String, String>): RapidsConnection {
     val databaseConfig = env.databaseConfig()
 
-    val dataSource = HikariDataSource(HikariConfig().apply {
-        jdbcUrl = databaseConfig.jdbcUrl
-        username = databaseConfig.username
-        password = databaseConfig.password
-        schema = databaseConfig.schema
-    })
-
-    val infotrygdService = InfotrygdService(
-        PeriodeDAO(dataSource),
-        UtbetalingDAO(dataSource),
-        InntektDAO(dataSource),
-        StatslønnDAO(dataSource),
-        FeriepengeDAO(dataSource)
-    )
-
     return RapidApplication.create(env).apply {
+        val dataSource = HikariDataSource(HikariConfig().apply {
+            jdbcUrl = databaseConfig.jdbcUrl
+            username = databaseConfig.username
+            password = databaseConfig.password
+            schema = databaseConfig.schema
+        })
+
+        val infotrygdService = InfotrygdService(
+            PeriodeDAO(dataSource),
+            UtbetalingDAO(dataSource),
+            InntektDAO(dataSource),
+            StatslønnDAO(dataSource),
+            FeriepengeDAO(dataSource)
+        )
+
         Sykepengehistorikkløser(this, infotrygdService)
         Utbetalingsperiodeløser(this, infotrygdService)
         SykepengehistorikkForFeriepengerløser(this, infotrygdService)
