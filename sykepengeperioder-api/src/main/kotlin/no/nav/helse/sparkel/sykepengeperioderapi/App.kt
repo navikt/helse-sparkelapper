@@ -30,6 +30,7 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import java.io.File
 import java.net.URI
+import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
 import no.nav.helse.sparkel.infotrygd.api.Infotrygdperiode
@@ -97,6 +98,9 @@ private fun Application.sykepengeperioderApi() {
             username = File("/var/run/secrets/nais.io/oracle/creds/username").readText()
             password = File("/var/run/secrets/nais.io/oracle/creds/password").readText()
             schema = "DATABASE_SCHEMA".env
+            connectionTimeout = Duration.ofSeconds(10).toMillis()
+            maxLifetime = Duration.ofMinutes(30).toMillis()
+            initializationFailTimeout = Duration.ofMinutes(1).toMillis()
         })
     } catch (err: Exception) {
         throw RuntimeException("Feil ved oppkobling til Oracle", err)

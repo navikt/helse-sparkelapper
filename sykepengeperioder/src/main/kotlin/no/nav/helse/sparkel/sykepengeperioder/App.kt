@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.sykepengeperioder
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.infotrygd.PeriodeDAO
@@ -27,6 +28,9 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
                 username = databaseConfig.username
                 password = databaseConfig.password
                 schema = databaseConfig.schema
+                connectionTimeout = Duration.ofSeconds(20).toMillis()
+                maxLifetime = Duration.ofMinutes(30).toMillis()
+                initializationFailTimeout = Duration.ofMinutes(1).toMillis()
             })
         }
 
