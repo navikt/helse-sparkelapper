@@ -1,6 +1,10 @@
 package no.nav.helse.sparkel.personinfo
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
+import com.github.navikt.tbd_libs.speed.SpeedClient
+import java.net.http.HttpClient
 import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
@@ -20,7 +24,13 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         accessTokenClient = azureClient,
         accessTokenScope = System.getenv("ACCESS_TOKEN_SCOPE"),
     )
-    val personinfoService = PersoninfoService(pdlClient)
+    val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+    val speedClient = SpeedClient(
+        httpClient = HttpClient.newHttpClient(),
+        objectMapper = objectMapper,
+        tokenProvider = azureClient
+    )
+    val personinfoService = PersoninfoService(pdlClient, speedClient)
     val kafkaConsumer = createConsumer()
     kafkaConsumer.subscribe(listOf("pdl.leesah-v1"))
 
@@ -37,7 +47,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
                 personhendelseConsumer.close()
             }
         })
-        HentPersoninfoV2Løser(this, personinfoService)
+        HentPersoninfoV2Løser(this, personinfoService, objectMapper)
         HentIdenterLøser(this, pdlClient)
         Vergemålløser(this, personinfoService)
     }

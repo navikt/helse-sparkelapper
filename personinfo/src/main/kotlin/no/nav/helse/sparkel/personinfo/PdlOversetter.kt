@@ -2,8 +2,6 @@ package no.nav.helse.sparkel.personinfo
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import no.nav.helse.sparkel.personinfo.PdlOversetter.Adressebeskyttelse.Companion.somAdressebeskyttelse
-import no.nav.helse.sparkel.personinfo.PdlOversetter.Kjønn.Companion.somKjønn
 import no.nav.helse.sparkel.personinfo.Vergemålløser.Resultat
 import no.nav.helse.sparkel.personinfo.Vergemålløser.Vergemål
 import no.nav.helse.sparkel.personinfo.Vergemålløser.VergemålType
@@ -13,42 +11,6 @@ internal object PdlOversetter {
     private val objectMapper = jacksonObjectMapper()
     private val log = LoggerFactory.getLogger("pdl-oversetter")
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-
-    internal fun fiskUtDødsdato(pdlReply: JsonNode) = pdlReply["data"]["hentPerson"].let { hentPerson ->
-        hentPerson["doedsfall"]?.let { dødsfall ->
-            when (dødsfall.size()) {
-                0 -> null
-                1 -> dødsfall[0]["doedsdato"].asText()
-                else -> håndterFlereMastere(dødsfall)
-            }
-        }
-    }
-
-    fun oversettDødsdato(pdlReply: JsonNode): JsonNode {
-        håndterErrors(pdlReply)
-        return objectMapper.createObjectNode().put("dødsdato", fiskUtDødsdato(pdlReply))
-    }
-
-    internal fun fiskUtKjønn(pdlReply: JsonNode) = pdlReply["data"]["hentPerson"]["kjoenn"].first()["kjoenn"].somKjønn().name
-    internal fun fiskUtAdressebeskyttelse(pdlReply: JsonNode) = pdlReply["data"]["hentPerson"]["adressebeskyttelse"].firstOrNull().somAdressebeskyttelse().name
-
-    internal fun fiskUtStøttes(pdlReply: JsonNode) =
-        fiskUtAdressebeskyttelse(pdlReply) !in listOf(
-            Adressebeskyttelse.StrengtFortrolig.name,
-            Adressebeskyttelse.StrengtFortroligUtland.name
-        )
-    fun oversettPersoninfo(ident: String, pdlReply: JsonNode): JsonNode {
-        håndterErrors(pdlReply)
-        val pdlPerson = pdlReply["data"]["hentPerson"]
-        return objectMapper.createObjectNode()
-            .put("ident", ident)
-            .put("fornavn", pdlPerson["navn"].first()["fornavn"].asText())
-            .put("mellomnavn", pdlPerson["navn"].first()["mellomnavn"]?.textValue())
-            .put("etternavn", pdlPerson["navn"].first()["etternavn"].asText())
-            .put("fødselsdato", pdlPerson["foedsel"].first()["foedselsdato"].asText())
-            .put("kjønn", fiskUtKjønn(pdlReply))
-            .put("adressebeskyttelse", fiskUtAdressebeskyttelse(pdlReply))
-    }
 
     fun oversetterIdenter(pdlReply: JsonNode): IdenterResultat {
         håndterErrors(pdlReply)
@@ -115,48 +77,6 @@ internal object PdlOversetter {
         if (pdlReply["errors"] != null && pdlReply["errors"].isArray && !pdlReply["errors"].isEmpty) {
             val errors = pdlReply["errors"].map { it["message"]?.textValue() ?: "no message" }
             throw RuntimeException(errors.joinToString())
-        }
-    }
-
-    private fun håndterFlereMastere(dødsfall: JsonNode): String {
-        return dødsfall.first { jsonNode ->
-            jsonNode.path("metadata").path("master").asText().lowercase() == "pdl"
-        }.path("doedsdato").asText()
-    }
-
-    private enum class Adressebeskyttelse {
-        Fortrolig,
-        StrengtFortrolig,
-        StrengtFortroligUtland,
-        Ugradert,
-        Ukjent;
-
-        companion object {
-            fun JsonNode?.somAdressebeskyttelse() =
-                when (val adressebeskyttelse = this?.get("gradering")?.asText()) {
-                    null, "UGRADERT" -> Ugradert
-                    "FORTROLIG" -> Fortrolig
-                    "STRENGT_FORTROLIG" -> StrengtFortrolig
-                    "STRENGT_FORTROLIG_UTLAND" -> StrengtFortroligUtland
-                    else -> {
-                        log.error("Mottok ukjent adressebeskyttelse: $adressebeskyttelse fra PDL")
-                        Ukjent
-                    }
-                }
-        }
-    }
-
-    private enum class Kjønn {
-        Mann,
-        Kvinne,
-        Ukjent;
-
-        companion object {
-            fun JsonNode.somKjønn() = when (asText()) {
-                "KVINNE" -> Kvinne
-                "MANN" -> Mann
-                else -> Ukjent
-            }
         }
     }
 }

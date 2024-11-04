@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
+fun String.loadFromResources() = Thread.currentThread().contextClassLoader.getResource(this)!!.readText()
+
 internal class PdlOversetterIdenterTest {
 
     @Test

@@ -1,7 +1,13 @@
 package no.nav.helse.sparkel.personinfo
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ArrayNode
+import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.result_object.flatten
+import com.github.navikt.tbd_libs.result_object.map
+import com.github.navikt.tbd_libs.result_object.ok
+import com.github.navikt.tbd_libs.speed.PersonResponse
+import com.github.navikt.tbd_libs.speed.PersonResponse.Adressebeskyttelse.*
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.*
 import org.slf4j.Logger
@@ -9,7 +15,8 @@ import org.slf4j.LoggerFactory
 
 internal class HentPersoninfoV2Løser(
     rapidsConnection: RapidsConnection,
-    private val personinfoService: PersoninfoService
+    private val personinfoService: PersoninfoService,
+    private val objectMapper: ObjectMapper
 ) : River.PacketListener {
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
     private val sikkerLogg: Logger = LoggerFactory.getLogger("tjenestekall")
@@ -35,24 +42,65 @@ internal class HentPersoninfoV2Løser(
             sikkerLogg.info("mottok melding: ${packet.toJson()}")
             val ident = packet["HentPersoninfoV2.ident"].takeUnless { it.isMissingOrNull() } ?: packet["fødselsnummer"]
 
-            try {
-                val løsning = if (ident.isArray) {
-                    ObjectMapper().createArrayNode().apply {
-                        (ident as ArrayNode).forEach {
-                            this.add(personinfoService.løsningForPersoninfo(behovId, it.asText()))
-                        }
-                    }
-                } else {
-                    personinfoService.løsningForPersoninfo(behovId, ident.asText())
+            val identer = if (ident.isArray) ident.map { it.asText() } else listOf(ident.asText())
+            val løsninger = identer
+                .map {
+                    personinfoService.løsningForPersoninfo(behovId, it)
                 }
+                .flatten()
+                .map { liste ->
+                    liste.mapIndexed { index, personRespons ->
+                        val ident = identer[index]
+                        personRespons.løsningJson(ident)
+                    }.ok()
+                }
+            try {
+                when (løsninger) {
+                    is Result.Error -> {
+                        sikkerLogg.warn("Feil under løsing av personinfo-behov: ${løsninger.error}", løsninger.cause)
+                        log.warn("Feil under løsing av personinfo-behov: ${løsninger.error}", løsninger.cause)
+                    }
+                    is Result.Ok -> {
+                        val løsningJson = if (identer.size != 1) {
+                            sikkerLogg.warn("Løser PersoninfoV2 med flere identer")
+                            ObjectMapper().createArrayNode().apply {
+                                løsninger.value.forEach { individuellLøsning ->
+                                    this.add(individuellLøsning)
+                                }
+                            }
+                        } else {
+                            løsninger.value.single()
+                        }
 
-                packet["@løsning"] = mapOf("HentPersoninfoV2" to løsning)
-                context.publish(packet.toJson())
-
+                        packet["@løsning"] = mapOf("HentPersoninfoV2" to løsningJson)
+                        context.publish(packet.toJson())
+                    }
+                }
             } catch (e: Exception) {
                 sikkerLogg.warn("Feil under løsing av personinfo-behov: ${e.message}", e)
                 log.warn("Feil under løsing av personinfo-behov: ${e.message}", e)
             }
+        }
+    }
+
+    private fun PersonResponse.løsningJson(ident: String): JsonNode {
+        return objectMapper.createObjectNode().apply {
+            put("ident", ident)
+            put("fornavn", fornavn)
+            if (mellomnavn != null) put("mellomnavn", mellomnavn) else putNull("mellomnavn")
+            put("etternavn", etternavn)
+            put("fødselsdato", fødselsdato.toString())
+            put("kjønn", when (kjønn) {
+                PersonResponse.Kjønn.MANN -> "Mann"
+                PersonResponse.Kjønn.KVINNE -> "Kvinne"
+                PersonResponse.Kjønn.UKJENT -> "Ukjent"
+            })
+            put("adressebeskyttelse", when (adressebeskyttelse) {
+                FORTROLIG -> "Fortrolig"
+                STRENGT_FORTROLIG -> "StrengtFortrolig"
+                STRENGT_FORTROLIG_UTLAND -> "StrengtFortroligUtland"
+                UGRADERT -> "Ugradert"
+            })
         }
     }
 

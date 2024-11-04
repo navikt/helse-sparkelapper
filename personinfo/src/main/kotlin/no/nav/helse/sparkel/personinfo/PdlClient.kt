@@ -54,11 +54,6 @@ internal class PdlClient(
         return objectMapper.readTree(response.body())
     }
 
-    internal fun hentPersoninfo(
-        ident: String,
-        callId: String
-    ) = request(ident, callId, personinfoQuery)
-
     internal fun hentIdenter(
         ident: String,
         callId: String

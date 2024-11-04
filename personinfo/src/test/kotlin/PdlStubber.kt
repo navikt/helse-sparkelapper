@@ -9,6 +9,7 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
+import io.mockk.mockk
 import java.time.LocalDateTime
 import no.nav.helse.sparkel.personinfo.PdlClient
 import no.nav.helse.sparkel.personinfo.PersoninfoService
@@ -57,7 +58,8 @@ internal abstract class PdlStubber {
                     }
                 },
                 accessTokenScope = "someScope"
-            )
+            ),
+            mockk(relaxed = true),
         )
     }
 
