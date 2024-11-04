@@ -1,6 +1,9 @@
 package no.nav.helse.sparkel.personinfo
 
 import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.result_object.error
+import com.github.navikt.tbd_libs.result_object.ok
+import com.github.navikt.tbd_libs.retry.retryBlocking
 import com.github.navikt.tbd_libs.speed.PersonResponse
 import com.github.navikt.tbd_libs.speed.SpeedClient
 import net.logstash.logback.argument.StructuredArguments.keyValue
@@ -13,7 +16,16 @@ internal class PersoninfoService(private val pdlClient: PdlClient, private val s
     private val log = LoggerFactory.getLogger(this::class.java)
 
     fun løsningForPersoninfo(callId: String, ident: String): Result<PersonResponse> {
-        return speedClient.hentPersoninfo(ident, callId)
+        return try {
+            retryBlocking {
+                when (val svar = speedClient.hentPersoninfo(ident, callId)) {
+                    is Result.Error -> throw RuntimeException(svar.error, svar.cause)
+                    is Result.Ok -> svar.value.ok()
+                }
+            }
+        } catch (err: Exception) {
+            err.error(err.message ?: "Ukjent feil")
+        }
     }
 
     fun løsningForVergemål(
