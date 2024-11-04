@@ -11,12 +11,10 @@ azure:
       - azp_name
   tenant: trygdeetaten.no
 accessPolicy:
-  inbound:
+  outbound:
     rules:
       - application: speed-api
         namespace: tbd
-        cluster: dev-gcp
-  outbound:
     external:
       - host: pdl-api.dev-fss-pub.nais.io
 env:

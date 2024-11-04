@@ -14,12 +14,10 @@ azure:
       - azp_name
   tenant: nav.no
 accessPolicy:
-  inbound:
+  outbound:
     rules:
       - application: speed-api
         namespace: tbd
-        cluster: prod-gcp
-  outbound:
     external:
       - host: pdl-api.prod-fss-pub.nais.io
 env:
