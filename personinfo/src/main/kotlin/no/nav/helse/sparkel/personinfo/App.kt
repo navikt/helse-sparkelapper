@@ -7,7 +7,6 @@ import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseConsumer
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseRiver
 import no.nav.helse.sparkel.personinfo.leesah.createConsumer
-import no.nav.helse.sparkel.personinfo.v3.HentPersoninfoV3Løser
 
 fun main() {
     val app = createApp(System.getenv())
@@ -38,9 +37,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
                 personhendelseConsumer.close()
             }
         })
-        Dødsinfoløser(this, personinfoService)
         HentPersoninfoV2Løser(this, personinfoService)
-        HentPersoninfoV3Løser(this, pdlClient)
         HentIdenterLøser(this, pdlClient)
         Vergemålløser(this, personinfoService)
     }

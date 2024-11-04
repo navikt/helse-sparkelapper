@@ -10,25 +10,6 @@ internal class PersoninfoService(private val pdlClient: PdlClient) {
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    fun løsningForDødsinfo(
-        behovId: String,
-        vedtaksperiodeId: String,
-        fødselsnummer: String
-    ): JsonNode = withMDC("id" to behovId, "vedtaksperiodeId" to vedtaksperiodeId) {
-        val pdlRespons = pdlClient.hentDødsdato(fødselsnummer, behovId)
-        log.info(
-            "løser behov Dødsinfo: {} for {}",
-            keyValue("id", behovId),
-            keyValue("vedtaksperiodeId", vedtaksperiodeId)
-        )
-        sikkerlogg.info(
-            "løser behov Dødsinfo: {} for {} svarFraPDL=$pdlRespons",
-            keyValue("id", behovId),
-            keyValue("vedtaksperiodeId", vedtaksperiodeId)
-        )
-        PdlOversetter.oversettDødsdato(pdlRespons)
-    }
-
     fun løsningForPersoninfo(
             callId: String,
             ident: String

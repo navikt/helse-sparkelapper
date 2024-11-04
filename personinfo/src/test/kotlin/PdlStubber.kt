@@ -10,7 +10,6 @@ import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import java.time.LocalDateTime
 import no.nav.helse.sparkel.personinfo.PdlClient
 import no.nav.helse.sparkel.personinfo.PersoninfoService
-import no.nav.helse.sparkel.personinfo.stubSts
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -45,7 +44,6 @@ internal abstract class PdlStubber {
     fun setupWiremock() {
         wireMockServer.start()
         WireMock.configureFor(WireMock.create().port(wireMockServer.port()).build())
-        stubSts()
 
         personinfoService = PersoninfoService(
             PdlClient(

@@ -7,9 +7,6 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import no.nav.helse.sparkel.personinfo.v3.Attributt
-import no.nav.helse.sparkel.personinfo.v3.PDL
-import no.nav.helse.sparkel.personinfo.v3.PdlQueryBuilder
 
 private fun query(sti: String) = PdlClient::class.java.getResource(sti)!!.readText().replace(Regex("[\n\r]"), "")
 
@@ -17,12 +14,11 @@ internal class PdlClient(
     private val baseUrl: String,
     private val accessTokenClient: AzureTokenProvider,
     private val accessTokenScope: String,
-): PDL {
+) {
 
     companion object {
         private val objectMapper = ObjectMapper()
         private val httpClient = HttpClient.newHttpClient()
-        private val dødsdatoQuery = query("/pdl/hentDødsdato.graphql")
         private val personinfoQuery = query("/pdl/hentPersoninfo.graphql")
         private val hentIdenterQuery = query("/pdl/hentIdenter.graphql")
         private val hentAlleIdenterQuery = query("/pdl/hentAlleIdenter.graphql")
@@ -55,11 +51,6 @@ internal class PdlClient(
         return objectMapper.readTree(response.body())
     }
 
-    internal fun hentDødsdato(
-        ident: String,
-        callId: String
-    ) = request(ident, callId, dødsdatoQuery)
-
     internal fun hentPersoninfo(
         ident: String,
         callId: String
@@ -79,7 +70,4 @@ internal class PdlClient(
         ident: String,
         callId: String
     ) = request(ident, callId, hentVergemålQuery)
-
-    override fun hent(ident: String, callId: String, attributter: Set<Attributt>) =
-        request(ident, callId, PdlQueryBuilder(attributter).build())
 }
