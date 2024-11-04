@@ -1,5 +1,9 @@
 package no.nav.helse.sparkel.personinfo.leesah
 
+import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.retry.retryBlocking
+import com.github.navikt.tbd_libs.speed.IdentResponse
+import com.github.navikt.tbd_libs.speed.SpeedClient
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -8,11 +12,7 @@ import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.sparkel.personinfo.FantIkkeIdenter
-import no.nav.helse.sparkel.personinfo.Ident
-import no.nav.helse.sparkel.personinfo.Identer
-import no.nav.helse.sparkel.personinfo.IdenterResultat
-import no.nav.helse.sparkel.personinfo.PdlClient
+import no.nav.helse.rapids_rivers.withMDC
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
 import org.slf4j.LoggerFactory
@@ -21,7 +21,7 @@ internal fun erDev() = "dev-gcp" == System.getenv("NAIS_CLUSTER_NAME")
 
 internal class PersonhendelseRiver(
     private val rapidsConnection: RapidsConnection,
-    private val pdlClient: PdlClient,
+    private val speedClient: SpeedClient,
     private val cacheTimeout: Duration
 ) {
 
@@ -31,15 +31,18 @@ internal class PersonhendelseRiver(
 
     fun onPackage(record: GenericRecord) {
         val opplysningstype = record.get("opplysningstype").toString()
-        when (opplysningstype) {
-            "ADRESSEBESKYTTELSE_V1" -> håndterAdressebeskyttelse(record)
-            "DOEDSFALL_V1" -> håndterDødsmelding(record)
-            "FOLKEREGISTERIDENTIFIKATOR_V1" -> håndterFolkeregisteridentifikator(record)
-            else -> sikkerlogg.info("uhåndtert melding {}\n$record", keyValue("opplysningstype", opplysningstype))
+        val callId = UUID.randomUUID().toString()
+        withMDC("callId" to callId) {
+            when (opplysningstype) {
+                "ADRESSEBESKYTTELSE_V1" -> håndterAdressebeskyttelse(record, callId)
+                "DOEDSFALL_V1" -> håndterDødsmelding(record, callId)
+                "FOLKEREGISTERIDENTIFIKATOR_V1" -> håndterFolkeregisteridentifikator(record, callId)
+                else -> sikkerlogg.info("uhåndtert melding {}\n$record", keyValue("opplysningstype", opplysningstype))
+            }
         }
     }
 
-    private fun håndterDødsmelding(record: GenericRecord) {
+    private fun håndterDødsmelding(record: GenericRecord, callId: String) {
         sikkerlogg.info("mottok melding om dødsfall: $record")
 
         val dødsfall = record.get("doedsfall")
@@ -52,8 +55,18 @@ internal class PersonhendelseRiver(
         }
 
         val ident = (record.get("personidenter") as List<Any?>).first().toString()
-        val identer: IdenterResultat = pdlClient.hentIdenter(ident, UUID.randomUUID().toString())
-        if (identer !is Identer) return sikkerlogg.info("Kan ikke registrere dødsdato-endring på $ident pga manglende fnr")
+
+        val identer = try {
+            retryBlocking {
+                when (val svar = speedClient.hentFødselsnummerOgAktørId(ident, callId)) {
+                    is Result.Error -> throw RuntimeException(svar.error, svar.cause)
+                    is Result.Ok -> svar.value
+                }
+            }
+        } catch (err: Exception) {
+            return sikkerlogg.info("Kan ikke registrere dødsdato-endring på $ident pga manglende fnr", err)
+        }
+
         val packet = JsonMessage.newMessage(mapOf(
             "@event_name" to "dødsmelding",
             "@id" to UUID.randomUUID(),
@@ -70,7 +83,7 @@ internal class PersonhendelseRiver(
         rapidsConnection.publish(identer.fødselsnummer, packet.toJson())
     }
 
-    private fun håndterFolkeregisteridentifikator(record: GenericRecord) {
+    private fun håndterFolkeregisteridentifikator(record: GenericRecord, callId: String) {
         sikkerlogg.info("mottok melding om folkeregisteridentifikator:\n$record")
 
         val folkeregisteridentifikator = record.get("Folkeregisteridentifikator")
@@ -80,32 +93,49 @@ internal class PersonhendelseRiver(
         val status = folkeregisteridentifikator["status"].toString()
         if (status != "opphoert") return
 
-        val (aktivIdent, historiske) = try {
-            pdlClient.hentAlleIdenter(ident, UUID.randomUUID().toString())
-        } catch (e: Exception) {
+        val historiskeIdenter = try {
+            retryBlocking {
+                when (val svar = speedClient.hentHistoriskeFødselsnumre(ident, callId)) {
+                    is Result.Error -> throw RuntimeException(svar.error, svar.cause)
+                    is Result.Ok -> svar.value
+                }
+            }
+        } catch (err: Exception) {
             if (erDev()) {
-                sikkerlogg.error("Fikk feil ved pdl-oppslag på ident $ident, ignorerer melding", e)
+                sikkerlogg.error("Fikk feil ved pdl-oppslag på ident $ident, ignorerer melding", err)
                 return
             }
-            throw e
+            throw err
         }
+
+        val aktivIdent = try {
+            retryBlocking {
+                when (val svar = speedClient.hentFødselsnummerOgAktørId(ident, callId)) {
+                    is Result.Error -> throw RuntimeException(svar.error, svar.cause)
+                    is Result.Ok -> svar.value
+                }
+            }
+        } catch (err: Exception) {
+            if (erDev()) {
+                sikkerlogg.error("Fikk feil ved pdl-oppslag på ident $ident, ignorerer melding", err)
+                return
+            }
+            throw err
+        }
+
         val packet = JsonMessage.newMessage("ident_opphørt", mapOf(
             "fødselsnummer" to ident,
             "identtype" to identtype,
-            "aktørId" to (historiske.firstOrNull { it is Ident.AktørId }?.ident ?: aktivIdent.aktørId),
+            "aktørId" to aktivIdent.aktørId,
             "nye_identer" to mapOf(
                 "fødselsnummer" to aktivIdent.fødselsnummer,
                 "aktørId" to aktivIdent.aktørId,
                 "npid" to aktivIdent.npid
             ),
-            "gamle_identer" to historiske.map {
+            "gamle_identer" to historiskeIdenter.fødselsnumre.map {
                 mapOf(
-                    "type" to when (it) {
-                        is Ident.NPID -> "NPID"
-                        is Ident.AktørId -> "AKTØRID"
-                        is Ident.Fødselsnummer -> "FØDSELSNUMMER"
-                    },
-                    "ident" to it.ident
+                    "type" to "FØDSELSNUMMER",
+                    "ident" to it
                 )
             },
             "lesahHendelseId" to "${record.get("hendelseId")}"
@@ -117,19 +147,26 @@ internal class PersonhendelseRiver(
         rapidsConnection.publish(ident, packet.toJson())
     }
 
-    private fun håndterAdressebeskyttelse(record: GenericRecord) {
+    private fun håndterAdressebeskyttelse(record: GenericRecord, callId: String) {
         sikkerlogg.info("mottok endring på adressebeskyttelse")
 
         val ident = (record.get("personidenter") as List<Any?>).first().toString()
         if (throttle(ident)) return
 
-        when (val identer: IdenterResultat = pdlClient.hentIdenter(ident, UUID.randomUUID().toString())) {
-            is Identer -> sendMelding(identer)
-            is FantIkkeIdenter -> sikkerlogg.info("Kan ikke registrere addressebeskyttelse-endring på $ident pga manglende fnr")
+        val aktivIdent = try {
+            retryBlocking {
+                when (val svar = speedClient.hentFødselsnummerOgAktørId(ident, callId)) {
+                    is Result.Error -> throw RuntimeException(svar.error, svar.cause)
+                    is Result.Ok -> svar.value
+                }
+            }
+        } catch (err: Exception) {
+            return sikkerlogg.error("Fikk feil ved pdl-oppslag på ident $ident, ignorerer melding", err)
         }
+        sendMelding(aktivIdent)
     }
 
-    private fun sendMelding(identer: Identer) {
+    private fun sendMelding(identer: IdentResponse) {
         val packet: JsonMessage = JsonMessage.newMessage(
             mapOf(
                 "@event_name" to "adressebeskyttelse_endret",

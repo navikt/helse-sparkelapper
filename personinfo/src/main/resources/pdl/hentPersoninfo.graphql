@@ -1,8 +1,0 @@
-query($ident: ID!) {
-    hentPerson(ident: $ident) {
-        navn(historikk: false) {fornavn, mellomnavn, etternavn},
-        foedsel { foedselsdato },
-        adressebeskyttelse(historikk: false) {gradering},
-        kjoenn(historikk: false) {kjoenn}
-    }
-}

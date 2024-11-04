@@ -1,6 +1,8 @@
 package no.nav.helse.sparkel.personinfo
 
-import kotlinx.coroutines.runBlocking
+import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.speed.IdentResponse
+import com.github.navikt.tbd_libs.speed.SpeedClient
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
@@ -12,7 +14,7 @@ import org.slf4j.LoggerFactory
 
 internal class HentIdenterLøser(
     rapidsConnection: RapidsConnection,
-    private val pdlClient: PdlClient,
+    private val speedClient: SpeedClient
 ) : River.PacketListener {
     private val sikkerLogg: Logger = LoggerFactory.getLogger("tjenestekall")
 
@@ -26,27 +28,29 @@ internal class HentIdenterLøser(
         }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) = runBlocking {
+    override fun onPacket(packet: JsonMessage, context: MessageContext) {
         val hendelseId = packet["@id"].asText()
         withMDC(mapOf(
             "id" to hendelseId
         )) {
+            sikkerLogg.info("løser HentIdenter")
+            val kildeIdent = packet["ident"].asText()
             try {
-                val kildeIdent = packet["ident"].asText()
-                when (val identer: IdenterResultat = pdlClient.hentIdenter(kildeIdent, hendelseId)) {
-                    is Identer -> sendSvar(packet, identer, context)
-                    is FantIkkeIdenter -> sikkerLogg.warn("klarte ikke finne identer: $kildeIdent behov=HentIdenter melding:\n${packet.toJson()}")
+                when (val identer = speedClient.hentFødselsnummerOgAktørId(kildeIdent, hendelseId)) {
+                    is Result.Error -> {
+                        sikkerLogg.warn("klarte ikke finne identer kildeIdent=$kildeIdent: ${identer.error} behov=HentIdenter melding:\n${packet.toJson()}", identer.cause)
+                    }
+                    is Result.Ok -> sendSvar(packet, identer.value, context)
                 }
-
             } catch (err: Exception) {
-                sikkerLogg.warn("klarte ikke finne identer: ${err.message} behov=HentIdenter melding:\n${packet.toJson()}", err)
+                sikkerLogg.warn("klarte ikke finne identer kildeIdent=$kildeIdent: ${err.message} behov=HentIdenter melding:\n${packet.toJson()}", err)
             }
         }
     }
 
     private fun sendSvar(
         packet: JsonMessage,
-        identer: Identer,
+        identer: IdentResponse,
         context: MessageContext
     ) {
         packet["@løsning"] = mapOf(

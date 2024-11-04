@@ -37,7 +37,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     return RapidApplication.create(env).apply {
         val personhendelseRiver = PersonhendelseRiver(
             rapidsConnection = this,
-            pdlClient = pdlClient,
+            speedClient = speedClient,
             cacheTimeout = Duration.ofSeconds(5)
         )
         val personhendelseConsumer = PersonhendelseConsumer(this, kafkaConsumer, personhendelseRiver)
@@ -48,7 +48,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
             }
         })
         HentPersoninfoV2Løser(this, personinfoService, objectMapper)
-        HentIdenterLøser(this, pdlClient)
+        HentIdenterLøser(this, speedClient)
         Vergemålløser(this, personinfoService)
     }
 }
