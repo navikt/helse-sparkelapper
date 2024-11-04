@@ -1,6 +1,8 @@
 package no.nav.helse.sparkel.arena
 
 import com.github.navikt.tbd_libs.mock.MockHttpResponse
+import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.result_object.ok
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.SamlToken
 import com.github.navikt.tbd_libs.soap.SamlTokenProvider
@@ -131,21 +133,21 @@ class YtelsekontraktClientTest {
         return response
     }
 
-    private fun mockClient(response: String): Pair<HttpClient, YtelsekontraktClient> {
+    private fun mockClient(response: String, statusCode: Int = 200): Pair<HttpClient, YtelsekontraktClient> {
         val httpClient = mockk<HttpClient> {
             every {
                 send<String>(any(), any())
-            } returns MockHttpResponse(response)
+            } returns MockHttpResponse(response, statusCode)
         }
         val tokenProvider = object : SamlTokenProvider {
-            override fun samlToken(username: String, password: String): SamlToken {
+            override fun samlToken(username: String, password: String): Result<SamlToken> {
                 throw NotImplementedError("ikke implementert i mock")
             }
         }
         val soapClient = MinimalSoapClient(URI("http://ytelsekontrakt-ws"), tokenProvider, httpClient)
         val client = YtelsekontraktClient(
             soapClient = soapClient,
-            assertionStrategy = { "<saml token>" }
+            assertionStrategy = { "<saml token>".ok() }
         )
         return httpClient to client
     }

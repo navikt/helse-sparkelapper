@@ -32,9 +32,12 @@ internal class PdlClient(
     ): JsonNode {
         val body = objectMapper.writeValueAsString(PdlQueryObject(query, Variables(ident)))
 
+        val bearerToken = accessTokenClient.bearerToken(accessTokenScope)
+        bearerToken as com.github.navikt.tbd_libs.result_object.Result.Ok
+
         val request = HttpRequest.newBuilder(URI.create(baseUrl))
             .header("TEMA", "SYK")
-            .header("Authorization", "Bearer ${accessTokenClient.bearerToken(accessTokenScope).token}")
+            .header("Authorization", "Bearer ${bearerToken.value.token}")
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
             .header("Nav-Call-Id", callId)

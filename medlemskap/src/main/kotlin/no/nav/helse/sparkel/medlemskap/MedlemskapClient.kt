@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.result_object.Result
 import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -22,7 +23,9 @@ internal class MedlemskapClient(
         val (responseCode, responseBody) =
             with(URI("$baseUrl/speilvurdering").toURL().openConnection() as HttpURLConnection) {
                 requestMethod = "POST"
-                setRequestProperty("Authorization", "Bearer ${azureClient.bearerToken(scope).token}")
+                val bearerToken = azureClient.bearerToken(scope)
+                bearerToken as Result.Ok
+                setRequestProperty("Authorization", "Bearer ${bearerToken.value.token}")
                 setRequestProperty("Accept", "application/json")
                 setRequestProperty("Content-Type", "application/json")
                 connectTimeout = 10000

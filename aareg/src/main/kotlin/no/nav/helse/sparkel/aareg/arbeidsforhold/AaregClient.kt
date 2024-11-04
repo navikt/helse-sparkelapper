@@ -55,7 +55,9 @@ class AaregClient(
 
     private suspend fun hent(fnr: String, callId: UUID, url: String) =
         httpClient.get(url) {
-            header("Authorization", "Bearer ${tokenSupplier.bearerToken(scope).token}")
+            val azureToken = tokenSupplier.bearerToken(scope)
+            azureToken as com.github.navikt.tbd_libs.result_object.Result.Ok
+            header("Authorization", "Bearer ${azureToken.value.token}")
             System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
             header("Nav-Call-Id", callId)
             accept(ContentType.Application.Json)

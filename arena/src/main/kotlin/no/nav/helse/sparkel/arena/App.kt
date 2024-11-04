@@ -1,6 +1,8 @@
 package no.nav.helse.sparkel.arena
 
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
+import com.github.navikt.tbd_libs.result_object.map
+import com.github.navikt.tbd_libs.result_object.ok
 import com.github.navikt.tbd_libs.soap.InMemoryStsClient
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.MinimalStsClient
@@ -17,7 +19,9 @@ fun main() {
 
         val azureClient = createAzureTokenClientFromEnvironment(env)
         val proxyAuthorization = {
-            "Bearer ${azureClient.bearerToken(env.getValue("WS_PROXY_SCOPE")).token}"
+            azureClient.bearerToken(env.getValue("WS_PROXY_SCOPE")).map { azureToken ->
+                "Bearer ${azureToken.token}".ok()
+            }
         }
         val httpClient = HttpClient.newHttpClient()
         val samlTokenClient = InMemoryStsClient(MinimalStsClient(

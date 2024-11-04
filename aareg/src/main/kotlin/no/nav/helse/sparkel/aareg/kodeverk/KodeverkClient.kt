@@ -45,8 +45,10 @@ class KodeverkClient(
     }
 
     private fun hentFraKodeverk(path: String): String {
+        val bearerToken = azureTokenProvider.bearerToken(kodeverkOauthScope)
+        bearerToken as com.github.navikt.tbd_libs.result_object.Result.Ok
         val (responseCode, body) = URI("$kodeverkBaseUrl$path?spraak=nb&ekskluderUgyldige=true&oppslagsdato=${LocalDate.now()}").toURL().get(
-            "Authorization" to "Bearer ${azureTokenProvider.bearerToken(kodeverkOauthScope).token}",
+            "Authorization" to "Bearer ${bearerToken.value.token}",
             "Nav-Call-Id" to "${UUID.randomUUID()}",
             "Nav-Consumer-Id" to appName
         )

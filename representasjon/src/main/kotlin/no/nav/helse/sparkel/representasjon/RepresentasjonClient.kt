@@ -35,7 +35,9 @@ class RepresentasjonClient(
                 val response = httpClient.preparePost("$baseUrl/api/internbruker/fullmaktsgiver") {
                     contentType(ContentType.Application.Json)
                     accept(ContentType.Application.Json)
-                    bearerAuth(tokenClient.bearerToken(scope).token)
+                    val bearerToken = tokenClient.bearerToken(scope)
+                    bearerToken as com.github.navikt.tbd_libs.result_object.Result.Ok
+                    bearerAuth(bearerToken.value.token)
                     setBody(mapOf("ident" to Base64.getEncoder().encodeToString(fnr.toByteArray())))
                     header("Nav-Call-Id", "$callId")
                     header("no.nav.callid", "$callId")

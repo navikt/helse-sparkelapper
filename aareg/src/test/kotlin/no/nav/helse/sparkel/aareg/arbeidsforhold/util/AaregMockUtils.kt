@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.aareg.arbeidsforhold.util
 
 import com.github.navikt.tbd_libs.azure.AzureToken
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.result_object.Result
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -18,8 +19,8 @@ import no.nav.helse.sparkel.aareg.objectMapper
 import org.intellij.lang.annotations.Language
 
 fun azureTokenStub() = object : AzureTokenProvider {
-    override fun bearerToken(scope: String) = AzureToken("superToken", LocalDateTime.MAX)
-    override fun onBehalfOfToken(scope: String, token: String): AzureToken =
+    override fun bearerToken(scope: String) = com.github.navikt.tbd_libs.result_object.Result.Ok(AzureToken("superToken", LocalDateTime.MAX))
+    override fun onBehalfOfToken(scope: String, token: String): com.github.navikt.tbd_libs.result_object.Result<AzureToken> =
         throw NotImplementedError("Ikke implementert i mock")
 }
 

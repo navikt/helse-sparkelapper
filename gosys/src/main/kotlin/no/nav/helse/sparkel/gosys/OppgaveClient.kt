@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.gosys
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.result_object.Result
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
@@ -29,7 +30,9 @@ internal class OppgaveClient(
             requestMethod = "GET"
             connectTimeout = 10000
             readTimeout = 10000
-            setRequestProperty("Authorization", "Bearer ${azureClient.bearerToken(scope).token}")
+            val bearerToken = azureClient.bearerToken(scope)
+            bearerToken as Result.Ok
+            setRequestProperty("Authorization", "Bearer ${bearerToken.value.token}")
             setRequestProperty("Accept", "application/json")
             setRequestProperty("X-Correlation-ID", behovId)
 

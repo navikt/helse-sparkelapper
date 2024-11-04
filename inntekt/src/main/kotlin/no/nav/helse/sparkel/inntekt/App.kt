@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
+import com.github.navikt.tbd_libs.result_object.Result
 import io.ktor.client.*
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -26,7 +27,9 @@ fun main() {
         baseUrl = env.inntektRestUrl,
         inntektskomponentenOAuthScope = env.inntektOAuthScope,
         httpClient = simpleHttpClient(),
-        tokenSupplier = { tokenProvider.bearerToken(it).token },
+        tokenSupplier = {
+            (tokenProvider.bearerToken(it) as Result.Ok).value.token
+        },
     )
 
     RapidApplication.create(System.getenv()).apply {

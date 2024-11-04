@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
+import com.github.navikt.tbd_libs.result_object.Result
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.apache.Apache
@@ -137,7 +138,9 @@ private class SigrunClient(
             val response = httpClient.prepareGet("$sigrunBaseUrl/api/beregnetskatt") {
                 accept(ContentType.Application.Json)
                 method = HttpMethod.Post
-                bearerAuth(tokenClient.bearerToken(scope).token)
+                val bearerToken = tokenClient.bearerToken(scope)
+                bearerToken as Result.Ok
+                bearerAuth(bearerToken.value.token)
                 header("x-naturligident", fnr)
                 header("x-aktoerid", "")
                 header("x-filter", "BeregnetSkattPensjonsgivendeInntekt")

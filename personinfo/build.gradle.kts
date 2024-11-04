@@ -5,6 +5,8 @@ val avroVersion: String by project
 val tbdLibsVersion: String by project
 dependencies {
     implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
+    implementation("com.github.navikt.tbd-libs:speed-client:$tbdLibsVersion")
+    implementation("com.github.navikt.tbd-libs:retry:$tbdLibsVersion")
     implementation("org.apache.avro:avro:$avroVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")

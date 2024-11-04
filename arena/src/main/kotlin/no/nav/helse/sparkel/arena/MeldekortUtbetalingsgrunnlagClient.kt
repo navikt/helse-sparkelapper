@@ -7,8 +7,12 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.kotlinModule
+import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.result_object.map
+import com.github.navikt.tbd_libs.result_object.ok
 import com.github.navikt.tbd_libs.soap.MinimalSoapClient
 import com.github.navikt.tbd_libs.soap.SoapAssertionStrategy
+import com.github.navikt.tbd_libs.soap.SoapResult
 import com.github.navikt.tbd_libs.soap.deserializeSoapBody
 import java.time.LocalDate
 import org.intellij.lang.annotations.Language
@@ -24,12 +28,22 @@ class MeldekortUtbetalingsgrunnlagClient(
     private val mapper = FinnMeldekortUtbetalingsgrunnlagListeResponse.bodyHandler()
 
     fun hentMeldekortutbetalingsgrunnlag(tema: String, ident: String, fom: LocalDate, tom: LocalDate): FinnMeldekortUtbetalingsgrunnlagListeResponse {
-        val response = executeHttpRequest(createXmlBody(tema, ident, fom, tom))
-        sikkerlogg.info("RESPONSE FRA ARENA:\n$response")
-        return deserializeSoapBody(mapper, response)
+        val result = executeHttpRequest(createXmlBody(tema, ident, fom, tom)).map { response ->
+            sikkerlogg.info("RESPONSE FRA ARENA:\n$response")
+            deserializeSoapBody<FinnMeldekortUtbetalingsgrunnlagListeResponse>(mapper, response).map { soapResult ->
+                when (soapResult) {
+                    is SoapResult.Fault -> throw RuntimeException("Fikk SOAP-fault: ${soapResult.message} - ${soapResult.detalje}")
+                    is SoapResult.Ok -> soapResult.response.ok()
+                }
+            }
+        }
+        return when (result) {
+            is Result.Error -> throw RuntimeException(result.error, result.cause)
+            is Result.Ok -> result.value
+        }
     }
 
-    private fun executeHttpRequest(requestBody: String): String {
+    private fun executeHttpRequest(requestBody: String): com.github.navikt.tbd_libs.result_object.Result<String> {
         return soapClient.doSoapAction(
             action = "http://nav.no/tjeneste/virksomhet/meldekortUtbetalingsgrunnlag/v1/meldekortUtbetalingsgrunnlag_v1/finnMeldekortUtbetalingsgrunnlagListeRequest",
             body = requestBody,

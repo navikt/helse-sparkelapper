@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.egenansatt
 
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.result_object.Result
 import io.ktor.client.request.accept
 import io.ktor.client.request.header
 import io.ktor.http.ContentType
@@ -35,7 +36,9 @@ class SkjermedePersoner(
     internal fun erSkjermetPerson(fødselsnummer: String, behovId: String): Boolean =
         runBlocking {
             val httpResponse = ktorHttpClient.preparePost("$baseUrl/skjermet") {
-                header("Authorization", "Bearer ${tokenSupplier.bearerToken(scope).token}")
+                val bearerToken = tokenSupplier.bearerToken(scope)
+                bearerToken as Result.Ok
+                header("Authorization", "Bearer ${bearerToken.value.token}")
                 header("Nav-Call-Id", behovId)
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)

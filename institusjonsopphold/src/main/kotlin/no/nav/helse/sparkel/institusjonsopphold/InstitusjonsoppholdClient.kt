@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.institusjonsopphold
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.result_object.Result
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
@@ -27,7 +28,9 @@ internal class InstitusjonsoppholdClient(
             requestMethod = "GET"
             connectTimeout = 10000
             readTimeout = 10000
-            setRequestProperty("Authorization", "Bearer ${azureClient.bearerToken(scope).token}")
+            val bearerToken = azureClient.bearerToken(scope)
+            bearerToken as Result.Ok
+            setRequestProperty("Authorization", "Bearer ${bearerToken.value.token}")
             setRequestProperty("Accept", "application/json")
             setRequestProperty("Nav-Call-Id", behovId)
             System.getenv("NAIS_APP_NAME")?.also { setRequestProperty("Nav-Consumer-Id", it) }
