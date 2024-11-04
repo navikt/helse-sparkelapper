@@ -18,10 +18,3 @@ accessPolicy:
     rules:
       - application: speed-api
         namespace: tbd
-    external:
-      - host: pdl-api.prod-fss-pub.nais.io
-env:
-  - name: PDL_URL
-    value: https://pdl-api.prod-fss-pub.nais.io/graphql
-  - name: ACCESS_TOKEN_SCOPE
-    value: api://prod-fss.pdl.pdl-api/.default

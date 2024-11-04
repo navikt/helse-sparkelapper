@@ -19,18 +19,13 @@ fun main() {
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
     val azureClient = createAzureTokenClientFromEnvironment(env)
-    val pdlClient = PdlClient(
-        baseUrl = env.getValue("PDL_URL"),
-        accessTokenClient = azureClient,
-        accessTokenScope = System.getenv("ACCESS_TOKEN_SCOPE"),
-    )
     val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
     val speedClient = SpeedClient(
         httpClient = HttpClient.newHttpClient(),
         objectMapper = objectMapper,
         tokenProvider = azureClient
     )
-    val personinfoService = PersoninfoService(pdlClient, speedClient)
+    val personinfoService = PersoninfoService(speedClient)
     val kafkaConsumer = createConsumer()
     kafkaConsumer.subscribe(listOf("pdl.leesah-v1"))
 

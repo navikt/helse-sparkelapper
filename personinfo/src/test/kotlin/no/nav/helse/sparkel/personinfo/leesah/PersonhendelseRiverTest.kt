@@ -15,9 +15,6 @@ import java.time.LocalDate
 import java.util.UUID
 import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
-import no.nav.helse.sparkel.personinfo.FantIkkeIdenter
-import no.nav.helse.sparkel.personinfo.Identer
-import no.nav.helse.sparkel.personinfo.PdlClient
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.adressebeskyttelse
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.dødsfall
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.folkeregisteridentifikator

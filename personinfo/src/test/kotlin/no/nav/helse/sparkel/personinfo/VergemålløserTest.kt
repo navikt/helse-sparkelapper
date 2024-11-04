@@ -1,34 +1,37 @@
 package no.nav.helse.sparkel.personinfo
 
-import PdlStubber
 import com.fasterxml.jackson.databind.JsonNode
+import com.github.navikt.tbd_libs.result_object.ok
+import com.github.navikt.tbd_libs.speed.IdentResponse
+import com.github.navikt.tbd_libs.speed.VergemålEllerFremtidsfullmaktResponse
+import io.mockk.clearMocks
+import io.mockk.every
+import io.mockk.mockk
 import java.util.UUID
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-internal class VergemålløserTest : PdlStubber() {
+internal class VergemålløserTest {
 
-    private lateinit var rapid: TestRapid
-
-    @BeforeAll
-    fun setup() {
-        rapid = TestRapid().apply {
-            Vergemålløser(this, personinfoService)
-        }
+    private val personinfoService = mockk<PersoninfoService>()
+    private val rapid = TestRapid().apply {
+        Vergemålløser(this, personinfoService)
     }
 
     @BeforeEach
-    fun clear() {
-        rapid.reset()
+    fun setup() {
+        clearMocks(personinfoService)
     }
 
     @Test
     fun `svarer ut behov der det ikke foreligger vergemål eller fremtidsfullmakt`() {
-        stubPdlRespons(utenVergemålEllerFremtidsfullmakt())
+        every { personinfoService.løsningForVergemål(any(), any()) } returns VergemålEllerFremtidsfullmaktResponse(
+            vergemålEllerFremtidsfullmakter = emptyList(),
+            kilde = IdentResponse.KildeResponse.PDL
+        ).ok()
         rapid.sendTestMessage(behov())
         val svar = rapid.inspektør.message(0)
         assertEquals(0, svar.vergemålLøsning()["vergemål"].size())
@@ -36,7 +39,14 @@ internal class VergemålløserTest : PdlStubber() {
 
     @Test
     fun `svarer ut behov der det foreligger vergemål`() {
-        stubPdlRespons(medVergemål())
+        every { personinfoService.løsningForVergemål(any(), any()) } returns VergemålEllerFremtidsfullmaktResponse(
+            vergemålEllerFremtidsfullmakter = listOf(
+                VergemålEllerFremtidsfullmaktResponse.Vergemål(
+                    type = VergemålEllerFremtidsfullmaktResponse.Vergemåltype.VOKSEN
+                )
+            ),
+            kilde = IdentResponse.KildeResponse.PDL
+        ).ok()
         rapid.sendTestMessage(behov())
         val svar = rapid.inspektør.message(0)
         assertEquals(1, svar.vergemålLøsning()["vergemål"].size())
@@ -46,7 +56,14 @@ internal class VergemålløserTest : PdlStubber() {
 
     @Test
     fun `svarer ut behov der det foreligger fremtidsfullmakt`() {
-        stubPdlRespons(medFremtidsfullmakt())
+        every { personinfoService.løsningForVergemål(any(), any()) } returns VergemålEllerFremtidsfullmaktResponse(
+            vergemålEllerFremtidsfullmakter = listOf(
+                VergemålEllerFremtidsfullmaktResponse.Vergemål(
+                    type = VergemålEllerFremtidsfullmaktResponse.Vergemåltype.STADFESTET_FREMTIDSFULLMAKT
+                )
+            ),
+            kilde = IdentResponse.KildeResponse.PDL
+        ).ok()
         rapid.sendTestMessage(behov())
         val svar = rapid.inspektør.message(0)
         assertEquals(1, svar.vergemålLøsning()["fremtidsfullmakter"].size())

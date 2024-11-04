@@ -1,15 +1,15 @@
 package no.nav.helse.sparkel.personinfo
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.speed.VergemålEllerFremtidsfullmaktResponse
+import com.github.navikt.tbd_libs.speed.VergemålEllerFremtidsfullmaktResponse.Vergemåltype
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.rapids_rivers.JsonMessage
 import no.nav.helse.rapids_rivers.MessageContext
 import no.nav.helse.rapids_rivers.MessageProblems
 import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.rapids_rivers.River
+import no.nav.helse.rapids_rivers.withMDC
 import org.slf4j.LoggerFactory
 
 internal class Vergemålløser(
@@ -19,10 +19,8 @@ internal class Vergemålløser(
 
     companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+        private val logg = LoggerFactory.getLogger(this::class.java)
         const val behov = "Vergemål"
-        val objectMapper: ObjectMapper = jacksonObjectMapper()
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .registerModule(JavaTimeModule())
     }
 
     init {
@@ -42,19 +40,46 @@ internal class Vergemålløser(
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         val behovId = packet["@id"].asText()
         val fødselsnummer = packet["fødselsnummer"].asText()
-        try {
-            personinfoService.løsningForVergemål(behovId, fødselsnummer).let { vergemålløsning ->
-                packet["@løsning"] = mapOf(behov to vergemålløsning)
+        withMDC("callId" to behovId) {
+            try {
+                sikkerlogg.info("løser behov Vergemål {}", keyValue("id", behovId))
+                logg.info("løser behov Vergemål {}", keyValue("id", behovId))
+                when (val svar = personinfoService.løsningForVergemål(behovId, fødselsnummer)) {
+                    is Result.Error -> sikkerlogg.error("Feil under løsing av vergemål-behov for {}: ${svar.error}", keyValue("fnr", fødselsnummer), svar.cause)
+                    is Result.Ok -> {
+                        val (fremtidsfullmakter, vergemål) = svar.value
+                            .vergemålEllerFremtidsfullmakter
+                            .map {
+                                Vergemål(
+                                    type = when (it.type) {
+                                        Vergemåltype.ENSLIG_MINDREÅRIG_ASYLSØKER -> VergemålType.ensligMindreaarigAsylsoeker
+                                        Vergemåltype.ENSLIG_MINDREÅRIG_FLYKTNING -> VergemålType.ensligMindreaarigFlyktning
+                                        Vergemåltype.VOKSEN -> VergemålType.voksen
+                                        Vergemåltype.MIDLERTIDIG_FOR_VOKSEN -> VergemålType.midlertidigForVoksen
+                                        Vergemåltype.MINDREÅRIG -> VergemålType.mindreaarig
+                                        Vergemåltype.MIDLERTIDIG_FOR_MINDREÅRIG -> VergemålType.midlertidigForMindreaarig
+                                        Vergemåltype.FORVALTNING_UTENFOR_VERGEMÅL -> VergemålType.forvaltningUtenforVergemaal
+                                        Vergemåltype.STADFESTET_FREMTIDSFULLMAKT -> VergemålType.stadfestetFremtidsfullmakt
+                                    }
+                                )
+                            }
+                            .partition {
+                                it.type == VergemålType.stadfestetFremtidsfullmakt
+                            }
+                        val løsning = Resultat(
+                            vergemål = vergemål,
+                            fremtidsfullmakter = fremtidsfullmakter
+                        )
+                        packet["@løsning"] = mapOf(behov to løsning)
+                        packet.toJson().let { løsningJson ->
+                            context.publish(løsningJson)
+                            sikkerlogg.info("sender Vergemål-svar {}:\n\tløsning=$løsningJson", keyValue("id", behovId))
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                sikkerlogg.error("Feil under løsing av vergemål-behov for {}: ${e.message}", keyValue("fnr", fødselsnummer))
             }
-            packet.toJson().let { løsningJson ->
-                context.publish(løsningJson)
-                sikkerlogg.info(
-                    "sender svar {}:\n\tløsning=$løsningJson",
-                    keyValue("id", behovId),
-                )
-            }
-        } catch (e: Exception) {
-            sikkerlogg.error("Feil under løsing av vergemål-behov for {}: ${e.message}", keyValue("fnr", fødselsnummer))
         }
     }
 
