@@ -1,9 +1,6 @@
 package no.nav.helse.sparkel.institusjonsopphold
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureAuthMethod
 import com.github.navikt.tbd_libs.azure.AzureTokenClient
 import com.github.tomakehurst.wiremock.WireMockServer
@@ -12,7 +9,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
 import java.net.URI
 import java.util.UUID
-import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -22,34 +19,12 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 internal class InstitusjonsoppholdløserTest {
 
     private val wireMockServer: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
-    private val objectMapper = jacksonObjectMapper()
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        .registerModule(JavaTimeModule())
 
-    private lateinit var sendtMelding: JsonNode
     private lateinit var service: InstitusjonsoppholdService
+    private val rapid = TestRapid()
 
-    private val rapid = object : RapidsConnection() {
-
-        fun sendTestMessage(message: String) {
-            notifyMessage(message, this)
-        }
-
-        override fun publish(message: String) {
-            sendtMelding = objectMapper.readTree(message)
-        }
-
-        override fun publish(key: String, message: String) {
-            sendtMelding = objectMapper.readTree(message)
-        }
-
-        override fun rapidName(): String {
-            return "Test"
-        }
-
-        override fun start() {}
-
-        override fun stop() {}
+    private val sendtMelding get() = rapid.inspektør.let {
+        it.message(it.size - 1)
     }
 
     @BeforeAll
@@ -77,7 +52,7 @@ internal class InstitusjonsoppholdløserTest {
 
     @BeforeEach
     internal fun beforeEach() {
-        sendtMelding = objectMapper.createObjectNode()
+        rapid.reset()
     }
 
     @Test

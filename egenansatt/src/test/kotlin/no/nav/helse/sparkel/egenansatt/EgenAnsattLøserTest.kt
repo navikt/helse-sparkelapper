@@ -1,13 +1,10 @@
 package no.nav.helse.sparkel.egenansatt
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
 import java.util.UUID
-import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -18,37 +15,17 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 @TestInstance(Lifecycle.PER_CLASS)
 internal class EgenAnsattLøserTest {
 
-    private val objectMapper = jacksonObjectMapper()
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        .registerModule(JavaTimeModule())
-
     private val skjermedePersoner = mockk<SkjermedePersoner>()
 
-    private val meldinger = mutableListOf<JsonNode>()
+    private val rapid = TestRapid()
 
-    private val sendtMelding get() = meldinger.last()
-
-    private val rapid = object : RapidsConnection() {
-        fun sendTestMessage(message: String) = notifyMessage(message, this)
-
-        override fun publish(message: String) {
-            meldinger.add(objectMapper.readTree(message))
-        }
-
-        override fun publish(key: String, message: String) {}
-
-        override fun rapidName(): String {
-            return "Test"
-        }
-
-        override fun start() {}
-
-        override fun stop() {}
+    private val sendtMelding get() = rapid.inspektør.let {
+        it.message(it.size - 1)
     }
 
     @BeforeEach
     fun reset() {
-        meldinger.clear()
+        rapid.reset()
         mockEgenAnsatt()
     }
 

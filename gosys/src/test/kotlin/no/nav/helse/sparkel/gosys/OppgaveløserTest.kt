@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.github.navikt.tbd_libs.azure.AzureAuthMethod
 import com.github.navikt.tbd_libs.azure.AzureToken
-import com.github.navikt.tbd_libs.azure.AzureTokenClient
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.Result
 import com.github.navikt.tbd_libs.result_object.ok
@@ -18,16 +16,14 @@ import com.github.tomakehurst.wiremock.client.WireMock.configureFor
 import com.github.tomakehurst.wiremock.client.WireMock.create
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
 import com.github.tomakehurst.wiremock.client.WireMock.get
-import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import io.mockk.every
 import io.mockk.mockk
-import java.net.URI
 import java.time.LocalDateTime
 import java.util.UUID
-import no.nav.helse.rapids_rivers.RapidsConnection
+import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -61,29 +57,11 @@ internal class OppgaveløserTest {
             TODO("Not yet implemented")
         }
     }
-    private lateinit var sendtMelding: JsonNode
     private lateinit var service: OppgaveService
+    private val rapid = TestRapid()
 
-    private val rapid = object : RapidsConnection() {
-
-        fun sendTestMessage(message: String) {
-            notifyMessage(message, this)
-        }
-
-        override fun publish(message: String) {
-            sendtMelding = objectMapper.readTree(message)
-        }
-
-        override fun publish(key: String, message: String) {
-            sendtMelding = objectMapper.readTree(message)
-        }
-
-        override fun rapidName(): String {
-            return "Test"
-        }
-
-        override fun start() {}
-        override fun stop() {}
+    private val sendtMelding get() = rapid.inspektør.let {
+        it.message(it.size - 1)
     }
 
     private val okBehov = UUID.randomUUID()
@@ -110,7 +88,7 @@ internal class OppgaveløserTest {
 
     @BeforeEach
     internal fun beforeEach() {
-        sendtMelding = objectMapper.createObjectNode()
+        rapid.reset()
     }
 
     @Test

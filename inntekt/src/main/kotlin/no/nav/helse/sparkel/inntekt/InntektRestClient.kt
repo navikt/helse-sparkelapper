@@ -12,20 +12,10 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import io.prometheus.client.Summary
 import java.time.YearMonth
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlag
 import org.slf4j.LoggerFactory
-
-private const val INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME = "inntektskomponent_client_seconds"
-private val clientLatencyStats: Summary = Summary.build()
-    .name(INNTEKTSKOMPONENT_CLIENT_SECONDS_METRICNAME)
-    .quantile(0.5, 0.05) // Add 50th percentile (= median) with 5% tolerated error
-    .quantile(0.9, 0.01) // Add 90th percentile with 1% tolerated error
-    .quantile(0.99, 0.001) // Add 99th percentile with 0.1% tolerated error
-    .help("Latency inntektskomponenten, in seconds")
-    .register()
 
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
@@ -42,36 +32,34 @@ class InntektRestClient(
         filter: String,
         callId: String,
         orgnummer: String? = null
-    ) = clientLatencyStats.startTimer().use {
-        retry {
-            httpClient.preparePost("$baseUrl/api/v1/hentinntektliste") {
-                expectSuccess = true
-                header("Authorization", "Bearer ${tokenSupplier(inntektskomponentenOAuthScope)}")
-                header("Nav-Consumer-Id", "sparkel-inntekt")
-                header("Nav-Call-Id", callId)
-                contentType(ContentType.Application.Json)
-                accept(ContentType.Application.Json)
-                setBody(
-                    mapOf(
-                        "ident" to mapOf(
-                            "identifikator" to fnr,
-                            "aktoerType" to "NATURLIG_IDENT"
-                        ),
-                        "ainntektsfilter" to filter,
-                        "formaal" to "Sykepenger",
-                        "maanedFom" to fom,
-                        "maanedTom" to tom
-                    )
+    ) = retry {
+        httpClient.preparePost("$baseUrl/api/v1/hentinntektliste") {
+            expectSuccess = true
+            header("Authorization", "Bearer ${tokenSupplier(inntektskomponentenOAuthScope)}")
+            header("Nav-Consumer-Id", "sparkel-inntekt")
+            header("Nav-Call-Id", callId)
+            contentType(ContentType.Application.Json)
+            accept(ContentType.Application.Json)
+            setBody(
+                mapOf(
+                    "ident" to mapOf(
+                        "identifikator" to fnr,
+                        "aktoerType" to "NATURLIG_IDENT"
+                    ),
+                    "ainntektsfilter" to filter,
+                    "formaal" to "Sykepenger",
+                    "maanedFom" to fom,
+                    "maanedTom" to tom
                 )
-            }.execute {
-                val content = it.bodyAsText()
-                sikkerlogg.info(
-                    "inntektskomponenten svarte for filter=$filter med:\n\t$content",
-                    keyValue("callId", callId),
-                    keyValue("fødselsnummer", fnr)
-                )
-                tilMånedListe(objectMapper.readValue(content), filter, orgnummer)
-            }
+            )
+        }.execute {
+            val content = it.bodyAsText()
+            sikkerlogg.info(
+                "inntektskomponenten svarte for filter=$filter med:\n\t$content",
+                keyValue("callId", callId),
+                keyValue("fødselsnummer", fnr)
+            )
+            tilMånedListe(objectMapper.readValue(content), filter, orgnummer)
         }
     }
 }

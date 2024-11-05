@@ -1,49 +1,25 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import no.nav.helse.rapids_rivers.RapidsConnection
+import java.time.LocalDate
+import java.util.UUID
+import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import no.nav.helse.sparkel.infotrygd.PeriodeDAO
+import no.nav.helse.sparkel.infotrygd.UtbetalingDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.time.LocalDate
-import java.util.UUID
-import no.nav.helse.sparkel.infotrygd.PeriodeDAO
-import no.nav.helse.sparkel.infotrygd.UtbetalingDAO
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class UtbetalingsperiodeløserTest : H2Database() {
 
-    private val objectMapper = jacksonObjectMapper()
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        .registerModule(JavaTimeModule())
-
-    private var sendtMelding: JsonNode = objectMapper.createObjectNode()
     private lateinit var service: InfotrygdService
-
-    private val rapid = object : RapidsConnection() {
-
-        fun sendTestMessage(message: String) {
-            notifyMessage(message, this)
-        }
-
-        override fun publish(message: String) {
-            sendtMelding = objectMapper.readTree(message)
-        }
-
-        override fun publish(key: String, message: String) {}
-        override fun rapidName(): String {
-            return "Test"
-        }
-
-        override fun start() {}
-
-        override fun stop() {}
+    private val rapid = TestRapid()
+    private val sendtMelding get() = rapid.inspektør.let {
+        it.message(it.size - 1)
     }
 
     @BeforeAll
@@ -60,7 +36,7 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
     @BeforeEach
     internal fun beforeEach() {
         clear()
-        sendtMelding = objectMapper.createObjectNode()
+        rapid.reset()
     }
 
     @Test
