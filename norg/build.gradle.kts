@@ -12,4 +12,5 @@ dependencies {
     implementation(project(":felles"))
 
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
+    testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
 }

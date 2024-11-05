@@ -1,9 +1,9 @@
 package no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import java.time.LocalDateTime
 import java.util.UUID
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.asLocalDateTime
 import no.nav.helse.sparkel.arbeidsgiver.Meldingstype
 
 internal data class InntektsmeldingHåndtertDto(

@@ -1,9 +1,9 @@
 package no.nav.helse.sparkel.sputnik
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.sputnik.abakus.AbakusClient
 import no.nav.helse.sparkel.sputnik.abakus.Stønadsperiode
 import no.nav.helse.sparkel.sputnik.abakus.Ytelse

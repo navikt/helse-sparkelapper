@@ -3,13 +3,13 @@ package no.nav.helse.sparkel.sputnik.abakus
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
+import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.rapids_rivers.asLocalDateTime
-import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.sparkel.sputnik.abakus.HttpRequest.postJson
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory

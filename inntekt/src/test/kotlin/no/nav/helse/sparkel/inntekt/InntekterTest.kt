@@ -1,12 +1,12 @@
 package no.nav.helse.sparkel.inntekt
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.asYearMonth
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.*
 import io.ktor.serialization.jackson.JacksonConverter
-import no.nav.helse.rapids_rivers.asYearMonth
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

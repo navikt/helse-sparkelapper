@@ -2,11 +2,11 @@ package no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import java.util.UUID
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.objectMapper
 import org.junit.jupiter.api.Assertions.assertEquals

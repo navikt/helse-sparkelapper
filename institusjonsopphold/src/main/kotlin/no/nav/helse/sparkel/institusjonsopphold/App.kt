@@ -1,9 +1,9 @@
 package no.nav.helse.sparkel.institusjonsopphold
 
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import java.io.File
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.rapids_rivers.RapidsConnection
 
 fun main() {
     val app = createApp(System.getenv())

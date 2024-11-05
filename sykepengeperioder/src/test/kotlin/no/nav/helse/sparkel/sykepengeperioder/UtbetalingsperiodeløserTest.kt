@@ -1,9 +1,9 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import java.time.LocalDate
 import java.util.UUID
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.infotrygd.PeriodeDAO
 import no.nav.helse.sparkel.infotrygd.UtbetalingDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*

@@ -1,12 +1,12 @@
 package no.nav.helse.sparkel.tilbakedatert
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import java.time.LocalDate
 import java.time.LocalDateTime
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.UUID
-import no.nav.helse.rapids_rivers.asLocalDate
 import org.intellij.lang.annotations.Language
 
 internal class TilbakedatertRiverTest {

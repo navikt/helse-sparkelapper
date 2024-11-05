@@ -1,7 +1,7 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import java.util.UUID
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.azureTokenStub
 import no.nav.helse.sparkel.aareg.objectMapper

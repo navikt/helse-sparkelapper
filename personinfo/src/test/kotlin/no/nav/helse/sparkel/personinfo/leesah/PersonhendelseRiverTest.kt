@@ -3,6 +3,8 @@ package no.nav.helse.sparkel.personinfo.leesah
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
+import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import com.github.navikt.tbd_libs.result_object.error
 import com.github.navikt.tbd_libs.result_object.ok
 import com.github.navikt.tbd_libs.speed.HistoriskeIdenterResponse
@@ -13,8 +15,6 @@ import io.mockk.mockk
 import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
-import no.nav.helse.rapids_rivers.asLocalDateTime
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.adressebeskyttelse
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.dødsfall
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.folkeregisteridentifikator

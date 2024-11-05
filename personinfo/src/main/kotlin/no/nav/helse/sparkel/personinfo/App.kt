@@ -3,11 +3,11 @@ package no.nav.helse.sparkel.personinfo
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import com.github.navikt.tbd_libs.speed.SpeedClient
 import java.net.http.HttpClient
 import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidApplication
-import no.nav.helse.rapids_rivers.RapidsConnection
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseConsumer
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseRiver
 import no.nav.helse.sparkel.personinfo.leesah.createConsumer

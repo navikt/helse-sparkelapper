@@ -1,7 +1,7 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import com.fasterxml.jackson.databind.JsonNode
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.*

@@ -1,8 +1,8 @@
 package no.nav.helse.sparkel.oppgaveendret.oppgave
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import net.logstash.logback.argument.StructuredArguments.kv
-import no.nav.helse.rapids_rivers.isMissingOrNull
 import no.nav.helse.sparkel.oppgaveendret.oppgave.Identtype.FOLKEREGISTERIDENT
 import org.slf4j.LoggerFactory
 

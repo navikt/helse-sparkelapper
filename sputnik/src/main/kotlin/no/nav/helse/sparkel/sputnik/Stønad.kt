@@ -1,8 +1,8 @@
 package no.nav.helse.sparkel.sputnik
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
 import java.util.UUID
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.asLocalDate
 import no.nav.helse.sparkel.sputnik.abakus.Ytelse
 import no.nav.helse.sparkel.sputnik.abakus.Stønadsperiode
 

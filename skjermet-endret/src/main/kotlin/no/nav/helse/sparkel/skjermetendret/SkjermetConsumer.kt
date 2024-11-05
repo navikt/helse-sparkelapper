@@ -1,7 +1,7 @@
 package no.nav.helse.sparkel.skjermetendret
 
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import java.time.Duration
-import no.nav.helse.rapids_rivers.RapidsConnection
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 

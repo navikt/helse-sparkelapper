@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.personinfo
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import com.github.navikt.tbd_libs.result_object.ok
 import com.github.navikt.tbd_libs.speed.IdentResponse
 import com.github.navikt.tbd_libs.speed.VergemålEllerFremtidsfullmaktResponse
@@ -8,7 +9,6 @@ import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import java.util.UUID
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach

@@ -11,6 +11,8 @@ dependencies {
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+
+    testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
     testImplementation("org.skyscreamer:jsonassert:$jsonAssertVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     implementation(project(":felles"))

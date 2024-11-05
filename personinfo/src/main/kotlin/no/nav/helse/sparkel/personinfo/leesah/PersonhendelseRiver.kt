@@ -1,5 +1,8 @@
 package no.nav.helse.sparkel.personinfo.leesah
 
+import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
+import com.github.navikt.tbd_libs.rapids_and_rivers.withMDC
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import com.github.navikt.tbd_libs.result_object.Result
 import com.github.navikt.tbd_libs.retry.retryBlocking
 import com.github.navikt.tbd_libs.speed.IdentResponse
@@ -10,9 +13,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
 import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.rapids_rivers.JsonMessage
-import no.nav.helse.rapids_rivers.RapidsConnection
-import no.nav.helse.rapids_rivers.withMDC
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
 import org.slf4j.LoggerFactory

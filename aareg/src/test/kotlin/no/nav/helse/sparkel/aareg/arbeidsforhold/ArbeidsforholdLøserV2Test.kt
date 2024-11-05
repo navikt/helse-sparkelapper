@@ -6,11 +6,11 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.fasterxml.jackson.databind.JsonNode
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import java.util.UUID
-import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.azureTokenStub
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory
 internal class ArbeidsforholdLøserV2Test {
 
     private val sendtMelding get() = rapid.inspektør.message(rapid.inspektør.size - 1)
-
     private val rapid = TestRapid()
 
     @Test
