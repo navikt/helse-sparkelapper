@@ -1,9 +1,0 @@
-kafkaPool: nav-dev
-replicas:
-  min: "0"
-  max: "0"
-gcp:
-  type: POSTGRES_14
-  name: sparkelidenter
-  envVarPrefix: DATABASE
-  tier: db-f1-micro
