@@ -11,6 +11,9 @@ accessPolicy:
   outbound:
     external:
       - host: oppgave.dev-fss-pub.nais.io
+    rules:
+      - application: speed-api
+        namespace: tbd
 env:
 - name: OPPGAVE_URL
   value: https://oppgave.dev-fss-pub.nais.io
