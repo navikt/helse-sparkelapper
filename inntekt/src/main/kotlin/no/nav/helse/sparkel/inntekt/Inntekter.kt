@@ -5,6 +5,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asYearMonth
 import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
+import com.github.navikt.tbd_libs.rapids_and_rivers.withMDC
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
@@ -16,7 +17,6 @@ import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSammenligningsgru
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlag
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlagForArbeidsgiver
 import org.slf4j.LoggerFactory
-import org.slf4j.MDC
 import java.time.YearMonth
 import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.kv
@@ -245,16 +245,6 @@ class Inntekter(
         } catch (e: Exception) {
             log.warn("Feilet ved løsing av behov: ${e.message}", e)
             sikkerlogg.warn("Feilet ved løsing av behov: ${e.message}", e)
-        }
-    }
-
-    private fun withMDC(context: Map<String, String>, block: () -> Unit) {
-        val contextMap = MDC.getCopyOfContextMap() ?: emptyMap()
-        try {
-            MDC.setContextMap(contextMap + context)
-            block()
-        } finally {
-            MDC.setContextMap(contextMap)
         }
     }
 }

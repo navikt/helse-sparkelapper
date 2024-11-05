@@ -233,8 +233,8 @@ internal class InntekterTest {
                                 "aktoerType": "ORGANISASJON"
                             },
                             "inntektsmottaker": {
-                                "identifikator": "aktørId",
-                                "aktoerType": "AKTOER_ID"
+                                "identifikator": "fnr",
+                                "aktoerType": "NATURLIG_IDENT"
                             },
                             "inngaarIGrunnlagForTrekk": true,
                             "utloeserArbeidsgiveravgift": true,
@@ -270,8 +270,8 @@ internal class InntekterTest {
             }
         ],
         "ident": {
-            "identifikator": "aktørId",
-            "aktoerType": "AKTOER_ID"
+            "identifikator": "fnr",
+            "aktoerType": "NATURLIG_IDENT"
         }
     }
 """
@@ -300,8 +300,8 @@ internal class InntekterTest {
                                 "aktoerType": "ORGANISASJON"
                             },
                             "inntektsmottaker": {
-                                "identifikator": "aktørId",
-                                "aktoerType": "AKTOER_ID"
+                                "identifikator": "fnr",
+                                "aktoerType": "NATURLIG_IDENT"
                             },
                             "inngaarIGrunnlagForTrekk": true,
                             "utloeserArbeidsgiveravgift": true,
@@ -313,8 +313,8 @@ internal class InntekterTest {
             }
         ],
         "ident": {
-            "identifikator": "aktørId",
-            "aktoerType": "AKTOER_ID"
+            "identifikator": "fnr",
+            "aktoerType": "NATURLIG_IDENT"
         }
     }
 """
@@ -367,8 +367,8 @@ fun sykepengegrunnlagResponse() = """
                                 "aktoerType": "ORGANISASJON"
                             },
                             "inntektsmottaker": {
-                                "identifikator": "aktørId",
-                                "aktoerType": "AKTOER_ID"
+                                "identifikator": "fnr",
+                                "aktoerType": "NATURLIG_IDENT"
                             },
                             "inngaarIGrunnlagForTrekk": true,
                             "utloeserArbeidsgiveravgift": true,
@@ -400,8 +400,8 @@ fun sykepengegrunnlagResponse() = """
                                 "aktoerType": "ORGANISASJON"
                             },
                             "inntektsmottaker": {
-                                "identifikator": "aktørId",
-                                "aktoerType": "AKTOER_ID"
+                                "identifikator": "fnr",
+                                "aktoerType": "NATURLIG_IDENT"
                             },
                             "inngaarIGrunnlagForTrekk": true,
                             "utloeserArbeidsgiveravgift": true,
@@ -413,8 +413,8 @@ fun sykepengegrunnlagResponse() = """
             }
         ],
         "ident": {
-            "identifikator": "aktørId",
-            "aktoerType": "AKTOER_ID"
+            "identifikator": "fnr",
+            "aktoerType": "NATURLIG_IDENT"
         }
     }
 """

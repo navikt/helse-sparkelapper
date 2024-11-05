@@ -42,6 +42,9 @@ class InntektRestClient(
             accept(ContentType.Application.Json)
             setBody(
                 mapOf(
+                    // om sender inn aktørid til inntektskomponenten så kan vi få aktørid tilbake noen steder.
+                    // Om vi sender inn fnr vil vi aldri få aktørid tilbake
+                    // !! Viktig at vi derfor kun sender FNR !!
                     "ident" to mapOf(
                         "identifikator" to fnr,
                         "aktoerType" to "NATURLIG_IDENT"
@@ -68,6 +71,9 @@ private fun tilMånedListe(node: JsonNode, filter: String, orgnummer: String? = 
     .map { tilMåned(it, filter, orgnummer) }
 
 private fun tilInntekt(node: JsonNode, inntekterForOrgnummer: String? = null): Inntekt? {
+    check(identifikator(node, "AKTOER_ID") == null) {
+        "Vi skal ikke få aktørID fra inntektskomponenten"
+    }
     val orgnr = identifikator(node, "ORGANISASJON")
     if (inntekterForOrgnummer != null && inntekterForOrgnummer != orgnr) return null
     return Inntekt(
@@ -75,7 +81,6 @@ private fun tilInntekt(node: JsonNode, inntekterForOrgnummer: String? = null): I
         inntektstype = Inntektstype.valueOf(node["inntektType"].textValue()),
         orgnummer = orgnr,
         fødselsnummer = identifikator(node, "NATURLIG_IDENT"),
-        aktørId = identifikator(node, "AKTOER_ID"),
         beskrivelse = node["beskrivelse"].textValue(),
         fordel = node["fordel"].textValue()
     )
@@ -118,10 +123,15 @@ data class Inntekt(
     val inntektstype: Inntektstype,
     val orgnummer: String?,
     val fødselsnummer: String?,
-    val aktørId: String?,
     val beskrivelse: String?,
     val fordel: String?
-)
+) {
+    // om sender inn aktørid til inntektskomponenten så kan vi få aktørid tilbake noen steder.
+    // Om vi sender inn fnr vil vi aldri få aktørid tilbake
+    // !! Viktig at vi derfor kun sender FNR !!
+    @Deprecated("feltet må fjernes fra konsumentene først")
+    val aktørId: String? = null
+}
 
 enum class Inntektstype {
     LOENNSINNTEKT,

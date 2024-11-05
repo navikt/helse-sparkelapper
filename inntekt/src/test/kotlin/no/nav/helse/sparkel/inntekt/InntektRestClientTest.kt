@@ -55,13 +55,9 @@ class InntektRestClientTest {
     }
 
     @Test
-    fun `person med inntektshistorikk fra aktørId`() = runBlocking {
+    fun `person med inntektshistorikk fra aktørId`() {
         every { responsMock.get() } returns responsMedInntekt("aktørid1", "AKTOER_ID")
-        val inntektsliste =
-            inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId")
-        assertNotNull(inntektsliste)
-        assertEquals(1, inntektsliste.size)
-        assertEquals("aktørid1", inntektsliste.first().inntektsliste.first().aktørId)
+        assertThrows<IllegalStateException> { runBlocking { inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId") } }
     }
 
     @Test
@@ -152,7 +148,7 @@ private fun responsMedInntekt(identifikator: String, aktoerType: String) =
                                     },
                                     "inntektsmottaker": {
                                         "identifikator": "aktørId",
-                                        "aktoerType": "AKTOER_ID"
+                                        "aktoerType": "NATURLIG_IDENT"
                                     },
                                     "inngaarIGrunnlagForTrekk": true,
                                     "utloeserArbeidsgiveravgift": true,
