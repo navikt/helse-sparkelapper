@@ -1,6 +1,10 @@
 package no.nav.helse.sparkel.gosys
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
+import com.github.navikt.tbd_libs.speed.SpeedClient
+import java.net.http.HttpClient
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.rapids_rivers.RapidsConnection
 
@@ -16,9 +20,14 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         scope = env.getValue("OPPGAVE_SCOPE"),
         azureClient = azureClient
     )
+    val speedClient = SpeedClient(
+        httpClient = HttpClient.newHttpClient(),
+        objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),
+        tokenProvider = azureClient
+    )
     val oppgaveService = OppgaveService(oppgaveClient)
 
     return RapidApplication.create(env).apply {
-        Oppgaveløser(this, oppgaveService)
+        Oppgaveløser(this, oppgaveService, speedClient)
     }
 }

@@ -1,12 +1,19 @@
 package no.nav.helse.sparkel.gosys
 
+import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.result_object.getOrThrow
+import com.github.navikt.tbd_libs.result_object.tryCatch
+import com.github.navikt.tbd_libs.retry.retryBlocking
+import com.github.navikt.tbd_libs.speed.SpeedClient
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.helse.rapids_rivers.*
 import org.slf4j.LoggerFactory
 
 internal class Oppgaveløser(
     rapidsConnection: RapidsConnection,
-    private val oppgaveService: OppgaveService
+    private val oppgaveService: OppgaveService,
+    private val speedClient: SpeedClient
 ) : River.PacketListener {
 
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -20,7 +27,7 @@ internal class Oppgaveløser(
             validate { it.demandAll("@behov", listOf(behov)) }
             validate { it.rejectKey("@løsning") }
             validate { it.requireKey("@id") }
-            validate { it.requireKey("ÅpneOppgaver.aktørId") }
+            validate { it.requireKey("fødselsnummer") }
             validate { it.requireKey("ÅpneOppgaver.ikkeEldreEnn") }
         }.register(this)
     }
@@ -31,26 +38,35 @@ internal class Oppgaveløser(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
-
         val behovId = packet["@id"].asText()
+        val fnr = packet["fødselsnummer"].asText()
+        withMDC("callId" to behovId) {
+            when (val result = tryCatch {
+                retryBlocking {
+                    speedClient.hentFødselsnummerOgAktørId(fnr, behovId).getOrThrow()
+                }
+            }) {
+                is Result.Error -> sikkerlogg.error("Feil ved løsning av behov: ${result.error}", result.cause)
+                is Result.Ok -> {
+                    val ikkeEldreEnn = packet["ÅpneOppgaver.ikkeEldreEnn"].asLocalDate()
+                    sikkerlogg.info("slår opp åpne oppgaver for {} ikke eldre enn $ikkeEldreEnn", kv("aktørId", result.value.aktørId))
+                    val antall = oppgaveService.løsningForBehov(behovId, result.value.aktørId, ikkeEldreEnn)
 
-        val aktørId = packet["ÅpneOppgaver.aktørId"].asText()
-        val ikkeEldreEnn = packet["ÅpneOppgaver.ikkeEldreEnn"].asLocalDate()
-        val antall = oppgaveService.løsningForBehov(behovId, aktørId, ikkeEldreEnn)
-
-        packet["@løsning"] = mapOf(
-            behov to mapOf(
-                "antall" to antall,
-                "oppslagFeilet" to (antall == null)
-            )
-        )
-        context.publish(packet.toJson().also { json ->
-            sikkerlogg.info(
-                "sender svar {} for {}",
-                keyValue("id", behovId),
-                json
-            )
-        })
-
+                    packet["@løsning"] = mapOf(
+                        behov to mapOf(
+                            "antall" to antall,
+                            "oppslagFeilet" to (antall == null)
+                        )
+                    )
+                    context.publish(packet.toJson().also { json ->
+                        sikkerlogg.info(
+                            "sender svar {} for {}",
+                            keyValue("id", behovId),
+                            json
+                        )
+                    })
+                }
+            }
+        }
     }
 }

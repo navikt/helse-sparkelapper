@@ -5,7 +5,13 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureAuthMethod
+import com.github.navikt.tbd_libs.azure.AzureToken
 import com.github.navikt.tbd_libs.azure.AzureTokenClient
+import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.result_object.ok
+import com.github.navikt.tbd_libs.speed.IdentResponse
+import com.github.navikt.tbd_libs.speed.SpeedClient
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.configureFor
@@ -16,7 +22,10 @@ import com.github.tomakehurst.wiremock.client.WireMock.post
 import com.github.tomakehurst.wiremock.client.WireMock.stubFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import io.mockk.every
+import io.mockk.mockk
 import java.net.URI
+import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.rapids_rivers.RapidsConnection
 import org.junit.jupiter.api.AfterAll
@@ -38,6 +47,20 @@ internal class OppgaveløserTest {
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .registerModule(JavaTimeModule())
 
+    private val speedClient = mockk<SpeedClient> {
+        every { hentFødselsnummerOgAktørId(any(), any()) } returns IdentResponse(
+            fødselsnummer = "fnr",
+            aktørId = "aktørId",
+            npid = null,
+            kilde = IdentResponse.KildeResponse.PDL
+        ).ok()
+    }
+    private val azureClient = object : AzureTokenProvider {
+        override fun bearerToken(scope: String) = AzureToken("token", LocalDateTime.now()).ok()
+        override fun onBehalfOfToken(scope: String, token: String): Result<AzureToken> {
+            TODO("Not yet implemented")
+        }
+    }
     private lateinit var sendtMelding: JsonNode
     private lateinit var service: OppgaveService
 
@@ -75,12 +98,8 @@ internal class OppgaveløserTest {
             OppgaveClient(
                 baseUrl = wireMockServer.baseUrl(),
                 scope = "oppgave-scope",
-                azureClient = AzureTokenClient(
-                    tokenEndpoint = URI(wireMockServer.baseUrl() + "/token"),
-                    clientId = "a client id",
-                    authMethod = AzureAuthMethod.Secret("my secret")
-                )
-            )
+                azureClient = azureClient
+             )
         )
     }
 
@@ -114,7 +133,7 @@ internal class OppgaveløserTest {
     private fun JsonNode.oppslagFeilet() = this.path("@løsning").path(Oppgaveløser.behov).path("oppslagFeilet").asBoolean()
 
     private fun testBehov(behov: String) {
-        Oppgaveløser(rapid, service)
+        Oppgaveløser(rapid, service, speedClient)
         rapid.sendTestMessage(behov)
     }
 
@@ -126,8 +145,8 @@ internal class OppgaveløserTest {
             "@id" : "$okBehov",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
+            "fødselsnummer" : "fnr",
             "ÅpneOppgaver": {
-                "aktørId" : "aktørId",
                 "ikkeEldreEnn" : "2023-12-12"
             }
         }
@@ -141,8 +160,8 @@ internal class OppgaveløserTest {
             "@id" : "$feilendeBehov",
             "@opprettet" : "2020-05-18",
             "hendelseId" : "hendelseId",
+            "fødselsnummer" : "fnr",
             "ÅpneOppgaver": {
-                "aktørId" : "aktørId",
                 "ikkeEldreEnn" : "2023-12-12"
             }
         }
@@ -150,22 +169,8 @@ internal class OppgaveløserTest {
 
     private fun stubEksterneEndepunkt() {
         stubFor(
-            post(urlPathEqualTo("/token"))
-                .willReturn(
-                    aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(
-                            """{
-                        "token_type": "Bearer",
-                        "expires_in": 3599,
-                        "access_token": "1234abc"
-                    }"""
-                        )
-                )
-        )
-        stubFor(
             get(urlPathEqualTo("/api/v1/oppgaver"))
+                .withQueryParam("aktoerId", equalTo("aktørId"))
                 .withHeader("Accept", equalTo("application/json"))
                 .withHeader("X-Correlation-ID", equalTo(okBehov.toString()))
                 .willReturn(
