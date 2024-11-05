@@ -5,15 +5,8 @@ azure:
   enabled: true
 accessPolicy:
   outbound:
-    external:
-      - host: pdl-api.prod-fss-pub.nais.io
     rules:
+      - application: speed-api
+        namespace: tbd
       - application: norg2
         namespace: org
-env:
-  - name: NORG2_BASE_URL
-    value: http://norg2.org
-  - name: PDL_URL
-    value: https://pdl-api.prod-fss-pub.nais.io
-  - name: PDL_SCOPE
-    value: api://prod-fss.pdl.pdl-api/.default

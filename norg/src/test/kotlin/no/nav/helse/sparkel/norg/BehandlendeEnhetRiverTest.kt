@@ -1,5 +1,10 @@
 package no.nav.helse.sparkel.norg
 
+import com.github.navikt.tbd_libs.result_object.ok
+import com.github.navikt.tbd_libs.speed.GeografiskTilknytningResponse
+import com.github.navikt.tbd_libs.speed.IdentResponse
+import com.github.navikt.tbd_libs.speed.PersonResponse
+import com.github.navikt.tbd_libs.speed.SpeedClient
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -8,40 +13,72 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.jackson.jackson
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import java.time.LocalDate
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class BehandlendeEnhetRiverTest {
 
     private val NAV_GØVIK = "100000090"
 
+    @BeforeEach
+    fun resetMock() {
+        clearAllMocks()
+        rapid.reset()
+
+        every { speedClient.hentPersoninfo(any(), any()) } returns PersonResponse(
+            fødselsdato = LocalDate.now(),
+            dødsdato = null,
+            fornavn = "",
+            mellomnavn = null,
+            etternavn = "",
+            adressebeskyttelse = PersonResponse.Adressebeskyttelse.FORTROLIG,
+            kjønn = PersonResponse.Kjønn.MANN
+        ).ok()
+    }
+
     @Test
     fun `happy case`() {
-        coEvery { pdlMock.finnGeografiskTilhørighet(any(), any()) }.returns(
-            GeografiskTilknytning(null, "3407", null)
-        )
+        every { speedClient.hentGeografiskTilknytning(any(), any()) } returns GeografiskTilknytningResponse(
+            type = GeografiskTilknytningResponse.GeografiskTilknytningType.BYDEL,
+            land = null,
+            kommune = "3407",
+            bydel = null,
+            kilde = IdentResponse.KildeResponse.PDL
+        ).ok()
         rapid.sendTestMessage(behov)
         assertEquals(NAV_GØVIK, rapid.inspektør.message(0)["@løsning"]["HentEnhet"].textValue())
     }
 
     @Test
     fun `404 fra norg`() {
-        coEvery { pdlMock.finnGeografiskTilhørighet(any(), any()) }.returns(
-            GeografiskTilknytning("SWE", null, null)
-        )
+        every { speedClient.hentGeografiskTilknytning(any(), any()) } returns GeografiskTilknytningResponse(
+            type = GeografiskTilknytningResponse.GeografiskTilknytningType.UTLAND,
+            land = "SWE",
+            kommune = null,
+            bydel = null,
+            kilde = IdentResponse.KildeResponse.PDL
+        ).ok()
         rapid.sendTestMessage(behov)
         assertEquals(NAV_OPPFOLGING_UTLAND_KONTOR_NR, rapid.inspektør.message(0)["@løsning"]["HentEnhet"].textValue())
     }
 
     @Test
     fun `500 fra norg`() {
-        coEvery { pdlMock.finnGeografiskTilhørighet(any(), any()) }.returns(
-            GeografiskTilknytning("FOO", null, null)
-        )
+        every { speedClient.hentGeografiskTilknytning(any(), any()) } returns GeografiskTilknytningResponse(
+            type = GeografiskTilknytningResponse.GeografiskTilknytningType.UTLAND_UKJENT,
+            land = null,
+            kommune = null,
+            bydel = null,
+            kilde = IdentResponse.KildeResponse.PDL
+        ).ok()
         rapid.sendTestMessage(behov)
         assertEquals(0, rapid.inspektør.size)
     }
@@ -61,9 +98,7 @@ class BehandlendeEnhetRiverTest {
         }
 """
 
-    private val pdlMock = mockk<PDL> {
-        coEvery { finnAdressebeskyttelse(any(), any()) } returns Adressebeskyttelse.FORTROLIG
-    }
+    private val speedClient = mockk<SpeedClient>()
 
     private val client = HttpClient(MockEngine) {
         install(ContentNegotiation) {
@@ -100,7 +135,7 @@ class BehandlendeEnhetRiverTest {
     private val norg2Client = Norg2Client("baseurl", client)
     private val rapid = TestRapid()
         .apply {
-            BehandlendeEnhetRiver(this, PersoninfoService(norg2Client, pdlMock))
+            BehandlendeEnhetRiver(this, PersoninfoService(norg2Client, speedClient))
         }
 }
 
