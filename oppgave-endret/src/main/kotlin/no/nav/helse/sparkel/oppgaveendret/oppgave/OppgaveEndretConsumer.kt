@@ -74,7 +74,6 @@ internal class OppgaveEndretConsumer(
     internal fun åpentVindu(): Boolean {
         val nå = now()
         val åpent = vindusåpning < nå && nå < vinduslukking
-
         logger.info("Vinduet er åpent: $åpent (sjekket om $nå er etter $vindusåpning og før $vinduslukking)")
         return åpent
     }
