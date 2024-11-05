@@ -67,7 +67,7 @@ internal class HentPersoninfoV2Løser(
                         log.warn("Feil under løsing av personinfo-behov: ${løsninger.error}", løsninger.cause)
                     }
                     is Result.Ok -> {
-                        val løsningJson = if (identer.size != 1) {
+                        val løsningJson = if (ident.isArray) {
                             sikkerLogg.warn("Løser PersoninfoV2 med flere identer")
                             ObjectMapper().createArrayNode().apply {
                                 løsninger.value.forEach { individuellLøsning ->
