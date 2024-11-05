@@ -126,11 +126,11 @@ data class Inntekt(
     val beskrivelse: String?,
     val fordel: String?
 ) {
-    // om sender inn aktørid til inntektskomponenten så kan vi få aktørid tilbake noen steder.
-    // Om vi sender inn fnr vil vi aldri få aktørid tilbake
-    // !! Viktig at vi derfor kun sender FNR !!
-    @Deprecated("feltet må fjernes fra konsumentene først")
-    val aktørId: String? = null
+    init {
+        check(orgnummer != null || fødselsnummer != null) {
+            "Verken orgnummer ELLER fødselsnummer er tilstede i inntekten!"
+        }
+    }
 }
 
 enum class Inntektstype {
