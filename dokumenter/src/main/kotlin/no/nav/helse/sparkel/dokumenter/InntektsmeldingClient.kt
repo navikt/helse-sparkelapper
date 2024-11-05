@@ -3,7 +3,7 @@ package no.nav.helse.sparkel.dokumenter
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
-import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.accept
@@ -34,9 +34,8 @@ class InntektsmeldingClient(
             val response = httpClient.prepareGet("$baseUrl/api/v1/inntektsmelding/$dokumentId") {
                 accept(ContentType.Application.Json)
                 method = HttpMethod.Get
-                val bearerToken = tokenClient.bearerToken(scope)
-                bearerToken as Result.Ok
-                bearerAuth(bearerToken.value.token)
+                val bearerToken = tokenClient.bearerToken(scope).getOrThrow()
+                bearerAuth(bearerToken.token)
                 val callId = UUID.randomUUID()
                 header("Nav-Callid", "$callId")
                 header("no.nav.callid", "$callId")

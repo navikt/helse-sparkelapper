@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
-import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.result_object.getOrThrow
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -53,9 +53,8 @@ class PDL(
             "pdl",
             retryIntervals = arrayOf(500L, 1000L, 3000L, 5000L, 10000L)
         ) {
-            val bearerToken = azureClient.bearerToken(scope)
-            bearerToken as Result.Ok
-            val accessToken = bearerToken.value.token
+            val bearerToken = azureClient.bearerToken(scope).getOrThrow()
+            val accessToken = bearerToken.token
 
             val body =
                 objectMapper.writeValueAsString(

@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.sputnik.abakus
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.result_object.getOrThrow
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
@@ -30,7 +31,7 @@ internal class RestAbakusClient(
 
         val response = try {
             url.postJson(requestBody,
-                "Authorization" to "Bearer ${accessTokenClient.bearerToken(scope).token}",
+                "Authorization" to "Bearer ${accessTokenClient.bearerToken(scope).getOrThrow().token}",
                 "Nav-Consumer-Id" to "Sykepenger",
                 "Nav-Callid" to callId
             ).second

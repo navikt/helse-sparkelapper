@@ -1,17 +1,17 @@
 package no.nav.helse.sparkel.egenansatt
 
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
-import com.github.navikt.tbd_libs.result_object.Result
-import io.ktor.client.request.accept
-import io.ktor.client.request.header
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
+import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.accept
+import io.ktor.client.request.header
 import io.ktor.client.request.preparePost
 import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import io.ktor.serialization.jackson.JacksonConverter
 import java.net.URL
 import java.time.Duration
@@ -36,9 +36,8 @@ class SkjermedePersoner(
     internal fun erSkjermetPerson(fødselsnummer: String, behovId: String): Boolean =
         runBlocking {
             val httpResponse = ktorHttpClient.preparePost("$baseUrl/skjermet") {
-                val bearerToken = tokenSupplier.bearerToken(scope)
-                bearerToken as Result.Ok
-                header("Authorization", "Bearer ${bearerToken.value.token}")
+                val bearerToken = tokenSupplier.bearerToken(scope).getOrThrow()
+                header("Authorization", "Bearer ${bearerToken.token}")
                 header("Nav-Call-Id", behovId)
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)

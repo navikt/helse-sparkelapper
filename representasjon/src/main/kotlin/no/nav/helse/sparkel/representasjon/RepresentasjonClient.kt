@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.representasjon
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.accept
@@ -35,9 +36,8 @@ class RepresentasjonClient(
                 val response = httpClient.preparePost("$baseUrl/api/internbruker/fullmaktsgiver") {
                     contentType(ContentType.Application.Json)
                     accept(ContentType.Application.Json)
-                    val bearerToken = tokenClient.bearerToken(scope)
-                    bearerToken as com.github.navikt.tbd_libs.result_object.Result.Ok
-                    bearerAuth(bearerToken.value.token)
+                    val bearerToken = tokenClient.bearerToken(scope).getOrThrow()
+                    bearerAuth(bearerToken.token)
                     setBody(mapOf("ident" to Base64.getEncoder().encodeToString(fnr.toByteArray())))
                     header("Nav-Call-Id", "$callId")
                     header("no.nav.callid", "$callId")

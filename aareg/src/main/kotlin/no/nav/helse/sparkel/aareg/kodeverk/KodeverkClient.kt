@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.aareg.kodeverk
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.http.encodeURLPath
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -45,10 +46,9 @@ class KodeverkClient(
     }
 
     private fun hentFraKodeverk(path: String): String {
-        val bearerToken = azureTokenProvider.bearerToken(kodeverkOauthScope)
-        bearerToken as com.github.navikt.tbd_libs.result_object.Result.Ok
+        val bearerToken = azureTokenProvider.bearerToken(kodeverkOauthScope).getOrThrow()
         val (responseCode, body) = URI("$kodeverkBaseUrl$path?spraak=nb&ekskluderUgyldige=true&oppslagsdato=${LocalDate.now()}").toURL().get(
-            "Authorization" to "Bearer ${bearerToken.value.token}",
+            "Authorization" to "Bearer ${bearerToken.token}",
             "Nav-Call-Id" to "${UUID.randomUUID()}",
             "Nav-Consumer-Id" to appName
         )

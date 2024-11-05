@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.aareg.arbeidsforhold
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.accept
@@ -55,9 +56,8 @@ class AaregClient(
 
     private suspend fun hent(fnr: String, callId: UUID, url: String) =
         httpClient.get(url) {
-            val azureToken = tokenSupplier.bearerToken(scope)
-            azureToken as com.github.navikt.tbd_libs.result_object.Result.Ok
-            header("Authorization", "Bearer ${azureToken.value.token}")
+            val azureToken = tokenSupplier.bearerToken(scope).getOrThrow()
+            header("Authorization", "Bearer ${azureToken.token}")
             System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
             header("Nav-Call-Id", callId)
             accept(ContentType.Application.Json)

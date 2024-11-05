@@ -2,6 +2,8 @@ package no.nav.helse.sparkel.sputnik.abakus
 
 import com.github.navikt.tbd_libs.azure.AzureToken
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
+import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.result_object.ok
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
@@ -37,9 +39,9 @@ internal class RestAbakusClientTest {
             scope = "abacus-scope",
             accessTokenClient = object : AzureTokenProvider {
                 override fun bearerToken(scope: String) =
-                    AzureToken("ey-abakus-access-token", LocalDateTime.MAX)
+                    AzureToken("ey-abakus-access-token", LocalDateTime.MAX).ok()
 
-                override fun onBehalfOfToken(scope: String, token: String): AzureToken {
+                override fun onBehalfOfToken(scope: String, token: String): Result<AzureToken> {
                     throw NotImplementedError("ikke implementert i mocken")
                 }
             }

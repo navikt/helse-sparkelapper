@@ -50,8 +50,8 @@ internal class HentPersoninfoV2Løser(
                 .flatten()
                 .map { liste ->
                     liste.mapIndexed { index, personRespons ->
-                        val ident = identer[index]
-                        personRespons.løsningJson(ident)
+                        val identForLøsning = identer[index]
+                        personRespons.løsningJson(identForLøsning)
                     }.ok()
                 }
             try {

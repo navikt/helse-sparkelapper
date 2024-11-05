@@ -3,12 +3,10 @@ package no.nav.helse.sparkel.gosys
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
-import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.result_object.getOrThrow
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
-import java.net.URL
-import org.slf4j.LoggerFactory
 
 internal class OppgaveClient(
     private val baseUrl: String,
@@ -30,9 +28,8 @@ internal class OppgaveClient(
             requestMethod = "GET"
             connectTimeout = 10000
             readTimeout = 10000
-            val bearerToken = azureClient.bearerToken(scope)
-            bearerToken as Result.Ok
-            setRequestProperty("Authorization", "Bearer ${bearerToken.value.token}")
+            val bearerToken = azureClient.bearerToken(scope).getOrThrow()
+            setRequestProperty("Authorization", "Bearer ${bearerToken.token}")
             setRequestProperty("Accept", "application/json")
             setRequestProperty("X-Correlation-ID", behovId)
 

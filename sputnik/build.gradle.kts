@@ -1,7 +1,6 @@
 val ktorVersion: String by project
 val jsonAssertVersion: String by project
-//val tbdLibsVersion: String by project
-val tbdLibsVersion = "2024.02.09-10.44-24d5802f"
+val tbdLibsVersion: String by project
 
 dependencies {
     implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")

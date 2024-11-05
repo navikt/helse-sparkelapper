@@ -4,14 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
-import com.github.navikt.tbd_libs.result_object.Result
-import org.slf4j.LoggerFactory
+import com.github.navikt.tbd_libs.result_object.getOrThrow
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.time.LocalDate
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.intellij.lang.annotations.Language
+import org.slf4j.LoggerFactory
 
 internal class MedlemskapClient(
     private val baseUrl: URI,
@@ -23,9 +23,8 @@ internal class MedlemskapClient(
         val (responseCode, responseBody) =
             with(URI("$baseUrl/speilvurdering").toURL().openConnection() as HttpURLConnection) {
                 requestMethod = "POST"
-                val bearerToken = azureClient.bearerToken(scope)
-                bearerToken as Result.Ok
-                setRequestProperty("Authorization", "Bearer ${bearerToken.value.token}")
+                val bearerToken = azureClient.bearerToken(scope).getOrThrow()
+                setRequestProperty("Authorization", "Bearer ${bearerToken.token}")
                 setRequestProperty("Accept", "application/json")
                 setRequestProperty("Content-Type", "application/json")
                 connectTimeout = 10000
