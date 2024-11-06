@@ -14,7 +14,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import java.time.YearMonth
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlag
 import org.slf4j.LoggerFactory
 
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -62,13 +61,13 @@ class InntektRestClient(
                 keyValue("callId", callId),
                 keyValue("fødselsnummer", fnr)
             )
-            tilMånedListe(objectMapper.readValue(content), filter, orgnummer)
+            tilMånedListe(objectMapper.readValue(content), orgnummer)
         }
     }
 }
 
-private fun tilMånedListe(node: JsonNode, filter: String, orgnummer: String? = null) = node.path("arbeidsInntektMaaned")
-    .map { tilMåned(it, filter, orgnummer) }
+private fun tilMånedListe(node: JsonNode, orgnummer: String? = null) = node.path("arbeidsInntektMaaned")
+    .map { tilMåned(it, orgnummer) }
 
 private fun tilInntekt(node: JsonNode, inntekterForOrgnummer: String? = null): Inntekt? {
     check(identifikator(node, "AKTOER_ID") == null) {
@@ -89,34 +88,14 @@ private fun tilInntekt(node: JsonNode, inntekterForOrgnummer: String? = null): I
 private fun identifikator(node: JsonNode, type: String) =
     node["virksomhet"].takeIf { it["aktoerType"].asText() == type }?.get("identifikator")?.asText()
 
-private fun tilMåned(node: JsonNode, filter: String, orgnummer: String?) = Måned(
+private fun tilMåned(node: JsonNode, orgnummer: String?) = Måned(
     årMåned = YearMonth.parse(node["aarMaaned"].asText()),
-    arbeidsforholdliste = tilArbeidsforholdliste(filter, node),
     inntektsliste = node.path("arbeidsInntektInformasjon").path("inntektListe").mapNotNull { tilInntekt(it, orgnummer) }
 )
 
-private fun tilArbeidsforholdliste(
-    filter: String,
-    node: JsonNode
-) = if (filter == InntekterForSykepengegrunnlag.ainntektfilter) {
-    node.path("arbeidsInntektInformasjon").path("arbeidsforholdListe").mapNotNull(::tilArbeidsforhold)
-} else emptyList()
-
-private fun tilArbeidsforhold(node: JsonNode) = Arbeidsforhold(
-    node.getOptional("arbeidsforholdstype")?.asText(),
-    node.getOptional("arbeidsgiver")?.getOptional("identifikator")?.asText()
-)
-
-private fun JsonNode.getOptional(key: String) = this.takeIf { it.hasNonNull(key) }?.get(key)
-
 data class Måned(
     val årMåned: YearMonth,
-    val arbeidsforholdliste: List<Arbeidsforhold>,
     val inntektsliste: List<Inntekt>
-)
-data class Arbeidsforhold(
-    val type: String?,
-    val orgnummer: String?
 )
 data class Inntekt(
     val beløp: Double,

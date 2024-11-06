@@ -7,12 +7,12 @@ import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.*
 import io.ktor.serialization.jackson.JacksonConverter
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 import java.util.UUID
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 internal class InntekterTest {
     private val testRapid = TestRapid()
@@ -129,52 +129,6 @@ internal class InntekterTest {
             assertEquals("fastloenn", it.path("beskrivelse").textValue())
             assertEquals("kontantytelse", it.path("fordel").textValue())
         }
-    }
-
-    @Test
-    fun `mapper inn liste over arbeidsforhold på innteker`() {
-        val start = YearMonth.of(2020, 3)
-        val slutt = YearMonth.of(2021, 1)
-        testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForSykepengegrunnlag))
-        val inntekt0 =
-            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[0]
-        val inntekt1 =
-            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[1]
-        val inntekt2 =
-            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[2]
-
-        assertTrue(inntekt0.path("arbeidsforholdliste").isEmpty)
-        assertTrue(inntekt0.path("inntektsliste").isEmpty)
-
-        val arbeidsforhold = inntekt1.path("arbeidsforholdliste")[0]
-        assertEquals("frilanserOppdragstakerHonorarPersonerMm", arbeidsforhold.path("type").asText())
-        assertEquals("orgnummer2", arbeidsforhold.path("orgnummer").asText())
-
-        assertTrue(inntekt2.path("arbeidsInntektInformasjon").path("arbeidsforholdliste").isEmpty)
-    }
-
-    @Test
-    fun `Mapper ikke ut arbeidsforholdliste for sammenligningsgrunnlag`() {
-        val start = YearMonth.of(2020, 3)
-        val slutt = YearMonth.of(2021, 1)
-        testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForSammenligningsgrunnlag))
-        val inntekt =
-            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSammenligningsgrunnlag.name)[2]
-
-        val arbeidsforhold = inntekt.path("arbeidsforholdliste")
-        assertTrue(arbeidsforhold.isEmpty)
-    }
-
-    @Test
-    fun `Mapper ikke ut arbeidsforholdliste for opptjeningsvurdering`() {
-        val start = YearMonth.of(2024, 7)
-        val slutt = YearMonth.of(2024, 7)
-        testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForOpptjeningsvurdering))
-        val inntekt =
-            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForOpptjeningsvurdering.name)[0]
-
-        val arbeidsforhold = inntekt.path("arbeidsforholdliste")
-        assertTrue(arbeidsforhold.isEmpty)
     }
 
     private fun assertLøsning(behovType: Inntekter.Type, vararg yearsMonths: YearMonth) {
