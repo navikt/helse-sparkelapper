@@ -7,10 +7,12 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.asYearMonth
 import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import com.github.navikt.tbd_libs.rapids_and_rivers.withMDC
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.*
+import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSammenligningsgrunnlag
@@ -58,11 +60,11 @@ class Inntekter(
             }.register(this)
         }
 
-        override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
             this@Inntekter.onOpptjeningsvurderingPacket(packet, context)
         }
 
-        override fun onError(problems: MessageProblems, context: MessageContext) {
+        override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
             log.error(problems.toString())
         }
     }
@@ -81,11 +83,11 @@ class Inntekter(
             }.register(this)
         }
 
-        override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
             this@Inntekter.onSykepengegrunnlagPacket(packet, context)
         }
 
-        override fun onError(problems: MessageProblems, context: MessageContext) {
+        override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
             log.error(problems.toString())
         }
     }
@@ -105,11 +107,11 @@ class Inntekter(
             }.register(this)
         }
 
-        override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
             this@Inntekter.onSykepengegrunnlagForArbeidsgiverPacket(packet, context)
         }
 
-        override fun onError(problems: MessageProblems, context: MessageContext) {
+        override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
             log.error(problems.toString())
         }
     }
@@ -128,11 +130,11 @@ class Inntekter(
             }.register(this)
         }
 
-        override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
             this@Inntekter.onSammenligningsgrunnlagPacket(packet, context)
         }
 
-        override fun onError(problems: MessageProblems, context: MessageContext) {
+        override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
             log.error(problems.toString())
         }
     }

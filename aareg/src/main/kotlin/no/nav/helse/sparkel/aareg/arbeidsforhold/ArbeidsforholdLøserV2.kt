@@ -3,10 +3,12 @@ package no.nav.helse.sparkel.aareg.arbeidsforhold
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.bodyAsText
+import io.micrometer.core.instrument.MeterRegistry
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
@@ -40,7 +42,7 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
         }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("Mottok melding: ${packet.toJson()}")
 
         val arbeidsforhold = try {
@@ -50,7 +52,7 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
                     .hentFraAareg<AaregArbeidsforhold>(packet["fødselsnummer"].asText(), UUID.fromString(packet["@id"].asText()))
                     .toArbeidsforhold()
             }
-        } catch (exception: UkjentIdentException) {
+        } catch (_: UkjentIdentException) {
             log.warn("Ignorerer behov={}, personen finnes ikke", packet["@id"].asText())
             return
         } catch (err: AaregException) {
@@ -89,7 +91,7 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
         super.onSevere(error, context)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext) {
+    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
 
     }
 

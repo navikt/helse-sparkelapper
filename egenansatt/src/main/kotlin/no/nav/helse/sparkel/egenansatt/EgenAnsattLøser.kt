@@ -3,8 +3,10 @@ package no.nav.helse.sparkel.egenansatt
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
+import io.micrometer.core.instrument.MeterRegistry
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.LoggerFactory
 
@@ -29,7 +31,7 @@ internal class EgenAnsattLøser(
         }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         val meldingId = packet["@id"].asText()
 
@@ -54,7 +56,7 @@ internal class EgenAnsattLøser(
         sikkerlogg.error("feil ved henting av egen ansatt: ${err.message} for behov {}", idArgument, err)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext) {}
+    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {}
 
     private fun JsonMessage.setLøsning(nøkkel: String, data: Any) {
         this["@løsning"] = mapOf(

@@ -9,6 +9,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asYearMonth
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
@@ -26,6 +27,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.JacksonConverter
+import io.micrometer.core.instrument.MeterRegistry
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.rapids_rivers.RapidApplication
@@ -93,14 +95,14 @@ private class PensjonsgivendeInntekt(
     }
 
     private inner class VilkårsgrunnlagRiver : River.PacketListener {
-        override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
             val beregningÅr = packet["InntekterForSykepengegrunnlag.beregningStart"].asYearMonth().year
             val fnr = packet["fødselsnummer"].asText()
             hentBeregnetSkatt(fnr, beregningÅr)
         }
     }
     private inner class TestRiver : River.PacketListener {
-        override fun onPacket(packet: JsonMessage, context: MessageContext) {
+        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
             val beregningÅr = packet["beregningÅr"].asInt()
             val fnr = packet["fødselsnummer"].asText()
             hentBeregnetSkatt(fnr, beregningÅr)

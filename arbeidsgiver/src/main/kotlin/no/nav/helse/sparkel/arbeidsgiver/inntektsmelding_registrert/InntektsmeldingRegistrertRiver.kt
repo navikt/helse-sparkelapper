@@ -4,7 +4,9 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
+import io.micrometer.core.instrument.MeterRegistry
 import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments
 import org.slf4j.Logger
@@ -26,7 +28,7 @@ internal class InntektsmeldingRegistrertRiver(
         }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
 
         val hendelseId = UUID.fromString(packet["@id"].asText())
         val dokumentId = UUID.fromString(packet["inntektsmeldingId"].asText())

@@ -3,8 +3,10 @@ package no.nav.helse.sparkel.norg
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
+import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.Logger
@@ -29,7 +31,7 @@ class BehandlendeEnhetRiver(
         }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) = runBlocking {
+    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) = runBlocking {
         log.info(
             "Henter behandlende enhet for {}, {}",
             keyValue("hendelseId", packet["hendelseId"].asText()),
@@ -49,7 +51,7 @@ class BehandlendeEnhetRiver(
         }
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext) {
+    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
         sikkerLogg.error("Forstod ikke HentEnhet-behov:\n${problems.toExtendedReport()}")
     }
 }
