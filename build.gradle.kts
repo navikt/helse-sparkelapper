@@ -1,7 +1,6 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 
 val jvmTarget = 21
-val gradleWrapperVersion = "8.10"
 
 plugins {
     kotlin("jvm") version "1.9.22"
@@ -135,9 +134,6 @@ allprojects {
             toolchain {
                 languageVersion = JavaLanguageVersion.of(jvmTarget)
             }
-        }
-        withType<Wrapper> {
-            gradleVersion = gradleWrapperVersion
         }
 
         withType<Test> {
