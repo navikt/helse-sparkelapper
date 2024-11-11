@@ -3,11 +3,7 @@ package no.nav.helse.sparkel.sykepengeperiodermock
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.jackson.JacksonConverter
-import io.ktor.server.application.install
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.ContentTransformationException
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -27,9 +23,6 @@ fun main() {
         objectMapper = objectMapper,
         builder = {
             withKtorModule {
-                install(ContentNegotiation) {
-                    register(ContentType.Application.Json, JacksonConverter(objectMapper))
-                }
                 routing {
                     post("/reset") {
                         log.info("Fjerner ${svarSykepengehistorikk.size} konfigurerte sykepengeperioder og ${svarUtbetalingsperioder.size} konfigurerte utbetalingsperioder")
