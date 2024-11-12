@@ -1,8 +1,8 @@
 val ktorVersion: String by project
 val hikariCPVersion: String by project
-val logbackClassicVersion = "1.4.14"
-val logbackEncoderVersion = "7.4"
-val jacksonVersion = "2.16.1"
+val logbackClassicVersion = "1.5.12"
+val logbackEncoderVersion = "8.0"
+val jacksonVersion = "2.18.1"
 
 dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackClassicVersion")
