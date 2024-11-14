@@ -24,10 +24,10 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiver(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@event_name", eventName) }
-            validate { it.demandValue("trengerArbeidsgiveropplysninger", true) }
-            validate { it.demandAny("tilstand", listOf("START", "AVVENTER_INFOTRYGDHISTORIKK")) }
-            validate { it.rejectValues("organisasjonsnummer", listOf("ARBEIDSLEDIG", "SELVSTENDIG", "FRILANS")) }
+            precondition { it.requireValue("@event_name", eventName) }
+            precondition { it.requireValue("trengerArbeidsgiveropplysninger", true) }
+            precondition { it.requireAny("tilstand", listOf("START", "AVVENTER_INFOTRYGDHISTORIKK")) }
+            precondition { it.forbidValues("organisasjonsnummer", listOf("ARBEIDSLEDIG", "SELVSTENDIG", "FRILANS")) }
             validate {
                 it.requireKey(
                     "fødselsnummer",

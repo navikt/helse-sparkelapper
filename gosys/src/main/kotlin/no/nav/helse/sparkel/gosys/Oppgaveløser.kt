@@ -32,8 +32,8 @@ internal class Oppgaveløser(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandAll("@behov", listOf(behov)) }
-            validate { it.rejectKey("@løsning") }
+            precondition { it.requireAll("@behov", listOf(behov)) }
+            precondition { it.forbid("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
             validate { it.requireKey("ÅpneOppgaver.ikkeEldreEnn") }

@@ -79,16 +79,18 @@ private class PensjonsgivendeInntekt(
 ) {
     init {
         River(rapidsConnection)
+            .precondition {
+                it.requireAll("@behov", listOf("InntekterForSykepengegrunnlag"))
+                it.forbid("@løsning")
+            }
             .validate {
-                it.demandAll("@behov", listOf("InntekterForSykepengegrunnlag"))
-                it.rejectKey("@løsning")
                 it.requireKey("fødselsnummer")
                 it.require("InntekterForSykepengegrunnlag.beregningStart", JsonNode::asYearMonth)
             }
             .register(VilkårsgrunnlagRiver())
         River(rapidsConnection)
+            .precondition { it.requireValue("@event_name", "sigrun_test") }
             .validate {
-                it.demandValue("@event_name", "sigrun_test")
                 it.requireKey("fødselsnummer", "beregningÅr")
             }
             .register(TestRiver())

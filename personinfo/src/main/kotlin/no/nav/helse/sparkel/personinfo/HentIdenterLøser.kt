@@ -22,9 +22,11 @@ internal class HentIdenterLøser(
 
     init {
         River(rapidsConnection).apply {
+            precondition {
+                it.requireAll("@behov", listOf("HentIdenter"))
+                it.forbid("@løsning")
+            }
             validate {
-                it.demandAll("@behov", listOf("HentIdenter"))
-                it.rejectKey("@løsning")
                 it.requireKey("@id", "ident")
             }
         }.register(this)

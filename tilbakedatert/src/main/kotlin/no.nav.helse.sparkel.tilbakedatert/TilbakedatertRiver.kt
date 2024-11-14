@@ -28,10 +28,12 @@ internal class TilbakedatertRiver(
 
     init {
         River(rapidsConnection).apply {
+            precondition {
+                it.requireKey("sykmelding")
+                it.requireKey("personNrPasient")
+                it.requireKey("sykmelding.signaturDato")
+            }
             validate {
-                it.demandKey("sykmelding")
-                it.demandKey("personNrPasient")
-                it.demandKey("sykmelding.signaturDato")
                 it.requireKey("sykmelding.id")
                 it.requireKey("sykmelding.syketilfelleStartDato")
                 it.requireArray("sykmelding.perioder") {

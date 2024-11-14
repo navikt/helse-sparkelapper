@@ -18,10 +18,15 @@ internal class Sputnik(
 ) : River.PacketListener {
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@event_name", "behov") }
+            precondition { it.requireValue("@event_name", "behov") }
+            precondition { it.forbid("@løsning") }
+            precondition { packet ->
+                packet.requireKey("@behov")
+                packet.require("@behov") {
+                    Stønad.harRelevanteBehov(packet)
+                }
+            }
             validate { it.requireKey("fødselsnummer", "@behov") }
-            validate { it.rejectKey("@løsning") }
-            validate { packet -> packet.demand("@behov") { Stønad.harRelevanteBehov(packet) } }
             validate { Stønad.validate(it) }
         }.register(this)
     }

@@ -27,7 +27,7 @@ internal class TrengerIkkeArbeidsgiveropplysningerRiver(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@event_name", eventName) }
+            precondition { it.requireValue("@event_name", eventName) }
             validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
             validate { it.require("vedtaksperiodeId", JsonNode::asUuid) }
             validate { it.requireKey("organisasjonsnummer", "fødselsnummer") }

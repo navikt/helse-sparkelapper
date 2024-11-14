@@ -31,9 +31,11 @@ internal class HentPersoninfoV2Løser(
 
     init {
         River(rapidsConnection).apply {
+            precondition {
+                it.requireAll("@behov", listOf("HentPersoninfoV2"))
+                it.forbid("@løsning")
+            }
             validate {
-                it.demandAll("@behov", listOf("HentPersoninfoV2"))
-                it.rejectKey("@løsning")
                 it.requireKey("fødselsnummer")
                 it.interestedIn("HentPersoninfoV2.ident", "hendelseId", "@id")
             }

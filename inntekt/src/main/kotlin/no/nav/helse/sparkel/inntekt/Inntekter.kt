@@ -51,12 +51,12 @@ class Inntekter(
 
         init {
             River(rapidsConnection).apply {
-                validate { it.demandAll("@behov", listOf(InntekterForOpptjeningsvurdering.name)) }
+                precondition { it.requireAll("@behov", listOf(InntekterForOpptjeningsvurdering.name)) }
+                precondition { it.forbid("@løsning") }
                 validate { it.requireKey("@id", "fødselsnummer") }
                 validate { it.interestedIn("vedtaksperiodeId") }
                 validate { it.require("${InntekterForOpptjeningsvurdering.name}.beregningStart", JsonNode::asYearMonth) }
                 validate { it.require("${InntekterForOpptjeningsvurdering.name}.beregningSlutt", JsonNode::asYearMonth) }
-                validate { it.rejectKey("@løsning") }
             }.register(this)
         }
 
@@ -74,12 +74,12 @@ class Inntekter(
 
         init {
             River(rapidsConnection).apply {
-                validate { it.demandAll("@behov", listOf(InntekterForSykepengegrunnlag.name)) }
+                precondition { it.requireAll("@behov", listOf(InntekterForSykepengegrunnlag.name)) }
+                precondition { it.forbid("@løsning") }
                 validate { it.requireKey("@id", "fødselsnummer") }
                 validate { it.interestedIn("vedtaksperiodeId") }
                 validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
                 validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
-                validate { it.rejectKey("@løsning") }
             }.register(this)
         }
 
@@ -97,13 +97,13 @@ class Inntekter(
 
         init {
             River(rapidsConnection).apply {
-                validate { it.demandAll("@behov", listOf(InntekterForSykepengegrunnlagForArbeidsgiver.name)) }
+                precondition { it.requireAll("@behov", listOf(InntekterForSykepengegrunnlagForArbeidsgiver.name)) }
+                precondition { it.forbid("@løsning") }
                 validate { it.requireKey("@id", "fødselsnummer") }
                 validate { it.requireKey("vedtaksperiodeId") }
                 validate { it.requireKey("${InntekterForSykepengegrunnlagForArbeidsgiver.name}.organisasjonsnummer") }
                 validate { it.require("${InntekterForSykepengegrunnlagForArbeidsgiver.name}.beregningStart", JsonNode::asYearMonth) }
                 validate { it.require("${InntekterForSykepengegrunnlagForArbeidsgiver.name}.beregningSlutt", JsonNode::asYearMonth) }
-                validate { it.rejectKey("@løsning") }
             }.register(this)
         }
 
@@ -121,12 +121,12 @@ class Inntekter(
 
         init {
             River(rapidsConnection).apply {
-                validate { it.demandAll("@behov", listOf(InntekterForSammenligningsgrunnlag.name)) }
+                precondition { it.requireAll("@behov", listOf(InntekterForSammenligningsgrunnlag.name)) }
+                precondition { it.forbid("@løsning") }
                 validate { it.requireKey("@id", "fødselsnummer") }
                 validate { it.interestedIn("vedtaksperiodeId") }
                 validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
                 validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
-                validate { it.rejectKey("@løsning") }
             }.register(this)
         }
 

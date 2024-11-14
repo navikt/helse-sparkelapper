@@ -38,7 +38,7 @@ class Arbeidsforholdbehovløser(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandAll("@behov", listOf(behov)) }
+            precondition { it.requireAll("@behov", listOf(behov)) }
             validate { it.forbid("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("$behov.fødselsnummer") }

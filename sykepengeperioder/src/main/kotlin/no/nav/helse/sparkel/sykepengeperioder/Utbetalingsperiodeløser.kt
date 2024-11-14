@@ -26,8 +26,10 @@ internal class Utbetalingsperiodeløser(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandAll("@behov", listOf(behov)) }
-            validate { it.rejectKey("@løsning") }
+            precondition {
+                it.requireAll("@behov", listOf(behov))
+                it.forbid("@løsning")
+            }
             validate { it.requireKey("@id", "fødselsnummer") }
             validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
             validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }

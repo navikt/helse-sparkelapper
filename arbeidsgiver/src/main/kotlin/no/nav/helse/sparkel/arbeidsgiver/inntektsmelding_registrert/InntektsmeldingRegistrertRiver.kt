@@ -23,7 +23,7 @@ internal class InntektsmeldingRegistrertRiver(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@event_name", "inntektsmelding") }
+            precondition { it.requireValue("@event_name", "inntektsmelding") }
             validate { it.requireKey("@id", "inntektsmeldingId", "@opprettet") }
         }.register(this)
     }

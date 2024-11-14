@@ -21,10 +21,12 @@ class BehandlendeEnhetRiver(
 
     init {
         River(rapidsConnection).apply {
+            precondition {
+                it.requireAll("@behov", listOf("HentEnhet"))
+                it.forbid("@løsning")
+            }
             validate {
-                it.demandAll("@behov", listOf("HentEnhet"))
                 it.requireKey("@id")
-                it.rejectKey("@løsning")
                 it.requireKey("fødselsnummer")
                 it.interestedIn("hendelseId")
             }

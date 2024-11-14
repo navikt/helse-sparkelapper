@@ -27,7 +27,7 @@ internal class TrengerArbeidsgiveropplysningerRiver(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@event_name", eventName) }
+            precondition { it.requireValue("@event_name", eventName) }
             validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
             validate { it.require("skjæringstidspunkt", JsonNode::asLocalDate) }
             validate { it.requireArray("sykmeldingsperioder") {

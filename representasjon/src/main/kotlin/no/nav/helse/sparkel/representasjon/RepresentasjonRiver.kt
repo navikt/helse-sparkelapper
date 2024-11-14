@@ -28,11 +28,11 @@ internal class RepresentasjonRiver(
 
     init {
         River(rapidsConnection).apply {
-            validate {
-                it.demandAll("@behov", listOf("Fullmakt"))
-                it.rejectKey("@løsning")
-                it.requireKey("@id", "fødselsnummer")
+            precondition {
+                it.requireAll("@behov", listOf("Fullmakt"))
+                it.forbid("@løsning")
             }
+            validate { it.requireKey("@id", "fødselsnummer") }
         }.register(this)
     }
 

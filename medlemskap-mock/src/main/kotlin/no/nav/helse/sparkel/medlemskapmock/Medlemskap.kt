@@ -26,15 +26,15 @@ internal class Medlemskap(
 
     init {
         River(rapidsConnection).apply {
+            precondition { it.requireValue("@event_name", "mock_medlemskap_avklaring") }
             validate {
-                it.demandValue("@event_name", "mock_medlemskap_avklaring")
                 it.requireKey("ident", "medlemskapVerdi")
             }
         }.register(medlemskapvurderinger)
 
         River(rapidsConnection).apply {
-            validate { it.demandAll("@behov", listOf(behov)) }
-            validate { it.rejectKey("@løsning") }
+            precondition { it.requireAll("@behov", listOf(behov)) }
+            precondition { it.forbid("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
             validate { it.requireKey("vedtaksperiodeId") }

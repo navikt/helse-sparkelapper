@@ -18,12 +18,12 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
 
     init {
         River(rapidsConnection).apply {
-            validate {
-                it.demandKey("sykmeldtFnr")
-                it.demandKey("status")
-                it.interestedIn("arsakList")
-                it.demandKey("opprettet")
+            precondition {
+                it.requireKey("sykmeldtFnr")
+                it.requireKey("status")
+                it.requireKey("opprettet")
             }
+            validate { it.interestedIn("arsakList") }
         }.register(this)
     }
 

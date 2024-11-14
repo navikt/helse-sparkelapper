@@ -27,7 +27,7 @@ internal class InntektsmeldingHåndertRiver(
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandValue("@event_name", eventName) }
+            precondition { it.requireValue("@event_name", eventName) }
             validate {
                 it.requireKey(
                     "fødselsnummer",

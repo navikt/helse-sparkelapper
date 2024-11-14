@@ -35,7 +35,7 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
 
     init {
         River(rapidsConnection).apply {
-            validate { it.demandAllOrAny("@behov", listOf("ArbeidsforholdV2", "AlleArbeidsforhold")) }
+            precondition { it.requireAllOrAny("@behov", listOf("ArbeidsforholdV2", "AlleArbeidsforhold")) }
             validate { it.forbid("@løsning") }
             validate { it.requireKey("@id") }
             validate { it.requireKey("fødselsnummer") }
