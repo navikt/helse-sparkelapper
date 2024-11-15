@@ -159,7 +159,7 @@ subprojects {
 
     dependencies {
         testImplementation("io.mockk:mockk:$mockkVersion")
-        testImplementation("com.github.tomakehurst:wiremock:$wiremockVersion") {
+        testImplementation("org.wiremock:wiremock:$wiremockVersion") {
             exclude(group = "junit")
             exclude("com.github.jknack.handlebars.java")
         }
