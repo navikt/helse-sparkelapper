@@ -7,6 +7,7 @@ import com.github.navikt.tbd_libs.result_object.ok
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.equalTo
+import com.github.tomakehurst.wiremock.client.WireMock.equalToJson
 import com.github.tomakehurst.wiremock.client.WireMock.matching
 import com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
@@ -366,7 +367,7 @@ internal class RestAbakusClientTest {
                     .withRequestBody(matchingJsonPath("$.ident.verdi", equalTo(fnr)))
                     .withRequestBody(matchingJsonPath("$.periode.fom", equalTo("$fom")))
                     .withRequestBody(matchingJsonPath("$.periode.tom", equalTo("$tom")))
-                    .withRequestBody(matchingJsonPath("$.ytelser", equalTo(ytelser.joinToString(", ", prefix = "[ ", postfix = " ]") { "\"$it\"" })))
+                    .withRequestBody(matchingJsonPath("$.ytelser", equalToJson(ytelser.joinToString(", ", prefix = "[ ", postfix = " ]") { "\"$it\"" })))
                     .willReturn(
                         WireMock.aResponse()
                             .withStatus(status)
