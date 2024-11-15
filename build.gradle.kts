@@ -17,6 +17,7 @@ val testcontainersPostgresqlVersion = "1.20.3"
 val postgresqlVersion = "42.7.2"
 val flywayCoreVersion = "10.11.0"
 val hikariCPVersion = "5.1.0"
+val jacksonVersion = "2.18.1"
 
 buildscript {
     repositories { mavenCentral() }
@@ -158,6 +159,12 @@ subprojects {
     ext.set("kotliqueryVersion", kotliqueryVersion)
 
     dependencies {
+        constraints {
+            api("com.fasterxml.jackson:jackson-bom:$jacksonVersion") {
+                because("Alle moduler skal bruke samme versjon av jackson")
+            }
+        }
+
         testImplementation("io.mockk:mockk:$mockkVersion")
         testImplementation("org.wiremock:wiremock:$wiremockVersion") {
             exclude(group = "junit")
