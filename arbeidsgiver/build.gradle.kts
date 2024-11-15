@@ -6,7 +6,6 @@ val hikariCPVersion: String by project
 val exposedVersion = "0.41.1"
 
 dependencies {
-    implementation("org.flywaydb:flyway-core:$flywayCoreVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayCoreVersion")
     implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")
