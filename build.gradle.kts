@@ -16,7 +16,7 @@ val kotliqueryVersion = "1.9.0"
 val testcontainersPostgresqlVersion = "1.20.3"
 val postgresqlVersion = "42.7.2"
 val flywayCoreVersion = "10.11.0"
-val hikariCPVersion = "5.1.0"
+val hikariCPVersion = "6.1.0"
 val jacksonVersion = "2.18.1"
 
 buildscript {
