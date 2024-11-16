@@ -13,7 +13,6 @@ val wiremockVersion = "3.9.2"
 val jsonAssertVersion = "1.5.3"
 val avroVersion = "1.12.0"
 val kotliqueryVersion = "1.9.0"
-val testcontainersPostgresqlVersion = "1.20.3"
 val postgresqlVersion = "42.7.4"
 val flywayCoreVersion = "10.21.0"
 val hikariCPVersion = "6.1.0"
@@ -152,7 +151,6 @@ subprojects {
     ext.set("mockkVersion", mockkVersion)
     ext.set("jsonAssertVersion", jsonAssertVersion)
     ext.set("avroVersion", avroVersion)
-    ext.set("testcontainersPostgresqlVersion", testcontainersPostgresqlVersion)
     ext.set("postgresqlVersion", postgresqlVersion)
     ext.set("flywayCoreVersion", flywayCoreVersion)
     ext.set("hikariCPVersion", hikariCPVersion)

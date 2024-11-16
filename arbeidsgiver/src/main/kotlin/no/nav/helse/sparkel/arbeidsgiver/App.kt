@@ -35,7 +35,8 @@ fun main() {
     val env = System.getenv()
 
     val database = Database()
-    val inntektsmeldingRegistrertRepository = InntektsmeldingRegistrertRepository()
+    val db = ExposedDatabase.connect(database.dataSource)
+    val inntektsmeldingRegistrertRepository = InntektsmeldingRegistrertRepository(db)
 
     val trengerForespørselProducer = createAivenProducer<TrengerArbeidsgiveropplysningerDto>(env)
     val trengerIkkeForespørselProducer = createAivenProducer<TrengerIkkeArbeidsgiveropplysningerDto>(env)
@@ -58,7 +59,6 @@ fun main() {
 private fun RapidsConnection.registerDbLifecycle(db: Database) {
     register(object : RapidsConnection.StatusListener {
         override fun onStartup(rapidsConnection: RapidsConnection) {
-            ExposedDatabase.connect(db.dataSource)
             db.migrate()
         }
 

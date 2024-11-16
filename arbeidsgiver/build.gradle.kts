@@ -15,5 +15,13 @@ dependencies {
     implementation(project(":felles"))
 
     testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
-    testImplementation("org.testcontainers:postgresql:$testcontainersPostgresqlVersion")
+    testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:$tbdLibsVersion")
+}
+
+tasks.withType<Test> {
+    val parallellDisabled = System.getenv("CI" ) == "true"
+    systemProperty("junit.jupiter.execution.parallel.enabled", parallellDisabled.not().toString())
+    systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
+    systemProperty("junit.jupiter.execution.parallel.config.strategy", "fixed")
+    systemProperty("junit.jupiter.execution.parallel.config.fixed.parallelism", "8")
 }

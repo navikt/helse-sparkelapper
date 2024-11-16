@@ -6,10 +6,10 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
-internal class InntektsmeldingRegistrertRepository {
+internal class InntektsmeldingRegistrertRepository(private val db: org.jetbrains.exposed.sql.Database) {
 
     fun lagre(inntektsmeldingRegistrertDto: InntektsmeldingRegistrertDto): Int =
-        transaction {
+        transaction(db) {
             InntektsmeldingRegistrertTable.run {
                 insert {
                     it[dokumentId] = inntektsmeldingRegistrertDto.dokumentId
@@ -19,7 +19,7 @@ internal class InntektsmeldingRegistrertRepository {
             }
         }
 
-    fun finnDokumentId(hendelseId: UUID): UUID? = transaction {
+    fun finnDokumentId(hendelseId: UUID): UUID? = transaction(db) {
         InntektsmeldingRegistrertTable
             .select { InntektsmeldingRegistrertTable.hendelseId eq hendelseId }
             .map { it[InntektsmeldingRegistrertTable.dokumentId] }

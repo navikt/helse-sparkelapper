@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
+import com.github.navikt.tbd_libs.test_support.TestDataSource
 import java.time.LocalDate
 import java.util.UUID
 import no.nav.helse.sparkel.arbeidsgiver.db.Database
@@ -19,28 +20,26 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 import org.jetbrains.exposed.sql.Database as ExposedDatabase
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class InntektsmeldingRegistrertRepositoryTest {
-    private val database = Database(dbConfig())
-        .configureFlyway()
+    private lateinit var testDataSource: TestDataSource
+    private lateinit var db: org.jetbrains.exposed.sql.Database
+    private lateinit var inntektsmeldingRegistrertRepository: InntektsmeldingRegistrertRepository
 
-    private val inntektsmeldingRegistrertRepository = InntektsmeldingRegistrertRepository()
-
-    @BeforeAll
+    @BeforeEach
     fun setUp() {
-        ExposedDatabase.connect(database.dataSource)
+        testDataSource = databaseContainer.nyTilkobling()
+        db = ExposedDatabase.connect(testDataSource.ds)
+        inntektsmeldingRegistrertRepository = InntektsmeldingRegistrertRepository(db)
     }
 
     @BeforeEach
     fun resetDatabase() {
-        transaction {
-            InntektsmeldingRegistrertTable.deleteAll()
-        }
+        databaseContainer.droppTilkobling(testDataSource)
     }
 
     @Test
     fun `lagrer InntektsmeldingRegistrert i databasen`() {
-        transaction {
+        transaction(db) {
             assertEquals(0, InntektsmeldingRegistrertTable.selectAll().map { it }.size)
         }
 
@@ -55,7 +54,7 @@ internal class InntektsmeldingRegistrertRepositoryTest {
 
         inntektsmeldingRegistrertRepository.lagre(inntektsmeldingRegistrertDto)
 
-        transaction {
+        transaction(db) {
             val actual = InntektsmeldingRegistrertTable.selectAll().single()
             assertEquals(dokumentId, actual[InntektsmeldingRegistrertTable.dokumentId])
             assertEquals(hendelseId, actual[InntektsmeldingRegistrertTable.hendelseId])
