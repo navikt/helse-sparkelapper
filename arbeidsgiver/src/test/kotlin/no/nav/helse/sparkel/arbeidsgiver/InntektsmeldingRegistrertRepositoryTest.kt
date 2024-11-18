@@ -3,21 +3,15 @@ package no.nav.helse.sparkel.arbeidsgiver
 import com.github.navikt.tbd_libs.test_support.TestDataSource
 import java.time.LocalDate
 import java.util.UUID
-import no.nav.helse.sparkel.arbeidsgiver.db.Database
 import no.nav.helse.sparkel.arbeidsgiver.db.InntektsmeldingRegistrertTable
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_registrert.InntektsmeldingRegistrertDto
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_registrert.InntektsmeldingRegistrertRepository
-import org.jetbrains.exposed.exceptions.ExposedSQLException
-import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertThrows
 import org.jetbrains.exposed.sql.Database as ExposedDatabase
 
 internal class InntektsmeldingRegistrertRepositoryTest {
@@ -63,7 +57,7 @@ internal class InntektsmeldingRegistrertRepositoryTest {
     }
 
     @Test
-    fun `lagrer ikke InntektsmeldingRegistrert med lik dokumentId og hendelseId i databasen`() {
+    fun `håndterer at vi får samme inntektsmelding flere ganger`() {
 
         val inntektsmeldingRegistrertDto = InntektsmeldingRegistrertDto(
             hendelseId = UUID.randomUUID(),
@@ -71,10 +65,8 @@ internal class InntektsmeldingRegistrertRepositoryTest {
             opprettet = LocalDate.EPOCH.atStartOfDay()
         )
 
-        assertThrows<ExposedSQLException> {
-            inntektsmeldingRegistrertRepository.lagre(inntektsmeldingRegistrertDto)
-            inntektsmeldingRegistrertRepository.lagre(inntektsmeldingRegistrertDto)
-        }
+        inntektsmeldingRegistrertRepository.lagre(inntektsmeldingRegistrertDto)
+        inntektsmeldingRegistrertRepository.lagre(inntektsmeldingRegistrertDto)
     }
 
     @Test

@@ -8,8 +8,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 internal class InntektsmeldingRegistrertRepository(private val db: org.jetbrains.exposed.sql.Database) {
 
-    fun lagre(inntektsmeldingRegistrertDto: InntektsmeldingRegistrertDto): Int =
+    fun lagre(inntektsmeldingRegistrertDto: InntektsmeldingRegistrertDto) {
         transaction(db) {
+            if (finn(inntektsmeldingRegistrertDto.hendelseId) != null) return@transaction
             InntektsmeldingRegistrertTable.run {
                 insert {
                     it[dokumentId] = inntektsmeldingRegistrertDto.dokumentId
@@ -18,11 +19,14 @@ internal class InntektsmeldingRegistrertRepository(private val db: org.jetbrains
                 } get (id)
             }
         }
+    }
 
     fun finnDokumentId(hendelseId: UUID): UUID? = transaction(db) {
-        InntektsmeldingRegistrertTable
-            .select { InntektsmeldingRegistrertTable.hendelseId eq hendelseId }
-            .map { it[InntektsmeldingRegistrertTable.dokumentId] }
-            .singleOrNull()
+        finn(hendelseId)
     }
+
+    private fun finn(hendelseId: UUID) = InntektsmeldingRegistrertTable
+        .select { InntektsmeldingRegistrertTable.hendelseId eq hendelseId }
+        .map { it[InntektsmeldingRegistrertTable.dokumentId] }
+        .singleOrNull()
 }

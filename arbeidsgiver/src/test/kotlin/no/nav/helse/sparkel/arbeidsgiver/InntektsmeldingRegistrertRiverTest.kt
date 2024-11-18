@@ -3,7 +3,9 @@ package no.nav.helse.sparkel.arbeidsgiver
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.clearMocks
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
 import java.time.LocalDateTime
 import java.util.UUID
@@ -28,7 +30,7 @@ class InntektsmeldingRegistrertRiverTest {
 
     @Test
     fun `lagrer korrekte meldinger i databasen`() {
-        every { repository.lagre(any()) } returns 1
+        every { repository.lagre(any()) } just runs
 
         val hendelseId = UUID.randomUUID()
         val dokumentId = UUID.randomUUID()
