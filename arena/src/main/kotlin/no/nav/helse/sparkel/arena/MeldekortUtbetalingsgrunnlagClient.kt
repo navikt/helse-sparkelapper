@@ -48,7 +48,7 @@ class MeldekortUtbetalingsgrunnlagClient(
             action = "http://nav.no/tjeneste/virksomhet/meldekortUtbetalingsgrunnlag/v1/meldekortUtbetalingsgrunnlag_v1/finnMeldekortUtbetalingsgrunnlagListeRequest",
             body = requestBody,
             tokenStrategy = assertionStrategy
-        )
+        ).map { it.body().ok() }
     }
 
     private fun createXmlBody(tema: String, ident: String, fom: LocalDate, tom: LocalDate): String {

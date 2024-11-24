@@ -48,7 +48,7 @@ class YtelsekontraktClient(
             action = "http://nav.no/tjeneste/virksomhet/ytelseskontrakt/v3/Ytelseskontrakt_v3/hentYtelseskontraktListeRequest",
             body = requestBody,
             tokenStrategy = assertionStrategy
-        )
+        ).map { it.body().ok() }
     }
 
     private fun createXmlBody(ident: String, fom: LocalDate, tom: LocalDate): String {
