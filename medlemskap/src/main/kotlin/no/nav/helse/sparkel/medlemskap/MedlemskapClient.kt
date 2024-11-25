@@ -27,8 +27,8 @@ internal class MedlemskapClient(
                 setRequestProperty("Authorization", "Bearer ${bearerToken.token}")
                 setRequestProperty("Accept", "application/json")
                 setRequestProperty("Content-Type", "application/json")
-                connectTimeout = 10000
-                readTimeout = 10000
+                connectTimeout = 10_000
+                readTimeout = 30_000
                 doOutput = true
                 outputStream.use {
                     it.bufferedWriter().apply {
