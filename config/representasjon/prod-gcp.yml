@@ -16,6 +16,6 @@ accessPolicy:
         cluster: prod-gcp
 env:
   - name: REPR_API_URL
-    value: https://repr-api.intern.nav.no
+    value: http://repr-api.repr
   - name: REPR_API_SCOPE
     value: api://prod-gcp.repr.repr-api/.default
