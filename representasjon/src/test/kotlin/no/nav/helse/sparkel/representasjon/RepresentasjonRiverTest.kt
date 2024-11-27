@@ -39,7 +39,7 @@ internal class RepresentasjonRiverTest {
     }
 
     @Test
-    fun `kaster exception ved feil mot fullmakt-api`() {
+    fun `kaster exception ved feil mot repr-api`() {
         every { representasjonClient.hentFullmakt(any()) } returns Result.failure(RuntimeException())
         assertThrows<RuntimeException> { rapid.sendTestMessage(behov()) }
         assertEquals(0, rapid.inspektør.size)

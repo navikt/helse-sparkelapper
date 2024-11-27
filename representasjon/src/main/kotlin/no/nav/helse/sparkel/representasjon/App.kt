@@ -22,10 +22,10 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
         val azureClient = createAzureTokenClientFromEnvironment(env)
 
         val representasjonClient = RepresentasjonClient(
-            baseUrl = env.getValue("PDL_FULLMAKT_URL"),
+            baseUrl = env.getValue("REPR_API_URL"),
             tokenClient = azureClient,
             httpClient = httpClient,
-            scope = env.getValue("PDL_FULLMAKT_SCOPE")
+            scope = env.getValue("REPR_API_SCOPE")
         )
 
         RepresentasjonRiver(rapidsConnection = this, representasjonClient = representasjonClient)

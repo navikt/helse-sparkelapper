@@ -13,7 +13,6 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import java.util.Base64
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
@@ -33,12 +32,12 @@ class RepresentasjonClient(
         val callId = UUID.randomUUID()
         return try {
             runBlocking {
-                val response = httpClient.preparePost("$baseUrl/api/internbruker/fullmaktsgiver") {
+                val response = httpClient.preparePost("$baseUrl/api/internbruker/fullmakt/fullmaktsgiver") {
                     contentType(ContentType.Application.Json)
                     accept(ContentType.Application.Json)
                     val bearerToken = tokenClient.bearerToken(scope).getOrThrow()
                     bearerAuth(bearerToken.token)
-                    setBody(mapOf("ident" to Base64.getEncoder().encodeToString(fnr.toByteArray())))
+                    setBody(mapOf("ident" to fnr))
                     header("Nav-Call-Id", "$callId")
                     header("no.nav.callid", "$callId")
                     header("Nav-Consumer-Id", "sparkel-representasjon")
@@ -46,16 +45,16 @@ class RepresentasjonClient(
                 }.execute()
 
                 if (response.status != HttpStatusCode.OK) {
-                    "Feil ved kall mot fullmakt-api, http-status: ${response.status.value}, returnerer tomt resultat. CallId=$callId".also {
+                    "Feil ved kall mot repr-api, http-status: ${response.status.value}, returnerer tomt resultat. CallId=$callId".also {
                         log.warn(it)
                         sikkerlog.warn("$it, response:\n$response")
                     }
-                    Result.failure(RuntimeException("Feil ved kall mot fullmakt-api"))
+                    Result.failure(RuntimeException("Feil ved kall mot repr-api"))
                 } else Result.success(response.body())
             }
         } catch (e: Exception) {
-            log.warn("Feil mot fullmakt-api, callId=$callId, se sikker logg for exception")
-            sikkerlog.warn("Feil mot fullmakt-api, callId=$callId", e)
+            log.warn("Feil mot repr-api, callId=$callId, se sikker logg for exception")
+            sikkerlog.warn("Feil mot repr-api, callId=$callId", e)
             Result.failure(e)
         }
     }
