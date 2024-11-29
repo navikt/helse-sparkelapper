@@ -2,7 +2,7 @@ val ktorVersion: String by project
 val tbdLibsVersion: String by project
 
 dependencies {
-    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    implementation("com.github.navikt.tbd-libs:naisful-app:$tbdLibsVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
     implementation(project(":felles"))
 
