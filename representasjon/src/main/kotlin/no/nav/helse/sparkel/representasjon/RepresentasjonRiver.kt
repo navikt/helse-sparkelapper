@@ -42,39 +42,38 @@ internal class RepresentasjonRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        runBlocking {
-            val id = packet["@id"].asText()
-            log.info("Leser melding {}", id)
-            val fnr = packet["fødselsnummer"].asText()
+        val id = packet["@id"].asText()
+        log.info("Leser melding {}", id)
+        val fnr = packet["fødselsnummer"].asText()
 
-            val svar = representasjonClient.hentFullmakt(fnr).mapCatching { fullmakt ->
-                fullmakt.map {
-                    Fullmakt(
-                        områder = it["omraade"].map { område -> Område.fra(område["tema"].asText()) },
-                        gyldigFraOgMed = it["gyldigFraOgMed"].asLocalDate(),
-                        gyldigTilOgMed = it["gyldigTilOgMed"].asOptionalLocalDate()
-                    )
-                }.filter { it.områder.any { område -> område in listOf(Syk, Sym, Alle) } }
-            }
-            svar.fold(
-                onSuccess = { fullmakt: List<Fullmakt> ->
-                    packet["@løsning"] = mapOf("Fullmakt" to fullmakt)
-                    context.publish(packet.toJson())
-                    sikkerlogg.info(
-                        "Besvarte behov {}:\n{}",
-                        kv("id", id),
-                        packet.toJson()
-                    )
-                },
-                onFailure = { t: Throwable ->
-                    "Fikk feil ved oppslag mot representasjon".also { message ->
-                        log.error(message)
-                        sikkerlogg.error("$message {}", kv("Exception", t))
-                    }
-                    throw t
-                }
-            )
+        val representasjonResponse = runBlocking { representasjonClient.hentFullmakt(fnr) }
+        val svar = representasjonResponse.mapCatching { fullmakt ->
+            fullmakt.map {
+                Fullmakt(
+                    områder = it["omraade"].map { område -> Område.fra(område["tema"].asText()) },
+                    gyldigFraOgMed = it["gyldigFraOgMed"].asLocalDate(),
+                    gyldigTilOgMed = it["gyldigTilOgMed"].asOptionalLocalDate()
+                )
+            }.filter { it.områder.any { område -> område in listOf(Syk, Sym, Alle) } }
         }
+        svar.fold(
+            onSuccess = { fullmakt: List<Fullmakt> ->
+                packet["@løsning"] = mapOf("Fullmakt" to fullmakt)
+                context.publish(packet.toJson())
+                sikkerlogg.info(
+                    "Besvarte behov {}:\n{}",
+                    kv("id", id),
+                    packet.toJson()
+                )
+            },
+            onFailure = { t: Throwable ->
+                "Fikk feil ved oppslag mot representasjon".also { message ->
+                    log.error(message)
+                    sikkerlogg.error("$message {}", kv("Exception", t))
+                }
+                throw t
+            }
+        )
     }
 
     internal data class Fullmakt(
