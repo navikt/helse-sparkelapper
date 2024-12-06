@@ -14,7 +14,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import java.util.UUID
-import kotlinx.coroutines.runBlocking
+import no.nav.helse.sparkel.retry
 import org.slf4j.LoggerFactory
 
 class RepresentasjonClient(
@@ -28,10 +28,10 @@ class RepresentasjonClient(
         private val sikkerlog = LoggerFactory.getLogger("tjenestekall")
     }
 
-    fun hentFullmakt(fnr: String): Result<JsonNode> {
+    suspend fun hentFullmakt(fnr: String): Result<JsonNode> {
         val callId = UUID.randomUUID()
         return try {
-            runBlocking {
+            retry("fullmakt") {
                 val response = httpClient.preparePost("$baseUrl/api/internbruker/fullmakt/fullmaktsgiver") {
                     contentType(ContentType.Application.Json)
                     accept(ContentType.Application.Json)
