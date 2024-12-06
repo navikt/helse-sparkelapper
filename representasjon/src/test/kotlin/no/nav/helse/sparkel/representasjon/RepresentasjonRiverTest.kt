@@ -3,9 +3,9 @@ package no.nav.helse.sparkel.representasjon
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
 import java.util.UUID
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -31,7 +31,7 @@ internal class RepresentasjonRiverTest {
                     }
                 ]
             """.trimIndent()
-        every { representasjonClient.hentFullmakt(any()) } returns Result.success(objectMapper.readTree(fullmaktJson))
+        coEvery { representasjonClient.hentFullmakt(any()) } returns Result.success(objectMapper.readTree(fullmaktJson))
         rapid.sendTestMessage(behov())
         val svar = rapid.inspektør.message(0)
         val løsning = svar.fullmaktløsning()
@@ -40,10 +40,10 @@ internal class RepresentasjonRiverTest {
 
     @Test
     fun `kaster exception ved feil mot repr-api`() {
-        every { representasjonClient.hentFullmakt(any()) } returns Result.failure(RuntimeException())
+        coEvery { representasjonClient.hentFullmakt(any()) } returns Result.failure(RuntimeException())
         assertThrows<RuntimeException> { rapid.sendTestMessage(behov()) }
         assertEquals(0, rapid.inspektør.size)
-        verify (exactly = 1) { representasjonClient.hentFullmakt("fnr") }
+        coVerify (exactly = 1) { representasjonClient.hentFullmakt("fnr") }
     }
 
     @Language("JSON")

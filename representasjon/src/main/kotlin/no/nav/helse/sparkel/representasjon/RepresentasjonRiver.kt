@@ -10,6 +10,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
 import java.time.LocalDate
+import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.helse.sparkel.representasjon.RepresentasjonRiver.Område.Alle
 import no.nav.helse.sparkel.representasjon.RepresentasjonRiver.Område.Syk
@@ -45,7 +46,8 @@ internal class RepresentasjonRiver(
         log.info("Leser melding {}", id)
         val fnr = packet["fødselsnummer"].asText()
 
-        val svar = representasjonClient.hentFullmakt(fnr).mapCatching { fullmakt ->
+        val representasjonResponse = runBlocking { representasjonClient.hentFullmakt(fnr) }
+        val svar = representasjonResponse.mapCatching { fullmakt ->
             fullmakt.map {
                 Fullmakt(
                     områder = it["omraade"].map { område -> Område.fra(område["tema"].asText()) },
