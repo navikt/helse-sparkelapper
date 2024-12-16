@@ -43,7 +43,7 @@ internal class TrengerArbeidsgiveropplysningerRiver(
                 require("førsteFraværsdag", JsonNode::asLocalDate)
             }}
             validate { it.require("forespurteOpplysninger", JsonNode::validateForespurteOpplysninger) }
-            validate { it.requireKey("organisasjonsnummer", "fødselsnummer", "vedtaksperiodeId") }
+            validate { it.requireKey("organisasjonsnummer", "fødselsnummer", "vedtaksperiodeId", "innhentInntektFraAOrdningen") }
         }.register(this)
     }
 

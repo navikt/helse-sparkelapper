@@ -20,6 +20,7 @@ internal data class TrengerArbeidsgiveropplysningerDto(
     val sykmeldingsperioder: List<Map<String, LocalDate>>,
     val egenmeldingsperioder: List<Map<String, LocalDate>>,
     val forespurtData: List<Map<String, Any>>,
+    val innhentInntektFraAOrdningen: Boolean,
     val opprettet: LocalDateTime = LocalDateTime.now()
 ) {
     val meldingstype get() = type.name.lowercase().toByteArray()
@@ -36,6 +37,7 @@ internal fun JsonMessage.toKomplettTrengerArbeidsgiveropplysningerDto(): Trenger
         sykmeldingsperioder = this["sykmeldingsperioder"].toPerioder(),
         egenmeldingsperioder = this["egenmeldingsperioder"].toPerioder(),
         forespurtData = this["forespurteOpplysninger"].asForespurteOpplysninger().toJsonMap(),
+        innhentInntektFraAOrdningen = this["innhentInntektFraAOrdningen"].asBoolean(),
         opprettet = this["@opprettet"].asLocalDateTime()
     )
 
@@ -54,5 +56,6 @@ internal fun JsonMessage.toBegrensetTrengerArbeidsgiveropplysningerDto(): Trenge
             Arbeidsgiverperiode,
             Refusjon(emptyList())
         ).toJsonMap(),
+        innhentInntektFraAOrdningen = false,
         opprettet = this["@opprettet"].asLocalDateTime()
     )

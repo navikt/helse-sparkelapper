@@ -36,6 +36,7 @@ private fun mockTrengerArbeidsgiveropplysningerDto(
     egenmeldingsperioder = egenmeldingsperioder,
     forespurtData = forespurtData,
     bestemmendeFraværsdager = bestemmendeFraværsdager,
+    innhentInntektFraAOrdningen = false,
     opprettet = LocalDateTime.MAX
 )
 internal fun mockTrengerIkkeArbeidsgiveropplysningerDto(
