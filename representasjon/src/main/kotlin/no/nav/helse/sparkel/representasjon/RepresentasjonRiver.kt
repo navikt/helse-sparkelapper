@@ -60,6 +60,7 @@ internal class RepresentasjonRiver(
             onSuccess = { fullmakt: List<Fullmakt> ->
                 packet["@løsning"] = mapOf("Fullmakt" to fullmakt)
                 context.publish(packet.toJson())
+                log.info("Besvarte behov {}", id)
                 sikkerlogg.info(
                     "Besvarte behov {}:\n{}",
                     kv("id", id),
@@ -69,7 +70,7 @@ internal class RepresentasjonRiver(
             onFailure = { t: Throwable ->
                 "Fikk feil ved oppslag mot representasjon".also { message ->
                     log.error(message)
-                    sikkerlogg.error("$message {}", kv("Exception", t))
+                    sikkerlogg.error("$message: {}", t, t)
                 }
                 throw t
             }
