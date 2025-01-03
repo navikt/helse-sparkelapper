@@ -5,15 +5,20 @@ import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.ServerResponseException
+import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.accept
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.header
 import io.ktor.client.request.preparePost
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import java.io.IOException
+import java.net.SocketTimeoutException
 import java.util.UUID
+import javax.net.ssl.SSLHandshakeException
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import no.nav.helse.sparkel.retry
 import org.slf4j.LoggerFactory
 
@@ -28,11 +33,20 @@ class RepresentasjonClient(
         private val sikkerlog = LoggerFactory.getLogger("tjenestekall")
     }
 
+    private val retryableExceptions = arrayOf(
+        IOException::class,
+        ClosedReceiveChannelException::class,
+        SSLHandshakeException::class,
+        SocketTimeoutException::class,
+        ServerResponseException::class
+    )
+
     suspend fun hentFullmakt(fnr: String): Result<JsonNode> {
         val callId = UUID.randomUUID()
         return try {
-            retry("fullmakt") {
+            retry("fullmakt", legalExceptions = retryableExceptions) {
                 val response = httpClient.preparePost("$baseUrl/api/internbruker/fullmakt/fullmaktsgiver") {
+                    expectSuccess = true
                     contentType(ContentType.Application.Json)
                     accept(ContentType.Application.Json)
                     val bearerToken = tokenClient.bearerToken(scope).getOrThrow()
@@ -44,13 +58,7 @@ class RepresentasjonClient(
                     header("no.nav.consumer.id", "sparkel-representasjon")
                 }.execute()
 
-                if (response.status != HttpStatusCode.OK) {
-                    "Feil ved kall mot repr-api, http-status: ${response.status.value}, returnerer tomt resultat. CallId=$callId".also {
-                        log.warn(it)
-                        sikkerlog.warn("$it, response:\n$response")
-                    }
-                    Result.failure(RuntimeException("Feil ved kall mot repr-api"))
-                } else Result.success(response.body())
+                Result.success(response.body())
             }
         } catch (e: Exception) {
             log.warn("Feil mot repr-api, callId=$callId, se sikker logg for exception")

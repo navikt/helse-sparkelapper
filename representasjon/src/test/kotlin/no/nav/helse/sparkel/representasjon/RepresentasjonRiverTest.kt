@@ -40,10 +40,11 @@ internal class RepresentasjonRiverTest {
 
     @Test
     fun `kaster exception ved feil mot repr-api`() {
-        coEvery { representasjonClient.hentFullmakt(any()) } returns Result.failure(RuntimeException())
-        assertThrows<RuntimeException> { rapid.sendTestMessage(behov()) }
+        // Later som at kallet ikke går ok til tross for retries (exception-typen er ikke helt prod-realistisk)
+        coEvery { representasjonClient.hentFullmakt(any()) } returns Result.failure(IllegalStateException())
+        assertThrows<IllegalStateException> { rapid.sendTestMessage(behov()) }
         assertEquals(0, rapid.inspektør.size)
-        coVerify (exactly = 1) { representasjonClient.hentFullmakt("fnr") }
+        coVerify(exactly = 1) { representasjonClient.hentFullmakt("fnr") }
     }
 
     @Language("JSON")
