@@ -43,7 +43,6 @@ internal class KodeverkClientTest {
     fun `henter næring`() {
         val kodeverkClient = KodeverkClient(
             kodeverkBaseUrl = server.baseUrl(),
-            appName = "sparkel-aareg",
             kodeverkOauthScope = "kodeverk-oauth-scope",
             azureTokenProvider = azureTokenStub()
         )
@@ -55,7 +54,6 @@ internal class KodeverkClientTest {
     fun `henter yrke`() {
         val kodeverkClient = KodeverkClient(
             kodeverkBaseUrl = server.baseUrl(),
-            appName = "sparkel-aareg",
             kodeverkOauthScope = "kodeverk-oauth-scope",
             azureTokenProvider = azureTokenStub()
         )
@@ -67,7 +65,6 @@ internal class KodeverkClientTest {
     fun `cacher responsen`() {
         val kodeverkClient = KodeverkClient(
             kodeverkBaseUrl = server.baseUrl(),
-            appName = "sparkel-aareg",
             kodeverkOauthScope = "kodeverk-oauth-scope",
             azureTokenProvider = azureTokenStub()
         )
@@ -80,7 +77,6 @@ internal class KodeverkClientTest {
     private fun mock(path: String, response: String, status: Int = 200) {
         WireMock.stubFor(
             WireMock.get(WireMock.urlPathMatching("$path.*".encodeURLPath()))
-                .withHeader("Nav-Consumer-Id", WireMock.equalTo("sparkel-aareg"))
                 .withHeader("Nav-Call-Id", AnythingPattern())
                 .withQueryParam("spraak", WireMock.equalTo("nb"))
                 .withQueryParam("ekskluderUgyldige", WireMock.equalTo("true"))

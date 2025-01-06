@@ -45,7 +45,6 @@ internal fun createApp(environment: Environment): RapidsConnection {
 
     val kodeverkClient = KodeverkClient(
         kodeverkBaseUrl = environment.kodeverkBaseUrl,
-        appName = environment.appName,
         environment.kodeverkOauthScope,
         azureAD,
     )

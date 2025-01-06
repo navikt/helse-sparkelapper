@@ -19,7 +19,6 @@ private val log = LoggerFactory.getLogger("sparkel-aareg")
 
 class KodeverkClient(
     private val kodeverkBaseUrl: String,
-    private val appName: String,
     private val kodeverkOauthScope: String,
     private val azureTokenProvider: AzureTokenProvider
 ) {
@@ -50,7 +49,6 @@ class KodeverkClient(
         val (responseCode, body) = URI("$kodeverkBaseUrl$path?spraak=nb&ekskluderUgyldige=true&oppslagsdato=${LocalDate.now()}").toURL().get(
             "Authorization" to "Bearer ${bearerToken.token}",
             "Nav-Call-Id" to "${UUID.randomUUID()}",
-            "Nav-Consumer-Id" to appName
         )
         log.info("Kodeverk status $responseCode for path $path")
         return body
