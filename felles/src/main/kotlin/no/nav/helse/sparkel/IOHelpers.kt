@@ -9,7 +9,7 @@ import javax.net.ssl.SSLHandshakeException
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlin.reflect.KClass
 
-private val log: Logger = LoggerFactory.getLogger("SoapHelpers")
+private val log: Logger = LoggerFactory.getLogger("tjenestekall")
 
 suspend fun <T> retry(
     callName: String,
