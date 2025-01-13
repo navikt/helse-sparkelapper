@@ -62,6 +62,14 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
     }
 
     @Test
+    fun `ignorerer forespørsler fra arbeidsledig`() {
+        testRapid.sendTestMessage(eventMeldingMedInntekt("trenger_opplysninger_fra_arbeidsgiver", organisasjonsnummer = "ARBEIDSLEDIG"))
+        verify(exactly = 0) {
+            mockproducer.send(any())
+        }
+    }
+
+    @Test
     fun `publiserer forespørsel om arbeidsgiveropplysninger - med inntekt, refusjon, og agp`() {
         every { mockproducer.send(any()) } answers { callOriginal() }
         val vedtaksperiodeId = UUID.randomUUID()
@@ -195,14 +203,14 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
             )
         ).toString()
 
-    private fun eventMeldingMedInntekt(eventName: String, vedtaksperiodeId: UUID = UUID.randomUUID()): String =
+    private fun eventMeldingMedInntekt(eventName: String, vedtaksperiodeId: UUID = UUID.randomUUID(), organisasjonsnummer: String = ORGNUMMER): String =
         objectMapper.valueToTree<JsonNode>(
             mapOf(
                 "@id" to UUID.randomUUID(),
                 "@event_name" to eventName,
                 "@opprettet" to LocalDateTime.MAX,
                 "fødselsnummer" to FNR,
-                "organisasjonsnummer" to ORGNUMMER,
+                "organisasjonsnummer" to organisasjonsnummer,
                 "vedtaksperiodeId" to vedtaksperiodeId,
                 "skjæringstidspunkt" to LocalDate.MIN,
                 "førsteFraværsdager" to listOf(mapOf("organisasjonsnummer" to ORGNUMMER, "førsteFraværsdag" to LocalDate.MIN)),
