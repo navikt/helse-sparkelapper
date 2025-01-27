@@ -35,7 +35,9 @@ internal class TilbakedatertRiver(
             }
             validate {
                 it.requireKey("sykmelding.id")
-                it.requireKey("sykmelding.syketilfelleStartDato")
+                it.require("sykmelding.syketilfelleStartDato") { datoNode ->
+                    datoNode.asLocalDate()
+                }
                 it.requireArray("sykmelding.perioder") {
                     requireKey("fom", "tom")
                 }
