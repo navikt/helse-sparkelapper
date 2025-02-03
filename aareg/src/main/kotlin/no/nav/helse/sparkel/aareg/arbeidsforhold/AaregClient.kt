@@ -44,7 +44,7 @@ class AaregClient(
             sikkerlogg.warn("Feil under deserialisering av svar fra Aareg", e)
             val melding = feilmeldingFraAaregEllerGenerellTekst(responseBody)
             throw if (response.status == HttpStatusCode.NotFound && melding == "Ukjent ident") UkjentIdentException()
-            else AaregException(melding, responseBody, response.status)
+            else AaregException(melding, responseBody, response.status, e)
         }
     }
 
@@ -68,8 +68,9 @@ class AaregClient(
 class AaregException(
     message: String,
     private val responseValue: String,
-    private val status: HttpStatusCode
-) : RuntimeException(message) {
+    private val status: HttpStatusCode,
+    cause: Throwable,
+) : RuntimeException(message, cause) {
     fun responseValue() = responseValue
     fun statusFromAareg() = status.value.toString()
 }
