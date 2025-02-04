@@ -69,7 +69,7 @@ internal class RepresentasjonRiver(
             },
             onFailure = { t: Throwable ->
                 "Fikk feil ved oppslag mot representasjon".also { message ->
-                    log.error(message)
+                    log.error("$message, se sikkerlogg for detaljer")
                     sikkerlogg.error("$message: {}", t, t)
                 }
                 throw t
