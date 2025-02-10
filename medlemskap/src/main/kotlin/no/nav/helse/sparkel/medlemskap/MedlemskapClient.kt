@@ -43,6 +43,10 @@ internal class MedlemskapClient(
                 responseCode to stream?.bufferedReader()?.readText()
             }
 
+        if (responseCode != 200) {
+            sikkerlogg.warn("Feil fra medlemskapstjenesten: HTTP $responseCode Response:\n\t${responseBody?.jsonOrRaw()}")
+        }
+
         if (responseBody == null) {
             throw MedlemskapException("unknown error (responseCode=$responseCode) from medlemskap", responseBody)
         }
@@ -55,6 +59,7 @@ internal class MedlemskapClient(
     }
 
     internal companion object {
+        private fun String.jsonOrRaw() = try { objectMapper.readTree(this).toString() } catch (ignored: Exception) { this }
         private val objectMapper = jacksonObjectMapper()
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         @Language("JSON")
