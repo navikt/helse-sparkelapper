@@ -57,7 +57,7 @@ data class Tolk(
             fun logg(tolk: Tolk)
 
             data class Avklart(val svar: String, private val kilde: String): Medlemskap {
-                override fun logg(tolk: Tolk) = sikkerlogg.info("Medlemskap for {} på ${tolk.fom} avklart til {} fra {}. RequestBody:\n\t${tolk.requestBody.jsonOrRaw()}",
+                override fun logg(tolk: Tolk) = sikkerlogg.info("Medlemskap for {} på ${tolk.fom} avklart til {} fra {}. \nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}",
                     keyValue("fødselsnummer", tolk.fødselsnummer),
                     keyValue("svar", svar),
                     keyValue("kilde", kilde)
@@ -68,7 +68,8 @@ data class Tolk(
             data class Gradert(private val responseBody: String): Medlemskap {
                 override fun logg(tolk: Tolk) = sikkerlogg.warn("Medlemskap for {} på ${tolk.fom} ikke vurdert. Sykmeldte er gradert. Defaulter til {}.\nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}\nResponseBody:\n\${${responseBody.jsonOrRaw()}}",
                     keyValue("fødselsnummer", tolk.fødselsnummer),
-                    keyValue("svar", "UAVKLART")
+                    keyValue("svar", "UAVKLART"),
+                    keyValue("kilde", "GradertSvar")
                 )
             }
 
