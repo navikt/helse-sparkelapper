@@ -30,8 +30,8 @@ data class Tolk(
             throw Medlemskapsfeil(Medlemskap.Ubesvart(exception))
         }
         val jsonBody = responseBody.safeJson()
-        if (jsonBody.path("resultat").path("svar").isTextual) return Medlemskap.Avklart(jsonBody.path("resultat").path("svar").asText())
-        if (jsonBody.path("speilSvar").isTextual) return Medlemskap.Avklart(jsonBody.path("speilSvar").asText())
+        if (jsonBody.path("resultat").path("svar").isTextual) return Medlemskap.Avklart(jsonBody.path("resultat").path("svar").asText(), "VanligSvar")
+        if (jsonBody.path("speilSvar").isTextual) return Medlemskap.Avklart(jsonBody.path("speilSvar").asText(), "SpeilSvar")
         if (status == 503 && responseBody.contains("GradertAdresse")) return Medlemskap.Gradert(responseBody)
         throw Medlemskapsfeil(Medlemskap.Uventet(status, responseBody))
     }
@@ -56,29 +56,31 @@ data class Tolk(
         private sealed interface Medlemskap {
             fun logg(tolk: Tolk)
 
-            data class Avklart(val svar: String): Medlemskap {
-                override fun logg(tolk: Tolk) = sikkerlogg.info("Medlemskap for {} avklart til {}. RequestBody:\n\t${tolk.requestBody.jsonOrRaw()}",
+            data class Avklart(val svar: String, private val kilde: String): Medlemskap {
+                override fun logg(tolk: Tolk) = sikkerlogg.info("Medlemskap for {} på ${tolk.fom} avklart til {} fra {}. RequestBody:\n\t${tolk.requestBody.jsonOrRaw()}",
                     keyValue("fødselsnummer", tolk.fødselsnummer),
-                    keyValue("svar", svar)
+                    keyValue("svar", svar),
+                    keyValue("kilde", kilde)
                 )
             }
 
             // https://github.com/navikt/medlemskap-oppslag/blob/300fa11f92c264cde64778254518794f1c9a41e8/src/main/kotlin/no/nav/medlemskap/common/ExceptionHandler.kt#L83
             data class Gradert(private val responseBody: String): Medlemskap {
-                override fun logg(tolk: Tolk) = sikkerlogg.warn("Medlemskap for {} ikke vurdert. Sykmeldte er gradert. Defaulter til {}.\nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}\nResponseBody:\n\${${responseBody.jsonOrRaw()}}",
+                override fun logg(tolk: Tolk) = sikkerlogg.warn("Medlemskap for {} på ${tolk.fom} ikke vurdert. Sykmeldte er gradert. Defaulter til {}.\nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}\nResponseBody:\n\${${responseBody.jsonOrRaw()}}",
                     keyValue("fødselsnummer", tolk.fødselsnummer),
-                    keyValue("svar", "UAVKLART")
+                    keyValue("svar", "UAVKLART"),
+                    keyValue("type", this::class.simpleName)
                 )
             }
 
             data class Ubesvart(private val cause: Exception): Medlemskap {
-                override fun logg(tolk: Tolk) = sikkerlogg.error("Medlemskap for {} ikke vurdert. Fikk ikke kontakt med medlemskapstjenesten.\nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}", cause,
+                override fun logg(tolk: Tolk) = sikkerlogg.error("Medlemskap for {} på ${tolk.fom} ikke vurdert. Fikk ikke kontakt med medlemskapstjenesten.\nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}", cause,
                     keyValue("fødselsnummer", tolk.fødselsnummer)
                 )
             }
 
             data class Uventet(private val status: Int, private val responseBody: String): Medlemskap {
-                override fun logg(tolk: Tolk) = sikkerlogg.error("Medlemskap for {} ikke vurdert. Uventet svar fra medlemskapstjenesten. HTTP status $status\nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}\nResponseBody:\n\${${responseBody.jsonOrRaw()}}",
+                override fun logg(tolk: Tolk) = sikkerlogg.error("Medlemskap for {} på ${tolk.fom} ikke vurdert. Uventet svar fra medlemskapstjenesten. HTTP status $status\nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}\nResponseBody:\n\${${responseBody.jsonOrRaw()}}",
                     keyValue("fødselsnummer", tolk.fødselsnummer)
                 )
             }
