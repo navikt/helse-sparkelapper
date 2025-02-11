@@ -50,16 +50,8 @@ internal class Medlemskap(
                 info("løser behov {} for {}", keyValue("id", behovId), keyValue("vedtaksperiodeId", vedtaksperiodeId))
                 håndter(packet, context)
             } catch (err: Exception) {
-                warn("feil ved behov {} for {}: ${err.message}", keyValue("id", behovId), keyValue("vedtaksperiodeId", vedtaksperiodeId), err)
-                håndterFeil(packet, context)
+                error("feil ved behov {} for {}: ${err.message}", keyValue("id", behovId), keyValue("vedtaksperiodeId", vedtaksperiodeId), err)
             }
-        }
-    }
-
-    private fun håndterFeil(packet: JsonMessage, context: MessageContext) {
-        packet["@løsning"] = mapOf<String, Any>(behov to mapOf("resultat" to mapOf("svar" to "UAVKLART")))
-        context.publish(packet.toJson()).also {
-            sikkerlogg.info("sender {} som {}", keyValue("id", packet["@id"].asText()), packet.toJson())
         }
     }
 
@@ -91,8 +83,8 @@ internal class Medlemskap(
         sikkerlogg.info(format, *args)
     }
 
-    private fun warn(format: String, vararg args: Any) {
-        log.warn(format, *args)
-        sikkerlogg.warn(format, *args)
+    private fun error(format: String, vararg args: Any) {
+        log.error(format, *args)
+        sikkerlogg.error(format, *args)
     }
 }
