@@ -37,6 +37,10 @@ spec:
   preStopHook:
     http:
       path: /stop
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   resources:
     limits:
       memory: {{#if limits.memory }}{{ limits.memory }}{{else}}320Mi{{/if}}
