@@ -4,6 +4,7 @@ replicas:
   max: 1
 limits:
   cpu: 2000m
+  memory: 1Gi
 env:
   - name: KAFKA_EXTRA_TOPIC
     value: tbd.arbeidsgiveropplysninger
