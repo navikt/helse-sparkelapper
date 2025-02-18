@@ -32,7 +32,7 @@ data class Tolk(
         val jsonBody = responseBody.safeJson()
         if (jsonBody.path("resultat").path("svar").isTextual) return Medlemskap.Avklart(jsonBody.path("resultat").path("svar").asText())
         if (jsonBody.path("speilSvar").isTextual) return Medlemskap.SpeilAvklart(jsonBody.path("speilSvar").asText())
-        if (status == 503 && responseBody.contains("GradertAdresse")) return Medlemskap.Gradert(responseBody)
+        if (status >= 500 && responseBody.contains("GradertAdresse")) return Medlemskap.Gradert(responseBody)
         throw Medlemskapsfeil(Medlemskap.Uventet(status, responseBody))
     }
 
