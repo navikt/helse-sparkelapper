@@ -163,8 +163,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                     mapOf(
                         "opplysningstype" to "Arbeidsgiverperiode"
                     )
-                ),
-                "innhentInntektFraAOrdningen" to false
+                )
             )
         ).toString()
 
@@ -198,8 +197,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                     mapOf(
                         "opplysningstype" to "Arbeidsgiverperiode"
                     )
-                ),
-                "innhentInntektFraAOrdningen" to false
+                )
             )
         ).toString()
 
@@ -228,8 +226,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                     mapOf(
                         "opplysningstype" to "Arbeidsgiverperiode"
                     )
-                ),
-                "innhentInntektFraAOrdningen" to false
+                )
             )
         ).toString()
 
