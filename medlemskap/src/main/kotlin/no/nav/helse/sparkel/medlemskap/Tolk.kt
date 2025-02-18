@@ -75,7 +75,7 @@ data class Tolk(
 
             // https://github.com/navikt/medlemskap-oppslag/blob/300fa11f92c264cde64778254518794f1c9a41e8/src/main/kotlin/no/nav/medlemskap/common/ExceptionHandler.kt#L83
             data class Gradert(private val responseBody: String): Medlemskap {
-                override fun logg(tolk: Tolk) = sikkerlogg.warn("Medlemskap for {} på ${tolk.fom} ikke vurdert. Sykmeldte er gradert. Defaulter til {}.\nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}\nResponseBody:\n\${${responseBody.jsonOrRaw()}}",
+                override fun logg(tolk: Tolk) = sikkerlogg.warn("Medlemskap for {} på ${tolk.fom} ikke vurdert. Sykmeldte er gradert. Defaulter til {}.\nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}\nResponseBody:\n\${responseBody.jsonOrRaw()}",
                     keyValue("fødselsnummer", tolk.fødselsnummer),
                     keyValue("svar", "UAVKLART"),
                     keyValue("kilde", "GradertSvar")
