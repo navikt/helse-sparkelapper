@@ -83,8 +83,9 @@ data class Tolk(
             }
 
             data class Ubesvart(private val cause: Exception): Medlemskap {
-                override fun logg(tolk: Tolk) = sikkerlogg.error("Medlemskap for {} på ${tolk.fom} ikke vurdert. Fikk ikke kontakt med medlemskapstjenesten.\nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}", cause,
-                    keyValue("fødselsnummer", tolk.fødselsnummer)
+                override fun logg(tolk: Tolk) = sikkerlogg.error("Medlemskap for {} på ${tolk.fom} ikke vurdert. Fikk ikke kontakt med medlemskapstjenesten.\nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}",
+                    keyValue("fødselsnummer", tolk.fødselsnummer),
+                    cause
                 )
             }
 
