@@ -43,7 +43,7 @@ spec:
       runtime: java
   resources:
     limits:
-      memory: {{#if limits.memory }}{{ limits.memory }}{{else}}320Mi{{/if}}
+      memory: {{#if limits.memory }}{{ limits.memory }}{{else}}1Gi{{/if}}
       {{#if limits.cpu }}
       cpu: {{ limits.cpu }}
       {{/if}}
