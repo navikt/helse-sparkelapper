@@ -7,7 +7,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
-import net.logstash.logback.argument.StructuredArguments
+import net.logstash.logback.argument.StructuredArguments.kv
 import org.slf4j.LoggerFactory
 
 internal class DokumentRiver(
@@ -37,14 +37,15 @@ internal class DokumentRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        log.info("Leser melding ${packet["@id"]}")
-        val dokumentType = packet["dokumentType"].asText()
-        when (dokumentType) {
+        log.info("Leser melding med @id=${packet["@id"].asText()}")
+        sikkerlogg.info("Leser melding med @id=${packet["@id"].asText()}\n${packet.toJson()}")
+        when (val dokumentType = packet["dokumentType"].asText()) {
             "SØKNAD" -> håndter(packet, context, søknadClient)
             "INNTEKTSMELDING" -> håndter(packet, context, inntektsmeldingClient)
             else -> sikkerlogg.info(
-                "uhåndtert melding {}\n$packet",
-                StructuredArguments.keyValue("dokumentType", dokumentType)
+                "Uhåndtert melding, dokumentType={}, @id={}",
+                dokumentType,
+                packet["@id"].asText(),
             )
         }
     }
@@ -59,11 +60,7 @@ internal class DokumentRiver(
             )
         )
         context.publish(packet.toJson()).also {
-            sikkerlogg.info(
-                "sender {} som {}",
-                StructuredArguments.keyValue("id", id),
-                packet.toJson()
-            )
+            sikkerlogg.info("sender {} som:\n{}", kv("id", id), packet.toJson())
         }
     }
 }
