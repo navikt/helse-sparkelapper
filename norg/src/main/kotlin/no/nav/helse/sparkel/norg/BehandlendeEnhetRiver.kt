@@ -11,6 +11,7 @@ import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 
 class BehandlendeEnhetRiver(
     rapidsConnection: RapidsConnection,
@@ -34,16 +35,18 @@ class BehandlendeEnhetRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) = runBlocking {
+        val meldingId = packet["@id"].asText()
+        val godkjenningsbehovId = packet["hendelseId"].asText()
+        val fødselsnummer = packet["fødselsnummer"].asText()
         log.info(
             "Henter behandlende enhet for {}, {}",
-            keyValue("hendelseId", packet["hendelseId"].asText()),
-            keyValue("@id", packet["@id"].asText())
+            keyValue("hendelseId", godkjenningsbehovId),
+            keyValue("@id", meldingId)
         )
         try {
-            val enhet = personinfoService.finnBehandlendeEnhet(
-                fødselsnummer = packet["fødselsnummer"].asText(),
-                callId = packet["@id"].asText()
-            )
+            val enhet = withMDC("fødselsnummer" to fødselsnummer, "meldingId" to meldingId) {
+                personinfoService.finnBehandlendeEnhet(fødselsnummer = fødselsnummer, callId = meldingId)
+            }
             packet["@løsning"] = mapOf(
                 "HentEnhet" to enhet
             )
@@ -51,8 +54,8 @@ class BehandlendeEnhetRiver(
         } catch (err: Exception) {
             log.error(
                 "Feil ved håndtering av behov {} for {}: ${err.message}",
-                keyValue("hendelseId", packet["hendelseId"].asText()),
-                keyValue("@id", packet["@id"].asText()),
+                keyValue("hendelseId", godkjenningsbehovId),
+                keyValue("@id", meldingId),
                 err
             )
         }
@@ -61,4 +64,11 @@ class BehandlendeEnhetRiver(
     override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
         sikkerLogg.error("Forstod ikke HentEnhet-behov:\n${problems.toExtendedReport()}")
     }
+}
+
+suspend fun <T> withMDC(vararg values: Pair<String, String>, block: suspend () -> T): T = try {
+    values.forEach { (key, value) -> MDC.put(key, value) }
+    block()
+} finally {
+    values.forEach { (key, _) -> MDC.remove(key) }
 }

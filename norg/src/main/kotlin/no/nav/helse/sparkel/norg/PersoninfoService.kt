@@ -5,13 +5,22 @@ import com.github.navikt.tbd_libs.speed.GeografiskTilknytningResponse
 import com.github.navikt.tbd_libs.speed.PersonResponse
 import com.github.navikt.tbd_libs.speed.SpeedClient
 import no.nav.helse.sparkel.retry
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.slf4j.MDC
+
+private val sikkerlogg: Logger = LoggerFactory.getLogger("tjenestekall")
 
 class PersoninfoService(private val norg2Client: Norg2Client, private val speedClient: SpeedClient) {
 
     suspend fun finnBehandlendeEnhet(fødselsnummer: String, callId: String): String {
         val adresseBeskyttelse = finnAdressebeskyttelse(fødselsnummer, callId).norgkode
         val geografiskTilknytning = finnGeografiskTilknytning(fødselsnummer, callId)
-        return norg2Client.finnBehandlendeEnhet(geografiskTilknytning.mestNøyaktig(), adresseBeskyttelse).enhetNr
+        val geografiskOmraade = geografiskTilknytning.mestNøyaktig()
+        sikkerlogg.info("Geografisk tilknytning: $geografiskTilknytning - spør NORG2 om behandlende enhet for $geografiskOmraade")
+        val behandlendeEnhet = norg2Client.finnBehandlendeEnhet(geografiskOmraade, adresseBeskyttelse)
+        sikkerlogg.info("Fant behandlende enhet for fødselsnummer {}: $behandlendeEnhet", MDC.get("fødselsnummer"))
+        return behandlendeEnhet.enhetNr
     }
 
     private suspend fun finnAdressebeskyttelse(fødselsnummer: String, callId: String): PersonResponse.Adressebeskyttelse = retry(
