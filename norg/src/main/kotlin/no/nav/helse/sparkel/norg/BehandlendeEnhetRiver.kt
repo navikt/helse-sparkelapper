@@ -49,10 +49,12 @@ class BehandlendeEnhetRiver(
             )
             context.publish(packet.toJson())
         } catch (err: Exception) {
-            log.error("Feil ved håndtering av behov {} for {}: ${err.message}",
+            log.error(
+                "Feil ved håndtering av behov {} for {}: ${err.message}",
                 keyValue("hendelseId", packet["hendelseId"].asText()),
                 keyValue("@id", packet["@id"].asText()),
-                err)
+                err
+            )
         }
     }
 
