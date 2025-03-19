@@ -8,9 +8,9 @@ import no.nav.helse.sparkel.retry
 
 class PersoninfoService(private val norg2Client: Norg2Client, private val speedClient: SpeedClient) {
     suspend fun finnBehandlendeEnhet(fødselsnummer: String, callId: String): String {
-        val adresseBeskytellse = finnAdressebeskyttelse(fødselsnummer, callId).norgkode
+        val adresseBeskyttelse = finnAdressebeskyttelse(fødselsnummer, callId).norgkode
         val geografiskTilknytning = finnGeografiskTilknytning(fødselsnummer, callId)
-        return norg2Client.finnBehandlendeEnhet(geografiskTilknytning.mestNøyaktig(), adresseBeskytellse).enhetNr
+        return norg2Client.finnBehandlendeEnhet(geografiskTilknytning.mestNøyaktig(), adresseBeskyttelse).enhetNr
     }
 
     private suspend fun finnAdressebeskyttelse(fødselsnummer: String, callId: String): PersonResponse.Adressebeskyttelse =
