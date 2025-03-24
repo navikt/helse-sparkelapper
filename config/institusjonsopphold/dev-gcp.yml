@@ -10,7 +10,7 @@ azure:
 accessPolicy:
   outbound:
     external:
-      - host: inst2.prod-fss-pub.nais.io
+      - host: inst2-q2.dev-fss-pub.nais.io
 env:
   - name: INSTITUSJONSOPPHOLD_URL
     value: https://inst2-q2.dev-fss-pub.nais.io
