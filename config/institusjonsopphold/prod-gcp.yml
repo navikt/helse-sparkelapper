@@ -6,9 +6,9 @@ azure:
 accessPolicy:
   outbound:
     external:
-      - host: institusjon-opphold-proxy.prod-fss-pub.nais.io
+      - host: inst2.prod-fss-pub.nais.io
 env:
   - name: INSTITUSJONSOPPHOLD_URL
-    value: https://institusjon-opphold-proxy.prod-fss-pub.nais.io
+    value: https://inst2.prod-fss-pub.nais.io
   - name: INSTITUSJONSOPPHOLD_SCOPE
     value: api://prod-fss.team-rocket.inst2/.default
