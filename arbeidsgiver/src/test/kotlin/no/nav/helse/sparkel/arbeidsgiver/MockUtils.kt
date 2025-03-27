@@ -140,8 +140,7 @@ internal fun mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId: UU
     )
 )
 
-internal fun mockInntektsmeldingHåndtert(vedtaksperiodeId: UUID, dokumentId: UUID?) = InntektsmeldingHåndtertDto(
-    type = Meldingstype.INNTEKTSMELDING_HÅNDTERT,
+internal fun mockInntektsmeldingHåndtert(vedtaksperiodeId: UUID, dokumentId: UUID) = InntektsmeldingHåndtertDto(
     fødselsnummer = FNR,
     organisasjonsnummer = ORGNUMMER,
     vedtaksperiodeId = vedtaksperiodeId,

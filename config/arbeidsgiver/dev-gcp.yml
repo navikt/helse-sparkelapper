@@ -15,8 +15,3 @@ accessPolicy:
 env:
   - name: KAFKA_EXTRA_TOPIC
     value: tbd.arbeidsgiveropplysninger
-gcp:
-  type: POSTGRES_15
-  name: sparkelarbeidsgiver
-  envVarPrefix: DATABASE
-  tier: db-f1-micro

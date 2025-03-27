@@ -2,27 +2,31 @@ package no.nav.helse.sparkel.arbeidsgiver
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
+import com.github.navikt.tbd_libs.result_object.Result
+import com.github.navikt.tbd_libs.result_object.ok
+import com.github.navikt.tbd_libs.spedisjon.HentMeldingResponse
+import com.github.navikt.tbd_libs.spedisjon.SpedisjonClient
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndertRiver
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndtertDto
-import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_registrert.InntektsmeldingRegistrertRepository
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.internals.RecordHeader
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class InntektsmeldingHåndertRiverTest {
 
     private val testRapid = TestRapid()
     private val mockProducer: KafkaProducer<String, InntektsmeldingHåndtertDto> = mockk(relaxed = true)
-    private val mockRepository: InntektsmeldingRegistrertRepository = mockk(relaxed = true)
+    private val spedisjonClient = mockk<SpedisjonClient>()
 
     init {
-        InntektsmeldingHåndertRiver(testRapid, mockProducer, mockRepository)
+        InntektsmeldingHåndertRiver(testRapid, mockProducer, spedisjonClient)
     }
 
     @Test
@@ -39,7 +43,15 @@ class InntektsmeldingHåndertRiverTest {
     fun `leser gyldig event og sender det videre `() {
         val dokumentId = UUID.randomUUID()
         val hendelseId = UUID.randomUUID()
-        every { mockRepository.finnDokumentId(hendelseId) } returns dokumentId
+        every { spedisjonClient.hentMelding(hendelseId, any()) } returns HentMeldingResponse(
+            type = "inntektsmelding",
+            fnr = "123456678911",
+            internDokumentId = hendelseId,
+            eksternDokumentId = dokumentId,
+            rapportertDato = LocalDateTime.now(),
+            duplikatkontroll = "",
+            jsonBody = "{}"
+        ).ok()
 
         val vedtaksperiodeId = UUID.randomUUID()
 
@@ -59,24 +71,18 @@ class InntektsmeldingHåndertRiverTest {
     }
 
     @Test
-    fun `leser gyldig event og sender det videre, selvom man ikke finner inntektsmeldingens dokumentId`() {
-        every { mockRepository.finnDokumentId(any()) } returns null
+    fun `kaster exception hvis man ikke finner inntektsmeldingens dokumentId`() {
+        every { spedisjonClient.hentMelding(any(), any()) } returns Result.Error("Fikk en feil", null)
 
         val vedtaksperiodeId = UUID.randomUUID()
         val hendelseId = UUID.randomUUID()
-        val dokumentId = mockRepository.finnDokumentId(hendelseId)
-        testRapid.sendTestMessage(inntektsmeldingHåndtert(vedtaksperiodeId = vedtaksperiodeId, hendelseId = hendelseId))
 
-        val payload = mockInntektsmeldingHåndtert(vedtaksperiodeId, dokumentId)
-        verify(exactly = 1) {
-            val record = ProducerRecord(
-                "tbd.arbeidsgiveropplysninger",
-                null,
-                FNR,
-                payload,
-                listOf(RecordHeader("type", payload.meldingstype))
-            )
-            mockProducer.send(record)
+        assertThrows<RuntimeException> {
+            testRapid.sendTestMessage(inntektsmeldingHåndtert(vedtaksperiodeId = vedtaksperiodeId, hendelseId = hendelseId))
+        }
+
+        verify(exactly = 0) {
+            mockProducer.send(any())
         }
     }
 

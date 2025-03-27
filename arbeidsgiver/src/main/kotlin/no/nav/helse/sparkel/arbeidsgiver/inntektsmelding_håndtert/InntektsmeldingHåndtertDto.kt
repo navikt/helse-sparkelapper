@@ -7,18 +7,17 @@ import java.util.UUID
 import no.nav.helse.sparkel.arbeidsgiver.Meldingstype
 
 internal data class InntektsmeldingHåndtertDto(
-    val type: Meldingstype,
     val fødselsnummer: String,
     val organisasjonsnummer: String,
     val vedtaksperiodeId: UUID,
-    val dokumentId: UUID?,
+    val dokumentId: UUID,
     val opprettet: LocalDateTime
 ) {
+    val type: Meldingstype = Meldingstype.INNTEKTSMELDING_HÅNDTERT
     val meldingstype get() = type.name.lowercase().toByteArray()
 }
 
-internal fun JsonMessage.toInntektsmeldingHåndtertDto(dokumentId: UUID?) = InntektsmeldingHåndtertDto(
-    type = Meldingstype.INNTEKTSMELDING_HÅNDTERT,
+internal fun JsonMessage.toInntektsmeldingHåndtertDto(dokumentId: UUID) = InntektsmeldingHåndtertDto(
     fødselsnummer = this["fødselsnummer"].asText(),
     organisasjonsnummer = this["organisasjonsnummer"].asText(),
     vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
