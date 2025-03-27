@@ -4,6 +4,13 @@ replicas:
   max: 1
 limits:
   cpu: 2000m
+azure:
+  enabled: true
+accessPolicy:
+  outbound:
+    rules:
+      - application: spedisjon
+        namespace: tbd
 env:
   - name: KAFKA_EXTRA_TOPIC
     value: tbd.arbeidsgiveropplysninger
