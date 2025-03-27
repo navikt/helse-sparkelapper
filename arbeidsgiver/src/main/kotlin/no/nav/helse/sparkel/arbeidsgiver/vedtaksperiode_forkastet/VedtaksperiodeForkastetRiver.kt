@@ -7,14 +7,12 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.header.internals.RecordHeader
+import no.nav.helse.sparkel.arbeidsgiver.ArbeidsgiveropplysningerProducer
 import org.slf4j.LoggerFactory
 
 internal class VedtaksperiodeForkastetRiver(
     rapidsConnection: RapidsConnection,
-    private val arbeidsgiverProducer: KafkaProducer<String, VedtaksperiodeForkastetDto>
+    private val arbeidsgiverProducer: ArbeidsgiveropplysningerProducer
 ) : River.PacketListener {
     private companion object {
         val logg = LoggerFactory.getLogger(this::class.java)
@@ -44,15 +42,7 @@ internal class VedtaksperiodeForkastetRiver(
         }
 
         val payload = packet.toVedtaksperiodeForkastetDto()
-        arbeidsgiverProducer.send(
-            ProducerRecord(
-                "tbd.arbeidsgiveropplysninger",
-                null,
-                payload.fødselsnummer,
-                payload,
-                listOf(RecordHeader("type", payload.meldingstype))
-            )
-        ).get()
+        arbeidsgiverProducer.send(payload)
 
         "Publiserte vedktasperiode_forkastet-event til helsearbeidsgiver-bro-sykepenger".let {
             logg.info(it)

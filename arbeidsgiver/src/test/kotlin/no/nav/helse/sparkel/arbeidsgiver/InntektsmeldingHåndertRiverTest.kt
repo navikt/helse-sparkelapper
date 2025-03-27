@@ -13,16 +13,13 @@ import java.time.LocalDateTime
 import java.util.*
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndertRiver
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndtertDto
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.header.internals.RecordHeader
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class InntektsmeldingHåndertRiverTest {
 
     private val testRapid = TestRapid()
-    private val mockProducer: KafkaProducer<String, InntektsmeldingHåndtertDto> = mockk(relaxed = true)
+    private val mockProducer: ArbeidsgiveropplysningerProducer = mockk(relaxed = true)
     private val spedisjonClient = mockk<SpedisjonClient>()
 
     init {
@@ -35,7 +32,7 @@ class InntektsmeldingHåndertRiverTest {
             inntektsmeldingHåndtert(eventName = "tull")
         )
         verify(exactly = 0) {
-            mockProducer.send(any())
+            mockProducer.send(any<InntektsmeldingHåndtertDto>())
         }
     }
 
@@ -59,14 +56,7 @@ class InntektsmeldingHåndertRiverTest {
 
         val payload = mockInntektsmeldingHåndtert(vedtaksperiodeId, dokumentId)
         verify(exactly = 1) {
-            val record = ProducerRecord(
-                "tbd.arbeidsgiveropplysninger",
-                null,
-                FNR,
-                payload,
-                listOf(RecordHeader("type", payload.meldingstype))
-            )
-            mockProducer.send(record)
+            mockProducer.send(payload)
         }
     }
 
@@ -82,7 +72,7 @@ class InntektsmeldingHåndertRiverTest {
         }
 
         verify(exactly = 0) {
-            mockProducer.send(any())
+            mockProducer.send(any<InntektsmeldingHåndtertDto>())
         }
     }
 

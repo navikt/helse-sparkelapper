@@ -5,18 +5,15 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 import no.nav.helse.sparkel.arbeidsgiver.vedtaksperiode_forkastet.VedtaksperiodeForkastetDto
 import no.nav.helse.sparkel.arbeidsgiver.vedtaksperiode_forkastet.VedtaksperiodeForkastetRiver
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.header.internals.RecordHeader
 import org.junit.jupiter.api.Test
 
 internal class VedtaksperiodeForkastetRiverTest {
 
     private val testRapid = TestRapid()
-    private val mockproducer: KafkaProducer<String, VedtaksperiodeForkastetDto> = mockk(relaxed = true)
+    private val mockproducer: ArbeidsgiveropplysningerProducer = mockk(relaxed = true)
 
     init {
         VedtaksperiodeForkastetRiver(testRapid, mockproducer)
@@ -26,7 +23,7 @@ internal class VedtaksperiodeForkastetRiverTest {
     fun `ignorerer andre eventer`() {
         testRapid.sendTestMessage(forkastetVedtaksperiode(eventName = "tull"))
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<VedtaksperiodeForkastetDto>())
         }
     }
 
@@ -34,7 +31,7 @@ internal class VedtaksperiodeForkastetRiverTest {
     fun `ignorerer arbeidsledige`() {
         testRapid.sendTestMessage(forkastetVedtaksperiode(orgnummer = "ARBEIDSLEDIG"))
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<VedtaksperiodeForkastetDto>())
         }
     }
     @Test
@@ -43,17 +40,17 @@ internal class VedtaksperiodeForkastetRiverTest {
             forkastetVedtaksperiode(orgnummer = "FRILANS")
         )
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<VedtaksperiodeForkastetDto>())
         }
     }
 
     @Test
     fun `ignorerer selvstendige`() {
         testRapid.sendTestMessage(
-            forkastetVedtaksperiode(orgnummer = "SELVSTENDIG",)
+            forkastetVedtaksperiode(orgnummer = "SELVSTENDIG")
         )
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<VedtaksperiodeForkastetDto>())
         }
     }
 
@@ -63,7 +60,6 @@ internal class VedtaksperiodeForkastetRiverTest {
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(forkastetVedtaksperiode(vedtaksperiodeId = vedtaksperiodeId))
         val payload = VedtaksperiodeForkastetDto(
-            type = Meldingstype.VEDTAKSPERIODE_FORKASTET,
             fødselsnummer = FNR,
             organisasjonsnummer = ORGNUMMER,
             vedtaksperiodeId = vedtaksperiodeId,
@@ -71,14 +67,7 @@ internal class VedtaksperiodeForkastetRiverTest {
         )
 
         verify {
-            val record = ProducerRecord(
-                "tbd.arbeidsgiveropplysninger",
-                null,
-                FNR,
-                payload,
-                listOf(RecordHeader("type", payload.meldingstype))
-            )
-            mockproducer.send(record)
+            mockproducer.send(payload)
         }
     }
 

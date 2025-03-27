@@ -14,7 +14,6 @@ internal data class InntektsmeldingHåndtertDto(
     val opprettet: LocalDateTime
 ) {
     val type: Meldingstype = Meldingstype.INNTEKTSMELDING_HÅNDTERT
-    val meldingstype get() = type.name.lowercase().toByteArray()
 }
 
 internal fun JsonMessage.toInntektsmeldingHåndtertDto(dokumentId: UUID) = InntektsmeldingHåndtertDto(

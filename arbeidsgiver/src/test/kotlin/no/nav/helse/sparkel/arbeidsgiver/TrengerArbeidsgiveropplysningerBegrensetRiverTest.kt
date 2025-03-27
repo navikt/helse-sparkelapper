@@ -1,23 +1,20 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
-import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import com.fasterxml.jackson.databind.JsonNode
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.UUID
-import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
+import java.util.*
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerBegrensetRiver
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.header.internals.RecordHeader
+import no.nav.helse.sparkel.arbeidsgiver.vedtaksperiode_forkastet.VedtaksperiodeForkastetDto
 import org.junit.jupiter.api.Test
 
 internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
 
     private val testRapid = TestRapid()
-    private val mockproducer: KafkaProducer<String, TrengerArbeidsgiveropplysningerDto> = mockk(relaxed = true)
+    private val mockproducer: ArbeidsgiveropplysningerProducer = mockk(relaxed = true)
 
     init {
         TrengerArbeidsgiveropplysningerBegrensetRiver(testRapid, mockproducer)
@@ -35,7 +32,7 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
             )
         )
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<VedtaksperiodeForkastetDto>())
         }
     }
 
@@ -52,7 +49,7 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
             )
         )
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<VedtaksperiodeForkastetDto>())
         }
     }
     @Test
@@ -68,7 +65,7 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
             )
         )
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<VedtaksperiodeForkastetDto>())
         }
     }
 
@@ -85,11 +82,9 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
             )
         )
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<VedtaksperiodeForkastetDto>())
         }
     }
-
-
 
     @Test
     fun `leser event og sender videre når trengerArbeidsgiveropplysninger=true og som er forkastet i tilstand START`() {
@@ -105,14 +100,7 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
 
         val payload = mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId)
         verify(exactly = 1) {
-            val record = ProducerRecord(
-                "tbd.arbeidsgiveropplysninger",
-                null,
-                FNR,
-                payload,
-                listOf(RecordHeader("type", payload.meldingstype))
-            )
-            mockproducer.send(record)
+            mockproducer.send(payload)
         }
     }
 
@@ -130,14 +118,7 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
 
         val payload = mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId)
         verify {
-            val record = ProducerRecord(
-                "tbd.arbeidsgiveropplysninger",
-                null,
-                FNR,
-                payload,
-                listOf(RecordHeader("type", payload.meldingstype))
-            )
-            mockproducer.send(record)
+            mockproducer.send(payload)
         }
     }
 
@@ -152,7 +133,7 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
             )
         )
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<VedtaksperiodeForkastetDto>())
         }
     }
 
@@ -168,7 +149,7 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
             )
         )
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<VedtaksperiodeForkastetDto>())
         }
     }
 

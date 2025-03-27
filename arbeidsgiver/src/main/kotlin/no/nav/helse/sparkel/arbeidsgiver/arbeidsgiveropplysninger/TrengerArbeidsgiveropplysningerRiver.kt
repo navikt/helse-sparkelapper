@@ -10,14 +10,12 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.header.internals.RecordHeader
+import no.nav.helse.sparkel.arbeidsgiver.ArbeidsgiveropplysningerProducer
 import org.slf4j.LoggerFactory
 
 internal class TrengerArbeidsgiveropplysningerRiver(
     rapidsConnection: RapidsConnection,
-    private val arbeidsgiverProducer: KafkaProducer<String, TrengerArbeidsgiveropplysningerDto>
+    private val arbeidsgiverProducer: ArbeidsgiveropplysningerProducer
 ) : River.PacketListener {
     private companion object {
         val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -64,15 +62,7 @@ internal class TrengerArbeidsgiveropplysningerRiver(
             sikkerlogg.info("$it med data:\n{}", packet.toJson())
         }
         val payload = packet.toKomplettTrengerArbeidsgiveropplysningerDto()
-        arbeidsgiverProducer.send(
-            ProducerRecord(
-                "tbd.arbeidsgiveropplysninger",
-                null,
-                payload.fødselsnummer,
-                payload,
-                listOf(RecordHeader("type", payload.meldingstype))
-            )
-        ).get()
+        arbeidsgiverProducer.send(payload)
 
         "Publiserte komplett forespørsel om arbeidsgiveropplyninger til helsearbeidsgiver-bro-sykepenger".let {
             logg.info(it)

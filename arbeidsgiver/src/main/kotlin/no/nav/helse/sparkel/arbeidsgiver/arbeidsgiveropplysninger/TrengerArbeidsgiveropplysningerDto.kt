@@ -11,7 +11,6 @@ import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.ForespurtOpply
 import no.nav.helse.sparkel.arbeidsgiver.toPerioder
 
 internal data class TrengerArbeidsgiveropplysningerDto(
-    val type: Meldingstype,
     val fødselsnummer: String,
     val organisasjonsnummer: String,
     val vedtaksperiodeId: UUID,
@@ -22,12 +21,24 @@ internal data class TrengerArbeidsgiveropplysningerDto(
     val forespurtData: List<Map<String, Any>>,
     val opprettet: LocalDateTime = LocalDateTime.now()
 ) {
-    val meldingstype get() = type.name.lowercase().toByteArray()
+    val type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT
+}
+internal data class TrengerArbeidsgiveropplysningerBegrensetDto(
+    val fødselsnummer: String,
+    val organisasjonsnummer: String,
+    val vedtaksperiodeId: UUID,
+    val skjæringstidspunkt: LocalDate?,
+    val bestemmendeFraværsdager: Map<String, LocalDate>,
+    val sykmeldingsperioder: List<Map<String, LocalDate>>,
+    val egenmeldingsperioder: List<Map<String, LocalDate>>,
+    val forespurtData: List<Map<String, Any>>,
+    val opprettet: LocalDateTime = LocalDateTime.now()
+) {
+    val type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_BEGRENSET
 }
 
 internal fun JsonMessage.toKomplettTrengerArbeidsgiveropplysningerDto(): TrengerArbeidsgiveropplysningerDto =
     TrengerArbeidsgiveropplysningerDto(
-        type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
         fødselsnummer = this["fødselsnummer"].asText(),
         organisasjonsnummer = this["organisasjonsnummer"].asText(),
         vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
@@ -39,9 +50,8 @@ internal fun JsonMessage.toKomplettTrengerArbeidsgiveropplysningerDto(): Trenger
         opprettet = this["@opprettet"].asLocalDateTime()
     )
 
-internal fun JsonMessage.toBegrensetTrengerArbeidsgiveropplysningerDto(): TrengerArbeidsgiveropplysningerDto =
-    TrengerArbeidsgiveropplysningerDto(
-        type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_BEGRENSET,
+internal fun JsonMessage.toBegrensetTrengerArbeidsgiveropplysningerDto(): TrengerArbeidsgiveropplysningerBegrensetDto =
+    TrengerArbeidsgiveropplysningerBegrensetDto(
         fødselsnummer = this["fødselsnummer"].asText(),
         organisasjonsnummer = this["organisasjonsnummer"].asText(),
         vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),

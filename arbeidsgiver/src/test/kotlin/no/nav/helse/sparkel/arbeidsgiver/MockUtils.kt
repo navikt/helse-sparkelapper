@@ -7,6 +7,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Refusjonsforslag
+import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerBegrensetDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerIkkeArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndtertDto
@@ -20,14 +21,12 @@ internal val objectMapper = jacksonObjectMapper()
 
 private fun mockTrengerArbeidsgiveropplysningerDto(
     vedtaksperiodeId: UUID,
-    type: Meldingstype,
     forespurtData: List<Map<String, Any>>,
     skjæringstidspunkt: LocalDate? = LocalDate.MIN,
     sykmeldingsperioder: List<Map<String, LocalDate>> = listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
     egenmeldingsperioder: List<Map<String, LocalDate>> = listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
     bestemmendeFraværsdager: Map<String, LocalDate> = mapOf(ORGNUMMER to LocalDate.MIN)
 ) = TrengerArbeidsgiveropplysningerDto(
-    type = type,
     fødselsnummer = FNR,
     organisasjonsnummer = ORGNUMMER,
     vedtaksperiodeId = vedtaksperiodeId,
@@ -38,11 +37,28 @@ private fun mockTrengerArbeidsgiveropplysningerDto(
     bestemmendeFraværsdager = bestemmendeFraværsdager,
     opprettet = LocalDateTime.MAX
 )
+private fun mockTrengerArbeidsgiveropplysningerBegrensetDto(
+    vedtaksperiodeId: UUID,
+    forespurtData: List<Map<String, Any>>,
+    skjæringstidspunkt: LocalDate? = LocalDate.MIN,
+    sykmeldingsperioder: List<Map<String, LocalDate>> = listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
+    egenmeldingsperioder: List<Map<String, LocalDate>> = listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
+    bestemmendeFraværsdager: Map<String, LocalDate> = mapOf(ORGNUMMER to LocalDate.MIN)
+) = TrengerArbeidsgiveropplysningerBegrensetDto(
+    fødselsnummer = FNR,
+    organisasjonsnummer = ORGNUMMER,
+    vedtaksperiodeId = vedtaksperiodeId,
+    skjæringstidspunkt = skjæringstidspunkt,
+    sykmeldingsperioder = sykmeldingsperioder,
+    egenmeldingsperioder = egenmeldingsperioder,
+    forespurtData = forespurtData,
+    bestemmendeFraværsdager = bestemmendeFraværsdager,
+    opprettet = LocalDateTime.MAX
+)
+
 internal fun mockTrengerIkkeArbeidsgiveropplysningerDto(
     vedtaksperiodeId: UUID,
-    type: Meldingstype,
 ) = TrengerIkkeArbeidsgiveropplysningerDto(
-    type = type,
     fødselsnummer = FNR,
     organisasjonsnummer = ORGNUMMER,
     vedtaksperiodeId = vedtaksperiodeId,
@@ -51,7 +67,6 @@ internal fun mockTrengerIkkeArbeidsgiveropplysningerDto(
 
 internal fun mockTrengerArbeidsgiveropplysningerMedForrigeInntekt(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerDto(
     vedtaksperiodeId = vedtaksperiodeId,
-    type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
     forespurtData = listOf(
         mapOf(
             "opplysningstype" to "Inntekt",
@@ -74,7 +89,6 @@ internal fun mockTrengerArbeidsgiveropplysningerMedForrigeInntekt(vedtaksperiode
 )
 internal fun mockTrengerArbeidsgiveropplysningerMedInntekt(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerDto(
     vedtaksperiodeId = vedtaksperiodeId,
-    type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
     forespurtData = listOf(
         mapOf(
             "opplysningstype" to "Inntekt",
@@ -92,7 +106,6 @@ internal fun mockTrengerArbeidsgiveropplysningerMedInntekt(vedtaksperiodeId: UUI
 
 internal fun mockTrengerArbeidsgiverOpplysningerMedFastsattInntekt(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerDto(
     vedtaksperiodeId = vedtaksperiodeId,
-    type = Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_KOMPLETT,
     forespurtData = listOf(
         mapOf(
             "opplysningstype" to "FastsattInntekt",
@@ -119,9 +132,8 @@ internal fun mockTrengerArbeidsgiverOpplysningerMedFastsattInntekt(vedtaksperiod
     )
 )
 
-internal fun mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerDto(
+internal fun mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerBegrensetDto(
     vedtaksperiodeId = vedtaksperiodeId,
-    Meldingstype.TRENGER_OPPLYSNINGER_FRA_ARBEIDSGIVER_BEGRENSET,
     skjæringstidspunkt = null,
     egenmeldingsperioder = emptyList(),
     bestemmendeFraværsdager = emptyMap(),

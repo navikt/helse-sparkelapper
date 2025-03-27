@@ -10,16 +10,14 @@ import com.github.navikt.tbd_libs.result_object.getOrThrow
 import com.github.navikt.tbd_libs.retry.retryBlocking
 import com.github.navikt.tbd_libs.spedisjon.SpedisjonClient
 import io.micrometer.core.instrument.MeterRegistry
-import java.util.UUID
+import java.util.*
 import net.logstash.logback.argument.StructuredArguments.kv
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.header.internals.RecordHeader
+import no.nav.helse.sparkel.arbeidsgiver.ArbeidsgiveropplysningerProducer
 import org.slf4j.LoggerFactory
 
 internal class InntektsmeldingHåndertRiver(
     rapidsConnection: RapidsConnection,
-    private val arbeidsgiverProducer: KafkaProducer<String, InntektsmeldingHåndtertDto>,
+    private val arbeidsgiverProducer: ArbeidsgiveropplysningerProducer,
     private val spedisjonClient: SpedisjonClient
 ) : River.PacketListener {
     private companion object {
@@ -54,15 +52,7 @@ internal class InntektsmeldingHåndertRiver(
         }.eksternDokumentId
 
         val payload = packet.toInntektsmeldingHåndtertDto(dokumentId)
-        arbeidsgiverProducer.send(
-            ProducerRecord(
-                "tbd.arbeidsgiveropplysninger",
-                null,
-                payload.fødselsnummer,
-                payload,
-                listOf(RecordHeader("type", payload.meldingstype))
-            )
-        ).get()
+        arbeidsgiverProducer.send(payload)
 
         "Publiserte inntektsmelding_håndtert-event til helsearbeidsgiver-bro-sykepenger".let {
             logg.info(it)

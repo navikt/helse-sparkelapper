@@ -1,20 +1,16 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
-import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
-import io.mockk.every
+import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerRiver
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerIkkeArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerIkkeArbeidsgiveropplysningerRiver
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.header.internals.RecordHeader
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -23,7 +19,7 @@ import org.slf4j.LoggerFactory
 
 internal class TrengerIkkeArbeidsgiveropplysningerRiverTest {
     private val testRapid = TestRapid()
-    private val mockproducer: KafkaProducer<String, TrengerIkkeArbeidsgiveropplysningerDto> = mockk(relaxed = true)
+    private val mockproducer: ArbeidsgiveropplysningerProducer = mockk(relaxed = true)
 
     private val logCollector = ListAppender<ILoggingEvent>()
     private val sikkerlogCollector = ListAppender<ILoggingEvent>()
@@ -46,29 +42,20 @@ internal class TrengerIkkeArbeidsgiveropplysningerRiverTest {
     fun `ignorerer andre eventer`() {
         testRapid.sendTestMessage(event("Tullebehov"))
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<TrengerIkkeArbeidsgiveropplysningerDto>())
         }
     }
 
     @Test
     fun `publiserer at det ikke trengs forespørsel om arbeidsgiveropplysninger`() {
-        every { mockproducer.send(any()) } answers { callOriginal() }
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(event(
             eventName = "trenger_ikke_opplysninger_fra_arbeidsgiver",
             vedtaksperiodeId = vedtaksperiodeId
         ))
-        val trengerIkkeArbeidsgiveropplysningerDto = mockTrengerIkkeArbeidsgiveropplysningerDto(vedtaksperiodeId, Meldingstype.TRENGER_IKKE_OPPLYSNINGER_FRA_ARBEIDSGIVER)
-        val record = ProducerRecord(
-            "tbd.arbeidsgiveropplysninger",
-            null,
-            trengerIkkeArbeidsgiveropplysningerDto.fødselsnummer,
-            trengerIkkeArbeidsgiveropplysningerDto,
-            listOf(RecordHeader("type", trengerIkkeArbeidsgiveropplysningerDto.meldingstype))
-        )
-
+        val trengerIkkeArbeidsgiveropplysningerDto = mockTrengerIkkeArbeidsgiveropplysningerDto(vedtaksperiodeId)
         verify(exactly = 1) {
-            mockproducer.send(record)
+            mockproducer.send(trengerIkkeArbeidsgiveropplysningerDto)
         }
     }
 
@@ -81,7 +68,7 @@ internal class TrengerIkkeArbeidsgiveropplysningerRiverTest {
 
         assertEquals(4, sikkerlogCollector.list.filter { it.message.contains("forstod ikke trenger_ikke_opplysninger_fra_arbeidsgiver") }.size)
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<TrengerIkkeArbeidsgiveropplysningerDto>())
         }
     }
 

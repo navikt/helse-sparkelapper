@@ -8,18 +8,14 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Refusjonsforslag
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerRiver
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.header.internals.RecordHeader
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -34,7 +30,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
         .registerModules(JavaTimeModule())
 
     private val testRapid = TestRapid()
-    private val mockproducer: KafkaProducer<String, TrengerArbeidsgiveropplysningerDto> = mockk(relaxed = true)
+    private val mockproducer: ArbeidsgiveropplysningerProducer = mockk(relaxed = true)
 
     private val logCollector = ListAppender<ILoggingEvent>()
     private val sikkerlogCollector = ListAppender<ILoggingEvent>()
@@ -57,7 +53,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
     fun `ignorerer andre eventer`() {
         testRapid.sendTestMessage(eventMeldingMedInntekt("Tullebehov"))
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<TrengerArbeidsgiveropplysningerDto>())
         }
     }
 
@@ -65,64 +61,40 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
     fun `ignorerer forespørsler fra arbeidsledig`() {
         testRapid.sendTestMessage(eventMeldingMedInntekt("trenger_opplysninger_fra_arbeidsgiver", organisasjonsnummer = "ARBEIDSLEDIG"))
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<TrengerArbeidsgiveropplysningerDto>())
         }
     }
 
     @Test
     fun `publiserer forespørsel om arbeidsgiveropplysninger - med inntekt, refusjon, og agp`() {
-        every { mockproducer.send(any()) } answers { callOriginal() }
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(eventMeldingMedInntekt("trenger_opplysninger_fra_arbeidsgiver", vedtaksperiodeId))
 
         verify(exactly = 1) {
             val trengerArbeidsgiveropplysningerDto = mockTrengerArbeidsgiveropplysningerMedInntekt(vedtaksperiodeId)
-            val record = ProducerRecord(
-                "tbd.arbeidsgiveropplysninger",
-                null,
-                FNR,
-                trengerArbeidsgiveropplysningerDto,
-                listOf(RecordHeader("type", trengerArbeidsgiveropplysningerDto.meldingstype))
-            )
-            mockproducer.send(record)
+            mockproducer.send(trengerArbeidsgiveropplysningerDto)
         }
     }
 
     @Test
     fun `Videresender forrige inntekt i forespørsel`() {
-        every { mockproducer.send(any()) } answers { callOriginal() }
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(eventMeldingMedForrigeInntekt(vedtaksperiodeId))
 
         verify(exactly = 1) {
             val trengerArbeidsgiveropplysningerDto = mockTrengerArbeidsgiveropplysningerMedForrigeInntekt(vedtaksperiodeId)
-            val record = ProducerRecord(
-                "tbd.arbeidsgiveropplysninger",
-                null,
-                FNR,
-                trengerArbeidsgiveropplysningerDto,
-                listOf(RecordHeader("type", trengerArbeidsgiveropplysningerDto.meldingstype))
-            )
-            mockproducer.send(record)
+            mockproducer.send(trengerArbeidsgiveropplysningerDto)
         }
     }
 
     @Test
     fun `publiserer forespørsel om arbeidsgiveropplysninger - med fastsatt inntekt, refusjon, og agp`() {
-        every { mockproducer.send(any()) } answers { callOriginal() }
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(eventMeldingMedFastsattInntekt(vedtaksperiodeId))
 
         verify(exactly = 1) {
             val trengerArbeidsgiveropplysningerDto = mockTrengerArbeidsgiverOpplysningerMedFastsattInntekt(vedtaksperiodeId)
-            val record = ProducerRecord(
-                "tbd.arbeidsgiveropplysninger",
-                null,
-                FNR,
-                trengerArbeidsgiveropplysningerDto,
-                listOf(RecordHeader("type", trengerArbeidsgiveropplysningerDto.meldingstype))
-            )
-            mockproducer.send(record)
+            mockproducer.send(trengerArbeidsgiveropplysningerDto)
         }
     }
 
@@ -130,7 +102,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
     fun `vi logger error ved fastsatt inntekt uten fastsatt inntekt`() {
         testRapid.sendTestMessage(ugyldigFastsattInntektEvent())
         verify(exactly = 0) {
-            mockproducer.send(any())
+            mockproducer.send(any<TrengerArbeidsgiveropplysningerDto>())
         }
         assertTrue(sikkerlogCollector.list.any { it.message.contains("forstod ikke trenger_opplysninger_fra_arbeidsgiver") })
     }
