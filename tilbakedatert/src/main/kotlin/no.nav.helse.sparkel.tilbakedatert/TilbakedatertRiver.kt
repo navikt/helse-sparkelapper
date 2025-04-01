@@ -67,14 +67,35 @@ internal class TilbakedatertRiver(
                 "tom" to it["tom"].asLocalDate(),
             )
         }
+
+        loggDebugInfo(sykmeldingId, packet)
+
+        val ferdigbehandlet = erFerdigbehandlet(packet, sykmeldingId, fødselsnummer, erTilbakedatert)
+
+        if (erTilbakedatert && ferdigbehandlet) {
+            val returEvent = lagReturEvent(fødselsnummer, sykmeldingId, syketilfelleStartDato, perioder)
+            context.publish(fødselsnummer, returEvent).also {
+                sikkerlogg.info(
+                    "sender tilbakedatering_behandlet for {}:\n{}",
+                    keyValue("sykmeldingId", sykmeldingId),
+                    returEvent
+                )
+            }
+        }
+    }
+
+    private fun erFerdigbehandlet(
+        packet: JsonMessage,
+        sykmeldingId: String,
+        fødselsnummer: String?,
+        erTilbakedatert: Boolean
+    ): Boolean {
         val erUnderManuellBehandling = packet.harMerknad("UNDER_BEHANDLING")
         val erUgyldigTilbakedaterting = packet.harMerknad("UGYLDIG_TILBAKEDATERING")
         val flereOpplysninger = packet.harMerknad("TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER")
         val delvisGodkjent = packet.harMerknad("DELVIS_GODKJENT")
         val ferdigbehandlet =
             !erUnderManuellBehandling && !erUgyldigTilbakedaterting && !flereOpplysninger && !delvisGodkjent
-
-        loggDebugInfo(sykmeldingId, packet)
 
         sikkerlogg.info(
             "Leser melding {}, {}, {}, {}, {}, {}, {}",
@@ -86,27 +107,23 @@ internal class TilbakedatertRiver(
             kv("flereOpplysninger", flereOpplysninger),
             kv("delvisGodkjent", delvisGodkjent)
         )
-
-        if (erTilbakedatert && ferdigbehandlet) {
-            val returEvent = JsonMessage.newMessage(
-                eventName = "tilbakedatering_behandlet",
-                map = mapOf(
-                    "fødselsnummer" to fødselsnummer,
-                    "sykmeldingId" to sykmeldingId,
-                    "syketilfelleStartDato" to syketilfelleStartDato,
-                    "perioder" to perioder,
-                )
-            ).toJson()
-
-            context.publish(fødselsnummer, returEvent).also {
-                sikkerlogg.info(
-                    "sender tilbakedatering_behandlet for {}: {}",
-                    keyValue("sykmeldingId", sykmeldingId),
-                    returEvent
-                )
-            }
-        }
+        return ferdigbehandlet
     }
+
+    private fun lagReturEvent(
+        fødselsnummer: String,
+        sykmeldingId: String,
+        syketilfelleStartDato: LocalDate,
+        perioder: List<Map<String, LocalDate>>
+    ) = JsonMessage.newMessage(
+        eventName = "tilbakedatering_behandlet",
+        map = mapOf(
+            "fødselsnummer" to fødselsnummer,
+            "sykmeldingId" to sykmeldingId,
+            "syketilfelleStartDato" to syketilfelleStartDato,
+            "perioder" to perioder,
+        )
+    ).toJson()
 
     private fun loggDebugInfo(sykmeldingId: String, packet: JsonMessage) {
         val tekst = when (val merknaderNode = packet["merknader"]) {
