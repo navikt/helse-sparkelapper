@@ -120,7 +120,7 @@ jobs:
           tag: ${{ needs.generate_vars.outputs.tag }}
           dockerfile: Dockerfile
           docker_context: ${{ matrix.project }}
-      - name: lageπ build-fil
+      - name: lage build-fil
         if: ${{ always() }}
         run: |
           echo oui > "${{ matrix.project }}_build_${{ steps.docker-build-push.outcome }}.txt"
