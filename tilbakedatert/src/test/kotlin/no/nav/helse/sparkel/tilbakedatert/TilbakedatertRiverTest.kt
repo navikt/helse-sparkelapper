@@ -43,21 +43,21 @@ internal class TilbakedatertRiverTest {
         sendEvent(sykmeldingEvent(merknader = merknaderErNull()))
 
         val svar = rapid.inspektør.message(0)
-        assertEquals(svar["@event_name"].asText(), "tilbakedatering_behandlet")
-        assertEquals(svar["syketilfelleStartDato"].asLocalDate(), LocalDate.now().minusDays(4))
-        assertEquals(svar["fødselsnummer"].asText(), "12345678910")
+        assertEquals("tilbakedatering_behandlet", svar["@event_name"].asText())
+        assertEquals(LocalDate.now().minusDays(4), svar["syketilfelleStartDato"].asLocalDate())
+        assertEquals("12345678910", svar["fødselsnummer"].asText())
     }
 
     @Test
     fun `Sender tilbakedatering_behandlet dersom sykmelding er tilbakedatert og merknader mangler i meldingen`() {
         sendEvent(sykmeldingEvent(merknader = null))
-        assertEquals(rapid.inspektør.field(0, "@event_name").asText(), "tilbakedatering_behandlet")
+        assertEquals("tilbakedatering_behandlet", rapid.inspektør.field(0, "@event_name").asText())
     }
 
     @Test
     fun `Sender tilbakedatering_behandlet dersom sykmelding er tilbakedatert og merknader er tom liste`() {
         sendEvent(sykmeldingEvent(merknader = """ "merknader": [] """))
-        assertEquals(rapid.inspektør.field(0, "@event_name").asText(), "tilbakedatering_behandlet")
+        assertEquals("tilbakedatering_behandlet", rapid.inspektør.field(0, "@event_name").asText())
     }
 
     @Test
