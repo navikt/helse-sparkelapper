@@ -19,7 +19,7 @@ internal class TilbakedatertRiverTest {
     private fun merknaderErNull() = """ "merknader": null """
 
     @Language("JSON")
-    private fun sykmeldingEvent(fom: LocalDate? = LocalDate.now().minusDays(4), signaturDato: LocalDateTime? = LocalDateTime.now(), merknader: String?) =
+    private fun sykmeldingEvent(fom: LocalDate = LocalDate.now().minusDays(4), signaturDato: LocalDateTime? = LocalDateTime.now(), merknader: String?) =
         """
         {
              "sykmelding": {
@@ -29,7 +29,10 @@ internal class TilbakedatertRiverTest {
                 "perioder": [
                     {
                         "fom": "$fom",
-                        "tom": "${fom?.plusDays(30)}"
+                        "tom": "${fom.plusDays(11)}"
+                    }, {
+                        "fom": "${fom.plusDays(12)}",
+                        "tom": "${fom.plusDays(30)}"
                     }
                 ]
             },
@@ -40,12 +43,21 @@ internal class TilbakedatertRiverTest {
 
     @Test
     fun `Sender tilbakedatering_behandlet dersom sykmelding er tilbakedatert og godkjent`() {
-        sendEvent(sykmeldingEvent(merknader = merknaderErNull()))
+        val fom = LocalDate.now().minusDays(4)
+        sendEvent(sykmeldingEvent(fom = fom, merknader = merknaderErNull()))
 
         val svar = rapid.inspektør.message(0)
         assertEquals("tilbakedatering_behandlet", svar["@event_name"].asText())
-        assertEquals(LocalDate.now().minusDays(4), svar["syketilfelleStartDato"].asLocalDate())
+        assertEquals(fom, svar["syketilfelleStartDato"].asLocalDate())
         assertEquals("12345678910", svar["fødselsnummer"].asText())
+        svar["perioder"].let { perioder ->
+            assertEquals(2, perioder.size())
+            assertEquals(fom, perioder.first()["fom"].asLocalDate())
+            perioder.forEach { periode ->
+                assertTrue(periode["fom"].asLocalDate().isBefore(periode["tom"].asLocalDate()))
+
+            }
+        }
     }
 
     @Test
