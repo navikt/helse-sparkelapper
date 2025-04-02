@@ -6,4 +6,4 @@ limits:
   cpu: 2000m
 env:
   - name: KAFKA_EXTRA_TOPIC
-    value: teamsykmelding.ok-sykmelding
+    value: teamsykmelding.ok-sykmelding,tsm.tsm-sykmeldinger

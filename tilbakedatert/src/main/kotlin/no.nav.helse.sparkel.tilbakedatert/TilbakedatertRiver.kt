@@ -22,7 +22,6 @@ internal class TilbakedatertRiver(
 ) : River.PacketListener {
 
     companion object {
-        private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private val log = LoggerFactory.getLogger(TilbakedatertRiver::class.java)
     }
 
