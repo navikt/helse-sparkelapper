@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.inntekt
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.asYearMonth
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.ktor.client.*
@@ -7,12 +8,15 @@ import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.*
 import io.ktor.serialization.jackson.JacksonConverter
+import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 
 internal class InntekterTest {
     private val testRapid = TestRapid()
@@ -129,6 +133,20 @@ internal class InntekterTest {
             assertEquals("fastloenn", it.path("beskrivelse").textValue())
             assertEquals("kontantytelse", it.path("fordel").textValue())
         }
+    }
+
+    @ParameterizedTest
+    @EnumSource(Inntekter.Type::class, names = ["InntekterForSykepengegrunnlagForArbeidsgiver"], mode = EnumSource.Mode.EXCLUDE)
+    fun `ignorerer for gamle behov`() {
+        val behov = objectMapper.readTree(behov(
+            YearMonth.of(2020, 2),
+            YearMonth.of(2021, 1),
+            Inntekter.Type.InntekterForSammenligningsgrunnlag
+        )).apply {
+            (this as ObjectNode).put("@opprettet", LocalDateTime.now().minusMinutes(31).toString())
+        }
+        testRapid.sendTestMessage(behov.toString())
+        assertEquals(0, testRapid.inspektør.size)
     }
 
     private fun assertLøsning(behovType: Inntekter.Type, vararg yearsMonths: YearMonth) {

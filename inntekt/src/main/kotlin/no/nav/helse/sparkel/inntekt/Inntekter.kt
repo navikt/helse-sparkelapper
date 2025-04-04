@@ -3,6 +3,7 @@ package no.nav.helse.sparkel.inntekt
 import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
+import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers.asYearMonth
 import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import com.github.navikt.tbd_libs.rapids_and_rivers.withMDC
@@ -13,6 +14,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.*
 import io.micrometer.core.instrument.MeterRegistry
+import java.time.LocalDateTime
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSammenligningsgrunnlag
@@ -31,6 +33,10 @@ class Inntekter(
 
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     private val log = LoggerFactory.getLogger(this::class.java)
+
+    // Behovsakkumulator venter bare på svar på behov i 30 minutter, derfor trenger ikke denne appen å behandle behov som
+    // er eldre enn det.
+    private val ferskhetsgrense = 30L
 
     init {
         Sykepengegrunnlag(rapidsConnection)
@@ -57,6 +63,7 @@ class Inntekter(
                 validate { it.interestedIn("vedtaksperiodeId") }
                 validate { it.require("${InntekterForOpptjeningsvurdering.name}.beregningStart", JsonNode::asYearMonth) }
                 validate { it.require("${InntekterForOpptjeningsvurdering.name}.beregningSlutt", JsonNode::asYearMonth) }
+                validate { it.require("@opprettet") { it.måVæreFersktNok() } }
             }.register(this)
         }
 
@@ -80,6 +87,7 @@ class Inntekter(
                 validate { it.interestedIn("vedtaksperiodeId") }
                 validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
                 validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
+                validate { it.require("@opprettet") { it.måVæreFersktNok() } }
             }.register(this)
         }
 
@@ -127,6 +135,7 @@ class Inntekter(
                 validate { it.interestedIn("vedtaksperiodeId") }
                 validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
                 validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
+                validate { it.require("@opprettet") { it.måVæreFersktNok() } }
             }.register(this)
         }
 
@@ -249,4 +258,9 @@ class Inntekter(
             sikkerlogg.warn("Feilet ved løsing av behov: ${e.message}", e)
         }
     }
+
+    private fun JsonNode.måVæreFersktNok() = check(asLocalDateTime().isAfter(LocalDateTime.now().minusMinutes(ferskhetsgrense))) {
+        "Ignorerer behov fordi det er over $ferskhetsgrense minutter gammelt"
+    }
+
 }
