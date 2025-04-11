@@ -14,14 +14,14 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
 
     override fun deserialize(topic: String, data: ByteArray): GenericRecord {
         try {
-            return deserialize(data, v3Skjema)
+            return deserialize(data, v4Skjema)
         } catch (exception: Exception) {
             sikkerlogg.feilVedDeserialisering(data, exception, "V3")
         }
 
         // Prøv forrige versjon
         try {
-            return deserialize(data, v2Skjema)
+            return deserialize(data, v3Skjema)
         } catch (exception: Exception) {
             sikkerlogg.feilVedDeserialisering(data, exception, "V2")
             throw exception
@@ -46,8 +46,8 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
             warn("Klarte ikke å deserialisere Personhendelse-melding fra Leesah med $versjon. Base64='${Base64.getEncoder().encodeToString(data)}'", throwable)
         private fun String.lastSkjema() =
             Schema.Parser().parse(PersonhendelseAvroDeserializer::class.java.getResourceAsStream("/pdl/Personhendelse_$this.avsc"))
-        private val v2Skjema = "V2".lastSkjema()
         private val v3Skjema = "V3".lastSkjema()
+        private val v4Skjema = "V4".lastSkjema()
         val sisteSkjema: Schema = v3Skjema
     }
 }
