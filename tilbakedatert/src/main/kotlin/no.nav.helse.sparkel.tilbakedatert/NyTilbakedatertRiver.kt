@@ -2,11 +2,13 @@ package no.nav.helse.sparkel.tilbakedatert
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
+import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
+import java.time.LocalDate
 import net.logstash.logback.argument.StructuredArguments.keyValue
 
 internal class NyTilbakedatertRiver(
@@ -26,6 +28,9 @@ internal class NyTilbakedatertRiver(
                             rule["type"].asText() == "OK"
                     })
                 }
+                it.requireArray("sykmelding.aktivitet") {
+                    requireKey("fom", "tom")
+                }
             }
         }.register(this)
     }
@@ -41,8 +46,14 @@ internal class NyTilbakedatertRiver(
         sikkerlogg.info("Leser melding {}", packet.toJson())
         val fødselsnummer = packet["sykmelding.pasient.fnr"].asText()
         val sykmeldingId = packet["sykmelding.id"].asText()
+        val perioder = packet["sykmelding.aktivitet"].map {
+            mapOf(
+                "fom" to it["fom"].asLocalDate(),
+                "tom" to it["tom"].asLocalDate(),
+            )
+        }
 
-        val returEvent = lagReturEvent(fødselsnummer, sykmeldingId)
+        val returEvent = lagReturEvent(fødselsnummer, sykmeldingId, perioder)
         context.publish(fødselsnummer, returEvent).also {
             sikkerlogg.info(
                 "sender tilbakedatering_behandlet for {}:\n{}",
@@ -53,12 +64,14 @@ internal class NyTilbakedatertRiver(
     }
     private fun lagReturEvent(
         fødselsnummer: String,
-        sykmeldingId: String
+        sykmeldingId: String,
+        perioder: List<Map<String, LocalDate>>
     ) = JsonMessage.newMessage(
         eventName = "tilbakedatering_behandlet",
         map = mapOf(
             "fødselsnummer" to fødselsnummer,
             "sykmeldingId" to sykmeldingId,
+            "perioder" to perioder,
         )
     ).toJson()
 

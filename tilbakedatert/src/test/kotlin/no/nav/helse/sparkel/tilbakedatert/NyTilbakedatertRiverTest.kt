@@ -83,7 +83,13 @@ internal class NyTilbakedatertRiverTest {
                     "id": "${UUID.randomUUID()}",
                     "pasient": {
                         "fnr": "424242"
-                    }
+                    },
+                    "aktivitet": [
+                        {
+                            "fom": "2025-03-27",
+                            "tom": "2025-04-02"
+                        }
+                    ]
                 },
                 "validation": {
                     "status": "OK",
