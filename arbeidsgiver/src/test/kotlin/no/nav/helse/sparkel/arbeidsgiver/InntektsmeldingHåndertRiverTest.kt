@@ -41,7 +41,7 @@ class InntektsmeldingHåndertRiverTest {
         val dokumentId = UUID.randomUUID()
         val hendelseId = UUID.randomUUID()
         every { spedisjonClient.hentMelding(hendelseId, any()) } returns HentMeldingResponse(
-            type = "inntektsmelding",
+            type = "denne_type_kan_være_hva_som_helst_fordi_sparkel_arbeidsgiver_bare_tar_ekstern_dokument_id_uansett",
             fnr = "123456678911",
             internDokumentId = hendelseId,
             eksternDokumentId = dokumentId,
