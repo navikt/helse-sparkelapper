@@ -18,7 +18,7 @@ internal class NyTilbakedatertRiver(
             precondition {
                 it.requireValue("validation.status", "OK")
                 it.requireKey("sykmelding.id")
-                it.requireKey("sykmelding.pasient.id")
+                it.requireKey("sykmelding.pasient.fnr")
                 it.require("validation.rules") { node ->
                     check(node.isArray)
                     check(node.any { rule ->
@@ -39,7 +39,7 @@ internal class NyTilbakedatertRiver(
     }
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("Leser melding {}", packet.toJson())
-        val fødselsnummer = packet["sykmelding.pasient.id"].asText()
+        val fødselsnummer = packet["sykmelding.pasient.fnr"].asText()
         val sykmeldingId = packet["sykmelding.id"].asText()
 
         val returEvent = lagReturEvent(fødselsnummer, sykmeldingId)

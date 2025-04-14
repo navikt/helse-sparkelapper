@@ -82,7 +82,7 @@ internal class NyTilbakedatertRiverTest {
                 "sykmelding": {
                     "id": "${UUID.randomUUID()}",
                     "pasient": {
-                        "id": "424242"
+                        "fnr": "424242"
                     }
                 },
                 "validation": {
