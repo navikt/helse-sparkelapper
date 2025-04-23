@@ -2,6 +2,7 @@ package no.nav.helse.sparkel.aareg
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.github.tomakehurst.wiremock.client.WireMock.get
+import com.github.tomakehurst.wiremock.client.WireMock.notFound
 import com.github.tomakehurst.wiremock.client.WireMock.okJson
 import com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo
 import io.ktor.client.HttpClient
@@ -54,6 +55,22 @@ class ApietVårtSinTest {
 
         // Then:
         assertEquals(401, httpStatusCode)
+    }
+
+    @Test
+    fun `gir 404 hvis organisasjonsnummer ikke finnes`() {
+        // Given:
+        val organisasjonsnummer = Random.nextInt(800000000, 1000000000).toString()
+        IntegrationTestApplikasjon.eregWireMock.stubFor(
+            get(urlPathEqualTo("/api/v1/organisasjon/$organisasjonsnummer"))
+                .willReturn(notFound())
+        )
+
+        // When:
+        val (httpStatusCode, _) = callForJson("/organisasjoner/$organisasjonsnummer")
+
+        // Then:
+        assertEquals(404, httpStatusCode)
     }
 
     private val bearerAuthToken = IntegrationTestApplikasjon.mockOAuth2Server.issueToken(

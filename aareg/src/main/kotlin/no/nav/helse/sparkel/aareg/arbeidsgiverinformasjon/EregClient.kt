@@ -50,7 +50,7 @@ class EregClient(
 
         sikkerlogg.info("EregResponse: ${response.status}\n${response.bodyAsText()}")
 
-        if (!response.status.isSuccess()) throw FeilVedHenting("ereg svarte med ${response.status.value}")
+        if (!response.status.isSuccess()) throw FeilVedHenting(response.status.value)
 
         return mapResponse(response)
     }
@@ -79,4 +79,4 @@ data class EregResponse(
     val næringer: List<String>,
 )
 
-class FeilVedHenting(msg: String) : RuntimeException(msg)
+class FeilVedHenting(val statusCode: Int) : RuntimeException("ereg svarte med $statusCode")
