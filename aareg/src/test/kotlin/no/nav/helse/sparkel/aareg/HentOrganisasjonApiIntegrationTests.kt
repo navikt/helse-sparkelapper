@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class ApietVårtSinTest {
+class HentOrganisasjonApiIntegrationTests {
     @Test
     fun `kan hente navn på organisasjon via REST-endepunkt`() {
         // Given:

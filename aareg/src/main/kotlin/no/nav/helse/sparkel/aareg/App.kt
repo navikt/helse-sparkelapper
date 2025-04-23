@@ -84,12 +84,11 @@ class App() {
         )
 
         ktorSetupCallback = { ktorApplication ->
-            KtorModule(
+            ktorModule(
                 clientId = configuration.clientId,
                 issuerUrl = configuration.issuerUrl,
                 jwkProviderUri = configuration.jwkProviderUri,
                 eregClient = eregClient,
-            ).ktorModule(
                 application = ktorApplication,
             )
         }
