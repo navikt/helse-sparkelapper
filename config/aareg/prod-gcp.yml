@@ -4,6 +4,11 @@ limits:
 azure:
   enabled: true
 accessPolicy:
+  inbound:
+    rules:
+      - application: speil
+        namespace: tbd
+        cluster: prod-gcp
   outbound:
     rules:
       - application: kodeverk-api
