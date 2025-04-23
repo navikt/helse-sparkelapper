@@ -58,6 +58,22 @@ class ApietVårtSinTest {
     }
 
     @Test
+    fun `får HTTP 401 Unauthorized med token med feil audience`() {
+        // Given:
+        val organisasjonsnummer = Random.nextInt(800000000, 1000000000).toString()
+        IntegrationTestApplikasjon.eregWireMock.stubFor(
+            get(urlPathEqualTo("/api/v1/organisasjon/$organisasjonsnummer"))
+                .willReturn(okJson("""{ "navn": { "navnelinje1": "Happy!" } }"""))
+        )
+
+        // When:
+        val (httpStatusCode, _) = callForJson("/organisasjoner/$organisasjonsnummer", token = bearerAuthToken(audience = "tull"))
+
+        // Then:
+        assertEquals(401, httpStatusCode)
+    }
+
+    @Test
     fun `gir 404 hvis organisasjonsnummer ikke finnes`() {
         // Given:
         val organisasjonsnummer = Random.nextInt(800000000, 1000000000).toString()
@@ -73,21 +89,24 @@ class ApietVårtSinTest {
         assertEquals(404, httpStatusCode)
     }
 
-    private val bearerAuthToken = IntegrationTestApplikasjon.mockOAuth2Server.issueToken(
-        issuerId = IntegrationTestApplikasjon.ISSUER_ID,
-        audience = IntegrationTestApplikasjon.CLIENT_ID,
-        subject = UUID.randomUUID().toString(),
-        claims = mapOf(
-            "NAVident" to "a1234567",
-            "preferred_username" to "nav.navesen@nav.no",
-            "oid" to UUID.randomUUID().toString(),
-            "name" to "Nav Navesen"
-        )
-    ).serialize()
+    private fun bearerAuthToken(
+        audience: String = IntegrationTestApplikasjon.CLIENT_ID,
+        issuerId: String = IntegrationTestApplikasjon.ISSUER_ID
+    ) = IntegrationTestApplikasjon.mockOAuth2Server.issueToken(
+            issuerId = issuerId,
+            audience = audience,
+            subject = UUID.randomUUID().toString(),
+            claims = mapOf(
+                "NAVident" to "a1234567",
+                "preferred_username" to "nav.navesen@nav.no",
+                "oid" to UUID.randomUUID().toString(),
+                "name" to "Nav Navesen"
+            )
+        ).serialize()
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    private fun callForJson(urlPath: String, token: String? = bearerAuthToken): Pair<Int, JsonNode> =
+    private fun callForJson(urlPath: String, token: String? = bearerAuthToken()): Pair<Int, JsonNode> =
         runBlocking {
             httpClient.get("http://localhost:${IntegrationTestApplikasjon.port}$urlPath") {
                 accept(ContentType.Application.Json)
