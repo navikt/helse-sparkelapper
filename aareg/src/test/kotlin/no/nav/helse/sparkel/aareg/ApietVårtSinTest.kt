@@ -74,6 +74,22 @@ class ApietVårtSinTest {
     }
 
     @Test
+    fun `får HTTP 401 Unauthorized for token fra feil issuer`() {
+        // Given:
+        val organisasjonsnummer = Random.nextInt(800000000, 1000000000).toString()
+        IntegrationTestApplikasjon.eregWireMock.stubFor(
+            get(urlPathEqualTo("/api/v1/organisasjon/$organisasjonsnummer"))
+                .willReturn(okJson("""{ "navn": { "navnelinje1": "Happy!" } }"""))
+        )
+
+        // When:
+        val (httpStatusCode, _) = callForJson("/organisasjoner/$organisasjonsnummer", token = bearerAuthToken(issuerId = "tull"))
+
+        // Then:
+        assertEquals(401, httpStatusCode)
+    }
+
+    @Test
     fun `gir 404 hvis organisasjonsnummer ikke finnes`() {
         // Given:
         val organisasjonsnummer = Random.nextInt(800000000, 1000000000).toString()
