@@ -25,10 +25,22 @@ class EregClient(
         callId: UUID,
     ) = hentFraEreg(organisasjonsnummer, callId)
 
+    suspend fun hentOrganisasjonUtenRetry(
+        organisasjonsnummer: String,
+        callId: UUID,
+    ) = hentFraEregUtenRetry(organisasjonsnummer, callId)
+
     private suspend fun hentFraEreg(
         organisasjonsnummer: String,
         callId: UUID,
     ): EregResponse = retry("ereg") {
+        hentFraEregUtenRetry(organisasjonsnummer, callId)
+    }
+
+    private suspend fun hentFraEregUtenRetry(
+        organisasjonsnummer: String,
+        callId: UUID
+    ): EregResponse {
         val response: HttpResponse =
             httpClient.get("$baseUrl/api/v1/organisasjon/$organisasjonsnummer?inkluderHierarki=true&inkluderHistorikk=true") {
                 header("Nav-Consumer-Id", appName)
@@ -40,7 +52,7 @@ class EregClient(
 
         if (!response.status.isSuccess()) throw FeilVedHenting("ereg svarte med ${response.status.value}")
 
-        mapResponse(response)
+        return mapResponse(response)
     }
 
     private suspend fun mapResponse(response: HttpResponse) =

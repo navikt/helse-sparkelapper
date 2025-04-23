@@ -5,12 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
+import com.github.navikt.tbd_libs.azure.createDefaultAzureTokenClient
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.server.application.Application
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.sparkel.aareg.arbeidsforhold.AaregClient
 import no.nav.helse.sparkel.aareg.arbeidsforhold.ArbeidsforholdLøserV2
@@ -29,33 +30,74 @@ internal val objectMapper: ObjectMapper = jacksonObjectMapper()
     .registerModule(JavaTimeModule())
 
 fun main() {
-    val environment = setUpEnvironment()
-    val app = createApp(environment)
-    app.start()
+    val app = App()
+    app.start(
+        configuration = configurationFromEnvironment(),
+        rapidsConnection = RapidApplication.create(
+            env = System.getenv(),
+            builder = {
+                withKtorModule {
+                    app.ktorSetupCallback(this)
+                }
+            },
+        )
+    )
 }
 
-internal fun createApp(environment: Environment): RapidsConnection {
-    val httpClient = HttpClient {
-        install(ContentNegotiation) {
-            register(ContentType.Application.Json, JacksonConverter(objectMapper))
+class App() {
+    lateinit var ktorSetupCallback: (Application) -> Unit
+
+    fun start(
+        configuration: Configuration,
+        rapidsConnection: RapidsConnection
+    ) {
+        val httpClient = HttpClient {
+            install(ContentNegotiation) {
+                register(ContentType.Application.Json, JacksonConverter(objectMapper))
+            }
+            expectSuccess = false
         }
-        expectSuccess = false
+
+        val azureAD = createDefaultAzureTokenClient(
+            tokenEndpoint = configuration.tokenEndpointURL,
+            clientId = configuration.clientId,
+            clientSecret = configuration.clientSecret
+        )
+
+        val kodeverkClient = KodeverkClient(
+            kodeverkBaseUrl = configuration.kodeverkBaseUrl,
+            kodeverkOauthScope = configuration.kodeverkOauthScope,
+            azureTokenProvider = azureAD,
+        )
+
+        val eregClient = EregClient(
+            baseUrl = configuration.organisasjonBaseUrl,
+            appName = configuration.appName,
+            httpClient = httpClient
+        )
+
+        val aaregClient = AaregClient(
+            baseUrl = configuration.aaregBaseUrlRest,
+            scope = configuration.aaregOauthScope,
+            tokenSupplier = azureAD,
+            httpClient = httpClient
+        )
+
+        ktorSetupCallback = { ktorApplication ->
+            KtorModule(
+                clientId = configuration.clientId,
+                issuerUrl = configuration.issuerUrl,
+                jwkProviderUri = configuration.jwkProviderUri,
+                eregClient = eregClient,
+            ).ktorModule(
+                application = ktorApplication,
+            )
+        }
+
+        Arbeidsgiverinformasjonsbehovløser(rapidsConnection, kodeverkClient, eregClient)
+        Arbeidsforholdbehovløser(rapidsConnection, aaregClient)
+        ArbeidsforholdLøserV2(rapidsConnection, aaregClient)
+
+        rapidsConnection.start()
     }
-    val azureAD = createAzureTokenClientFromEnvironment(environment.raw)
-
-    val kodeverkClient = KodeverkClient(
-        kodeverkBaseUrl = environment.kodeverkBaseUrl,
-        environment.kodeverkOauthScope,
-        azureAD,
-    )
-
-    val eregClient = EregClient(environment.organisasjonBaseUrl, environment.appName, httpClient)
-    val aaregClient = AaregClient(environment.aaregBaseUrlRest, environment.aaregOauthScope, azureAD, httpClient)
-
-    val rapidsConnection = RapidApplication.create(environment.raw)
-    Arbeidsgiverinformasjonsbehovløser(rapidsConnection, kodeverkClient, eregClient)
-    Arbeidsforholdbehovløser(rapidsConnection, aaregClient)
-    ArbeidsforholdLøserV2(rapidsConnection, aaregClient)
-
-    return rapidsConnection
 }
