@@ -13,6 +13,9 @@ accessPolicy:
       - application: speil
         namespace: tbd
         cluster: dev-gcp
+      - application: speil-next
+        namespace: tbd
+        cluster: dev-gcp
   outbound:
     external:
       - host: kodeverk-api.nav.no
