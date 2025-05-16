@@ -147,6 +147,10 @@ jobs:
         uses: andstor/file-existence-action@v3
         with:
           files: "${{ env.NAIS_VARS_FILE }}, ${{ matrix.project }}_build_success.txt"
+      - name: hente ut image fra build-fil
+        run: |
+          NAIS_IMAGE=$(cat "${{ matrix.project }}_build_success.txt")
+          echo "NAIS_IMAGE=$NAIS_IMAGE" >> $GITHUB_ENV
       - name: deploy
         if: steps.deploy-files.outputs.files_exists == 'true'
         uses: nais/deploy/actions/deploy@v2
