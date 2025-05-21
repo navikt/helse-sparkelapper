@@ -41,6 +41,9 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
+    logging:
+      destinations:
+        - id: elastic
   resources:
     limits:
       memory: {{#if limits.memory }}{{ limits.memory }}{{else}}1Gi{{/if}}
