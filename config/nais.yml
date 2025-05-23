@@ -73,16 +73,6 @@ spec:
       {{#if azure.tenant}}
       tenant: {{azure.tenant}}
       {{/if}}
-      {{#if azure.allowAllUsers}}
-      allowAllUsers: {{azure.allowAllUsers}}
-      {{/if}}
-      {{#if azure.groups}}
-      claims:
-        groups:
-          {{# each azure.groups as |group|}}
-          - id: {{group}}
-          {{/each}}
-      {{/if}}
   {{/if}}
   prometheus:
     enabled: true
