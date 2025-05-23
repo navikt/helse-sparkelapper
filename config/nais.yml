@@ -99,12 +99,10 @@ spec:
     value: {{#if kafkaConsumerGroup }}{{ kafkaConsumerGroup }}{{else}}tbd-sparkel-{{app}}-v1{{/if}}
   - name: KAFKA_RAPID_TOPIC
     value: tbd.rapid.v1
-{{#if env}}
 {{# each env as |item| }}
   - name: {{ item.name }}
     value: "{{ item.value }}"
 {{/each }}
-{{/if}}
 {{#if gcp}}
   gcp:
     sqlInstances:
