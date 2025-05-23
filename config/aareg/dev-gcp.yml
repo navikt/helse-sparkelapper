@@ -8,14 +8,6 @@ azure:
   enabled: true
   tenant: trygdeetaten.no
 accessPolicy:
-  inbound:
-    rules:
-      - application: speil
-        namespace: tbd
-        cluster: dev-gcp
-      - application: speil-next
-        namespace: tbd
-        cluster: dev-gcp
   outbound:
     external:
       - host: kodeverk-api.nav.no
