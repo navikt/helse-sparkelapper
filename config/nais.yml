@@ -79,7 +79,7 @@ spec:
 {{#if azure.groups}}
       claims:
         groups:
-{{# each azure.groups as |group|}}
+{{#each azure.groups as |group|}}
           - id: {{group}}
 {{/each}}
 {{/if}}
@@ -94,25 +94,26 @@ spec:
     enabled: true
 {{#if mountPaths}}
     paths:
-{{# each mountPaths as |item| }}
+{{#each mountPaths as |item| }}
       - mountPath: {{ item.mountPath }}
         kvPath: {{ item.kvPath }}
 {{/each}}
 {{/if}}
 {{#if envFrom}}
   envFrom:
-{{# each envFrom as |item| }}
+{{#each envFrom as |item| }}
   - secret: {{item}}
-{{/each}}{{/if}}
+{{/each}}
+{{/if}}
   env:
   - name: KAFKA_CONSUMER_GROUP_ID
     value: {{#if kafkaConsumerGroup }}{{ kafkaConsumerGroup }}{{else}}tbd-sparkel-{{app}}-v1{{/if}}
   - name: KAFKA_RAPID_TOPIC
     value: tbd.rapid.v1
-{{# each env as |item| }}
+{{#each env as |item| }}
   - name: {{ item.name }}
     value: "{{ item.value }}"
-{{/each }}
+{{/each}}
 {{#if gcp}}
   gcp:
     sqlInstances:
@@ -127,7 +128,7 @@ spec:
     inbound:
 {{#if accessPolicy.inbound.rules}}
       rules:
-{{# each accessPolicy.inbound.rules as |item|}}
+{{#each accessPolicy.inbound.rules as |item|}}
         - application: {{ item.application }}
           namespace: {{ item.namespace }}
           cluster: {{ item.cluster }}
@@ -137,13 +138,13 @@ spec:
     outbound:
 {{#if accessPolicy.outbound.external}}
       external:
-{{# each accessPolicy.outbound.external as |item| }}
+{{#each accessPolicy.outbound.external as |item| }}
         - host: {{item.host}}
 {{/each}}
 {{/if}}
 {{#if accessPolicy.outbound.rules}}
       rules:
-{{# each accessPolicy.outbound.rules as |item|}}
+{{#each accessPolicy.outbound.rules as |item|}}
         - application: {{ item.application }}
           namespace: {{ item.namespace }}
 {{#if item.cluster}}
