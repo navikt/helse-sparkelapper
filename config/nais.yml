@@ -133,6 +133,7 @@ spec:
           cluster: {{ item.cluster }}
 {{/each}}
 {{/if}}
+{{#if accessPolicy.outbound}}
     outbound:
 {{#if accessPolicy.outbound.external}}
       external:
@@ -149,5 +150,6 @@ spec:
           cluster: {{ item.cluster }}
 {{/if}}
 {{/each}}
+{{/if}}
 {{/if}}
 {{/if}}
