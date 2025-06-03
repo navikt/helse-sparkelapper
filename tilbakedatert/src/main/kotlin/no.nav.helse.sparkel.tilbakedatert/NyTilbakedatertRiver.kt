@@ -17,19 +17,21 @@ internal class NyTilbakedatertRiver(
 
     init {
         River(rapidsConnection).apply {
-            validate {
+            precondition {
                 it.requireValue("validation.status", "OK")
+            }
+            validate {
                 it.requireKey("sykmelding.id")
                 it.requireKey("sykmelding.pasient.fnr")
+                it.requireArray("sykmelding.aktivitet") {
+                    requireKey("fom", "tom")
+                }
                 it.require("validation.rules") { node ->
                     check(node.isArray)
                     check(node.any { rule ->
                         rule["name"].asText() == "TILBAKEDATERING_UNDER_BEHANDLING" &&
                             rule["type"].asText() == "OK"
                     })
-                }
-                it.requireArray("sykmelding.aktivitet") {
-                    requireKey("fom", "tom")
                 }
             }
         }.register(this)
