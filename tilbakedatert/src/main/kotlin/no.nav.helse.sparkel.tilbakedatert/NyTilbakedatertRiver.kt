@@ -17,7 +17,7 @@ internal class NyTilbakedatertRiver(
 
     init {
         River(rapidsConnection).apply {
-            precondition {
+            validate {
                 it.requireValue("validation.status", "OK")
                 it.requireKey("sykmelding.id")
                 it.requireKey("sykmelding.pasient.fnr")
