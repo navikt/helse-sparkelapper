@@ -62,13 +62,16 @@ internal class NyTilbakedatertRiverTest {
                 },
                 "validation": {
                     "status": "PENDING",
-                    "timestamp": "2025-04-04T14:15:15.597552892Z",
+                    "timestamp": "2025-06-03T15:15:15.167486189Z",
                     "rules": [
                         {
                             "name": "TILBAKEDATERING_UNDER_BEHANDLING",
-                            "timestamp": "2025-04-04T14:15:15.597552892Z",
-                            "description": "Sykmeldingen er til manuell behandling",
+                            "timestamp": "2025-06-03T15:15:15.167486189Z",
                             "validationType": "AUTOMATIC",
+                            "reason": {
+                                "sykmeldt": "Sykmeldingen blir manuelt behandlet fordi den er tilbakedatert",
+                                "sykmelder": "Sykmeldingen er til manuell behandling"
+                            },
                             "type": "PENDING"
                         }
                     ]
@@ -93,24 +96,22 @@ internal class NyTilbakedatertRiverTest {
                 },
                 "validation": {
                     "status": "OK",
-                    "timestamp": "2025-04-04T14:52:34.308156427Z",
+                    "timestamp": "2025-06-03T15:16:30.163788143Z",
                     "rules": [
                         {
                             "name": "TILBAKEDATERING_UNDER_BEHANDLING",
-                            "description": "Sykmeldingen er til manuell behandling",
-                            "timestamp": "2025-04-04T14:52:34.308156427Z",
+                            "timestamp": "2025-06-03T15:16:30.163788143Z",
                             "validationType": "MANUAL",
-                            "type": "OK",
-                            "outcome": {
-                                "outcome": "OK",
-                                "timestamp": "2025-04-04T14:52:34.308156427Z"
-                            }
+                            "type": "OK"
                         },
                         {
                             "name": "TILBAKEDATERING_UNDER_BEHANDLING",
-                            "timestamp": "2025-04-04T14:15:15.597552892Z",
-                            "description": "Sykmeldingen er til manuell behandling",
+                            "timestamp": "2025-06-03T15:15:15.167486189Z",
                             "validationType": "AUTOMATIC",
+                            "reason": {
+                                "sykmeldt": "Sykmeldingen blir manuelt behandlet fordi den er tilbakedatert",
+                                "sykmelder": "Sykmeldingen er til manuell behandling"
+                            },
                             "type": "PENDING"
                         }
                     ]
