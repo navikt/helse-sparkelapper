@@ -8,12 +8,18 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
+import java.time.Instant
+import java.time.Instant.now
 import java.time.LocalDate
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.toJavaDuration
 import net.logstash.logback.argument.StructuredArguments.keyValue
 
 internal class NyTilbakedatertRiver(
     rapidsConnection: RapidsConnection,
 ) : River.PacketListener {
+
+    private var ikkeSendMeldingFør: Instant = now()
 
     init {
         River(rapidsConnection).apply {
@@ -56,14 +62,20 @@ internal class NyTilbakedatertRiver(
         }
 
         val returEvent = lagReturEvent(fødselsnummer, sykmeldingId, perioder)
+
+        // porsjoner ut publiseringen, så det ikke blir floke på rapiden (mest for gøy)
+        while (now().isBefore(ikkeSendMeldingFør)) Thread.sleep(100.milliseconds.toJavaDuration())
+
         context.publish(fødselsnummer, returEvent).also {
             sikkerlogg.info(
                 "sender tilbakedatering_behandlet for {}:\n{}",
                 keyValue("sykmeldingId", sykmeldingId),
                 returEvent
             )
+            ikkeSendMeldingFør = now().plusMillis(333)
         }
     }
+
     private fun lagReturEvent(
         fødselsnummer: String,
         sykmeldingId: String,
