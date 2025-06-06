@@ -44,10 +44,6 @@ internal class NyTilbakedatertRiver(
         }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
-        sikkerlogg.error("Melding oppfyller precondition, men ikke validations. " + problems.toExtendedReport())
-    }
-
     override fun onSevere(error: MessageProblems.MessageException, context: MessageContext) {
         sikkerlogg.info(error.toString())
     }
