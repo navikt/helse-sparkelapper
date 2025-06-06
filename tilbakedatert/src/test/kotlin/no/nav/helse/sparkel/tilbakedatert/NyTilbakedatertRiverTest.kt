@@ -31,6 +31,8 @@ internal class NyTilbakedatertRiverTest {
         assertEquals(1, rapid.inspektør.size)
         val expectedSykmeldingId = jacksonObjectMapper().readTree(Meldinger.Godkjent)["sykmelding"]["id"].asText()
         assertEquals(expectedSykmeldingId, rapid.inspektør.field(0, "sykmeldingId").asText())
+        val expectedPerioder = jacksonObjectMapper().readTree(Meldinger.Godkjent)["sykmelding"]["aktivitet"]
+        assertEquals(expectedPerioder, rapid.inspektør.field(0, "perioder"))
     }
 
     object Meldinger {
