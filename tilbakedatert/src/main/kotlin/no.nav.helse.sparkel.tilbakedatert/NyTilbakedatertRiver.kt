@@ -24,7 +24,7 @@ internal class NyTilbakedatertRiver(
     init {
         River(rapidsConnection).apply {
             precondition {
-                it.requireValue("validation.status", "OK")
+                it.forbid("@event_name", "personNrPasient")
             }
             validate {
                 it.requireKey("sykmelding.id")
@@ -32,6 +32,7 @@ internal class NyTilbakedatertRiver(
                 it.requireArray("sykmelding.aktivitet") {
                     requireKey("fom", "tom")
                 }
+                it.requireValue("validation.status", "OK")
                 it.require("validation.rules") { node ->
                     check(node.isArray)
                     check(node.any { rule ->
@@ -44,7 +45,7 @@ internal class NyTilbakedatertRiver(
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
-        sikkerlogg.error(problems.toExtendedReport())
+        sikkerlogg.error("Melding oppfyller precondition, men ikke validations. " + problems.toExtendedReport())
     }
 
     override fun onSevere(error: MessageProblems.MessageException, context: MessageContext) {

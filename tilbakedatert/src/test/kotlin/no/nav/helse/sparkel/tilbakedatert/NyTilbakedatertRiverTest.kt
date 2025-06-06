@@ -40,8 +40,9 @@ internal class NyTilbakedatertRiverTest {
                 "sykmelding": {
                     "id": "${UUID.randomUUID()}",
                     "pasient": {
-                        "id": "424242"
-                    }
+                        "fnr": "424242"
+                    },
+                    "aktivitet": []
                 },
                 "validation": {
                     "status": "OK",
@@ -57,8 +58,9 @@ internal class NyTilbakedatertRiverTest {
                 "sykmelding": {
                     "id": "${UUID.randomUUID()}",
                     "pasient": {
-                        "id": "424242"
-                    }
+                        "fnr": "424242"
+                    },
+                    "aktivitet": []
                 },
                 "validation": {
                     "status": "PENDING",
