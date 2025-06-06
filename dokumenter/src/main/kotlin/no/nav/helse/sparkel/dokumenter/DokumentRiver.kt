@@ -54,13 +54,18 @@ internal class DokumentRiver(
         val dokumentId = packet["dokumentId"].asText()
         val id = packet["@id"].asText()
 
-        packet["@løsning"] = mapOf<String, Any>(
-            "dokument" to dokumentClient.hentDokument(
-                dokumentId = dokumentId,
-            )
+        dokumentClient.hentDokument(dokumentId).fold(
+            onSuccess = {
+                packet["@løsning"] = mapOf("dokument" to it)
+                packet.toJson().let {
+                    context.publish(it)
+                    log.info("Besvarte behov {} for dokumentId {}", id, dokumentId)
+                    sikkerlogg.info("Svarte på behov {} for dokumentId {} med:\n{}", kv("id", id), dokumentId, it)
+                }
+            },
+            onFailure = {
+                log.warn("Gir opp å hente dokument, svarer ikke på behov $id for dokumentId $dokumentId")
+            }
         )
-        context.publish(packet.toJson()).also {
-            sikkerlogg.info("sender {} som:\n{}", kv("id", id), packet.toJson())
-        }
     }
 }

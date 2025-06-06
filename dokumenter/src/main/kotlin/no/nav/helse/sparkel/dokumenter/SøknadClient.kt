@@ -1,21 +1,20 @@
 package no.nav.helse.sparkel.dokumenter
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.accept
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareGet
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
-import org.slf4j.LoggerFactory
+import no.nav.helse.sparkel.retry
 
 class SøknadClient(
     private val baseUrl: String,
@@ -23,34 +22,25 @@ class SøknadClient(
     private val httpClient: HttpClient,
     private val scope: String
 ) : DokumentClient {
-    companion object {
-        private val objectMapper = ObjectMapper()
-        private val log = LoggerFactory.getLogger(SøknadClient::class.java)
-        private val sikkerlog = LoggerFactory.getLogger("tjenestekall")
+
+    override fun hentDokument(dokumentId: String): Result<JsonNode> {
+        return runBlocking { fetch(dokumentId, callId = UUID.randomUUID()) }
     }
 
-    override fun hentDokument(dokumentId: String): JsonNode {
-        return runBlocking {
-            val response = httpClient.prepareGet("$baseUrl/api/v3/soknader/$dokumentId/kafkaformat") {
-                accept(ContentType.Application.Json)
-                method = HttpMethod.Get
-                val bearerToken = tokenClient.bearerToken(scope).getOrThrow()
-                bearerAuth(bearerToken.token)
-                val callId = UUID.randomUUID()
-                header("Nav-Callid", "$callId")
-                header("no.nav.callid", "$callId")
-                header("Nav-Consumer-Id", "sparkel-dokumenter")
-                header("no.nav.consumer.id", "sparkel-dokumenter")
-            }.execute()
+    private suspend fun fetch(dokumentId: String, callId: UUID): Result<JsonNode> = retry("søknad", legalExceptions = retryableExceptions) {
+        val response = httpClient.prepareGet("$baseUrl/api/v3/soknader/$dokumentId/kafkaformat") {
+            accept(ContentType.Application.Json)
+            method = HttpMethod.Get
+            expectSuccess = true
+            val bearerToken = tokenClient.bearerToken(scope).getOrThrow()
+            bearerAuth(bearerToken.token)
+            header("Nav-Callid", "$callId")
+            header("no.nav.callid", "$callId")
+            header("Nav-Consumer-Id", "sparkel-dokumenter")
+            header("no.nav.consumer.id", "sparkel-dokumenter")
+        }.execute()
 
-            if (response.status != HttpStatusCode.OK) {
-                "Feil ved kall mot sykepengesoknad-backend http ${response.status.value}, returnerer derfor tomt resultat".also {
-                    log.info(it)
-                    sikkerlog.info("$it response: $response")
-                }
-                objectMapper.createObjectNode()
-            } else response.body<JsonNode>()
-        }
+        Result.success(response.body())
     }
 }
 
