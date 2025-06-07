@@ -13,7 +13,6 @@ fun main() {
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
     return RapidApplication.create(env).apply {
-        TilbakedatertRiver(rapidsConnection = this)
         NyTilbakedatertRiver(rapidsConnection = this)
     }
 }

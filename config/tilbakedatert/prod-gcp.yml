@@ -6,6 +6,4 @@ limits:
   cpu: 2000m
 env:
   - name: KAFKA_EXTRA_TOPIC
-    value: teamsykmelding.ok-sykmelding,tsm.sykmeldinger
-  - name: KAFKA_RESET_POLICY
-    value: earliest
+    value: tsm.sykmeldinger
