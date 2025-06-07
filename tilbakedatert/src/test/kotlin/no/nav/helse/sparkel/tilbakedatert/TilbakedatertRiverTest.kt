@@ -7,9 +7,9 @@ import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class NyTilbakedatertRiverTest {
+internal class TilbakedatertRiverTest {
 
-    private val rapid: TestRapid = TestRapid().apply(::NyTilbakedatertRiver)
+    private val rapid: TestRapid = TestRapid().apply(::TilbakedatertRiver)
 
     private fun sendEvent(behov: String) = rapid.sendTestMessage(behov)
 

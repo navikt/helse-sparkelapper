@@ -8,18 +8,15 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
-import java.time.Instant
-import java.time.Instant.now
 import java.time.LocalDate
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.toJavaDuration
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import org.slf4j.LoggerFactory
 
-internal class NyTilbakedatertRiver(
+internal class TilbakedatertRiver(
     rapidsConnection: RapidsConnection,
 ) : River.PacketListener {
 
-    private var ikkeSendMeldingFør: Instant = now()
+    val log = LoggerFactory.getLogger(TilbakedatertRiver::class.java)
 
     init {
         River(rapidsConnection).apply {
@@ -48,9 +45,9 @@ internal class NyTilbakedatertRiver(
         sikkerlogg.info(error.toString())
     }
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        sikkerlogg.info("Leser melding {}", packet.toJson())
         val fødselsnummer = packet["sykmelding.pasient.fnr"].asText()
         val sykmeldingId = packet["sykmelding.id"].asText()
+        log.info("Leser melding for {}", keyValue("sykmeldingId", sykmeldingId))
         val perioder = packet["sykmelding.aktivitet"].map {
             mapOf(
                 "fom" to it["fom"].asLocalDate(),
@@ -59,17 +56,12 @@ internal class NyTilbakedatertRiver(
         }
 
         val returEvent = lagReturEvent(fødselsnummer, sykmeldingId, perioder)
-
-        // porsjoner ut publiseringen, så det ikke blir floke på rapiden (mest for gøy)
-        while (now().isBefore(ikkeSendMeldingFør)) Thread.sleep(100.milliseconds.toJavaDuration())
-
         context.publish(fødselsnummer, returEvent).also {
             sikkerlogg.info(
                 "sender tilbakedatering_behandlet for {}:\n{}",
                 keyValue("sykmeldingId", sykmeldingId),
                 returEvent
             )
-            ikkeSendMeldingFør = now().plusMillis(333)
         }
     }
 
