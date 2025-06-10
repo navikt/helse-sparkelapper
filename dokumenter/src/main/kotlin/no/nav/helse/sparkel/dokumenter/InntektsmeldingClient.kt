@@ -14,6 +14,7 @@ import io.ktor.client.request.header
 import io.ktor.client.request.prepareGet
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.sparkel.retry
@@ -33,7 +34,11 @@ class InntektsmeldingClient(
                 // Diskutabelt om "success" gir mening i denne kontekst, men se på det som at clienten har klart å
                 // produsere et svar. Alternativt kunne DokumentRiver ha håndtert en spesifikk exception for 404
                 // i onFailure-blokka.
-                Result.success(JsonNodeFactory.instance.objectNode().put("error", 404))
+                if (e.response.status == HttpStatusCode.NotFound) {
+                    Result.success(JsonNodeFactory.instance.objectNode().put("error", 404))
+                } else {
+                    Result.failure(e)
+                }
             }
         }
     }

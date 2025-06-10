@@ -65,6 +65,7 @@ internal class DokumentRiver(
             },
             onFailure = {
                 log.warn("Gir opp å hente dokument, svarer ikke på behov $id for dokumentId $dokumentId")
+                sikkerlogg.warn("Gir opp å hente dokument, svarer ikke på behov $id for dokumentId $dokumentId", it)
             }
         )
     }

@@ -5,6 +5,7 @@ import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.request.accept
 import io.ktor.client.request.bearerAuth
@@ -24,10 +25,14 @@ class SøknadClient(
 ) : DokumentClient {
 
     override fun hentDokument(dokumentId: String): Result<JsonNode> {
-        return runBlocking { fetch(dokumentId, callId = UUID.randomUUID()) }
+        return runBlocking {
+            runCatching {
+                fetch(dokumentId, callId = UUID.randomUUID())
+            }
+        }
     }
 
-    private suspend fun fetch(dokumentId: String, callId: UUID): Result<JsonNode> = retry("søknad", legalExceptions = retryableExceptions) {
+    private suspend fun fetch(dokumentId: String, callId: UUID): JsonNode = retry("søknad", legalExceptions = (retryableExceptions + ClientRequestException::class)) {
         val response = httpClient.prepareGet("$baseUrl/api/v3/soknader/$dokumentId/kafkaformat") {
             accept(ContentType.Application.Json)
             method = HttpMethod.Get
@@ -40,7 +45,7 @@ class SøknadClient(
             header("no.nav.consumer.id", "sparkel-dokumenter")
         }.execute()
 
-        Result.success(response.body())
+        response.body()
     }
 }
 
