@@ -6,9 +6,9 @@ azure:
 accessPolicy:
   outbound:
     external:
-      - host: team-inntekt-proxy.prod-fss-pub.nais.io
+      - host: ikomp.prod-fss-pub.nais.io
 env:
   - name: INNTEKTSKOMPONENTEN_BASE_URL
-    value: https://team-inntekt-proxy.prod-fss-pub.nais.io/proxy/inntektskomponenten/rs
+    value: https://ikomp.prod-fss-pub.nais.io/rs
   - name: INNTEKTSKOMPONENTEN_OAUTH_SCOPE
-    value: api://prod-fss.team-inntekt.inntektskomponenten/.default
+    value: api://prod-fss.team-inntekt.ikomp/.default
