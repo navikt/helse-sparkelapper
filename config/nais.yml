@@ -123,10 +123,9 @@ spec:
             envVarPrefix: {{ gcp.envVarPrefix }}
         tier: {{ gcp.tier }}
 {{/if}}
-{{#if accessPolicy}}
   accessPolicy:
-    inbound:
 {{#if accessPolicy.inbound.rules}}
+    inbound:
       rules:
 {{#each accessPolicy.inbound.rules as |item|}}
         - application: {{ item.application }}
@@ -134,7 +133,7 @@ spec:
           cluster: {{ item.cluster }}
 {{/each}}
 {{/if}}
-{{#if accessPolicy.outbound}}
+
     outbound:
 {{#if accessPolicy.outbound.external}}
       external:
@@ -142,8 +141,9 @@ spec:
         - host: {{item.host}}
 {{/each}}
 {{/if}}
-{{#if accessPolicy.outbound.rules}}
       rules:
+        - application: logging
+          namespace: nais-system
 {{#each accessPolicy.outbound.rules as |item|}}
         - application: {{ item.application }}
           namespace: {{ item.namespace }}
@@ -151,6 +151,3 @@ spec:
           cluster: {{ item.cluster }}
 {{/if}}
 {{/each}}
-{{/if}}
-{{/if}}
-{{/if}}
