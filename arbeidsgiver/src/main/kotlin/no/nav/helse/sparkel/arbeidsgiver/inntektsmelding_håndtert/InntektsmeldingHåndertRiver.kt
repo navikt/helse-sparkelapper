@@ -10,10 +10,11 @@ import com.github.navikt.tbd_libs.result_object.getOrThrow
 import com.github.navikt.tbd_libs.retry.retryBlocking
 import com.github.navikt.tbd_libs.spedisjon.SpedisjonClient
 import io.micrometer.core.instrument.MeterRegistry
-import java.util.*
+import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.helse.sparkel.arbeidsgiver.ArbeidsgiveropplysningerProducer
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 
 internal class InntektsmeldingHåndertRiver(
     rapidsConnection: RapidsConnection,
@@ -31,6 +32,7 @@ internal class InntektsmeldingHåndertRiver(
             precondition { it.requireValue("@event_name", eventName) }
             validate {
                 it.requireKey(
+                    "@id",
                     "fødselsnummer",
                     "organisasjonsnummer",
                     "vedtaksperiodeId",
@@ -42,21 +44,26 @@ internal class InntektsmeldingHåndertRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        val hendelseId = UUID.fromString(packet["inntektsmeldingId"].asText())
+        MDC.putCloseable("meldingId", packet["@id"].asText()).use {
+            logg.info("Melding mottatt")
+            sikkerlogg.info("Melding mottatt:\n${packet.toJson()}")
 
-        val callId = UUID.randomUUID().toString()
-        sikkerlogg.info("Henter dokument {}", kv("callId", callId))
-        logg.info("Henter dokument for {}", kv("callId", callId))
-        val dokumentId = retryBlocking {
-            spedisjonClient.hentMelding(hendelseId, callId).getOrThrow()
-        }.eksternDokumentId
+            val hendelseId = UUID.fromString(packet["inntektsmeldingId"].asText())
 
-        val payload = packet.toInntektsmeldingHåndtertDto(dokumentId)
-        arbeidsgiverProducer.send(payload)
+            val callId = UUID.randomUUID().toString()
+            sikkerlogg.info("Henter dokument {}", kv("callId", callId))
+            logg.info("Henter dokument for {}", kv("callId", callId))
+            val dokumentId = retryBlocking {
+                spedisjonClient.hentMelding(hendelseId, callId).getOrThrow()
+            }.eksternDokumentId
 
-        "Publiserte inntektsmelding_håndtert-event til helsearbeidsgiver-bro-sykepenger".let {
-            logg.info(it)
-            sikkerlogg.info("$it med data :\n{}", payload)
+            val payload = packet.toInntektsmeldingHåndtertDto(dokumentId)
+            arbeidsgiverProducer.send(payload)
+
+            "Publiserte inntektsmelding_håndtert-event til helsearbeidsgiver-bro-sykepenger".let {
+                logg.info(it)
+                sikkerlogg.info("$it med data :\n{}", payload)
+            }
         }
     }
 
