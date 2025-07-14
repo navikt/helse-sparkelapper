@@ -1,5 +1,4 @@
-Sparkel [![Build](https://github.com/navikt/helse-sparkelapper/actions/workflows/build.yml/badge.svg)](https://github.com/navikt/helse-sparkelapper/actions/workflows/build.yml)
-=======
+# Sparkel [![Build](https://github.com/navikt/helse-sparkelapper/actions/workflows/build.yml/badge.svg)](https://github.com/navikt/helse-sparkelapper/actions/workflows/build.yml)
 
 Mikrotjenester som svarer ut behov ved å hente data fra ulike registre.
 
@@ -12,23 +11,24 @@ Dette er for øvrig et skikkelig bra sted å skrive navnene på hver tjeneste og
 
 ## Legge til ny app
 
-Alle gradle-modulene bygges og releases automatisk. 
+Alle gradle-modulene bygges og releases automatisk.
 Ved hver pakke som blir lastet opp trigges en deployment workflow for den pakken.
 
 Navnet på appen blir prefikset med `sparkel-` i nais.yml, så navnet på modulen skal være uten.
 
-1. Gjør 'Legge til en ny gradle-modul'. Mappenavnet korresponderer med appnavnet 
-2. Lag `config/[app]/[cluster].yml` for de klustrene appen skal deployes til. 
+1. Gjør 'Legge til en ny gradle-modul'. Mappenavnet korresponderer med appnavnet
+2. Lag `config/[app]/[cluster].yml` for de klustrene appen skal deployes til.
 3. Push endringene
 
 ## Oppgradering av gradle wrapper
+
 Finn nyeste versjon av gradle her: https://gradle.org/releases/
 
 Kjør denne kommandoen for å oppdatere `gradle-wrapper.properties`:
 
 `./gradlew wrapper --gradle-version <versjon>`
 
-Kjør samme kommando en gang til for å laste ned eventuelt oppdaterte jar- og skript-filer. 
+Kjør samme kommando en gang til for å laste ned eventuelt oppdaterte jar- og skript-filer.
 
 Oppdater gradle-versjonen i build.gradle.kts-filen:
 
@@ -41,7 +41,9 @@ Det ble tidlig klart at sykepenge-tjenesten ville måtte hente data fra en del f
 Vi tenkte at en slik harmonisering av grensesnitt fungerte som et lag sparkel over en ujevn vegg, så da var fellesnavnet for disse applikasjonene selvsagt: Sparkel.
 
 ## Henvendelser
+
 Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.
 
 ### For NAV-ansatte
-Interne henvendelser kan sendes via Slack i kanalen #team-bømlo-værsågod
+
+Interne henvendelser kan sendes via Slack i kanalen [#team-bømlo-værsågod](https://nav-it.slack.com/archives/C019637N90X)
