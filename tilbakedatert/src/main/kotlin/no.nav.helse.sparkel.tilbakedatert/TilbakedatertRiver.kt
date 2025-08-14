@@ -33,8 +33,9 @@ internal class TilbakedatertRiver(
                 it.require("validation.rules") { node ->
                     check(node.isArray)
                     check(node.any { rule ->
-                        rule["name"].asText() == "TILBAKEDATERING_UNDER_BEHANDLING" &&
-                            rule["type"].asText() == "OK"
+                        // Det er "flere veier til OK" i tilbakedateringsappen - det kan komme OK-stempel både på
+                        // TILBAKEDATERING_UNDER_BEHANDLING og TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER
+                        rule["name"].asText().startsWith("TILBAKEDATERING_") && rule["type"].asText() == "OK"
                     })
                 }
             }
