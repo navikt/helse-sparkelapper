@@ -26,6 +26,12 @@ internal class TilbakedatertRiverTest {
     }
 
     @Test
+    fun `Sender ikke tilbakedatering_behandlet for delvis godkjenning av tilbakedatering`() {
+        sendEvent(Meldinger.DelvisGodkjent)
+        assertEquals(0, rapid.inspektør.size)
+    }
+
+    @Test
     fun `Sender tilbakedatering_behandlet for godkjente sykmeldinger`() {
         sendEvent(Meldinger.Godkjent)
         assertEquals(1, rapid.inspektør.size)
@@ -171,6 +177,46 @@ internal class TilbakedatertRiverTest {
                         {
                             "name": "TILBAKEDATERING_UNDER_BEHANDLING",
                             "timestamp": "2025-07-17T12:51:59.379051234Z",
+                            "validationType": "AUTOMATIC",
+                            "reason": {
+                                "sykmeldt": "Sykmeldingen blir manuelt behandlet fordi den er tilbakedatert",
+                                "sykmelder": "Sykmeldingen er til manuell behandling"
+                            },
+                            "type": "PENDING"
+                        }
+                    ]
+                }
+            }
+        """.trimIndent()
+
+        @Language("JSON")
+        internal val DelvisGodkjent = """
+            {
+                "sykmelding": {
+                    "id": "${UUID.randomUUID()}",
+                    "pasient": {
+                        "fnr": "424242"
+                    },
+                    "aktivitet": [
+                        {
+                            "fom": "2025-03-27",
+                            "tom": "2025-04-02"
+                        }
+                    ]
+                },
+                "validation": {
+                    "status": "OK",
+                    "timestamp": "2025-08-15T10:11:47.444255876Z",
+                    "rules": [
+                        {
+                            "name": "TILBAKEDATERING_DELVIS_GODKJENT",
+                            "timestamp": "2025-08-15T10:11:47.444255876Z",
+                            "validationType": "MANUAL",
+                            "type": "OK"
+                        },
+                        {
+                            "name": "TILBAKEDATERING_UNDER_BEHANDLING",
+                            "timestamp": "2025-08-05T12:40:31.846711066Z",
                             "validationType": "AUTOMATIC",
                             "reason": {
                                 "sykmeldt": "Sykmeldingen blir manuelt behandlet fordi den er tilbakedatert",

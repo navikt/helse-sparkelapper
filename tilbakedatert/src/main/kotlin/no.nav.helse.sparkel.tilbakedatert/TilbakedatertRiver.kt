@@ -18,6 +18,10 @@ internal class TilbakedatertRiver(
 
     val log = LoggerFactory.getLogger(TilbakedatertRiver::class.java)
 
+    // Hvis det kommer OK på en rule med et av disse navnene, skal spesialist få vite om godkjenningen.
+    // Derimot skal OK med name: TILBAKEDATERING_DELVIS_GODKJENT ikke videreformidles - future feature å håndtere dem
+    val statuser = setOf("TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER", "TILBAKEDATERING_UNDER_BEHANDLING")
+
     init {
         River(rapidsConnection).apply {
             precondition {
@@ -32,11 +36,7 @@ internal class TilbakedatertRiver(
                 it.requireValue("validation.status", "OK")
                 it.require("validation.rules") { node ->
                     check(node.isArray)
-                    check(node.any { rule ->
-                        // Det er "flere veier til OK" i tilbakedateringsappen - det kan komme OK-stempel både på
-                        // TILBAKEDATERING_UNDER_BEHANDLING og TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER
-                        rule["name"].asText().startsWith("TILBAKEDATERING_") && rule["type"].asText() == "OK"
-                    })
+                    check(node.any { rule -> rule["name"].asText() in statuser && rule["type"].asText() == "OK" })
                 }
             }
         }.register(this)
@@ -45,6 +45,7 @@ internal class TilbakedatertRiver(
     override fun onSevere(error: MessageProblems.MessageException, context: MessageContext) {
         sikkerlogg.info(error.toString())
     }
+
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         val fødselsnummer = packet["sykmelding.pasient.fnr"].asText()
         val sykmeldingId = packet["sykmelding.id"].asText()
@@ -78,5 +79,4 @@ internal class TilbakedatertRiver(
             "perioder" to perioder,
         )
     ).toJson()
-
 }
