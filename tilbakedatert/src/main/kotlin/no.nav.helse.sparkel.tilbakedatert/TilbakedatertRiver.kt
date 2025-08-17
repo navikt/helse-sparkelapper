@@ -32,6 +32,7 @@ internal class TilbakedatertRiver(
                 it.requireKey("sykmelding.pasient.fnr")
                 it.requireArray("sykmelding.aktivitet") {
                     requireKey("fom", "tom")
+                    require("fom") { node -> check(node.asLocalDate() > LocalDate.of(2024, 1, 1)) }
                 }
                 it.requireValue("validation.status", "OK")
                 it.require("validation.rules") { node ->
