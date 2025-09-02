@@ -51,11 +51,17 @@ internal class InntektsmeldingHåndertRiver(
             val hendelseId = UUID.fromString(packet["inntektsmeldingId"].asText())
 
             val callId = UUID.randomUUID().toString()
-            sikkerlogg.info("Henter dokument {}", kv("callId", callId))
+            sikkerlogg.info("Henter dokument for callId=$callId, inntektsmeldingId=$hendelseId")
             logg.info("Henter dokument for {}", kv("callId", callId))
-            val dokumentId = retryBlocking {
-                spedisjonClient.hentMelding(hendelseId, callId).getOrThrow()
-            }.eksternDokumentId
+            val dokumentId = try {
+                retryBlocking {
+                    spedisjonClient.hentMelding(hendelseId, callId).getOrThrow()
+                }.eksternDokumentId
+            } catch (e: Exception) {
+                logg.error("Feil ved henting av melding fra spedisjon")
+                sikkerlogg.error("Feil ved henting av melding fra spedisjon", e)
+                throw e
+            }
 
             val payload = packet.toInntektsmeldingHåndtertDto(dokumentId)
             arbeidsgiverProducer.send(payload)
