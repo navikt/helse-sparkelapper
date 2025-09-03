@@ -22,18 +22,25 @@ internal class InstitusjonsoppholdClient(
         fødselsnummer: String,
         behovId: String
     ): JsonNode {
-        val url = "${baseUrl}/api/v1/person/institusjonsopphold"
+        val url = "${baseUrl}/api/v1/person/institusjonsopphold/soek"
 
         val (responseCode, responseBody) = with(URI(url).toURL().openConnection() as HttpURLConnection) {
-            requestMethod = "GET"
+            doOutput = true
+            requestMethod = "POST"
             connectTimeout = 10000
             readTimeout = 10000
+
             val bearerToken = azureClient.bearerToken(scope).getOrThrow()
             setRequestProperty("Authorization", "Bearer ${bearerToken.token}")
+            setRequestProperty("Content-Type", "application/json")
             setRequestProperty("Accept", "application/json")
             setRequestProperty("Nav-Call-Id", behovId)
             System.getenv("NAIS_APP_NAME")?.also { setRequestProperty("Nav-Consumer-Id", it) }
-            setRequestProperty("Nav-Personident", fødselsnummer)
+
+            outputStream.use { os ->
+                val input = """{"personident":"$fødselsnummer"}""".toByteArray()
+                os.write(input, 0, input.size)
+            }
 
             val stream: InputStream? = if (responseCode < 300) this.inputStream else this.errorStream
             responseCode to stream?.bufferedReader()?.readText()

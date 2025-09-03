@@ -133,10 +133,10 @@ internal class InstitusjonsoppholdløserTest {
                 )
         )
         stubFor(
-            get(urlPathEqualTo("/api/v1/person/institusjonsopphold"))
+            post(urlPathEqualTo("/api/v1/person/institusjonsopphold/soek"))
                 .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Nav-Personident", equalTo("fnr"))
                 .withHeader("Nav-Call-Id", AnythingPattern())
+                .withRequestBody(equalToJson("""{"personident":"fnr"}"""))
                 .willReturn(
                     aResponse()
                         .withStatus(200)
