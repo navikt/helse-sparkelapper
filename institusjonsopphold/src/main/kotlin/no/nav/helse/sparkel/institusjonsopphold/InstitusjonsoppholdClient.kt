@@ -35,6 +35,7 @@ internal class InstitusjonsoppholdClient(
             setRequestProperty("Content-Type", "application/json")
             setRequestProperty("Accept", "application/json")
             setRequestProperty("Nav-Call-Id", behovId)
+            setRequestProperty("Nav-Formaal", "Sykepenger vedtak/kontroll ftrl kap. 8 §21-4")
             System.getenv("NAIS_APP_NAME")?.also { setRequestProperty("Nav-Consumer-Id", it) }
 
             outputStream.use { os ->
