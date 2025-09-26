@@ -1,6 +1,8 @@
 package no.nav.helse.sparkel.personinfo.leesah
 
 import java.util.Base64
+import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseAvroDeserializer.Skjema.Companion.V4
+import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseAvroDeserializer.Skjema.Companion.V7
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericDatumReader
 import org.apache.avro.generic.GenericRecord
@@ -13,20 +15,19 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
     private val decoderFactory: DecoderFactory = DecoderFactory.get()
 
     override fun deserialize(topic: String, data: ByteArray): GenericRecord {
-        try {
-            return deserialize(data, v4Skjema)
-        } catch (exception: Exception) {
-            sikkerlogg.feilVedDeserialisering(data, exception, "V4")
+        tryDeserialize(data, V4).run {
+            if (isSuccess) return getOrThrow()
         }
 
-        // Prøv forrige versjon
-        try {
-            return deserialize(data, v7Skjema)
-        } catch (exception: Exception) {
-            sikkerlogg.feilVedDeserialisering(data, exception, "V7")
-            throw exception
+        tryDeserialize(data, V7).run {
+            if (isSuccess) return getOrThrow()
+            throw exceptionOrNull()!!
         }
     }
+
+    private fun tryDeserialize(data: ByteArray, skjema: Skjema): Result<GenericRecord> =
+        runCatching { deserialize(data, skjema.skjema()) }
+            .onFailure { sikkerlogg.feilVedDeserialisering(data, it, skjema.versjon) }
 
     private fun deserialize(data: ByteArray, schema: Schema) : GenericRecord {
         val reader = GenericDatumReader<GenericRecord>(schema)
@@ -46,8 +47,16 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
             warn("Klarte ikke å deserialisere Personhendelse-melding fra Leesah med $versjon. Base64='${Base64.getEncoder().encodeToString(data)}'", throwable)
         private fun String.lastSkjema() =
             Schema.Parser().parse(PersonhendelseAvroDeserializer::class.java.getResourceAsStream("/pdl/Personhendelse_$this.avsc"))
-        private val v4Skjema = "V4".lastSkjema()
-        private val v7Skjema = "V7".lastSkjema()
-        val sisteSkjema: Schema = v7Skjema
+
+        val sisteSkjema: Schema = V7.skjema()
+    }
+
+    class Skjema private constructor(val versjon: String) {
+        companion object {
+            val V4 = Skjema("V4")
+            val V7 = Skjema("V7")
+        }
+
+        fun skjema(): Schema = versjon.lastSkjema()
     }
 }
