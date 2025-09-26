@@ -21,14 +21,35 @@ internal object PersonhendelseFactory {
         hendelseId: UUID = UUID.randomUUID()
     ): GenericRecord = GenericData.Record(sisteSkjema).apply {
         val addressebeskyttelseSchema = sisteSkjema.getField("adressebeskyttelse").schema().types.last()
+        val deltBostedSchema = sisteSkjema.getField("deltBosted").schema().types.last()
         put("opplysningstype", "ADRESSEBESKYTTELSE_V1")
         put("hendelseId", "$hendelseId")
         put("personidenter", listOf(fodselsnummer))
         put("master", "skatt")
         put("opprettet", 420L)
+        put("falskIdentitet", null)
+        put("deltBosted", GenericData.Record(deltBostedSchema).apply { put("startdatoForKontrakt", 1234) })
         put("endringstype", GenericData.EnumSymbol(sisteSkjema, "KORRIGERT"))
         put("adressebeskyttelse", GenericData.Record(addressebeskyttelseSchema).apply {
             put("gradering", GenericData.EnumSymbol(addressebeskyttelseSchema, gradering.name))
+        })
+    }
+
+    internal fun navn(
+        vararg fodselsnumre: String,
+        hendelseId: UUID,
+    ): GenericRecord = GenericData.Record(sisteSkjema).apply {
+        val navnSkjema = sisteSkjema.getField("navn").schema().types.last()
+        put("opplysningstype", "NAVN_V1")
+        put("hendelseId", "$hendelseId")
+        put("personidenter", listOf(*fodselsnumre))
+        put("master", "FREG")
+        put("opprettet", 1758870774932)
+        put("endringstype", GenericData.EnumSymbol(sisteSkjema, "OPPRETTET"))
+        put("navn", GenericData.Record(navnSkjema).apply {
+            put("fornavn", "SKY")
+            put("etternavn", "SKJORTE")
+            put("gyldigFraOgMed", 20216)
         })
     }
 
