@@ -14,16 +14,16 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
 
     override fun deserialize(topic: String, data: ByteArray): GenericRecord {
         try {
-            return deserialize(data, v7Skjema)
+            return deserialize(data, v4Skjema)
         } catch (exception: Exception) {
-            sikkerlogg.feilVedDeserialisering(data, exception, "V7")
+            sikkerlogg.feilVedDeserialisering(data, exception, "V4")
         }
 
         // Prøv forrige versjon
         try {
-            return deserialize(data, v4Skjema)
+            return deserialize(data, v7Skjema)
         } catch (exception: Exception) {
-            sikkerlogg.feilVedDeserialisering(data, exception, "V4")
+            sikkerlogg.feilVedDeserialisering(data, exception, "V7")
             throw exception
         }
     }
