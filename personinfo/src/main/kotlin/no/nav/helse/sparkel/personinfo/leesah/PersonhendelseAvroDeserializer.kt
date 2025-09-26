@@ -46,7 +46,6 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
             warn("Klarte ikke å deserialisere Personhendelse-melding fra Leesah med $versjon. Base64='${Base64.getEncoder().encodeToString(data)}'", throwable)
         private fun String.lastSkjema() =
             Schema.Parser().parse(PersonhendelseAvroDeserializer::class.java.getResourceAsStream("/pdl/Personhendelse_$this.avsc"))
-        private val v3Skjema = "V3".lastSkjema()
         private val v4Skjema = "V4".lastSkjema()
         private val v7Skjema = "V7".lastSkjema()
         val sisteSkjema: Schema = v7Skjema
