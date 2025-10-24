@@ -31,7 +31,6 @@ internal class Forsikringsløser(
 
     override fun onSevere(error: MessageProblems.MessageException, context: MessageContext) {
         sikkerlogg.info("Du er i Severe")
-        print("HEI, Severe")
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
