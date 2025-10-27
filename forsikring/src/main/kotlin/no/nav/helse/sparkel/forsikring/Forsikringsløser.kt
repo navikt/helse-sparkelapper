@@ -7,6 +7,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
+import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.LoggerFactory
 
 internal class Forsikringsløser(
@@ -23,9 +24,7 @@ internal class Forsikringsløser(
         River(rapidsConnection).apply {
             precondition { it.requireAll("@behov", listOf(behov)) }
             precondition { it.forbid("@løsning") }
-            validate { it.requireKey("@id") }
-            validate { it.requireKey("@opprettet") }
-            validate { it.requireKey("fødselsnummer") }
+            validate { it.requireKey("@id", "@opprettet", "fødselsnummer", "skjæringstidspunkt") }
         }.register(this)
     }
 
@@ -34,10 +33,22 @@ internal class Forsikringsløser(
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
-        sikkerlogg.error("forstod ikke $behov med melding\n${problems.toExtendedReport()}")
+        sikkerlogg.error("Forstod ikke $behov med melding\n${problems.toExtendedReport()}")
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        sikkerlogg.info("Fikk behov om forsikring. Det er dumt, for det vet jeg ikke hvordan jeg skal løse enda.")
+        sikkerlogg.info("Fikk behov om forsikring. Det er dumt, for det vet jeg ikke hvordan jeg skal løse enda. Sender tilbake tom løsning for nå.")
+
+        packet["@løsning"] = mapOf(
+            behov to emptyList<Any>()
+        )
+
+        context.publish(packet.toJson().also { json ->
+            sikkerlogg.info(
+                "sender svar om forsikring {}:\n\t{}",
+                keyValue("id", packet["@id"].asText()),
+                json
+            )
+        })
     }
 }

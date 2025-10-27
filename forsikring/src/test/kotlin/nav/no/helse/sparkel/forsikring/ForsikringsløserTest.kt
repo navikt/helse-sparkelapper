@@ -37,12 +37,14 @@ internal class ForsikringsløserTest {
                 "@behov": ["Forsikring"],
                 "@id": "12345",
                 "@opprettet": "2024-06-01T12:00:00",
-                "fødselsnummer": "01010112345"
+                "fødselsnummer": "01010112345",
+                "skjæringstidspunkt": "2024-05-01"
             }
             """.trimIndent()
         )
 
-        // Får ikke noe løsning tilbake siden løseren ikke er implementert
-        assertEquals(0, rapid.inspektør.size)
+        assertEquals(1, rapid.inspektør.size)
+        val melding = sisteSendtMelding
+        assertEquals(emptyList<Any>(), melding["@løsning"]?.get("Forsikring")?.toList())
     }
 }
