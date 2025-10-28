@@ -1,7 +1,11 @@
 package no.nav.helse.sparkel.forsikring
 
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
+import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidApplication
+import no.nav.helse.sparkel.forsikring.DatabaseConfig.Companion.databaseConfig
 
 fun main() {
     val app = createApp(System.getenv())
@@ -9,13 +13,11 @@ fun main() {
 }
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
-    //val databaseConfig = env.databaseConfig()
+    val databaseConfig = env.databaseConfig()
 
     return RapidApplication.create(env).apply {
 
-        // bruker lazy slik at vi ikke kobler oss til datasourcen før den brukes
-        // Kommentert ut til vi faktisk har det vi trenger for å koble oss til databasen
-        /*val dataSource by lazy {
+        val dataSource by lazy {
             HikariDataSource(HikariConfig().apply {
                 jdbcUrl = databaseConfig.jdbcUrl
                 username = databaseConfig.username
@@ -25,9 +27,11 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
                 maxLifetime = Duration.ofMinutes(30).toMillis()
                 initializationFailTimeout = Duration.ofMinutes(1).toMillis()
             })
-        }*/
+        }
 
-        Forsikringsløser(this)
+        val forsikringDao = ForsikringDao { dataSource }
+
+        Forsikringsløser(this, forsikringDao)
     }
 }
 
