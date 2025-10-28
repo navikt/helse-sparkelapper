@@ -6,7 +6,6 @@ import com.zaxxer.hikari.HikariDataSource
 import java.time.Duration
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.sparkel.forsikring.DatabaseConfig.Companion.databaseConfig
-import org.slf4j.LoggerFactory
 
 fun main() {
     val app = createApp(System.getenv())
@@ -15,9 +14,6 @@ fun main() {
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
     val databaseConfig = env.databaseConfig()
-
-    val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-    sikkerlogg.info("Database url: ${databaseConfig.jdbcUrl}")
 
     return RapidApplication.create(env).apply {
 
