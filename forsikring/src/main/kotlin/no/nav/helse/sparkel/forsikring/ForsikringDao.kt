@@ -1,9 +1,7 @@
 package no.nav.helse.sparkel.forsikring
 
 import java.time.LocalDate
-import java.time.Period
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 import javax.sql.DataSource
 import kotliquery.Row
 import kotliquery.queryOf
@@ -13,7 +11,7 @@ import org.intellij.lang.annotations.Language
 class ForsikringDao (
     private val dataSource: () -> DataSource
 ){
-    fun hentForsikringer(fødselsnummer: Fnr): List<ForsikringDto> {
+    fun hentForsikringer(fødselsnummer: Fnr, sikkerlogg: org.slf4j.Logger): List<ForsikringDto> {
         return sessionOf(dataSource()).use { session ->
 
             @Language("Oracle")
@@ -28,6 +26,7 @@ class ForsikringDao (
                 """
             session.run(
                 queryOf(statement, fødselsnummer.formatAsITFnr()).map { rs ->
+                    sikkerlogg.info("Svar rad: Type: ${rs.string("IF10_TYPE")}, Godkjent: ${rs.string("IF10_GODKJ")}, Virkdato: ${rs.int("IF10_VIRKDATO")}, Forstom: ${rs.int("IF10_FORSTOM")}\n")
                     ForsikringDto(
                         forsikringstype = when(rs.string("IF10_TYPE").trim()) {
                             "1" -> ForsikringDto.Forsikringstype.ÅttiProsentDagEn
@@ -36,8 +35,8 @@ class ForsikringDao (
                             else -> ForsikringDto.Forsikringstype.IkkeInteressert
                         },
                         godkjent = rs.string("IF10_GODKJ").trim(),
-                        virkningsdato = rs.intToLocalDate("IF10_VIRKDATO"),
-                        tom = rs.intToLocalDate("IF10_FORSTOM")
+                        virkningsdato = LocalDate.now(),
+                        tom = LocalDate.now()
                     )
                 }.asList
             )

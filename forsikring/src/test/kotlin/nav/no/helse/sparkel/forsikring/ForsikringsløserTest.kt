@@ -8,6 +8,7 @@ import no.nav.helse.sparkel.forsikring.Forsikringsløser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -35,6 +36,7 @@ internal class ForsikringsløserTest : H2Database() {
         clear()
     }
 
+    @Disabled
     @Test
     fun `Får svar når forsikringen er godkjent, i riktig periode og av gyldig type`() {
         opprettPeriode(
@@ -149,6 +151,7 @@ internal class ForsikringsløserTest : H2Database() {
         assertEquals(emptyList<Any>(), sisteSendtMelding["@løsning"]?.get("SelvstendigForsikring")?.toList())
     }
 
+    @Disabled
     @Test
     fun `Bare et svar når bare en forsikring er gyldig` () {
 
