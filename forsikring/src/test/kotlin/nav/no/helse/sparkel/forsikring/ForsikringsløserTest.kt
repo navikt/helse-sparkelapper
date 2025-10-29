@@ -8,7 +8,6 @@ import no.nav.helse.sparkel.forsikring.Forsikringsløser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -36,7 +35,6 @@ internal class ForsikringsløserTest : H2Database() {
         clear()
     }
 
-    @Disabled
     @Test
     fun `Får svar når forsikringen er godkjent, i riktig periode og av gyldig type`() {
         opprettPeriode(
@@ -65,7 +63,7 @@ internal class ForsikringsløserTest : H2Database() {
         val melding = sisteSendtMelding
 
         assertEquals(1, melding["@løsning"]?.get("SelvstendigForsikring")?.toList()?.size)
-        assertEquals("ÅttiProsentDagEn", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("forsikringstype")?.asText())
+        assertEquals("ÅttiProsentFraDagEn", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("forsikringstype")?.asText())
         assertEquals("2024-01-01", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("startdato")?.asText())
         assertEquals("2024-12-31", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("sluttdato")?.asText())
     }
@@ -102,10 +100,10 @@ internal class ForsikringsløserTest : H2Database() {
 
         opprettPeriode(
             fnr = Fnr("01010112345"),
-            virkningsdato = LocalDate.of(2024, 1, 1),
+            virkningsdato = null,
             tom = LocalDate.of(2024, 12, 31),
             godkjent = "N",
-            forsikringstype = "2"
+            forsikringstype = " "
         )
 
         rapid.sendTestMessage(
@@ -151,7 +149,6 @@ internal class ForsikringsløserTest : H2Database() {
         assertEquals(emptyList<Any>(), sisteSendtMelding["@løsning"]?.get("SelvstendigForsikring")?.toList())
     }
 
-    @Disabled
     @Test
     fun `Bare et svar når bare en forsikring er gyldig` () {
 
@@ -187,8 +184,38 @@ internal class ForsikringsløserTest : H2Database() {
         val melding = sisteSendtMelding
 
         assertEquals(1, melding["@løsning"]?.get("SelvstendigForsikring")?.toList()?.size)
-        assertEquals("HundreProsentDagSytten", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("forsikringstype")?.asText())
+        assertEquals("HundreProsentFraDagSytten", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("forsikringstype")?.asText())
         assertEquals("2024-01-01", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("startdato")?.asText())
         assertEquals("2024-12-31", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("sluttdato")?.asText())
+    }
+
+    @Test
+    fun `virkdato er 0, siden den er løpende` () {
+        opprettPeriode(
+            fnr = Fnr("01010112345"),
+            virkningsdato = LocalDate.of(2025, 1, 1),
+            tom = null,
+            godkjent = "J",
+            forsikringstype = "2"
+        )
+
+        rapid.sendTestMessage(
+            """
+             {
+                "@behov": ["SelvstendigForsikring"],
+                "@id": "12345",
+                "@opprettet": "2024-06-01T12:00:00",
+                "fødselsnummer": "01010112345",
+                "SelvstendigForsikring": {
+                    "skjæringstidspunkt": "2025-05-01"
+                }
+            }
+            """.trimIndent()
+        )
+        val melding = sisteSendtMelding
+        assertEquals(1, melding["@løsning"]?.get("SelvstendigForsikring")?.toList()?.size)
+        assertEquals("HundreProsentFraDagSytten", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("forsikringstype")?.asText())
+        assertEquals("2025-01-01", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("startdato")?.asText())
+        assertEquals("null", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("sluttdato")?.asText())
     }
 }

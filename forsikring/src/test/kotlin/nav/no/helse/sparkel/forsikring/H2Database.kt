@@ -47,8 +47,8 @@ internal abstract class H2Database {
 
     protected fun opprettPeriode(
         fnr: Fnr = Companion.fnr,
-        virkningsdato: LocalDate,
-        tom: LocalDate,
+        virkningsdato: LocalDate?,
+        tom: LocalDate?,
         godkjent: String,
         forsikringstype: String,
 
@@ -67,8 +67,8 @@ internal abstract class H2Database {
 
     private fun insertPeriode(
         fnr: Fnr,
-        virkningsdato: LocalDate,
-        tom: LocalDate,
+        virkningsdato: LocalDate?,
+        tom: LocalDate?,
         godkjent: String,
         forsikringstype: String
 

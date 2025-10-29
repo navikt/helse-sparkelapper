@@ -39,8 +39,7 @@ internal class Forsikringsløser(
         sikkerlogg.info("Fikk behov om forsikring: ${packet.toJson()}")
 
         val forsikringer = forsikringDao.hentForsikringer(
-            fødselsnummer = Fnr(packet["fødselsnummer"].asText()),
-            sikkerlogg = sikkerlogg
+            fødselsnummer = Fnr(packet["fødselsnummer"].asText())
         )
 
         // Sjekk at forsikring er aktiv, og overlapper skjæringstidspunktet
@@ -53,8 +52,8 @@ internal class Forsikringsløser(
             behov to aktuelleForsikringer.map {
                 mapOf(
                     "forsikringstype" to it.forsikringstype.name,
-                    "startdato" to it.virkningsdato.toString(),
-                    "sluttdato" to it.tom.toString()
+                    "startdato" to it.virkningsdato,
+                    "sluttdato" to it.tom
                 )
             }
         )
