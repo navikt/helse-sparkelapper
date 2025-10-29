@@ -6,9 +6,9 @@ limits:
   cpu: 2000m
 mountPaths:
   - mountPath: /var/run/secrets/nais.io/oracle/creds
-    kvPath: oracle/data/dev/creds/sp_infotrygd_p-user
+    kvPath: oracle/data/prod/creds/sp_infotrygd_p-user
   - mountPath: /var/run/secrets/nais.io/oracle/config
-    kvPath: oracle/data/dev/config/infotrygd_spp
+    kvPath: oracle/data/prod/config/infotrygd_spp
 env:
   - name: DATABASE_SCHEMA
     value: INFOTRYGD_SPP
