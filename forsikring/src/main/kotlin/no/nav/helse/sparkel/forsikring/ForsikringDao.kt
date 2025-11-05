@@ -29,7 +29,10 @@ class ForsikringDao (
                         forsikringstype = when(rs.string("IF10_TYPE").trim()) {
                             "1" -> ForsikringDto.Forsikringstype.ÅttiProsentFraDagEn
                             "2" -> ForsikringDto.Forsikringstype.HundreProsentFraDagSytten
-                            "3" -> ForsikringDto.Forsikringstype.HundreProsentFraDagEn
+
+                            "3",
+                            "4" -> ForsikringDto.Forsikringstype.HundreProsentFraDagEn
+
                             else -> ForsikringDto.Forsikringstype.IkkeInteressert
                         },
                         virkningsdato = rs.intToLocalDate("IF10_VIRKDATO")!!,
