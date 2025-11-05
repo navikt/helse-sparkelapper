@@ -130,7 +130,7 @@ internal class ForsikringsløserTest : H2Database() {
             virkningsdato = LocalDate.of(2024, 1, 1),
             tom = LocalDate.of(2024, 12, 31),
             godkjent = "J",
-            forsikringstype = "4"
+            forsikringstype = "5"
         )
 
         rapid.sendTestMessage(
@@ -165,7 +165,7 @@ internal class ForsikringsløserTest : H2Database() {
             virkningsdato = LocalDate.of(2024, 1, 1),
             tom = LocalDate.of(2024, 12, 31),
             godkjent = "J",
-            forsikringstype = "4"
+            forsikringstype = "5"
         )
 
         rapid.sendTestMessage(
