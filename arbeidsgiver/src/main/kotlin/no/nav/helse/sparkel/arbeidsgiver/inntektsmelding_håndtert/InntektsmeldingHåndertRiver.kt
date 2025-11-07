@@ -58,9 +58,15 @@ internal class InntektsmeldingHåndertRiver(
                     spedisjonClient.hentMelding(hendelseId, callId).getOrThrow()
                 }.eksternDokumentId
             } catch (e: Exception) {
-                logg.error("Feil ved henting av melding fra spedisjon")
-                sikkerlogg.error("Feil ved henting av melding fra spedisjon", e)
-                throw e
+                if (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp") {
+                    logg.warn("Feil ved henting av melding fra spedisjon. Er i dev, så vi dropper eventet")
+                    sikkerlogg.warn("Feil ved henting av melding fra spedisjon. Er i dev, så vi dropper eventet", e)
+                    return
+                } else {
+                    logg.error("Feil ved henting av melding fra spedisjon")
+                    sikkerlogg.error("Feil ved henting av melding fra spedisjon", e)
+                    throw e
+                }
             }
 
             val payload = packet.toInntektsmeldingHåndtertDto(dokumentId)
