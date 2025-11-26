@@ -42,7 +42,8 @@ internal class ForsikringsløserTest : H2Database() {
             virkningsdato = LocalDate.of(2024, 1, 1),
             tom = LocalDate.of(2024, 12, 31),
             godkjent = "J",
-            forsikringstype = "1"
+            forsikringstype = "1",
+            premiegrunnlag = 816000
         )
 
         rapid.sendTestMessage(
@@ -76,7 +77,8 @@ internal class ForsikringsløserTest : H2Database() {
             virkningsdato = LocalDate.of(2023, 1, 1),
             tom = LocalDate.of(2023, 12, 31),
             godkjent = "J",
-            forsikringstype = "2"
+            forsikringstype = "2",
+            premiegrunnlag = 816000
         )
 
         rapid.sendTestMessage(
@@ -103,7 +105,8 @@ internal class ForsikringsløserTest : H2Database() {
             virkningsdato = null,
             tom = LocalDate.of(2024, 12, 31),
             godkjent = "N",
-            forsikringstype = " "
+            forsikringstype = " ",
+            premiegrunnlag = 0
         )
 
         rapid.sendTestMessage(
@@ -130,7 +133,8 @@ internal class ForsikringsløserTest : H2Database() {
             virkningsdato = LocalDate.of(2024, 1, 1),
             tom = LocalDate.of(2024, 12, 31),
             godkjent = "J",
-            forsikringstype = "5"
+            forsikringstype = "5",
+            premiegrunnlag = 816000
         )
 
         rapid.sendTestMessage(
@@ -157,7 +161,8 @@ internal class ForsikringsløserTest : H2Database() {
             virkningsdato = LocalDate.of(2024, 1, 1),
             tom = LocalDate.of(2024, 12, 31),
             godkjent = "J",
-            forsikringstype = "2"
+            forsikringstype = "2",
+            premiegrunnlag = 816000
         )
 
         opprettPeriode(
@@ -165,7 +170,8 @@ internal class ForsikringsløserTest : H2Database() {
             virkningsdato = LocalDate.of(2024, 1, 1),
             tom = LocalDate.of(2024, 12, 31),
             godkjent = "J",
-            forsikringstype = "5"
+            forsikringstype = "5",
+            premiegrunnlag = 816000
         )
 
         rapid.sendTestMessage(
@@ -196,7 +202,8 @@ internal class ForsikringsløserTest : H2Database() {
             virkningsdato = LocalDate.of(2025, 1, 1),
             tom = null,
             godkjent = "J",
-            forsikringstype = "2"
+            forsikringstype = "2",
+            premiegrunnlag = 816000
         )
 
         rapid.sendTestMessage(

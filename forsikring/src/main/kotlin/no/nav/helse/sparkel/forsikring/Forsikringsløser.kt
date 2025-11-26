@@ -52,6 +52,7 @@ internal class Forsikringsløser(
             behov to aktuelleForsikringer.map {
                 mapOf(
                     "forsikringstype" to it.forsikringstype.name,
+                    "premiegrunnlag" to it.premiegrunnlag,
                     "startdato" to it.virkningsdato,
                     "sluttdato" to it.tom
                 )

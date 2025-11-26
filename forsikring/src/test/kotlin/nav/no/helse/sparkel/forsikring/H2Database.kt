@@ -51,14 +51,15 @@ internal abstract class H2Database {
         tom: LocalDate?,
         godkjent: String,
         forsikringstype: String,
-
+        premiegrunnlag: Int
     ) {
         insertPeriode(
             fnr = fnr,
             virkningsdato = virkningsdato,
             tom = tom,
             godkjent = godkjent,
-            forsikringstype = forsikringstype
+            forsikringstype = forsikringstype,
+            premiegrunnlag = premiegrunnlag
         )
     }
 
@@ -70,7 +71,8 @@ internal abstract class H2Database {
         virkningsdato: LocalDate?,
         tom: LocalDate?,
         godkjent: String,
-        forsikringstype: String
+        forsikringstype: String,
+        premiegrunnlag: Int
 
     ) {
         sessionOf(dataSource).use { session ->
@@ -82,8 +84,9 @@ internal abstract class H2Database {
                     IF10_GODKJ,
                     IF10_TYPE,
                     IF10_VIRKDATO,
-                    IF10_FORSTOM)
-VALUES (:kode, :fnr, :godkjent, :type, :fom, :tom);
+                    IF10_FORSTOM,
+                    IF10_PREMGRL)
+VALUES (:kode, :fnr, :godkjent, :type, :fom, :tom, :premiegrunnlag);
             """
             session.run(
                 queryOf(
@@ -94,7 +97,8 @@ VALUES (:kode, :fnr, :godkjent, :type, :fom, :tom);
                         "tom" to tom.format(),
                         "godkjent" to godkjent,
                         "type" to forsikringstype,
-                        "kode" to "1"
+                        "kode" to "1",
+                        "premiegrunnlag" to premiegrunnlag
                     )
                 ).asUpdate
             )

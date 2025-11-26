@@ -19,7 +19,8 @@ class ForsikringDao (
                     select
                         IF10_VIRKDATO,
                         IF10_TYPE,
-                        IF10_FORSTOM
+                        IF10_FORSTOM,
+                        IF10_PREMGRL
                     FROM IF_VEDFRIVT_10
                     WHERE IF01_KODE = '1' AND IF01_AGNR_FNR = ? AND IF10_GODKJ = 'J'
                 """
@@ -35,6 +36,7 @@ class ForsikringDao (
 
                             else -> ForsikringDto.Forsikringstype.IkkeInteressert
                         },
+                        premiegrunnlag = rs.int("IF10_PREMGRL"),
                         virkningsdato = rs.intToLocalDate("IF10_VIRKDATO")!!,
                         tom = rs.intToLocalDate("IF10_FORSTOM")
                     )
@@ -50,6 +52,7 @@ class ForsikringDao (
 
     data class ForsikringDto (
         val forsikringstype: Forsikringstype,
+        val premiegrunnlag: Int,
         val virkningsdato: LocalDate,
         val tom: LocalDate?
     ) {
