@@ -83,16 +83,6 @@ internal class InntekterTest {
     }
 
     @Test
-    fun `Inntekter for sykepengegrunnlag for arbeidsgiver`() {
-        val start = YearMonth.of(2020, 2)
-        val slutt = YearMonth.of(2021, 1)
-        val orgnr = "a3"
-        testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForSykepengegrunnlagForArbeidsgiver, orgnummer = orgnr))
-        assertEquals(1, testRapid.inspektør.size)
-        assertLøsning(Inntekter.Type.InntekterForSykepengegrunnlagForArbeidsgiver, YearMonth.of(2019, 1), YearMonth.of(2019, 2), YearMonth.of(2019, 3))
-    }
-
-    @Test
     fun `Inntekter for sammenligningsgrunnlag`() {
         val start = YearMonth.of(2020, 2)
         val slutt = YearMonth.of(2021, 1)
@@ -136,7 +126,7 @@ internal class InntekterTest {
     }
 
     @ParameterizedTest
-    @EnumSource(Inntekter.Type::class, names = ["InntekterForSykepengegrunnlagForArbeidsgiver"], mode = EnumSource.Mode.EXCLUDE)
+    @EnumSource(Inntekter.Type::class)
     fun `ignorerer for gamle behov`() {
         val behov = objectMapper.readTree(behov(
             YearMonth.of(2020, 2),

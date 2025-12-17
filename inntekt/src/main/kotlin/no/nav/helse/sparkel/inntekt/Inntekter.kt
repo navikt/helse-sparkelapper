@@ -19,7 +19,6 @@ import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSammenligningsgrunnlag
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlag
-import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlagForArbeidsgiver
 import org.slf4j.LoggerFactory
 import java.time.YearMonth
 import java.util.UUID
@@ -40,14 +39,12 @@ class Inntekter(
 
     init {
         Sykepengegrunnlag(rapidsConnection)
-        SykepengegrunnlagForArbeidsgiver(rapidsConnection)
         Sammenligningsgrunnlag(rapidsConnection)
         Opptjeningsvurdering(rapidsConnection)
     }
 
     enum class Type(val ainntektfilter: String) {
         InntekterForSykepengegrunnlag("8-28"),
-        InntekterForSykepengegrunnlagForArbeidsgiver("8-28"),
         InntekterForSammenligningsgrunnlag("8-30"),
         InntekterForOpptjeningsvurdering("8-30")
     }
@@ -93,30 +90,6 @@ class Inntekter(
 
         override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
             this@Inntekter.onSykepengegrunnlagPacket(packet, context)
-        }
-
-        override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
-            log.error(problems.toString())
-        }
-    }
-
-    inner class SykepengegrunnlagForArbeidsgiver(rapidsConnection: RapidsConnection) :
-        River.PacketListener {
-
-        init {
-            River(rapidsConnection).apply {
-                precondition { it.requireAll("@behov", listOf(InntekterForSykepengegrunnlagForArbeidsgiver.name)) }
-                precondition { it.forbid("@løsning") }
-                validate { it.requireKey("@id", "fødselsnummer") }
-                validate { it.requireKey("vedtaksperiodeId") }
-                validate { it.requireKey("${InntekterForSykepengegrunnlagForArbeidsgiver.name}.organisasjonsnummer") }
-                validate { it.require("${InntekterForSykepengegrunnlagForArbeidsgiver.name}.beregningStart", JsonNode::asYearMonth) }
-                validate { it.require("${InntekterForSykepengegrunnlagForArbeidsgiver.name}.beregningSlutt", JsonNode::asYearMonth) }
-            }.register(this)
-        }
-
-        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-            this@Inntekter.onSykepengegrunnlagForArbeidsgiverPacket(packet, context)
         }
 
         override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
@@ -182,23 +155,6 @@ class Inntekter(
         }
     }
 
-    private fun onSykepengegrunnlagForArbeidsgiverPacket(
-        packet: JsonMessage,
-        context: MessageContext
-    ) {
-        withMDC(
-            mapOf(
-                "behovId" to packet["@id"].asText(),
-                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asText()
-            )
-        ) {
-            val orgnr = packet["${InntekterForSykepengegrunnlagForArbeidsgiver.name}.organisasjonsnummer"].asText()
-            val beregningStart = packet["${InntekterForSykepengegrunnlagForArbeidsgiver.name}.beregningStart"].asYearMonth()
-            val beregningSlutt = packet["${InntekterForSykepengegrunnlagForArbeidsgiver.name}.beregningSlutt"].asYearMonth()
-
-            hentInntekter(packet, InntekterForSykepengegrunnlagForArbeidsgiver, beregningStart, beregningSlutt, context, orgnr)
-        }
-    }
     private fun onOpptjeningsvurderingPacket(
         packet: JsonMessage,
         context: MessageContext
