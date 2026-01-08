@@ -1,0 +1,10 @@
+kafkaPool: nav-dev
+replicas:
+  min: 1
+  max: 1
+limits:
+  cpu: 2000m
+azure:
+  enabled: true
+  tenant: trygdeetaten.no
+
