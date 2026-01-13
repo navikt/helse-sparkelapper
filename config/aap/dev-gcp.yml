@@ -18,4 +18,4 @@ env:
   - name: AAP_API_BASE_URL
     value: https://aap-api.intern.dev.nav.no
   - name: ACCESS_TOKEN_SCOPE
-    value: api://dev-gcp.aap.aap-api/.default
+    value: api://dev-gcp.aap.api-intern/.default
