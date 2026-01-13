@@ -16,6 +16,6 @@ accessPolicy:
         cluster: dev-gcp
 env:
   - name: AAP_API_BASE_URL
-    value: http://api-intern
+    value: http://api-intern.aap
   - name: ACCESS_TOKEN_SCOPE
     value: api://dev-gcp.aap.api-intern/.default
