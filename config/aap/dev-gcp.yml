@@ -11,7 +11,7 @@ azure:
 accessPolicy:
   outbound:
     rules:
-      - application: aap-api
+      - application: api-intern
         namespace: aap
         cluster: dev-gcp
 env:
