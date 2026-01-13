@@ -72,16 +72,23 @@ internal class AapRiver(
 
         json.fold(
             onSuccess = { aapResponse: AapClient.AapResponse ->
-                aapResponse.vedtak.map { aapRettighet ->
-                    packet["@løsning"] = mapOf("aapRettighetsperioder" to aapRettighet.periode)
-                    context.publish(packet.toJson())
-                    log.info("Besvarte behov {}", behovId)
-                    sikkerlogg.info(
-                        "Besvarte behov {}:\n{}",
-                        kv("id", behovId),
-                        packet.toJson()
-                    )
-                }
+                packet["@løsning"] = mapOf(
+                    behov to mapOf(
+                        "vedtaksperioder" to
+                            aapResponse.vedtak.map { aapRettighet ->
+                                mapOf(
+                                    "fom" to aapRettighet.periode.fraOgMedDato,
+                                    "tom" to aapRettighet.periode.tilOgMedDato
+                                )
+                            })
+                )
+                context.publish(packet.toJson())
+                log.info("Besvarte behov {}", behovId)
+                sikkerlogg.info(
+                    "Besvarte behov {}:\n{}",
+                    kv("id", behovId),
+                    packet.toJson()
+                )
             },
             onFailure = { t: Throwable ->
                 "Fikk feil ved oppslag mot representasjon".also { message ->
