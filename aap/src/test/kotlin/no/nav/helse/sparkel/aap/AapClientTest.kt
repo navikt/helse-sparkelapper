@@ -1,6 +1,7 @@
 package no.nav.helse.sparkel.aap
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.navikt.tbd_libs.azure.AzureToken
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.Result
@@ -20,15 +21,15 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.jackson.jackson
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.UUID
 
 internal class AapClientTest {
     private lateinit var wireMockServer: WireMockServer
@@ -68,13 +69,6 @@ internal class AapClientTest {
 
     @Test
     fun `skal sende riktig request til maksimumUtenUtbetaling endpoint`() {
-        val responseJson = """
-            {
-                "maksimum": 1000000,
-                "beregningsdato": "2026-01-12"
-            }
-        """
-
         stubFor(
             post(endpoint).willReturn(
                 okJson(jacksonObjectMapper().readTree(responseJson).toString())
@@ -90,7 +84,6 @@ internal class AapClientTest {
         }
 
         assertTrue(respons.isSuccess)
-        assertEquals(responseJson.replace(Regex("\\s"), ""), respons.getOrNull()?.toString())
 
         val expectedRequestBody = """
             {
@@ -108,16 +101,6 @@ internal class AapClientTest {
 
     @Test
     fun `skal parse response fra API korrekt`() {
-        val responseJson = """
-            {
-                "maksimum": 500000,
-                "beregningsdato": "2026-01-12",
-                "metadata": {
-                    "info": "test"
-                }
-            }
-        """
-
         stubFor(
             post(endpoint).willReturn(
                 okJson(jacksonObjectMapper().readTree(responseJson).toString())
@@ -130,20 +113,12 @@ internal class AapClientTest {
 
         assertTrue(respons.isSuccess)
         val result = respons.getOrNull()
-        assertEquals(500000, result?.get("maksimum")?.asInt())
-        assertEquals("2026-01-12", result?.get("beregningsdato")?.asText())
-        assertEquals("test", result?.get("metadata")?.get("info")?.asText())
+        assertEquals("2025-04-01", result?.vedtak?.first()?.periode?.fraOgMedDato)
+        assertEquals("2025-06-01", result?.vedtak?.first()?.periode?.tilOgMedDato)
     }
 
     @Test
     fun `skal håndtere retry ved feil og deretter suksess`() {
-        val responseJson = """
-            {
-                "maksimum": 750000,
-                "beregningsdato": "2026-01-12"
-            }
-        """
-
         val scenario = "Feiler først, så ok"
         stubFor(
             post(endpoint).inScenario(scenario).willReturn(
@@ -161,19 +136,11 @@ internal class AapClientTest {
         }
 
         assertTrue(respons.isSuccess)
-        assertEquals(responseJson.replace(Regex("\\s"), ""), respons.getOrNull()?.toString())
         verify(2, postRequestedFor(urlEqualTo(endpoint)))
     }
 
     @Test
     fun `skal sende med riktige headers`() {
-        val responseJson = """
-            {
-                "maksimum": 1000000,
-                "beregningsdato": "2026-01-12"
-            }
-        """
-
         stubFor(
             post(endpoint).willReturn(
                 okJson(jacksonObjectMapper().readTree(responseJson).toString())
@@ -195,13 +162,6 @@ internal class AapClientTest {
 
     @Test
     fun `skal håndtere forskjellige datoer korrekt`() {
-        val responseJson = """
-            {
-                "maksimum": 250000,
-                "beregningsdato": "2026-01-12"
-            }
-        """
-
         stubFor(
             post(endpoint).willReturn(
                 okJson(jacksonObjectMapper().readTree(responseJson).toString())
@@ -231,5 +191,36 @@ internal class AapClientTest {
                 .withRequestBody(equalToJson(expectedRequestBody))
         )
     }
+
+    @Test
+    fun parseResponse() {
+        val objectmapper = jacksonObjectMapper()
+        objectmapper.readValue<AapClient.AapResponse>(responseJson)
+    }
 }
+
+const val responseJson = """{
+            "vedtak": [{
+                        "barnMedStonad": 1,
+                        "barnetillegg": 2,
+                        "beregningsgrunnlag": 3,
+                        "dagsats": 4,
+                        "dagsatsEtterUføreReduksjon": 5,
+                        "kildesystem": "Arena",
+                        "opphorsAarsak": null,
+                        "periode": {
+                            "fraOgMedDato": "2025-04-01",
+                            "tilOgMedDato": "2025-06-01"
+                        },
+                        "rettighetsType": "Tolv",
+                        "saksnummer": "Ett nummer",
+                        "samordningsId": null,
+                        "status": "Redo for action",
+                        "vedtakId": "en uuid",
+                        "vedtaksTypeKode": null,
+                        "vedtaksTypeNavn": null,
+                        "vedtaksdato": "2025-04-01"
+            }]
+        }
+        """
 

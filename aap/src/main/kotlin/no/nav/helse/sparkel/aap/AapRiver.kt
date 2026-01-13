@@ -69,42 +69,19 @@ internal class AapRiver(
         val json = runBlocking {
             aapClient.hentMaksimumUtenUtbetaling(fødselsnummer, fom, tom, behovId)
         }
-        val aapRettigheter = json.mapCatching { maksimum ->
-            maksimum.map {
-                AapRettighet(
-                    barnMedStonad = it["barnMedStonad"].asLong(),
-                    barnetillegg = it["barnetillegg"].asLong(),
-                    beregningsgrunnlag = it["beregningsgrunnlag"].asLong(),
-                    dagsats = it["dagsats"].asLong(),
-                    dagsatsEtterUføreReduksjon = it["dagsatsEtterUføreReduksjon"].asLong(),
-                    kildesystem = it["kildesystem"].asText(),
-                    opphorsAarsak = it["opphorsAarsak"].asText(),
-                    periode = Periode(
-                        fraOgMedDato = it["periode"]["fraOgMedDato"].asText(),
-                        tilOgMedDato = it["periode"]["tilOgMedDato"].asText()
-                    ),
-                    rettighetsType = it["rettighetsType"].asText(),
-                    saksnummer = it["saksnummer"].asText(),
-                    samordningsId = it["samordningsId"].asText(),
-                    status = it["status"].asText(),
-                    vedtakId = it["vedtakId"].asText(),
-                    vedtaksTypeKode = it["vedtaksTypeKode"].asText(),
-                    vedtaksTypeNavn = it["vedtaksTypeNavn"].asText(),
-                    vedtaksdato = it["vedtaksdato"].asText()
-                )
-            }
-        }
 
-        aapRettigheter.fold(
-            onSuccess = { aapRettigheter: List<AapRettighet> ->
-                packet["@løsning"] = mapOf("aapRettighetsperioder" to aapRettigheter.map { it.periode })
-                context.publish(packet.toJson())
-                log.info("Besvarte behov {}", behovId)
-                sikkerlogg.info(
-                    "Besvarte behov {}:\n{}",
-                    kv("id", behovId),
-                    packet.toJson()
-                )
+        json.fold(
+            onSuccess = { aapResponse: AapClient.AapResponse ->
+                aapResponse.vedtak.map { aapRettighet ->
+                    packet["@løsning"] = mapOf("aapRettighetsperioder" to aapRettighet.periode)
+                    context.publish(packet.toJson())
+                    log.info("Besvarte behov {}", behovId)
+                    sikkerlogg.info(
+                        "Besvarte behov {}:\n{}",
+                        kv("id", behovId),
+                        packet.toJson()
+                    )
+                }
             },
             onFailure = { t: Throwable ->
                 "Fikk feil ved oppslag mot representasjon".also { message ->
@@ -135,28 +112,4 @@ internal class AapRiver(
         log.warn(format, *args)
         sikkerlogg.warn(format, *args)
     }
-
-    data class AapRettighet(
-        val barnMedStonad: Long,
-        val barnetillegg: Long,
-        val beregningsgrunnlag: Long,
-        val dagsats: Long,
-        val dagsatsEtterUføreReduksjon: Long,
-        val kildesystem: String,
-        val opphorsAarsak: String,
-        val periode: Periode,
-        val rettighetsType: String,
-        val saksnummer: String,
-        val samordningsId: String,
-        val status: String,
-        val vedtakId: String,
-        val vedtaksTypeKode: String,
-        val vedtaksTypeNavn: String,
-        val vedtaksdato: String,
-    )
-
-    data class Periode(
-        val fraOgMedDato: String,
-        val tilOgMedDato: String,
-    )
 }

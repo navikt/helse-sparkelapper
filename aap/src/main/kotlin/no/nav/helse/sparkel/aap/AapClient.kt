@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.aap
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
@@ -36,7 +35,7 @@ class AapClient(
     private val httpClient: HttpClient,
     private val scope: String,
 ) {
-    suspend fun hentMaksimumUtenUtbetaling(personidentifikator: String, fom: LocalDate, tom: LocalDate, behovId: String): Result<JsonNode> {
+    suspend fun hentMaksimumUtenUtbetaling(personidentifikator: String, fom: LocalDate, tom: LocalDate, behovId: String): Result<AapResponse> {
         val callId = UUID.randomUUID()
         return retry("maksimumUtenUtbetaling", legalExceptions = retryableExceptions) {
             val response = httpClient.preparePost("$baseUrl/maksimumUtenUtbetaling") {
@@ -57,4 +56,33 @@ class AapClient(
             Result.success(response.body())
         }
     }
+
+    data class AapResponse(
+        val vedtak: List<AapRettighet>
+    )
+
+    data class AapRettighet(
+        val barnMedStonad: Long,
+        val barnetillegg: Long,
+        val beregningsgrunnlag: Long,
+        val dagsats: Long,
+        val dagsatsEtterUføreReduksjon: Long?,
+        val kildesystem: String,
+        val opphorsAarsak: String?,
+        val periode: Periode,
+        val rettighetsType: String,
+        val saksnummer: String,
+        val samordningsId: String?,
+        val status: String,
+        val vedtakId: String,
+        val vedtaksTypeKode: String?,
+        val vedtaksTypeNavn: String?,
+        val vedtaksdato: String,
+    )
+
+    data class Periode(
+        val fraOgMedDato: String?,
+        val tilOgMedDato: String?,
+    )
+
 }
