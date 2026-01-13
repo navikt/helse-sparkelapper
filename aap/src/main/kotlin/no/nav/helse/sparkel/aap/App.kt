@@ -19,10 +19,10 @@ fun main() {
         }
 
         val aapClient = AapClient(
-            baseUrl = env.getValue("AAP_API_URL"),
+            baseUrl = env.getValue("AAP_API_BASE_URL"),
             tokenClient = azureClient,
             httpClient = httpClient,
-            scope = env.getValue("AAP_API_SCOPE")
+            scope = env.getValue("ACCESS_TOKEN_SCOPE")
         )
 
         AapRiver(

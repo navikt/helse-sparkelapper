@@ -50,8 +50,7 @@ class AapClient(
                     "fraOgMedDato" to fom.toString(),
                     "tilOgMedDato" to tom.toString()
                 ))
-                header("Nav-Call-Id", "$callId")
-                header("Nav-Consumer-Id", "sparkel-aap")
+                header("nav-callid", "$callId")
                 header("x-correlation-id", behovId)
             }.execute()
 
