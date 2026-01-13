@@ -179,9 +179,9 @@ internal class AapClientTest {
                 okJson(jacksonObjectMapper().readTree(responseJson).toString())
             )
         )
-
+        val behovId = UUID.randomUUID().toString()
         runBlocking {
-            aapClient.hentMaksimumUtenUtbetaling("12345678910", LocalDate.of(1990, 1, 1), LocalDate.of(2025, 1, 1), UUID.randomUUID().toString())
+            aapClient.hentMaksimumUtenUtbetaling("12345678910", LocalDate.of(1990, 1, 1), LocalDate.of(2025, 1, 1), behovId)
         }
 
         verify(
@@ -189,7 +189,7 @@ internal class AapClientTest {
                 .withHeader("Content-Type", com.github.tomakehurst.wiremock.client.WireMock.equalTo("application/json"))
                 .withHeader("Accept", com.github.tomakehurst.wiremock.client.WireMock.equalTo("application/json"))
                 .withHeader("Authorization", com.github.tomakehurst.wiremock.client.WireMock.equalTo("Bearer test-bearer-token"))
-                .withHeader("Nav-Consumer-Id", com.github.tomakehurst.wiremock.client.WireMock.equalTo("sparkel-aap"))
+                .withHeader("x-correlation-id", com.github.tomakehurst.wiremock.client.WireMock.equalTo(behovId))
         )
     }
 
