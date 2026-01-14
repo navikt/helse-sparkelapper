@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.aap
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
@@ -57,6 +58,7 @@ class AapClient(
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class AapResponse(
         val vedtak: List<AapRettighet>
     )
