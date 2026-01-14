@@ -3,7 +3,7 @@ limits:
   cpu: 2000m
 azure:
   enabled: true
-  tenant: trygdeetaten.no
+  tenant: nav.no
 
 accessPolicy:
   outbound:
