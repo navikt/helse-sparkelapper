@@ -9,6 +9,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
+import java.time.LocalDate
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import net.logstash.logback.argument.StructuredArguments.kv
@@ -77,12 +78,15 @@ internal class AapRiver(
                         "utbetalingsperioder" to
                             aapResponse.vedtak
                                 .flatMap { aapRettighet ->
-                                    aapRettighet.utbetaling.map {
-                                        mapOf(
-                                            "fom" to it.periode.fraOgMedDato,
-                                            "tom" to it.periode.tilOgMedDato
-                                        )
-                                    }
+                                    aapRettighet.utbetaling.filter { it.periode.fraOgMedDato != null }
+                                        .map { utbetaling ->
+                                            val fom = LocalDate.parse(utbetaling.periode.fraOgMedDato!!)
+                                            val tom = utbetaling.periode.tilOgMedDato?.let { LocalDate.parse(it) }?.takeIf { it >= fom } ?: LocalDate.now()
+                                            mapOf(
+                                                "fom" to fom,
+                                                "tom" to tom
+                                            )
+                                        }
                                 })
                 )
                 context.publish(packet.toJson())
