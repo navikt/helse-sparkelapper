@@ -63,6 +63,7 @@ class AapClient(
         val vedtak: List<AapRettighet>
     )
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class AapRettighet(
         val barnMedStonad: Long,
         val barnetillegg: Long,
@@ -83,11 +84,13 @@ class AapClient(
         val vedtaksdato: String,
     )
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class Periode(
         val fraOgMedDato: String?,
         val tilOgMedDato: String?,
     )
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class Utbetaling(
         val barnetillegg: Long,
         val belop: Long,
@@ -96,6 +99,8 @@ class AapClient(
         val reduksjon: Reduksjon?,
         val utbetalingsgrad: Long?,
     )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class Reduksjon(
         val annenReduksjon: Long,
         val timerArbeidet: Long,
