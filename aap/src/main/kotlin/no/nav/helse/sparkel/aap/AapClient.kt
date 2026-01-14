@@ -35,10 +35,10 @@ class AapClient(
     private val httpClient: HttpClient,
     private val scope: String,
 ) {
-    suspend fun hentMaksimumUtenUtbetaling(personidentifikator: String, fom: LocalDate, tom: LocalDate, behovId: String): Result<AapResponse> {
+    suspend fun hentMaksimum(personidentifikator: String, fom: LocalDate, tom: LocalDate, behovId: String): Result<AapResponse> {
         val callId = UUID.randomUUID()
-        return retry("maksimumUtenUtbetaling", legalExceptions = retryableExceptions) {
-            val response = httpClient.preparePost("$baseUrl/maksimumUtenUtbetaling") {
+        return retry("maksimum", legalExceptions = retryableExceptions) {
+            val response = httpClient.preparePost("$baseUrl/maksimum") {
                 expectSuccess = true
                 contentType(ContentType.Application.Json)
                 accept(ContentType.Application.Json)
@@ -74,6 +74,7 @@ class AapClient(
         val saksnummer: String,
         val samordningsId: String?,
         val status: String,
+        val utbetaling: List<Utbetaling>,
         val vedtakId: String,
         val vedtaksTypeKode: String?,
         val vedtaksTypeNavn: String?,
@@ -85,4 +86,16 @@ class AapClient(
         val tilOgMedDato: String?,
     )
 
+    data class Utbetaling(
+        val barnetillegg: Long,
+        val belop: Long,
+        val dagsats: Long,
+        val periode: Periode,
+        val reduksjon: Reduksjon?,
+        val utbetalingsgrad: Long?,
+    )
+    data class Reduksjon(
+        val annenReduksjon: Long,
+        val timerArbeidet: Long,
+    )
 }

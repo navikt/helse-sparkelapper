@@ -67,20 +67,23 @@ internal class AapRiver(
         val tom = packet["$behov.periodeTom"].asLocalDate()
 
         val json = runBlocking {
-            aapClient.hentMaksimumUtenUtbetaling(fødselsnummer, fom, tom, behovId)
+            aapClient.hentMaksimum(fødselsnummer, fom, tom, behovId)
         }
 
         json.fold(
             onSuccess = { aapResponse: AapClient.AapResponse ->
                 packet["@løsning"] = mapOf(
                     behov to mapOf(
-                        "vedtaksperioder" to
-                            aapResponse.vedtak.map { aapRettighet ->
-                                mapOf(
-                                    "fom" to aapRettighet.periode.fraOgMedDato,
-                                    "tom" to aapRettighet.periode.tilOgMedDato
-                                )
-                            })
+                        "utbetalingsperioder" to
+                            aapResponse.vedtak
+                                .flatMap { aapRettighet ->
+                                    aapRettighet.utbetaling.map {
+                                        mapOf(
+                                            "fom" to it.periode.fraOgMedDato,
+                                            "tom" to it.periode.tilOgMedDato
+                                        )
+                                    }
+                                })
                 )
                 context.publish(packet.toJson())
                 log.info("Besvarte behov {}", behovId)

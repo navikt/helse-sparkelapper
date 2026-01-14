@@ -42,7 +42,7 @@ internal class AapClientTest {
         override fun onBehalfOfToken(scope: String, token: String) = bearerToken(scope)
     }
 
-    private val endpoint = "/maksimumUtenUtbetaling"
+    private val endpoint = "/maksimum"
 
     @BeforeEach
     fun setup() {
@@ -80,7 +80,7 @@ internal class AapClientTest {
         val tom = LocalDate.of(2025, 12, 31)
 
         val respons = runBlocking {
-            aapClient.hentMaksimumUtenUtbetaling(personidentifikator, fom, tom, UUID.randomUUID().toString())
+            aapClient.hentMaksimum(personidentifikator, fom, tom, UUID.randomUUID().toString())
         }
 
         assertTrue(respons.isSuccess)
@@ -108,7 +108,7 @@ internal class AapClientTest {
         )
 
         val respons = runBlocking {
-            aapClient.hentMaksimumUtenUtbetaling("12345678910", LocalDate.of(1990, 1, 1), LocalDate.of(2025, 1, 1), UUID.randomUUID().toString())
+            aapClient.hentMaksimum("12345678910", LocalDate.of(1990, 1, 1), LocalDate.of(2025, 1, 1), UUID.randomUUID().toString())
         }
 
         assertTrue(respons.isSuccess)
@@ -132,7 +132,7 @@ internal class AapClientTest {
         )
 
         val respons = runBlocking {
-            aapClient.hentMaksimumUtenUtbetaling("12345678910", LocalDate.of(1990, 1, 1), LocalDate.of(2025, 1, 1), UUID.randomUUID().toString())
+            aapClient.hentMaksimum("12345678910", LocalDate.of(1990, 1, 1), LocalDate.of(2025, 1, 1), UUID.randomUUID().toString())
         }
 
         assertTrue(respons.isSuccess)
@@ -148,7 +148,7 @@ internal class AapClientTest {
         )
         val behovId = UUID.randomUUID().toString()
         runBlocking {
-            aapClient.hentMaksimumUtenUtbetaling("12345678910", LocalDate.of(1990, 1, 1), LocalDate.of(2025, 1, 1), behovId)
+            aapClient.hentMaksimum("12345678910", LocalDate.of(1990, 1, 1), LocalDate.of(2025, 1, 1), behovId)
         }
 
         verify(
@@ -173,7 +173,7 @@ internal class AapClientTest {
         val tom = LocalDate.of(2024, 9, 30)
 
         val respons = runBlocking {
-            aapClient.hentMaksimumUtenUtbetaling(personidentifikator, fom, tom, UUID.randomUUID().toString())
+            aapClient.hentMaksimum(personidentifikator, fom, tom, UUID.randomUUID().toString())
         }
 
         assertTrue(respons.isSuccess)
@@ -216,6 +216,20 @@ const val responseJson = """{
                         "saksnummer": "Ett nummer",
                         "samordningsId": null,
                         "status": "Redo for action",
+                        "utbetaling": [{
+                            "barnetillegg" : 123,
+                            "belop" : 123,
+                            "dagsats" : 123,
+                            "reduksjon" : {
+                                "annenReduksjon" : 123.0,
+                                "timerArbeidet" : 123.0
+                            },
+                            "utbetalingsgrad" : 123,
+                            "periode": {
+                                "fraOgMedDato": "2025-04-01",
+                                "tilOgMedDato": "2025-06-01"
+                            }
+                        }],
                         "vedtakId": "en uuid",
                         "vedtaksTypeKode": null,
                         "vedtaksTypeNavn": null,
