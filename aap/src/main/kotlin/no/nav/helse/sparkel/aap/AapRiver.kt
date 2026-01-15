@@ -73,6 +73,7 @@ internal class AapRiver(
 
         json.fold(
             onSuccess = { aapResponse: AapClient.AapResponse ->
+                sikkerlogg.info("Mottok svar fra AAP med følgende payload: $aapResponse")
                 packet["@løsning"] = mapOf(
                     behov to mapOf(
                         "utbetalingsperioder" to
