@@ -13,7 +13,6 @@ import io.mockk.verify
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
-import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Refusjonsforslag
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerRiver
 import org.junit.jupiter.api.BeforeEach
@@ -82,7 +81,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
     @Test
     fun `publiserer forespørsel om arbeidsgiveropplysninger - med refusjon, og agp`() {
         val vedtaksperiodeId = UUID.randomUUID()
-        testRapid.sendTestMessage(eventMeldingMedFastsattInntekt(vedtaksperiodeId))
+        testRapid.sendTestMessage(eventMeldingMedRefusjonOgArbeidsgiverperiode(vedtaksperiodeId))
 
         verify(exactly = 1) {
             val trengerArbeidsgiveropplysningerDto = mockTrengerArbeidsgiverOpplysningerMedFastsattInntekt(vedtaksperiodeId)
@@ -90,7 +89,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
         }
     }
 
-    private fun eventMeldingMedFastsattInntekt(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
+    private fun eventMeldingMedRefusjonOgArbeidsgiverperiode(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
         objectMapper.valueToTree<JsonNode>(
             mapOf(
                 "@id" to UUID.randomUUID(),
@@ -105,11 +104,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
                 "forespurteOpplysninger" to listOf(
                     mapOf(
-                        "opplysningstype" to "Refusjon",
-                        "forslag" to listOf(
-                            mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN.plusDays(10), "beløp" to 10000.0),
-                            mapOf("fom" to LocalDate.MIN.plusDays(11), "tom" to null, "beløp" to 9000.0)
-                        )
+                        "opplysningstype" to "Refusjon"
                     ),
                     mapOf(
                         "opplysningstype" to "Arbeidsgiverperiode"
@@ -133,17 +128,10 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
                 "forespurteOpplysninger" to listOf(
                     mapOf(
-                        "opplysningstype" to "Inntekt",
-                        "forslag" to mapOf("forrigeInntekt" to mapOf(
-                            "skjæringstidspunkt" to LocalDate.MIN,
-                                "kilde" to "INNTEKTSMELDING",
-                                "beløp" to 31000.0
-                            )
-                        )
+                        "opplysningstype" to "Inntekt"
                     ),
                     mapOf(
-                        "opplysningstype" to "Refusjon",
-                        "forslag" to emptyList<Refusjonsforslag>()
+                        "opplysningstype" to "Refusjon"
                     ),
                     mapOf(
                         "opplysningstype" to "Arbeidsgiverperiode"
@@ -167,12 +155,10 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
                 "forespurteOpplysninger" to listOf(
                     mapOf(
-                        "opplysningstype" to "Inntekt",
-                        "forslag" to mapOf("forrigeInntekt" to null)
+                        "opplysningstype" to "Inntekt"
                     ),
                     mapOf(
-                        "opplysningstype" to "Refusjon",
-                        "forslag" to emptyList<Refusjonsforslag>()
+                        "opplysningstype" to "Refusjon"
                     ),
                     mapOf(
                         "opplysningstype" to "Arbeidsgiverperiode"

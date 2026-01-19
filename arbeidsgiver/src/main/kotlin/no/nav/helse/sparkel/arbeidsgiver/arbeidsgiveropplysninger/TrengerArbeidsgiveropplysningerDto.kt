@@ -60,9 +60,9 @@ internal fun JsonMessage.toBegrensetTrengerArbeidsgiveropplysningerDto(): Trenge
         sykmeldingsperioder = this["sykmeldingsperioder"].toPerioder(),
         egenmeldingsperioder = emptyList(),
         forespurtData = listOf(
-            Inntekt(Inntektsforslag()),
+            Inntekt,
             Arbeidsgiverperiode,
-            Refusjon(emptyList())
+            Refusjon
         ).toJsonMap(),
         opprettet = this["@opprettet"].asLocalDateTime()
     )

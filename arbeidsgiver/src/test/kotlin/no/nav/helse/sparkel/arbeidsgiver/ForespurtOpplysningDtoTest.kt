@@ -5,7 +5,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Arbeidsgiverperiode
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Inntekt
-import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Inntektsforslag
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Refusjon
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.asForespurteOpplysninger
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -19,8 +18,8 @@ internal class ForespurtOpplysningDtoTest {
     @Test
     fun `tolker forespurt opplysninger korrekt - med inntekt`() {
         val expectedForespurteOpplysninger = listOf(
-            Inntekt(Inntektsforslag()),
-            Refusjon(emptyList()),
+            Inntekt,
+            Refusjon,
             Arbeidsgiverperiode
         )
         val actualForespurteOpplysninger = forespurteOpplysningerMedInntektJson().asForespurteOpplysninger()
@@ -31,12 +30,10 @@ internal class ForespurtOpplysningDtoTest {
     private fun forespurteOpplysningerMedInntektJson() = objectMapper.readTree(
         """[
                 {
-                    "opplysningstype": "Inntekt",
-                    "forslag": {}
+                    "opplysningstype": "Inntekt"
                 },
                 {
-                    "opplysningstype": "Refusjon", 
-                    "forslag": []
+                    "opplysningstype": "Refusjon"
                 },
                 {
                     "opplysningstype": "Arbeidsgiverperiode"

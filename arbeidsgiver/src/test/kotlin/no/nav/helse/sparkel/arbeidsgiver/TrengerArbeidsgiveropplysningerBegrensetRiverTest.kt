@@ -98,7 +98,7 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
             )
         )
 
-        val payload = mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId)
+        val payload = mockTrengerArbeidsgiverOpplysningerForespørAlt(vedtaksperiodeId)
         verify(exactly = 1) {
             mockproducer.send(payload)
         }
@@ -116,7 +116,7 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
             )
         )
 
-        val payload = mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId)
+        val payload = mockTrengerArbeidsgiverOpplysningerForespørAlt(vedtaksperiodeId)
         verify {
             mockproducer.send(payload)
         }

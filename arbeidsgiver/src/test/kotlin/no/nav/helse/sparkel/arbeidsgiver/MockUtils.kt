@@ -6,7 +6,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
-import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Refusjonsforslag
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerBegrensetDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerIkkeArbeidsgiveropplysningerDto
@@ -69,18 +68,10 @@ internal fun mockTrengerArbeidsgiveropplysningerMedForrigeInntekt(vedtaksperiode
     vedtaksperiodeId = vedtaksperiodeId,
     forespurtData = listOf(
         mapOf(
-            "opplysningstype" to "Inntekt",
-            "forslag" to mapOf(
-                "forrigeInntekt" to mapOf(
-                    "skjæringstidspunkt" to LocalDate.MIN,
-                    "kilde" to "INNTEKTSMELDING",
-                    "beløp" to 31000.0
-                )
-            )
+            "opplysningstype" to "Inntekt"
         ),
         mapOf(
-            "opplysningstype" to "Refusjon",
-            "forslag" to emptyList<Refusjonsforslag>()
+            "opplysningstype" to "Refusjon"
         ),
         mapOf(
             "opplysningstype" to "Arbeidsgiverperiode"
@@ -91,12 +82,10 @@ internal fun mockTrengerArbeidsgiveropplysningerMedInntekt(vedtaksperiodeId: UUI
     vedtaksperiodeId = vedtaksperiodeId,
     forespurtData = listOf(
         mapOf(
-            "opplysningstype" to "Inntekt",
-            "forslag" to mapOf("forrigeInntekt" to null)
+            "opplysningstype" to "Inntekt"
         ),
         mapOf(
-            "opplysningstype" to "Refusjon",
-            "forslag" to emptyList<Refusjonsforslag>()
+            "opplysningstype" to "Refusjon"
         ),
         mapOf(
             "opplysningstype" to "Arbeidsgiverperiode"
@@ -108,19 +97,7 @@ internal fun mockTrengerArbeidsgiverOpplysningerMedFastsattInntekt(vedtaksperiod
     vedtaksperiodeId = vedtaksperiodeId,
     forespurtData = listOf(
         mapOf(
-            "opplysningstype" to "Refusjon",
-            "forslag" to listOf(
-                mapOf(
-                    "fom" to LocalDate.MIN,
-                    "tom" to LocalDate.MIN.plusDays(10),
-                    "beløp" to 10000.0
-                ),
-                mapOf(
-                    "fom" to LocalDate.MIN.plusDays(11),
-                    "tom" to null,
-                    "beløp" to 9000.0
-                )
-            )
+            "opplysningstype" to "Refusjon"
         ),
         mapOf(
             "opplysningstype" to "Arbeidsgiverperiode"
@@ -128,22 +105,20 @@ internal fun mockTrengerArbeidsgiverOpplysningerMedFastsattInntekt(vedtaksperiod
     )
 )
 
-internal fun mockTrengerArbeidsgiverOpplysningerUtenForslag(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerBegrensetDto(
+internal fun mockTrengerArbeidsgiverOpplysningerForespørAlt(vedtaksperiodeId: UUID) = mockTrengerArbeidsgiveropplysningerBegrensetDto(
     vedtaksperiodeId = vedtaksperiodeId,
     skjæringstidspunkt = null,
     egenmeldingsperioder = emptyList(),
     bestemmendeFraværsdager = emptyMap(),
     forespurtData = listOf(
         mapOf(
-            "opplysningstype" to "Inntekt",
-            "forslag" to mapOf("forrigeInntekt" to null)
+            "opplysningstype" to "Inntekt"
         ),
         mapOf(
             "opplysningstype" to "Arbeidsgiverperiode"
         ),
         mapOf(
-            "opplysningstype" to "Refusjon",
-            "forslag" to emptyList<Map<String, Any>>()
+            "opplysningstype" to "Refusjon"
         )
     )
 )
