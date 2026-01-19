@@ -57,13 +57,6 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
         }
     }
 
-    @Test
-    fun `ignorerer forespørsler fra arbeidsledig`() {
-        testRapid.sendTestMessage(eventMeldingMedInntekt("trenger_opplysninger_fra_arbeidsgiver", organisasjonsnummer = "ARBEIDSLEDIG"))
-        verify(exactly = 0) {
-            mockproducer.send(any<TrengerArbeidsgiveropplysningerDto>())
-        }
-    }
 
     @Test
     fun `publiserer forespørsel om arbeidsgiveropplysninger - med inntekt, refusjon, og agp`() {
@@ -202,10 +195,6 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
             )
         ).toString()
 
-    private fun ugyldigInntektEvent(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
-        mapUtenForespurteOpplysninger(vedtaksperiodeId)
-            .plus("forespurteOpplysninger" to listOf(mapOf("opplysningstype" to "Inntekt", "forslag" to null)))
-            .toJson()
 
     private fun ugyldigFastsattInntektEvent(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
         mapUtenForespurteOpplysninger(vedtaksperiodeId)

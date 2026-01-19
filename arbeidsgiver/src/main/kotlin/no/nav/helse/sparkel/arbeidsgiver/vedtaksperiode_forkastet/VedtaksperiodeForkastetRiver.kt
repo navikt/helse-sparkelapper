@@ -23,7 +23,7 @@ internal class VedtaksperiodeForkastetRiver(
     init {
         River(rapidsConnection).apply {
             precondition { it.requireValue("@event_name", eventName) }
-            precondition { it.forbidValues("organisasjonsnummer", listOf("ARBEIDSLEDIG", "SELVSTENDIG", "FRILANS")) }
+            precondition { it.requireValue("yrkesaktivitetstype", "ARBEIDSTAKER") }
             validate {
                 it.requireKey(
                     "fødselsnummer",

@@ -165,6 +165,7 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
         mapOf(
             "@event_name" to eventName,
             "fødselsnummer" to FNR,
+            "yrkesaktivitetstype" to "ARBEIDSTAKER",
             "organisasjonsnummer" to orgnummer,
             "vedtaksperiodeId" to vedtaksperiodeId,
             "tilstand" to tilstand,

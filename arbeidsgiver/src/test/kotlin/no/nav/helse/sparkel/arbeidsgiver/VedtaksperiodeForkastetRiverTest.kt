@@ -29,7 +29,7 @@ internal class VedtaksperiodeForkastetRiverTest {
 
     @Test
     fun `ignorerer arbeidsledige`() {
-        testRapid.sendTestMessage(forkastetVedtaksperiode(orgnummer = "ARBEIDSLEDIG"))
+        testRapid.sendTestMessage(forkastetVedtaksperiode(yrkesaktivitetstype = "ARBEIDSLEDIG"))
         verify(exactly = 0) {
             mockproducer.send(any<VedtaksperiodeForkastetDto>())
         }
@@ -37,7 +37,7 @@ internal class VedtaksperiodeForkastetRiverTest {
     @Test
     fun `ignorerer frilansere`() {
         testRapid.sendTestMessage(
-            forkastetVedtaksperiode(orgnummer = "FRILANS")
+            forkastetVedtaksperiode(yrkesaktivitetstype = "FRILANS")
         )
         verify(exactly = 0) {
             mockproducer.send(any<VedtaksperiodeForkastetDto>())
@@ -47,7 +47,7 @@ internal class VedtaksperiodeForkastetRiverTest {
     @Test
     fun `ignorerer selvstendige`() {
         testRapid.sendTestMessage(
-            forkastetVedtaksperiode(orgnummer = "SELVSTENDIG")
+            forkastetVedtaksperiode(yrkesaktivitetstype = "SELVSTENDIG")
         )
         verify(exactly = 0) {
             mockproducer.send(any<VedtaksperiodeForkastetDto>())
@@ -74,12 +74,13 @@ internal class VedtaksperiodeForkastetRiverTest {
     private fun forkastetVedtaksperiode(
         vedtaksperiodeId: UUID = UUID.randomUUID(),
         eventName: String = "vedtaksperiode_forkastet",
-        orgnummer: String = ORGNUMMER,
+        yrkesaktivitetstype: String = "ARBEIDSTAKER",
     ) = objectMapper.valueToTree<JsonNode>(
         mapOf(
             "@event_name" to eventName,
             "fødselsnummer" to FNR,
-            "organisasjonsnummer" to orgnummer,
+            "yrkesaktivitetstype" to yrkesaktivitetstype,
+            "organisasjonsnummer" to ORGNUMMER,
             "vedtaksperiodeId" to vedtaksperiodeId,
             "@opprettet" to LocalDateTime.MAX
         )
