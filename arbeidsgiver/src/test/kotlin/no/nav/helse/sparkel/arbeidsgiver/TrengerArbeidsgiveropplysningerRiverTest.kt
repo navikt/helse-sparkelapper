@@ -16,7 +16,6 @@ import java.util.*
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.Refusjonsforslag
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerRiver
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
@@ -81,7 +80,7 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
     }
 
     @Test
-    fun `publiserer forespørsel om arbeidsgiveropplysninger - med fastsatt inntekt, refusjon, og agp`() {
+    fun `publiserer forespørsel om arbeidsgiveropplysninger - med refusjon, og agp`() {
         val vedtaksperiodeId = UUID.randomUUID()
         testRapid.sendTestMessage(eventMeldingMedFastsattInntekt(vedtaksperiodeId))
 
@@ -89,15 +88,6 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
             val trengerArbeidsgiveropplysningerDto = mockTrengerArbeidsgiverOpplysningerMedFastsattInntekt(vedtaksperiodeId)
             mockproducer.send(trengerArbeidsgiveropplysningerDto)
         }
-    }
-
-    @Test
-    fun `vi logger error ved fastsatt inntekt uten fastsatt inntekt`() {
-        testRapid.sendTestMessage(ugyldigFastsattInntektEvent())
-        verify(exactly = 0) {
-            mockproducer.send(any<TrengerArbeidsgiveropplysningerDto>())
-        }
-        assertTrue(sikkerlogCollector.list.any { it.message.contains("forstod ikke trenger_opplysninger_fra_arbeidsgiver") })
     }
 
     private fun eventMeldingMedFastsattInntekt(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
@@ -114,10 +104,6 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
                 "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
                 "forespurteOpplysninger" to listOf(
-                    mapOf(
-                        "opplysningstype" to "FastsattInntekt",
-                        "fastsattInntekt" to 10000.0
-                    ),
                     mapOf(
                         "opplysningstype" to "Refusjon",
                         "forslag" to listOf(
@@ -194,27 +180,4 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
                 )
             )
         ).toString()
-
-
-    private fun ugyldigFastsattInntektEvent(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
-        mapUtenForespurteOpplysninger(vedtaksperiodeId)
-            .plus("forespurteOpplysninger" to listOf(mapOf("opplysningstype" to "FastsattInntekt")))
-            .toJson()
-
-    private fun Map<String, Any>.toJson() = objectMapper.valueToTree<JsonNode>(this).toString()
-
-    private fun mapUtenForespurteOpplysninger(vedtaksperiodeId: UUID) = mapOf(
-        "@id" to UUID.randomUUID(),
-        "@event_name" to "trenger_opplysninger_fra_arbeidsgiver",
-        "@opprettet" to LocalDateTime.MAX,
-        "fødselsnummer" to FNR,
-        "organisasjonsnummer" to ORGNUMMER,
-        "vedtaksperiodeId" to vedtaksperiodeId,
-        "fom" to LocalDate.MIN,
-        "tom" to LocalDate.MAX,
-        "førsteFraværsdager" to listOf(mapOf("organisasjonsnummer" to ORGNUMMER, "førsteFraværsdag" to LocalDate.MIN)),
-        "egenmeldingsperioder" to emptyList<Map<String, LocalDate>>(),
-        "skjæringstidspunkt" to LocalDate.MIN,
-        "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MAX))
-    )
 }

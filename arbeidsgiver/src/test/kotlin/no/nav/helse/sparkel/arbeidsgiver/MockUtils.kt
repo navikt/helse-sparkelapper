@@ -108,10 +108,6 @@ internal fun mockTrengerArbeidsgiverOpplysningerMedFastsattInntekt(vedtaksperiod
     vedtaksperiodeId = vedtaksperiodeId,
     forespurtData = listOf(
         mapOf(
-            "opplysningstype" to "FastsattInntekt",
-            "fastsattInntekt" to 10000.0
-        ),
-        mapOf(
             "opplysningstype" to "Refusjon",
             "forslag" to listOf(
                 mapOf(

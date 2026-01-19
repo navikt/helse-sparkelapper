@@ -17,11 +17,6 @@ internal sealed class ForespurtOpplysning {
                     "opplysningstype" to "Arbeidsgiverperiode"
                 )
 
-                is FastsattInntekt -> mapOf(
-                    "opplysningstype" to "FastsattInntekt",
-                    "fastsattInntekt" to forespurtOpplysning.fastsattInntekt
-                )
-
                 is Inntekt -> mapOf(
                     "opplysningstype" to "Inntekt",
                     "forslag" to forespurtOpplysning.forslag.toJsonMap()
@@ -56,7 +51,6 @@ internal sealed class ForespurtOpplysning {
 internal data class Refusjonsforslag(val fom: LocalDate, val tom: LocalDate?, val beløp: Double)
 internal data class Refusjon(val forslag: List<Refusjonsforslag>) : ForespurtOpplysning()
 internal object Arbeidsgiverperiode : ForespurtOpplysning()
-internal data class FastsattInntekt(val fastsattInntekt: Double) : ForespurtOpplysning()
 internal data class Inntektsforslag(val forrigeInntekt: ForrigeInntekt? = null)
 internal data class ForrigeInntekt(val skjæringstidspunkt: LocalDate, val kilde: String, val beløp: Double)
 internal data class Inntekt(val forslag: Inntektsforslag) : ForespurtOpplysning()
@@ -71,7 +65,6 @@ internal fun JsonNode.asForespurtOpplysning() = when (val opplysningstype = this
     "Inntekt" -> Inntekt(forslag = this["forslag"].asInntektsforslag())
     "Refusjon" -> Refusjon(forslag = this["forslag"].asRefusjonsforslag())
     "Arbeidsgiverperiode" -> Arbeidsgiverperiode
-    "FastsattInntekt" -> FastsattInntekt(fastsattInntekt = this["fastsattInntekt"].asDouble())
     else -> {
         sikkerlogg.error("Mottok et trenger_opplysninger_fra_arbeidsgiver-event med ukjent opplysningtype: $opplysningstype")
         null
