@@ -17,6 +17,17 @@ fun main() {
                 jackson()
             }
         }
+        val dagpengerClient = DagpengerClient(
+            baseUrl = env.getValue("DAGPENGER_API_BASE_URL"),
+            tokenClient = azureClient,
+            httpClient = httpClient,
+            scope = env.getValue("ACCESS_TOKEN_SCOPE")
+        )
 
+        DagpengerRiver(
+            rapidsConnection = this,
+            dagpengerClient = dagpengerClient,
+            behov = "DagpengerV2",
+        )
     }.start()
 }
