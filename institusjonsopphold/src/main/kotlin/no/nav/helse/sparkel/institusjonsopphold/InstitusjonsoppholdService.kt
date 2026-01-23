@@ -17,8 +17,7 @@ internal class InstitusjonsoppholdService(private val institusjonsoppholdClient:
     ): JsonNode? = withMDC("id" to behovId, "vedtaksperiodeId" to vedtaksperiodeId) {
         try {
             val institusjonsopphold = institusjonsoppholdClient.hentInstitusjonsopphold(
-                fødselsnummer = fødselsnummer,
-                behovId = behovId
+                fødselsnummer = fødselsnummer
             )
             log.info(
                 "løser behov: {} for {}",

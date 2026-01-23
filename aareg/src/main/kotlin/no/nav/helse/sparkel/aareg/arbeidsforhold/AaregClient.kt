@@ -31,7 +31,6 @@ class AaregClient(
     ): List<T> = retry("arbeidsforhold") {
         val response = hent(
             fnr,
-            callId,
             "$baseUrl/api/v2/arbeidstaker/arbeidsforhold?sporingsinformasjon=false&arbeidsforholdstatus=AKTIV,FREMTIDIG,AVSLUTTET"
         )
 
@@ -54,12 +53,11 @@ class AaregClient(
         "Klarte ikke å deserialisere svaret fra Aareg"
     }
 
-    private suspend fun hent(fnr: String, callId: UUID, url: String) =
+    private suspend fun hent(fnr: String, url: String) =
         httpClient.get(url) {
             val azureToken = tokenSupplier.bearerToken(scope).getOrThrow()
             header("Authorization", "Bearer ${azureToken.token}")
             System.getenv("NAIS_APP_NAME")?.also { header("Nav-Consumer-Id", it) }
-            header("Nav-Call-Id", callId)
             accept(ContentType.Application.Json)
             header("Nav-Personident", fnr)
         }

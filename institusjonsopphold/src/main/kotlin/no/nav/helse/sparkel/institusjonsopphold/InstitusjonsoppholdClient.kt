@@ -19,8 +19,7 @@ internal class InstitusjonsoppholdClient(
     }
 
     internal fun hentInstitusjonsopphold(
-        fødselsnummer: String,
-        behovId: String
+        fødselsnummer: String
     ): JsonNode {
         val url = "${baseUrl}/api/v1/person/institusjonsopphold/soek"
 
@@ -34,7 +33,6 @@ internal class InstitusjonsoppholdClient(
             setRequestProperty("Authorization", "Bearer ${bearerToken.token}")
             setRequestProperty("Content-Type", "application/json")
             setRequestProperty("Accept", "application/json")
-            setRequestProperty("Nav-Call-Id", behovId)
             setRequestProperty("Nav-Formaal", "Sykepenger")
             System.getenv("NAIS_APP_NAME")?.also { setRequestProperty("Nav-Consumer-Id", it) }
 
