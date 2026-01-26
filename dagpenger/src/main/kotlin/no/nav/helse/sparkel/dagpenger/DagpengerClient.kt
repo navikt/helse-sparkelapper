@@ -36,10 +36,10 @@ class DagpengerClient(
     private val httpClient: HttpClient,
     private val scope: String,
 ) {
-    suspend fun hentPerioder(personidentifikator: String, fom: LocalDate, tom: LocalDate, behovId: String): Result<DagpengerResponse> {
+    suspend fun hentMeldekort(personidentifikator: String, fom: LocalDate, tom: LocalDate, behovId: String): Result<List<DagpengerMeldekortResponse>> {
         val callId = UUID.randomUUID()
-        return retry("perioder", legalExceptions = retryableExceptions) {
-            val response = httpClient.preparePost("$baseUrl/dagpenger/datadeling/v1/perioder") {
+        return retry("meldekort", legalExceptions = retryableExceptions) {
+            val response = httpClient.preparePost("$baseUrl/dagpenger/datadeling/v1/meldekort") {
                 expectSuccess = true
                 contentType(ContentType.Application.Json)
                 accept(ContentType.Application.Json)
@@ -61,30 +61,80 @@ class DagpengerClient(
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    data class DagpengerResponse(
-        val personIdent: String,
-        val perioder: List<DagpengerPeriode>,
+    data class DagpengerMeldekortResponse(
+        val id: String,
+        val ident: String,
+        val status: MeldekortStatus,
+        val type: MeldekortType,
+        val periode: Periode,
+        val dager: List<Dag>,
+        val kanSendes: Boolean,
+        val kanEndres: Boolean,
+        val kanSendesFra: String,
+        val sisteFristForTrekk: String,
+        val opprettetAv: OpprettetAvType,
+        val originalMeldekortId: String?,
+        val begrunnelse: String?,
+        val kilde: Kilde,
+        val innsendtTidspunkt: String?,
+        val registrertArbeidssoker: Boolean,
+        val meldedato: String,
+        val migrert: Boolean
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    data class DagpengerPeriode(
-        val fraOgMedDato: String,
-        val tilOgMedDato: String?,
-        val kilde: Fagsystem,
-        val ytelseType: YtelseType
-    )
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    enum class Fagsystem {
-        ARENA,
-        DP_SAK,
+    enum class OpprettetAvType {
+        Arena, Dagpenger
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    enum class YtelseType {
-        DAGPENGER_ARBEIDSSOKER_ORDINAER,
-        DAGPENGER_PERMITTERING_ORDINAER,
-        DAGPENGER_PERMITTERING_FISKEINDUSTRI
+    data class Periode(
+        val fraOgMed: String,
+        val tilOgMed: String
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class Dag(
+        val dato: String,
+        val aktiviteter: List<Aktivitet>,
+        val dagIndex: Int
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class Aktivitet(
+        val id: UUID,
+        val type: AktivitetType,
+        val timer: String?
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class Kilde(
+        val rolle: RolleType,
+        val ident: String
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    enum class RolleType {
+        Bruker,
+        Saksbehandler
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    enum class MeldekortStatus {
+        TilUtfylling,
+        Innsendt,
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    enum class MeldekortType {
+        Ordinaert,
+        Korrigert,
+        Etterregistrert
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    enum class AktivitetType {
+        Arbeid, Syk, Utdanning, Fravaer
     }
 }
 

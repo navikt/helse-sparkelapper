@@ -67,18 +67,18 @@ internal class DagpengerRiver(
         val tom = packet["$behov.periodeTom"].asLocalDate()
 
         val json = runBlocking {
-            dagpengerClient.hentPerioder(fødselsnummer, fom, tom, behovId)
+            dagpengerClient.hentMeldekort(fødselsnummer, fom, tom, behovId)
         }
 
         json.fold(
-            onSuccess = { dagpengerResponse: DagpengerClient.DagpengerResponse ->
-                sikkerlogg.info("Mottok svar fra Dagpenger med følgende payload: $dagpengerResponse")
+            onSuccess = { dagpengerMeldekortListeResponse: List<DagpengerClient.DagpengerMeldekortResponse> ->
+                sikkerlogg.info("Mottok svar fra Dagpenger med følgende payload: $dagpengerMeldekortListeResponse")
                 packet["@løsning"] =
                     behov to mapOf(
-                        "perioder" to dagpengerResponse.perioder.map { periode ->
+                        "perioder" to dagpengerMeldekortListeResponse.map {
                             mapOf(
-                                "fraOgMedDato" to periode.fraOgMedDato,
-                                "tilOgMedDato" to periode.tilOgMedDato
+                                "fraOgMedDato" to it.periode.fraOgMed,
+                                "tilOgMedDato" to it.periode.tilOgMed
                             )
                         }
 
