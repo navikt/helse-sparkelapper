@@ -70,19 +70,9 @@ internal class DagpengerRiver(
             dagpengerClient.hentMeldekort(fødselsnummer, fom, tom, behovId)
         }
 
-        val jsonDagpengerPerioder = runBlocking {
-            dagpengerClient.hentPerioder(fødselsnummer, fom, tom, behovId)
-        }
-
-        jsonDagpengerPerioder.onSuccess(
-            { perioder ->
-                sikkerlogg.info("Klarte å hente perioder fra dagpenger: $perioder")
-            }
-        )
-
         jsonDagpengerMeldekort.fold(
             onSuccess = { dagpengerMeldekortListeResponse: List<DagpengerClient.DagpengerMeldekortResponse> ->
-                sikkerlogg.info("Mottok svar fra Dagpenger med følgende payload: $dagpengerMeldekortListeResponse")
+                sikkerlogg.info("Mottok svar fra /dagpenger/datadeling/v1/meldekort med følgende payload: $dagpengerMeldekortListeResponse")
                 packet["@løsning"] =
                     behov to mapOf(
                         "perioder" to dagpengerMeldekortListeResponse.map {
@@ -109,14 +99,6 @@ internal class DagpengerRiver(
                 throw t
             }
         )
-
-        jsonDagpengerPerioder.onFailure({ t: Throwable ->
-            "Fikk feil ved oppslag mot /dagpenger/datadeling/v1/perioder".also { message ->
-                log.error("$message, se sikkerlogg for detaljer")
-                sikkerlogg.error("$message: {}", t, t)
-            }
-            throw t
-        })
     }
 
     private fun withMDC(context: Map<String, String>, block: () -> Unit) {
