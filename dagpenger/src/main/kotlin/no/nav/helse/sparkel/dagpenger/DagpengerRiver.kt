@@ -73,16 +73,17 @@ internal class DagpengerRiver(
         jsonDagpengerMeldekort.fold(
             onSuccess = { dagpengerMeldekortListeResponse: List<DagpengerClient.DagpengerMeldekortResponse> ->
                 sikkerlogg.info("Mottok svar fra /dagpenger/datadeling/v1/meldekort med følgende payload: $dagpengerMeldekortListeResponse")
-                packet["@løsning"] =
+                packet["@løsning"] = mapOf(
                     behov to mapOf(
                         "perioder" to dagpengerMeldekortListeResponse.map {
                             mapOf(
-                                "fraOgMedDato" to it.periode.fraOgMed,
-                                "tilOgMedDato" to it.periode.tilOgMed
+                                "fom" to it.periode.fraOgMed,
+                                "tom" to it.periode.tilOgMed
                             )
                         }
-
                     )
+                )
+
                 context.publish(packet.toJson())
                 log.info("Besvarte behov {}", behovId)
                 sikkerlogg.info(
