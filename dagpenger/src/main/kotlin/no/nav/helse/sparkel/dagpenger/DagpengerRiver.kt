@@ -66,11 +66,21 @@ internal class DagpengerRiver(
         val fom = packet["$behov.periodeFom"].asLocalDate()
         val tom = packet["$behov.periodeTom"].asLocalDate()
 
-        val json = runBlocking {
+        val jsonDagpengerMeldekort = runBlocking {
             dagpengerClient.hentMeldekort(fødselsnummer, fom, tom, behovId)
         }
 
-        json.fold(
+        val jsonDagpengerPerioder = runBlocking {
+            dagpengerClient.hentPerioder(fødselsnummer, fom, tom, behovId)
+        }
+
+        jsonDagpengerPerioder.onSuccess(
+            { perioder ->
+                sikkerlogg.info("Klarte å hente perioder fra dagpenger: $perioder")
+            }
+        )
+
+        jsonDagpengerMeldekort.fold(
             onSuccess = { dagpengerMeldekortListeResponse: List<DagpengerClient.DagpengerMeldekortResponse> ->
                 sikkerlogg.info("Mottok svar fra Dagpenger med følgende payload: $dagpengerMeldekortListeResponse")
                 packet["@løsning"] =
@@ -92,13 +102,21 @@ internal class DagpengerRiver(
                 )
             },
             onFailure = { t: Throwable ->
-                "Fikk feil ved oppslag mot representasjon".also { message ->
+                "Fikk feil ved oppslag mot /dagpenger/datadeling/v1/meldekort".also { message ->
                     log.error("$message, se sikkerlogg for detaljer")
                     sikkerlogg.error("$message: {}", t, t)
                 }
                 throw t
             }
         )
+
+        jsonDagpengerPerioder.onFailure({ t: Throwable ->
+            "Fikk feil ved oppslag mot /dagpenger/datadeling/v1/perioder".also { message ->
+                log.error("$message, se sikkerlogg for detaljer")
+                sikkerlogg.error("$message: {}", t, t)
+            }
+            throw t
+        })
     }
 
     private fun withMDC(context: Map<String, String>, block: () -> Unit) {

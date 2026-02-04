@@ -60,6 +60,57 @@ class DagpengerClient(
         }
     }
 
+    suspend fun hentPerioder(personidentifikator: String, fom: LocalDate, tom: LocalDate, behovId: String): Result<DagpengerPerioderResponse> {
+        val callId = UUID.randomUUID()
+        return retry("perioder", legalExceptions = retryableExceptions) {
+            val response = httpClient.preparePost("$baseUrl/dagpenger/datadeling/v1/perioder") {
+                expectSuccess = true
+                contentType(ContentType.Application.Json)
+                accept(ContentType.Application.Json)
+                val bearerToken = tokenClient.bearerToken(scope).getOrThrow()
+                bearerAuth(bearerToken.token)
+                setBody(
+                    mapOf(
+                        "personIdent" to personidentifikator,
+                        "fraOgMedDato" to fom.toString(),
+                        "tilOgMedDato" to tom.toString()
+                    )
+                )
+                header("nav-callid", "$callId")
+                header("x-correlation-id", behovId)
+            }.execute()
+
+            Result.success(response.body())
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class DagpengerPerioderResponse(
+        val personIdent: String,
+        val perioder: List<DagpengerPeriode>,
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class DagpengerPeriode(
+        val fraOgMedDato: String,
+        val tilOgMedDato: String?,
+        val kilde: Fagsystem,
+        val ytelseType: YtelseType
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    enum class Fagsystem {
+        ARENA,
+        DP_SAK,
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    enum class YtelseType {
+        DAGPENGER_ARBEIDSSOKER_ORDINAER,
+        DAGPENGER_PERMITTERING_ORDINAER,
+        DAGPENGER_PERMITTERING_FISKEINDUSTRI
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class DagpengerMeldekortResponse(
         val id: String,
