@@ -59,7 +59,7 @@ data class Tolk(
             fun logg(tolk: Tolk)
 
             data class Avklart(val svar: String, private val responseBody: JsonNode): Medlemskap {
-                override fun logg(tolk: Tolk) = sikkerlogg.info("Medlemskap for {} på ${tolk.fom} avklart til {} fra {} (${responseBody.KiB()}). \nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}",
+                override fun logg(tolk: Tolk) = sikkerlogg.info("Medlemskap for {} på ${tolk.fom} avklart til {} fra {}. \nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()} \nResponseBody(${responseBody.KiB()}):\n\t${responseBody}",
                     keyValue("fødselsnummer", tolk.fødselsnummer),
                     keyValue("svar", svar),
                     keyValue("kilde", "VanligSvar")
@@ -67,7 +67,7 @@ data class Tolk(
             }
 
             data class SpeilAvklart(val svar: String, private val responseBody: JsonNode): Medlemskap {
-                override fun logg(tolk: Tolk) = sikkerlogg.info("Medlemskap for {} på ${tolk.fom} avklart til {} fra {} (${responseBody.KiB()}). \nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}",
+                override fun logg(tolk: Tolk) = sikkerlogg.info("Medlemskap for {} på ${tolk.fom} avklart til {} fra {}. \nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()} \nResponseBody(${responseBody.KiB()}):\n\t${responseBody}",
                     keyValue("fødselsnummer", tolk.fødselsnummer),
                     keyValue("svar", svar),
                     keyValue("kilde", "SpeilSvar")
