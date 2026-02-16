@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.medlemskap
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.retry.PredefinerteUtsettelser
 import com.github.navikt.tbd_libs.retry.retryBlocking
@@ -30,8 +31,8 @@ data class Tolk(
             throw Medlemskapsfeil(Medlemskap.Ubesvart(exception))
         }
         val jsonBody = responseBody.safeJson()
-        if (jsonBody.path("resultat").path("svar").isTextual) return Medlemskap.Avklart(jsonBody.path("resultat").path("svar").asText())
-        if (jsonBody.path("speilSvar").isTextual) return Medlemskap.SpeilAvklart(jsonBody.path("speilSvar").asText())
+        if (jsonBody.path("resultat").path("svar").isTextual) return Medlemskap.Avklart(jsonBody.path("resultat").path("svar").asText(), jsonBody)
+        if (jsonBody.path("speilSvar").isTextual) return Medlemskap.SpeilAvklart(jsonBody.path("speilSvar").asText(),jsonBody)
         if (status >= 500 && responseBody.contains("GradertAdresse")) return Medlemskap.Gradert(responseBody)
         throw Medlemskapsfeil(Medlemskap.Uventet(status, responseBody))
     }
@@ -57,16 +58,16 @@ data class Tolk(
         private sealed interface Medlemskap {
             fun logg(tolk: Tolk)
 
-            data class Avklart(val svar: String): Medlemskap {
-                override fun logg(tolk: Tolk) = sikkerlogg.info("Medlemskap for {} på ${tolk.fom} avklart til {} fra {}. \nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}",
+            data class Avklart(val svar: String, private val responseBody: JsonNode): Medlemskap {
+                override fun logg(tolk: Tolk) = sikkerlogg.info("Medlemskap for {} på ${tolk.fom} avklart til {} fra {} (${responseBody.KiB()}). \nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}",
                     keyValue("fødselsnummer", tolk.fødselsnummer),
                     keyValue("svar", svar),
                     keyValue("kilde", "VanligSvar")
                 )
             }
 
-            data class SpeilAvklart(val svar: String): Medlemskap {
-                override fun logg(tolk: Tolk) = sikkerlogg.info("Medlemskap for {} på ${tolk.fom} avklart til {} fra {}. \nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}",
+            data class SpeilAvklart(val svar: String, private val responseBody: JsonNode): Medlemskap {
+                override fun logg(tolk: Tolk) = sikkerlogg.info("Medlemskap for {} på ${tolk.fom} avklart til {} fra {} (${responseBody.KiB()}). \nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()}",
                     keyValue("fødselsnummer", tolk.fødselsnummer),
                     keyValue("svar", svar),
                     keyValue("kilde", "SpeilSvar")
@@ -101,7 +102,7 @@ data class Tolk(
 
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private val objectMapper = jacksonObjectMapper()
-        private fun String.safeJson() = try { objectMapper.readTree(this) } catch (ignored: Exception) { objectMapper.createObjectNode() }
-        private fun String.jsonOrRaw() = try { objectMapper.readTree(this).toString() } catch (ignored: Exception) { this }
-    }
+        private fun String.safeJson() = try { objectMapper.readTree(this) } catch (_: Exception) { objectMapper.createObjectNode() }
+        private fun JsonNode.KiB() = (objectMapper.writeValueAsBytes(this).size / 1024.0).let { kib -> "%.2f KiB".format(kib) }
+        private fun String.jsonOrRaw() = try { objectMapper.readTree(this).toString() } catch (_: Exception) { this } }
 }
