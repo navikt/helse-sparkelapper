@@ -10,6 +10,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 import no.nav.helse.sparkel.forsikring.Fnr
+import no.nav.helse.sparkel.forsikring.formatAsITFnr
 
 internal abstract class H2Database {
     protected companion object {

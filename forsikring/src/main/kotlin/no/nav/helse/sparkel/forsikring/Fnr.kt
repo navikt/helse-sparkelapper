@@ -1,16 +1,15 @@
 package no.nav.helse.sparkel.forsikring
 
-class Fnr(private val fnr: String) {
+@JvmInline
+value class Fnr(val fnr: String) {
     init {
         require(fnr.length == 11) { "Fødselsnummer skal være 11 tegn, var ${fnr.length}" }
     }
-
-    private val date: String = fnr.substring(0, 2)
-    private val month: String = fnr.substring(2, 4)
-    private val year: String = fnr.substring(4, 6)
-    private val id: String = fnr.substring(6)
-
-    fun formatAsITFnr() = "$year$month$date$id"
-
-    override fun toString() = fnr
 }
+
+internal fun Fnr.date() = this.fnr.substring(0,2)
+internal fun Fnr.month(): String = this.fnr.substring(2, 4)
+internal fun Fnr.year(): String = this.fnr.substring(4, 6)
+internal fun Fnr.id(): String = this.fnr.substring(6)
+
+internal fun Fnr.formatAsITFnr() = "${this.year()}${this.month()}${this.date()}${this.id()}"

@@ -24,7 +24,7 @@ internal class ForsikringsløserTest : H2Database() {
 
         val forsikringDao = ForsikringDao { dataSource }
         rapid.apply {
-            Forsikringsløser(this, forsikringDao)
+            Forsikringsløser(this, forsikringDao, false)
         }
 
     }

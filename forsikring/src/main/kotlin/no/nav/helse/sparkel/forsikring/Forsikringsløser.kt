@@ -13,7 +13,9 @@ import no.nav.helse.sparkel.forsikring.ForsikringDao.ForsikringDto.Forsikringsty
 import org.slf4j.LoggerFactory
 
 internal class Forsikringsløser(
-    rapidsConnection: RapidsConnection, val forsikringDao: ForsikringDao
+    rapidsConnection: RapidsConnection,
+    val forsikringDao: ForsikringDao,
+    val erDev: Boolean
 ) : River.PacketListener {
 
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -30,7 +32,6 @@ internal class Forsikringsløser(
         }.register(this)
     }
 
-
     override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
         sikkerlogg.error("Forstod ikke $behov med melding\n${problems.toExtendedReport()}")
     }
@@ -38,9 +39,16 @@ internal class Forsikringsløser(
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("Fikk behov om forsikring: ${packet.toJson()}")
 
-        val forsikringer = forsikringDao.hentForsikringer(
-            fødselsnummer = Fnr(packet["fødselsnummer"].asText())
-        )
+        val forsikringer = if (erDev) {
+            mockdataDev(
+                fødselsnummer = Fnr(packet["fødselsnummer"].asText()),
+                skjæringstidspunkt = packet["SelvstendigForsikring.skjæringstidspunkt"].asLocalDate()
+            )
+        } else {
+            forsikringDao.hentForsikringer(
+                fødselsnummer = Fnr(packet["fødselsnummer"].asText())
+            )
+        }
 
         // Sjekk at forsikring er aktiv, og overlapper skjæringstidspunktet
         val skjæringstidspunkt = packet["SelvstendigForsikring.skjæringstidspunkt"].asLocalDate()
@@ -68,3 +76,4 @@ internal class Forsikringsløser(
         })
     }
 }
+

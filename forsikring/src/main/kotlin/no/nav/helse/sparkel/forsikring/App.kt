@@ -31,7 +31,8 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
 
         val forsikringDao = ForsikringDao { dataSource }
 
-        Forsikringsløser(this, forsikringDao)
+        val erDev = env["NAIS_CLUSTER_NAME"] == "dev-fss"
+        Forsikringsløser(this, forsikringDao, erDev)
     }
 }
 
