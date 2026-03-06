@@ -1,0 +1,1 @@
+Legger på en README som burde bli bedre, mest for å trigge et enkelt bygg
