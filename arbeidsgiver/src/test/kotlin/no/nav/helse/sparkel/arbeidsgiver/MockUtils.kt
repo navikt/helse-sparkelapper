@@ -128,5 +128,7 @@ internal fun mockInntektsmeldingHåndtert(vedtaksperiodeId: UUID, dokumentId: UU
     organisasjonsnummer = ORGNUMMER,
     vedtaksperiodeId = vedtaksperiodeId,
     dokumentId = dokumentId,
-    opprettet = LocalDateTime.MAX
+    opprettet = LocalDateTime.MAX,
+    vedtaksperioderMedSammeFørsteFraværsdag = listOf(vedtaksperiodeId)
+
 )

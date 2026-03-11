@@ -87,7 +87,10 @@ class InntektsmeldingHåndertRiverTest {
             "organisasjonsnummer" to ORGNUMMER,
             "vedtaksperiodeId" to vedtaksperiodeId,
             "inntektsmeldingId" to hendelseId,
-            "@opprettet" to LocalDateTime.MAX
+            "@opprettet" to LocalDateTime.MAX,
+            "vedtaksperioderMedSammeFørsteFraværsdag" to listOf(
+                vedtaksperiodeId
+            )
         )
     ).toString()
 }

@@ -11,7 +11,8 @@ internal data class InntektsmeldingHåndtertDto(
     val organisasjonsnummer: String,
     val vedtaksperiodeId: UUID,
     val dokumentId: UUID,
-    val opprettet: LocalDateTime
+    val opprettet: LocalDateTime,
+    val vedtaksperioderMedSammeFørsteFraværsdag: List<UUID>
 ) {
     val type: Meldingstype = Meldingstype.INNTEKTSMELDING_HÅNDTERT
 }
@@ -21,5 +22,6 @@ internal fun JsonMessage.toInntektsmeldingHåndtertDto(dokumentId: UUID) = Innte
     organisasjonsnummer = this["organisasjonsnummer"].asText(),
     vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
     dokumentId = dokumentId,
-    opprettet = this["@opprettet"].asLocalDateTime()
+    opprettet = this["@opprettet"].asLocalDateTime(),
+    vedtaksperioderMedSammeFørsteFraværsdag = this["vedtaksperioderMedSammeFørsteFraværsdag"].asIterable().map { UUID.fromString(it.asText()) }
 )

@@ -39,6 +39,7 @@ internal class InntektsmeldingHåndertRiver(
                     "inntektsmeldingId",
                     "@opprettet"
                 )
+                it.requireArray("vedtaksperioderMedSammeFørsteFraværsdag")
             }
         }.register(this)
     }
