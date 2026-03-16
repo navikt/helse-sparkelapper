@@ -8,6 +8,7 @@ import java.time.LocalDate
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -46,11 +47,11 @@ internal class SparkelSykepengeperioderMockRiverTest {
     }
 
     @Test
-    fun `løser behov med tom liste om vi ikke matcher på fnr`() {
+    fun `svarer ikke på behov om det ikke er lagt inn svar for fnr`() {
         testrapid.sendTestMessage(enkeltBehov("nytt-fnr"))
-        val løsning = testrapid.inspektør.løsning("Sykepengehistorikk")
-        assertFalse(løsning.isMissingOrNull())
-        assertEquals(0, løsning.size())
+        assertTrue(testrapid.inspektør.hendelser("behov").none { it.hasNonNull("@løsning") }) {
+            "Forventet ikke at behovet skulle blir besvart"
+        }
     }
 
     @Test
@@ -87,7 +88,7 @@ fun TestRapid.RapidInspector.meldinger() =
 fun TestRapid.RapidInspector.hendelser(type: String) =
     meldinger().filter { it.path("@event_name").asText() == type }
 
-fun TestRapid.RapidInspector.løsning(behov: String) =
+fun TestRapid.RapidInspector.løsning(behov: String): JsonNode =
     hendelser("behov")
         .filter { it.hasNonNull("@løsning") }
         .last { it.path("@behov").map(JsonNode::asText).contains(behov) }

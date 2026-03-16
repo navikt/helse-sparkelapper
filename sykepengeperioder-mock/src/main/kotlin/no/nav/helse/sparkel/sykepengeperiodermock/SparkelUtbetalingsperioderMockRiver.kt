@@ -45,8 +45,8 @@ internal class SparkelUtbetalingsperioderMockRiver(
         val fødselsnummer = packet["fødselsnummer"].asText()
         val utbetalingsperioder = svar[fødselsnummer]
             ?: run {
-                log.info("Fant ikke forhåndskonfigurert infotrygdutbetalingshistorikk blant ${svar.size} forhåndskonfigurerte. Defaulter til en som er tom")
-                emptyList()
+                log.info("Fant ikke forhåndskonfigurert infotrygdutbetalingshistorikk blant ${svar.size} forhåndskonfigurerte. Svarer ikke på behov.")
+                return
             }
 
         packet["@løsning"] = mapOf(

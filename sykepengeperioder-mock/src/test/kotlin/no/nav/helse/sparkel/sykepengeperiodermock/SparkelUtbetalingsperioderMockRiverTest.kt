@@ -10,6 +10,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import java.time.LocalDate
 import java.util.UUID
+import org.junit.jupiter.api.Assertions.assertTrue
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SparkelUtbetalingsperioderMockRiverTest {
@@ -32,11 +33,11 @@ internal class SparkelUtbetalingsperioderMockRiverTest {
     }
 
     @Test
-    fun `løser behov med tom liste om vi ikke matcher på fnr`() {
+    fun `svarer ikke på behov om det ikke er lagt inn svar for fnr`() {
         testrapid.sendTestMessage(enkeltBehov("nytt-fnr"))
-        val løsning = testrapid.inspektør.løsning("HentInfotrygdutbetalinger")
-        assertFalse(løsning.isMissingOrNull())
-        assertEquals(0, løsning.size())
+        assertTrue(testrapid.inspektør.hendelser("behov").none { it.hasNonNull("@løsning") }) {
+            "Forventet ikke at behovet skulle blir besvart"
+        }
     }
 
     @Test
