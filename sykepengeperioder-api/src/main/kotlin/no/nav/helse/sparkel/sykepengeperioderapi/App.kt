@@ -152,7 +152,8 @@ internal fun Application.sykepengeperioderApi(
                     .takeUnless { it.isEmpty() } ?: throw IllegalArgumentException("Det må sendes med minst én personidentifikator")
                 val fom = LocalDate.parse(request.path("fom").asText())
                 val tom = LocalDate.parse(request.path("tom").asText())
-                val perioder = infotrygdutbetalinger.utbetalinger(personidentifikatorer, fom, tom).markerUsikkerGrad()
+                val inkluderAllePeriodetyper = request.path("inkluderAllePeriodetyper").takeUnless { it.isMissingNode || it.isNull }?.asBoolean() ?: false
+                val perioder = infotrygdutbetalinger.utbetalinger(personidentifikatorer, fom, tom, inkluderAllePeriodetyper).markerUsikkerGrad()
                 val response = perioder.response
                 sikkerlogg.info("Sender perioder:\n\t$response")
                 call.respondText(response, Json)

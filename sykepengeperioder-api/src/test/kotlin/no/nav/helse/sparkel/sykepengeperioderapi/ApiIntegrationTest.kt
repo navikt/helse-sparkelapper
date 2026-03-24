@@ -200,6 +200,57 @@ class ApiIntegrationTest {
         assertEquals(HttpStatusCode.Unauthorized, response.status)
     }
 
+    @Test
+    fun `utbetalinger med periodeType som ikke er en utbetalingstype filtreres bort som standard`() = withServer {
+        val fnr = randomFnr()
+        insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31))
+        insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 80, orgnr = "123456789", periodeType = "2")
+
+        val response = post("/") {
+            header(HttpHeaders.Authorization, "Bearer ${token()}")
+            contentType(ContentType.Application.Json)
+            setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        JSONAssert.assertEquals(
+            """{"utbetaltePerioder":[]}""",
+            response.bodyAsText(),
+            JSONCompareMode.NON_EXTENSIBLE
+        )
+    }
+
+    @Test
+    fun `utbetalinger med periodeType som ikke er en utbetalingstype inkluderes når inkluderAllePeriodetyper er true`() = withServer {
+        val fnr = randomFnr()
+        insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31))
+        insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 80, orgnr = "123456789", periodeType = "2")
+
+        val response = post("/") {
+            header(HttpHeaders.Authorization, "Bearer ${token()}")
+            contentType(ContentType.Application.Json)
+            setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31","inkluderAllePeriodetyper":true}""")
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        JSONAssert.assertEquals(
+            """
+            {
+                "utbetaltePerioder": [{
+                    "personidentifikator": "$fnr",
+                    "organisasjonsnummer": "123456789",
+                    "fom": "2018-01-01",
+                    "tom": "2018-01-31",
+                    "grad": 80,
+                    "tags": []
+                }]
+            }
+            """,
+            response.bodyAsText(),
+            JSONCompareMode.NON_EXTENSIBLE
+        )
+    }
+
     // -------------------------------------------------------------------------
     // Infrastructure helpers
     // -------------------------------------------------------------------------
@@ -250,7 +301,7 @@ class ApiIntegrationTest {
         }
     }
 
-    private fun insertUtbetaling(fnr: String, seq: Int, fom: LocalDate, tom: LocalDate, grad: Int, orgnr: String) {
+    private fun insertUtbetaling(fnr: String, seq: Int, fom: LocalDate, tom: LocalDate, grad: Int, orgnr: String, periodeType: String = "0") {
         val itFnr = Fnr(fnr).formatAsITFnr()
         sessionOf(dataSource).use { session ->
             session.run(
@@ -260,7 +311,7 @@ class ApiIntegrationTest {
                         f_nr, is10_arbufoer_seq, is15_korr,
                         is15_utbetfom, is15_utbettom,
                         is15_grad, is15_op, is15_dsats, is15_type, is15_arbgivnr
-                    ) VALUES (:fnr, :seq, 'N', :fom, :tom, :grad, 'AL', 1000, '0', :orgnr)
+                    ) VALUES (:fnr, :seq, 'N', :fom, :tom, :grad, 'AL', 1000, :periodeType, :orgnr)
                     """,
                     mapOf(
                         "fnr" to itFnr,
@@ -268,7 +319,8 @@ class ApiIntegrationTest {
                         "fom" to fom.toInfotrygdInt(),
                         "tom" to tom.toInfotrygdInt(),
                         "grad" to grad.toString(),
-                        "orgnr" to orgnr
+                        "orgnr" to orgnr,
+                        "periodeType" to periodeType
                     )
                 ).asUpdate
             )

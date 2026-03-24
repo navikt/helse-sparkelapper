@@ -11,7 +11,7 @@ class Infotrygdutbetalinger(dataSource: DataSource) {
     private val utbetalingDAO = UtbetalingDAO { dataSource }
     private val periodeDAO = PeriodeDAO { dataSource }
 
-    fun utbetalinger(personidentifikatorer: Set<Personidentifikator>, fom: LocalDate, tom:LocalDate): List<Infotrygdperiode> {
+    fun utbetalinger(personidentifikatorer: Set<Personidentifikator>, fom: LocalDate, tom:LocalDate, inkluderAllePeriodetyper: Boolean = false): List<Infotrygdperiode> {
         val fnrTilUtbetalinger = personidentifikatorer
             .map { personidentifikator -> Fnr(personidentifikator.toString()) }
             .associateWith { fnr -> periodeDAO.perioder(fnr, fom, tom) }
@@ -21,7 +21,7 @@ class Infotrygdutbetalinger(dataSource: DataSource) {
             }
 
       return fnrTilUtbetalinger.flatMap { (fnr, utbetalingsperioder) ->
-            utbetalingsperioder.filter { it.periodeType in utbetalingstyper }.map {
+            utbetalingsperioder.filter { inkluderAllePeriodetyper || it.periodeType in utbetalingstyper }.map {
                 Infotrygdperiode(
                     personidentifikator = Personidentifikator(fnr.toString()),
                     organisasjonsnummer = it.arbOrgnr.organisasjosnummerOrNull,
