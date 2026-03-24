@@ -4,10 +4,8 @@ import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.client.engine.ProxyBuilder
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
-import io.ktor.http.Url
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
@@ -28,10 +26,13 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import java.io.File
+import java.net.InetSocketAddress
+import java.net.Proxy
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID
+import javax.sql.DataSource
 import no.nav.helse.sparkel.infotrygd.api.Infotrygdperiode
 import no.nav.helse.sparkel.infotrygd.api.Infotrygdutbetalinger
 import no.nav.helse.sparkel.infotrygd.api.Personidentifikator
@@ -44,8 +45,32 @@ private val String.env get() = checkNotNull(System.getenv(this)) { "Fant ikke en
 private val objectMapper = jacksonObjectMapper()
 
 fun main() {
+    val dataSource = try {
+        HikariDataSource(HikariConfig().apply {
+            jdbcUrl = File("/var/run/secrets/nais.io/oracle/config/jdbc_url").readText()
+            username = File("/var/run/secrets/nais.io/oracle/creds/username").readText()
+            password = File("/var/run/secrets/nais.io/oracle/creds/password").readText()
+            schema = "DATABASE_SCHEMA".env
+            connectionTimeout = Duration.ofSeconds(10).toMillis()
+            maxLifetime = Duration.ofMinutes(30).toMillis()
+            initializationFailTimeout = Duration.ofMinutes(1).toMillis()
+        })
+    } catch (err: Exception) {
+        sikkerlogg.error("Feil ved oppkobling til Oracle: ${err.message}", err)
+        logg.error("Feil ved oppkobling til Oracle. Se sikker logg")
+        throw err
+    }
+
     try {
-        embeddedServer(ConfiguredCIO, port = 8080, module = Application::sykepengeperioderApi).start(wait = true)
+        embeddedServer(ConfiguredCIO, port = 8080) {
+            sykepengeperioderApi(
+                dataSource = dataSource,
+                jwksUri = "AZURE_OPENID_CONFIG_JWKS_URI".env,
+                issuer = "AZURE_OPENID_CONFIG_ISSUER".env,
+                audience = "AZURE_APP_CLIENT_ID".env,
+                httpProxy = System.getenv("HTTP_PROXY")
+            )
+        }.start(wait = true)
     } catch (err: Exception) {
         sikkerlogg.error("Feil ved oppstart av applikasjonen! ${err.message}", err)
         logg.error("Feil ved oppstart av applikasjonen! Se sikker logg")
@@ -67,7 +92,13 @@ private val List<Infotrygdperiode>.response get() = objectMapper.createObjectNod
     json.toString()
 }
 
-private fun Application.sykepengeperioderApi() {
+internal fun Application.sykepengeperioderApi(
+    dataSource: DataSource,
+    jwksUri: String,
+    issuer: String,
+    audience: String,
+    httpProxy: String? = null
+) {
     install(CallId) {
         header("x-callId")
         verify { it.isNotEmpty() }
@@ -91,30 +122,19 @@ private fun Application.sykepengeperioderApi() {
         }
     }
 
-    val dataSource = try {
-        HikariDataSource(HikariConfig().apply {
-            jdbcUrl = File("/var/run/secrets/nais.io/oracle/config/jdbc_url").readText()
-            username = File("/var/run/secrets/nais.io/oracle/creds/username").readText()
-            password = File("/var/run/secrets/nais.io/oracle/creds/password").readText()
-            schema = "DATABASE_SCHEMA".env
-            connectionTimeout = Duration.ofSeconds(10).toMillis()
-            maxLifetime = Duration.ofMinutes(30).toMillis()
-            initializationFailTimeout = Duration.ofMinutes(1).toMillis()
-        })
-    } catch (err: Exception) {
-        throw RuntimeException("Feil ved oppkobling til Oracle", err)
-    }
-
     val infotrygdutbetalinger = Infotrygdutbetalinger(dataSource)
 
     authentication {
         jwt {
-            val jwkProvider = JwkProviderBuilder(URI("AZURE_OPENID_CONFIG_JWKS_URI".env).toURL())
-                .proxied(ProxyBuilder.http(Url("HTTP_PROXY".env)))
-                .build()
+            val jwkProviderBuilder = JwkProviderBuilder(URI(jwksUri).toURL())
+            httpProxy?.let { proxy ->
+                val proxyUri = URI(proxy)
+                jwkProviderBuilder.proxied(Proxy(Proxy.Type.HTTP, InetSocketAddress(proxyUri.host, proxyUri.port)))
+            }
+            val jwkProvider = jwkProviderBuilder.build()
 
-            verifier(jwkProvider, "AZURE_OPENID_CONFIG_ISSUER".env) {
-                withAudience("AZURE_APP_CLIENT_ID".env)
+            verifier(jwkProvider, issuer) {
+                withAudience(audience)
             }
             validate { credentials -> JWTPrincipal(credentials.payload) }
         }
