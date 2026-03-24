@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.infotrygd.api
 
+import java.math.BigDecimal
 import java.time.LocalDate
 import no.nav.helse.sparkel.infotrygd.api.Infotrygdutbetalinger.Companion.filtrer
 import no.nav.helse.sparkel.infotrygd.api.Organisasjonsnummer.Companion.organisasjosnummerOrNull
@@ -28,7 +29,9 @@ internal class PeriodefilterTest {
             organisasjonsnummer = "999999999".organisasjosnummerOrNull,
             fom = fom,
             tom = tom,
-            grad = 100
+            grad = 100,
+            dagsats = BigDecimal.ZERO,
+            type = Periodetype.UKJENT
         )
         val Int.januar get() = LocalDate.of(2018, 1, this)
         val Int.februar get() = LocalDate.of(2018, 2, this)

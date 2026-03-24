@@ -11,26 +11,27 @@ class Infotrygdutbetalinger(dataSource: DataSource) {
     private val utbetalingDAO = UtbetalingDAO { dataSource }
     private val periodeDAO = PeriodeDAO { dataSource }
 
-    fun utbetalinger(personidentifikatorer: Set<Personidentifikator>, fom: LocalDate, tom:LocalDate, inkluderAllePeriodetyper: Boolean = false): List<Infotrygdperiode> {
-        val fnrTilUtbetalinger = personidentifikatorer
+    fun utbetalinger(personidentifikatorer: Set<Personidentifikator>, fom: LocalDate, tom:LocalDate, inkluderAllePeriodetyper: Boolean): List<Infotrygdperiode> {
+        return personidentifikatorer
             .map { personidentifikator -> Fnr(personidentifikator.toString()) }
-            .associateWith { fnr -> periodeDAO.perioder(fnr, fom, tom) }
-            .mapValues { (fnr, perioder) ->
+            .flatMap { fnr ->
+                val perioder = periodeDAO.perioder(fnr, fom, tom)
                 val sekvensIdeer = perioder.map { it.seq }.toIntArray()
                 utbetalingDAO.utbetalinger(fnr, *sekvensIdeer)
+                    .filter { inkluderAllePeriodetyper || it.periodeType in utbetalingstyper }
+                    .map { utbetaling ->
+                        Infotrygdperiode(
+                            personidentifikator = Personidentifikator(fnr.toString()),
+                            organisasjonsnummer = utbetaling.arbOrgnr.organisasjosnummerOrNull,
+                            fom = utbetaling.fom!!,
+                            tom = utbetaling.tom ?: LocalDate.MAX,
+                            grad = utbetaling.grad.somGrad,
+                            dagsats = utbetaling.dagsats.toBigDecimal(),
+                            type = Periodetype.fraKode(utbetaling.periodeType)
+                        )
+                    }
             }
-
-      return fnrTilUtbetalinger.flatMap { (fnr, utbetalingsperioder) ->
-            utbetalingsperioder.filter { inkluderAllePeriodetyper || it.periodeType in utbetalingstyper }.map {
-                Infotrygdperiode(
-                    personidentifikator = Personidentifikator(fnr.toString()),
-                    organisasjonsnummer = it.arbOrgnr.organisasjosnummerOrNull,
-                    fom = it.fom!!,
-                    tom = it.tom ?: LocalDate.MAX,
-                    grad = it.grad.somGrad
-                )
-            }
-        }.filtrer(fom, tom)
+            .filtrer(fom, tom)
     }
 
     internal companion object {

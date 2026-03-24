@@ -1,5 +1,6 @@
 package no.nav.helse.sparkel.infotrygd.api
 
+import java.math.BigDecimal
 import java.time.LocalDate
 
 open class Infotrygdperiode(
@@ -7,7 +8,9 @@ open class Infotrygdperiode(
     val organisasjonsnummer: Organisasjonsnummer?,
     val fom: LocalDate,
     val tom: LocalDate,
-    val grad: Int
+    val grad: Int,
+    val dagsats: BigDecimal,
+    val type: Periodetype
 ) {
     override fun equals(other: Any?) = other is Infotrygdperiode &&
             other.personidentifikator == this.personidentifikator &&

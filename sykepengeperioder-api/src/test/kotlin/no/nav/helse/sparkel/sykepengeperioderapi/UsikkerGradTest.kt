@@ -1,8 +1,10 @@
 package no.nav.helse.sparkel.sykepengeperioderapi
 
+import java.math.BigDecimal
 import java.time.LocalDate
 import no.nav.helse.sparkel.infotrygd.api.Infotrygdperiode
 import no.nav.helse.sparkel.infotrygd.api.Organisasjonsnummer.Companion.organisasjosnummerOrNull
+import no.nav.helse.sparkel.infotrygd.api.Periodetype
 import no.nav.helse.sparkel.infotrygd.api.Personidentifikator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -110,7 +112,7 @@ internal class UsikkerGradTest {
 }
 
 private fun periode(orgnr: String?, fom: LocalDate = LocalDate.now(), tom: LocalDate = LocalDate.now(), grad: Int = 100) =
-    Infotrygdperiode(Personidentifikator("12345612345"), orgnr?.organisasjosnummerOrNull, fom, tom, grad)
+    Infotrygdperiode(Personidentifikator("12345612345"), orgnr?.organisasjosnummerOrNull, fom, tom, grad, BigDecimal.ZERO, Periodetype.UKJENT)
 
 fun Int.januar(year: Int = 2018) = LocalDate.of(year, 1, this)
 val Int.januar get() = this.januar()

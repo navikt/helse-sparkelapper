@@ -94,6 +94,8 @@ class ApiIntegrationTest {
                     "fom": "2018-01-01",
                     "tom": "2018-01-31",
                     "grad": 80,
+                    "dagsats": 1000.0,
+                    "type": "UTBETALING",
                     "tags": []
                 }]
             }
@@ -128,6 +130,8 @@ class ApiIntegrationTest {
                         "fom": "2018-01-01",
                         "tom": "2018-01-31",
                         "grad": 100,
+                        "dagsats": 1000.0,
+                        "type": "UTBETALING",
                         "tags": ["UsikkerGrad"]
                     },
                     {
@@ -136,6 +140,8 @@ class ApiIntegrationTest {
                         "fom": "2018-01-10",
                         "tom": "2018-02-10",
                         "grad": 100,
+                        "dagsats": 1000.0,
+                        "type": "UTBETALING",
                         "tags": ["UsikkerGrad"]
                     }
                 ]
@@ -172,6 +178,8 @@ class ApiIntegrationTest {
                         "fom": "2018-01-01",
                         "tom": "2018-01-31",
                         "grad": 100,
+                        "dagsats": 1000.0,
+                        "type": "UTBETALING",
                         "tags": []
                     },
                     {
@@ -180,6 +188,8 @@ class ApiIntegrationTest {
                         "fom": "2018-06-01",
                         "tom": "2018-06-30",
                         "grad": 50,
+                        "dagsats": 1000.0,
+                        "type": "UTBETALING",
                         "tags": []
                     }
                 ]
@@ -242,6 +252,8 @@ class ApiIntegrationTest {
                     "fom": "2018-01-01",
                     "tom": "2018-01-31",
                     "grad": 80,
+                    "dagsats": 1000.0,
+                    "type": "ETTERBETALING_FORHØYET_LØNN",
                     "tags": []
                 }]
             }
