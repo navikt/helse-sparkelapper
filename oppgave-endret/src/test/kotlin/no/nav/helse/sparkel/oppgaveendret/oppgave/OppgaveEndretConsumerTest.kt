@@ -171,7 +171,7 @@ class OppgaveEndretConsumerTest {
             val pollRecords = nesteRecords(mutableRecords, antallRecords)
             if (pollRecords.isNotEmpty()) {
                 logger.info("sender $antallRecords record{} til kafka-consumeren", if (antallRecords > 1) "(s)" else "")
-                ConsumerRecords(mapOf(TopicPartition("oppgave-endret", 0) to pollRecords))
+                ConsumerRecords(mapOf(TopicPartition("oppgave-endret", 0) to pollRecords), mapOf())
             } else ConsumerRecords.empty()
         }
     }
