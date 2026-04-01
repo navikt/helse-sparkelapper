@@ -26,6 +26,7 @@ import org.apache.kafka.common.TopicPartition
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertTimeoutPreemptively
 import org.slf4j.LoggerFactory
 
 class OppgaveEndretConsumerTest {
@@ -36,7 +37,7 @@ class OppgaveEndretConsumerTest {
     @Test
     fun `happy case`() {
         val gosysOppgaveEndretProducer = mockk<GosysOppgaveEndretProducer>(relaxed = true)
-        val manipulerbarKlokke = MutableClock(fixedClock(time = 6, minutt = 15).instant())
+        val manipulerbarKlokke = MutableClock(fixedClock(time = 21, minutt = 15).instant())
         val oppgaveEndretConsumer =
             OppgaveEndretConsumer(
                 rapidApplication,
@@ -70,7 +71,7 @@ class OppgaveEndretConsumerTest {
     @Test
     fun `ignorerer hendelser av typen OPPGAVE_ENDRET`() {
         val gosysOppgaveEndretProducer = mockk<GosysOppgaveEndretProducer>(relaxed = true)
-        val manipulerbarKlokke = MutableClock(fixedClock(time = 6, minutt = 15).instant())
+        val manipulerbarKlokke = MutableClock(fixedClock(time = 21, minutt = 15).instant())
         val oppgaveEndretConsumer =
             OppgaveEndretConsumer(
                 rapidApplication,
@@ -115,17 +116,22 @@ class OppgaveEndretConsumerTest {
                 kafkaConsumer,
                 gosysOppgaveEndretProducer,
                 objectMapper,
-                fixedClock(time = 6, minutt = 15),
+                fixedClock(time = 21, minutt = 15),
             )
         every { kafkaConsumer.poll(any<Duration>()) } throws IOException()
-        oppgaveEndretConsumer.run()
+
+        assertTimeoutPreemptively(
+            Duration.ofMillis(200),
+            "Det ser ut til at appen ikke gjorde det den skulle."
+        ) { oppgaveEndretConsumer.run() }
+
         verify(exactly = 1) { rapidApplication.stop() }
     }
 
     @Test
     fun `poller bare i gitt tidsrom`() {
         val gosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapidApplication)
-        val manipulerbarKlokke = MutableClock(fixedClock(time = 6, minutt = 14).instant())
+        val manipulerbarKlokke = MutableClock(fixedClock(time = 21, minutt = 14).instant())
         val oppgaveEndretConsumer =
             OppgaveEndretConsumer(
                 rapidApplication,
@@ -148,7 +154,7 @@ class OppgaveEndretConsumerTest {
         while (manipulerbarKlokke.count == 0) { Thread.sleep(100)}
         verify(exactly = 0) { kafkaConsumer.poll(any<Duration>()) }
 
-        manipulerbarKlokke.instant = fixedClock(time = 6, minutt = 16).instant()
+        manipulerbarKlokke.instant = fixedClock(time = 21, minutt = 16).instant()
 
         // Må starte run på nytt pga den forrige har tenkt å sove i fem minutter
         scope.launch {
