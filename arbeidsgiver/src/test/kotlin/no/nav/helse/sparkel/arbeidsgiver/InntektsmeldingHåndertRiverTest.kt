@@ -45,7 +45,6 @@ class InntektsmeldingHåndertRiverTest {
             fnr = "123456678911",
             internDokumentId = hendelseId,
             eksternDokumentId = dokumentId,
-            rapportertDato = LocalDateTime.now(),
             duplikatkontroll = "",
             jsonBody = "{}"
         ).ok()
