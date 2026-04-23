@@ -4,7 +4,7 @@ val jsonAssertVersion: String by project
 val logbackClassicVersion = "1.5.25"
 val logbackEncoderVersion = "8.0"
 val jacksonVersion = "2.18.3"
-val testcontainersVersion = "1.20.4"
+val testcontainersVersion = "2.0.5"
 
 dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackClassicVersion")
@@ -29,7 +29,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")
     implementation(project(":infotrygd"))
 
-    testImplementation("org.testcontainers:oracle-free:$testcontainersVersion")
+    testImplementation("org.testcontainers:testcontainers-oracle-free:$testcontainersVersion")
     testImplementation("no.nav.security:mock-oauth2-server:2.1.10")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.skyscreamer:jsonassert:$jsonAssertVersion")
