@@ -9,16 +9,16 @@ import kotliquery.sessionOf
 import org.intellij.lang.annotations.Language
 
 class ReplikabaseForsikringDao(private val dataSource: DataSource) : ForsikringDao {
-    override fun hentForsikringer(fødselsnummer: Fnr, skjæringstidspunkt: LocalDate): List<ForsikringDao.ForsikringDto> {
-        return sessionOf(dataSource).use { session ->
+    override fun hentForsikringer(fødselsnummer: String, skjæringstidspunkt: LocalDate): List<ForsikringDao.ForsikringDto> =
+        sessionOf(dataSource).use { session ->
             @Language("Oracle")
             val statement = """
-                    SELECT IF10_VIRKDATO, IF10_TYPE, IF10_FORSTOM, IF10_PREMGRL
-                    FROM IF_VEDFRIVT_10
-                    WHERE IF01_KODE = '1' AND IF01_AGNR_FNR = ? AND IF10_GODKJ = 'J'
-                """
+                SELECT IF10_VIRKDATO, IF10_TYPE, IF10_FORSTOM, IF10_PREMGRL
+                FROM IF_VEDFRIVT_10
+                WHERE IF01_KODE = '1' AND IF01_AGNR_FNR = ? AND IF10_GODKJ = 'J'
+            """
             session.run(
-                queryOf(statement, fødselsnummer.formatAsITFnr()).map { rs ->
+                queryOf(statement, fødselsnummer.tilInfotrygdFødselsnummer()).map { rs ->
                     ForsikringDao.ForsikringDto(
                         forsikringstype = when (rs.string("IF10_TYPE").trim()) {
                             "1" -> ForsikringDao.ForsikringDto.Forsikringstype.ÅttiProsentFraDagEn
@@ -36,6 +36,13 @@ class ReplikabaseForsikringDao(private val dataSource: DataSource) : ForsikringD
                 }.asList
             )
         }
+
+    private fun String.tilInfotrygdFødselsnummer(): String {
+        val år = substring(4, 6)
+        val måned = substring(2, 4)
+        val dag = substring(0, 2)
+        val id = substring(6)
+        return "$år$måned$dag$id"
     }
 
     private fun Row.intToLocalDate(label: String) = int(label).toLocalDate()

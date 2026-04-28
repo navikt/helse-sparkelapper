@@ -37,7 +37,7 @@ internal class Forsikringsløser(
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("Fikk behov om forsikring: ${packet.toJson()}")
 
-        val fødselsnummer = Fnr(packet["fødselsnummer"].asText())
+        val fødselsnummer = packet["fødselsnummer"].asText()
         val skjæringstidspunkt = packet["SelvstendigForsikring.skjæringstidspunkt"].asLocalDate()
 
         val forsikringer = forsikringDao.hentForsikringer(fødselsnummer, skjæringstidspunkt)

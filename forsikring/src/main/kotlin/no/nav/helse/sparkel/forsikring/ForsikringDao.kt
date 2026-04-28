@@ -3,7 +3,7 @@ package no.nav.helse.sparkel.forsikring
 import java.time.LocalDate
 
 interface ForsikringDao {
-    fun hentForsikringer(fødselsnummer: Fnr, skjæringstidspunkt: LocalDate): List<ForsikringDto>
+    fun hentForsikringer(fødselsnummer: String, skjæringstidspunkt: LocalDate): List<ForsikringDto>
 
     data class ForsikringDto(
         val forsikringstype: Forsikringstype,
