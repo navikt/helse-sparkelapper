@@ -14,10 +14,8 @@ import org.slf4j.LoggerFactory
 
 internal class Forsikringsløser(
     rapidsConnection: RapidsConnection,
-    val forsikringDao: ForsikringDao,
-    val erDev: Boolean
+    private val forsikringDao: ForsikringDao
 ) : River.PacketListener {
-
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
     companion object {
@@ -39,19 +37,12 @@ internal class Forsikringsløser(
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("Fikk behov om forsikring: ${packet.toJson()}")
 
-        val forsikringer = if (erDev) {
-            mockdataDev(
-                fødselsnummer = Fnr(packet["fødselsnummer"].asText()),
-                skjæringstidspunkt = packet["SelvstendigForsikring.skjæringstidspunkt"].asLocalDate()
-            )
-        } else {
-            forsikringDao.hentForsikringer(
-                fødselsnummer = Fnr(packet["fødselsnummer"].asText())
-            )
-        }
+        val fødselsnummer = Fnr(packet["fødselsnummer"].asText())
+        val skjæringstidspunkt = packet["SelvstendigForsikring.skjæringstidspunkt"].asLocalDate()
+
+        val forsikringer = forsikringDao.hentForsikringer(fødselsnummer, skjæringstidspunkt)
 
         // Sjekk at forsikring er aktiv, og overlapper skjæringstidspunktet
-        val skjæringstidspunkt = packet["SelvstendigForsikring.skjæringstidspunkt"].asLocalDate()
         val aktuelleForsikringer = forsikringer
             .filter { it.forsikringstype != Forsikringstype.IkkeInteressert }
             .filter { it.erAktivPå(skjæringstidspunkt) }
@@ -67,13 +58,15 @@ internal class Forsikringsløser(
             }
         )
 
-        context.publish(packet.toJson().also { json ->
-            sikkerlogg.info(
-                "sender svar om forsikring {}:\n\t{}",
-                keyValue("id", packet["@id"].asText()),
-                json
-            )
-        })
+        context.publish(
+            packet.toJson().also { json ->
+                sikkerlogg.info(
+                    "sender svar om forsikring {}:\n\t{}",
+                    keyValue("id", packet["@id"].asText()),
+                    json
+                )
+            }
+        )
     }
 }
 

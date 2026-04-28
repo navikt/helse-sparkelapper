@@ -3,10 +3,9 @@ package nav.no.helse.sparkel.forsikring
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import java.time.LocalDate
 import no.nav.helse.sparkel.forsikring.Fnr
-import no.nav.helse.sparkel.forsikring.ForsikringDao
+import no.nav.helse.sparkel.forsikring.ReplikabaseForsikringDao
 import no.nav.helse.sparkel.forsikring.Forsikringsløser
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -14,19 +13,11 @@ import org.junit.jupiter.api.TestInstance.Lifecycle
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class ForsikringsløserTest : H2Database() {
-
-    private val rapid = TestRapid()
-
-    private val sisteSendtMelding get() = rapid.inspektør.message(rapid.inspektør.size.minus(1))
-
-    @BeforeAll
-    fun setup() {
-
-        val forsikringDao = ForsikringDao { dataSource }
-        rapid.apply {
-            Forsikringsløser(this, forsikringDao, false)
-        }
-
+    private val rapid = TestRapid().apply {
+        Forsikringsløser(
+            rapidsConnection = this,
+            forsikringDao = ReplikabaseForsikringDao(dataSource)
+        )
     }
 
     @BeforeEach
@@ -61,7 +52,7 @@ internal class ForsikringsløserTest : H2Database() {
         )
 
         assertEquals(1, rapid.inspektør.size)
-        val melding = sisteSendtMelding
+        val melding = rapid.inspektør.message(0)
 
         assertEquals(1, melding["@løsning"]?.get("SelvstendigForsikring")?.toList()?.size)
         assertEquals("ÅttiProsentFraDagEn", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("forsikringstype")?.asText())
@@ -71,7 +62,6 @@ internal class ForsikringsløserTest : H2Database() {
 
     @Test
     fun `Tomt svar når forsikringen ikke dekker skjæringstidspunkt` () {
-
         opprettPeriode(
             fnr = Fnr("01010112345"),
             virkningsdato = LocalDate.of(2023, 1, 1),
@@ -94,12 +84,11 @@ internal class ForsikringsløserTest : H2Database() {
             }
             """.trimIndent()
         )
-        assertEquals(emptyList<Any>(), sisteSendtMelding["@løsning"]?.get("SelvstendigForsikring")?.toList())
+        assertEquals(emptyList<Any>(), rapid.inspektør.message(0)["@løsning"]?.get("SelvstendigForsikring")?.toList())
     }
 
     @Test
     fun `Tomt svar når forsikringen ikke er godkjent` () {
-
         opprettPeriode(
             fnr = Fnr("01010112345"),
             virkningsdato = null,
@@ -122,12 +111,11 @@ internal class ForsikringsløserTest : H2Database() {
             }
             """.trimIndent()
         )
-        assertEquals(emptyList<Any>(), sisteSendtMelding["@løsning"]?.get("SelvstendigForsikring")?.toList())
+        assertEquals(emptyList<Any>(), rapid.inspektør.message(0)["@løsning"]?.get("SelvstendigForsikring")?.toList())
     }
 
     @Test
     fun `Tomt svar når forsikringen ikke er interessant` () {
-
         opprettPeriode(
             fnr = Fnr("01010112345"),
             virkningsdato = LocalDate.of(2024, 1, 1),
@@ -150,12 +138,11 @@ internal class ForsikringsløserTest : H2Database() {
             }
             """.trimIndent()
         )
-        assertEquals(emptyList<Any>(), sisteSendtMelding["@løsning"]?.get("SelvstendigForsikring")?.toList())
+        assertEquals(emptyList<Any>(), rapid.inspektør.message(0)["@løsning"]?.get("SelvstendigForsikring")?.toList())
     }
 
     @Test
-    fun `Bare et svar når bare en forsikring er gyldig` () {
-
+    fun `Bare ett svar når bare en forsikring er gyldig` () {
         opprettPeriode(
             fnr = Fnr("01010112345"),
             virkningsdato = LocalDate.of(2024, 1, 1),
@@ -187,7 +174,7 @@ internal class ForsikringsløserTest : H2Database() {
             }
             """.trimIndent()
         )
-        val melding = sisteSendtMelding
+        val melding = rapid.inspektør.message(0)
 
         assertEquals(1, melding["@løsning"]?.get("SelvstendigForsikring")?.toList()?.size)
         assertEquals("HundreProsentFraDagSytten", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("forsikringstype")?.asText())
@@ -219,7 +206,7 @@ internal class ForsikringsløserTest : H2Database() {
             }
             """.trimIndent()
         )
-        val melding = sisteSendtMelding
+        val melding = rapid.inspektør.message(0)
         assertEquals(1, melding["@løsning"]?.get("SelvstendigForsikring")?.toList()?.size)
         assertEquals("HundreProsentFraDagSytten", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("forsikringstype")?.asText())
         assertEquals("2025-01-01", melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("startdato")?.asText())

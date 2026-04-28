@@ -1,36 +1,24 @@
 package nav.no.helse.sparkel.forsikring
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
-import no.nav.helse.sparkel.forsikring.ForsikringDao
 import no.nav.helse.sparkel.forsikring.Forsikringsløser
+import no.nav.helse.sparkel.forsikring.MockForsikringDao
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
-@TestInstance(Lifecycle.PER_CLASS)
-internal class `ForsikringsløserMockTest` : H2Database() {
-
-    private val rapid = TestRapid()
-
-    private val sisteSendtMelding get() = rapid.inspektør.message(rapid.inspektør.size.minus(1))
-
-    @BeforeAll
-    fun setup() {
-
-        val forsikringDao = ForsikringDao { dataSource }
-        rapid.apply {
-            Forsikringsløser(this, forsikringDao, true)
-        }
+internal class `ForsikringsløserMockTest` {
+    private val rapid = TestRapid().apply {
+        Forsikringsløser(
+            rapidsConnection = this,
+            forsikringDao = MockForsikringDao()
+        )
     }
 
     @BeforeEach
     fun beforeEach() {
         rapid.reset()
-        clear()
     }
 
     @ParameterizedTest
@@ -56,7 +44,7 @@ internal class `ForsikringsløserMockTest` : H2Database() {
         )
 
         assertEquals(1, rapid.inspektør.size)
-        val melding = sisteSendtMelding
+        val melding = rapid.inspektør.message(0)
 
         assertEquals(1, melding["@løsning"]?.get("SelvstendigForsikring")?.toList()?.size)
         assertEquals(forsikringsType, melding["@løsning"]?.get("SelvstendigForsikring")?.firstOrNull()?.get("forsikringstype")?.asText())
