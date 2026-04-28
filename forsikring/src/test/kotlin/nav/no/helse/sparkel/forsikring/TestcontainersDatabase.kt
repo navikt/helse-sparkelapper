@@ -2,12 +2,9 @@ package nav.no.helse.sparkel.forsikring
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
-import no.nav.helse.sparkel.forsikring.Fnr
 import org.intellij.lang.annotations.Language
 import org.testcontainers.oracle.OracleContainer
 
@@ -40,36 +37,34 @@ object TestcontainersDatabase {
         }
     }
 
-    fun opprettPeriode(
-        fnr: Fnr,
-        virkningsdato: LocalDate?,
-        tom: LocalDate?,
-        godkjent: String,
-        forsikringstype: String,
-        premiegrunnlag: Int
+    fun insertVedfrivt(
+        agnrFnr: String,
+        virkdato: Int,
+        forstom: Int,
+        godkj: String,
+        type: String,
+        premgrl: Int
     ) {
         sessionOf(dataSource).use { session ->
             @Language("Oracle")
             val query = """
                 INSERT INTO IF_VEDFRIVT_10 (IF01_KODE, IF01_AGNR_FNR, IF10_GODKJ, IF10_TYPE, IF10_VIRKDATO, IF10_FORSTOM, IF10_PREMGRL)
-                VALUES (:kode, :fnr, :godkjent, :type, :fom, :tom, :premiegrunnlag);
+                VALUES (:kode, :agnr_fnr, :godkj, :type, :virkdato, :forstom, :premgrl);
             """
             session.run(
                 queryOf(
                     query,
                     mapOf(
-                        "fnr" to "${fnr.year()}${fnr.month()}${fnr.date()}${fnr.id()}",
-                        "fom" to virkningsdato.format(),
-                        "tom" to tom.format(),
-                        "godkjent" to godkjent,
-                        "type" to forsikringstype,
                         "kode" to "1",
-                        "premiegrunnlag" to premiegrunnlag
+                        "agnr_fnr" to agnrFnr,
+                        "godkj" to godkj,
+                        "type" to type,
+                        "virkdato" to virkdato,
+                        "forstom" to forstom,
+                        "premgrl" to premgrl
                     )
                 ).asUpdate
             )
         }
     }
-
-    private fun LocalDate?.format() = this?.let { format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt() } ?: 0
 }

@@ -1,8 +1,6 @@
 package nav.no.helse.sparkel.forsikring
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
-import java.time.LocalDate
-import no.nav.helse.sparkel.forsikring.Fnr
 import no.nav.helse.sparkel.forsikring.Forsikringsløser
 import no.nav.helse.sparkel.forsikring.ReplikabaseForsikringDao
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -24,13 +22,13 @@ internal class ForsikringsløserTest {
 
     @Test
     fun `Får svar når forsikringen er godkjent, i riktig periode og av gyldig type`() {
-        TestcontainersDatabase.opprettPeriode(
-            fnr = Fnr("01010112345"),
-            virkningsdato = LocalDate.of(2024, 1, 1),
-            tom = LocalDate.of(2024, 12, 31),
-            godkjent = "J",
-            forsikringstype = "1",
-            premiegrunnlag = 816000
+        TestcontainersDatabase.insertVedfrivt(
+            agnrFnr = "03020112345",
+            virkdato = 20240101,
+            forstom = 20241231,
+            godkj = "J",
+            type = "1",
+            premgrl = 816000
         )
 
         rapid.sendTestMessage(
@@ -39,7 +37,7 @@ internal class ForsikringsløserTest {
                 "@behov": ["SelvstendigForsikring"],
                 "@id": "12345",
                 "@opprettet": "2024-06-01T12:00:00",
-                "fødselsnummer": "01010112345",
+                "fødselsnummer": "01020312345",
                 "SelvstendigForsikring": {
                     "skjæringstidspunkt": "2024-05-01"
                 }
@@ -58,13 +56,13 @@ internal class ForsikringsløserTest {
 
     @Test
     fun `Tomt svar når forsikringen ikke dekker skjæringstidspunkt`() {
-        TestcontainersDatabase.opprettPeriode(
-            fnr = Fnr("01010112345"),
-            virkningsdato = LocalDate.of(2023, 1, 1),
-            tom = LocalDate.of(2023, 12, 31),
-            godkjent = "J",
-            forsikringstype = "2",
-            premiegrunnlag = 816000
+        TestcontainersDatabase.insertVedfrivt(
+            agnrFnr = "03020112345",
+            virkdato = 20230101,
+            forstom = 20231231,
+            godkj = "J",
+            type = "2",
+            premgrl = 816000
         )
 
         rapid.sendTestMessage(
@@ -73,7 +71,7 @@ internal class ForsikringsløserTest {
                 "@behov": ["SelvstendigForsikring"],
                 "@id": "12345",
                 "@opprettet": "2024-06-01T12:00:00",
-                "fødselsnummer": "01010112345",
+                "fødselsnummer": "01020312345",
                 "SelvstendigForsikring": {
                     "skjæringstidspunkt": "2024-05-01"
                 }
@@ -85,13 +83,13 @@ internal class ForsikringsløserTest {
 
     @Test
     fun `Tomt svar når forsikringen ikke er godkjent`() {
-        TestcontainersDatabase.opprettPeriode(
-            fnr = Fnr("01010112345"),
-            virkningsdato = null,
-            tom = LocalDate.of(2024, 12, 31),
-            godkjent = "N",
-            forsikringstype = " ",
-            premiegrunnlag = 0
+        TestcontainersDatabase.insertVedfrivt(
+            agnrFnr = "03020112345",
+            virkdato = 0,
+            forstom = 20241231,
+            godkj = "N",
+            type = " ",
+            premgrl = 0
         )
 
         rapid.sendTestMessage(
@@ -100,7 +98,7 @@ internal class ForsikringsløserTest {
                 "@behov": ["SelvstendigForsikring"],
                 "@id": "12345",
                 "@opprettet": "2024-06-01T12:00:00",
-                "fødselsnummer": "01010112345",
+                "fødselsnummer": "01020312345",
                 "SelvstendigForsikring": {
                     "skjæringstidspunkt": "2024-05-01"
                 }
@@ -112,13 +110,13 @@ internal class ForsikringsløserTest {
 
     @Test
     fun `Tomt svar når forsikringen ikke er interessant`() {
-        TestcontainersDatabase.opprettPeriode(
-            fnr = Fnr("01010112345"),
-            virkningsdato = LocalDate.of(2024, 1, 1),
-            tom = LocalDate.of(2024, 12, 31),
-            godkjent = "J",
-            forsikringstype = "5",
-            premiegrunnlag = 816000
+        TestcontainersDatabase.insertVedfrivt(
+            agnrFnr = "03020112345",
+            virkdato = 20240101,
+            forstom = 20241231,
+            godkj = "J",
+            type = "5",
+            premgrl = 816000
         )
 
         rapid.sendTestMessage(
@@ -127,7 +125,7 @@ internal class ForsikringsløserTest {
                 "@behov": ["SelvstendigForsikring"],
                 "@id": "12345",
                 "@opprettet": "2024-06-01T12:00:00",
-                "fødselsnummer": "01010112345",
+                "fødselsnummer": "01020312345",
                 "SelvstendigForsikring": {
                     "skjæringstidspunkt": "2024-05-01"
                 }
@@ -139,22 +137,22 @@ internal class ForsikringsløserTest {
 
     @Test
     fun `Bare ett svar når bare en forsikring er gyldig`() {
-        TestcontainersDatabase.opprettPeriode(
-            fnr = Fnr("01010112345"),
-            virkningsdato = LocalDate.of(2024, 1, 1),
-            tom = LocalDate.of(2024, 12, 31),
-            godkjent = "J",
-            forsikringstype = "2",
-            premiegrunnlag = 816000
+        TestcontainersDatabase.insertVedfrivt(
+            agnrFnr = "03020112345",
+            virkdato = 20240101,
+            forstom = 20241231,
+            godkj = "J",
+            type = "2",
+            premgrl = 816000
         )
 
-        TestcontainersDatabase.opprettPeriode(
-            fnr = Fnr("01010112345"),
-            virkningsdato = LocalDate.of(2024, 1, 1),
-            tom = LocalDate.of(2024, 12, 31),
-            godkjent = "J",
-            forsikringstype = "5",
-            premiegrunnlag = 816000
+        TestcontainersDatabase.insertVedfrivt(
+            agnrFnr = "03020112345",
+            virkdato = 20240101,
+            forstom = 20241231,
+            godkj = "J",
+            type = "5",
+            premgrl = 816000
         )
 
         rapid.sendTestMessage(
@@ -163,7 +161,7 @@ internal class ForsikringsløserTest {
                 "@behov": ["SelvstendigForsikring"],
                 "@id": "12345",
                 "@opprettet": "2024-06-01T12:00:00",
-                "fødselsnummer": "01010112345",
+                "fødselsnummer": "01020312345",
                 "SelvstendigForsikring": {
                     "skjæringstidspunkt": "2024-05-01"
                 }
@@ -180,13 +178,13 @@ internal class ForsikringsløserTest {
 
     @Test
     fun `virkdato er 0, siden den er løpende`() {
-        TestcontainersDatabase.opprettPeriode(
-            fnr = Fnr("01010112345"),
-            virkningsdato = LocalDate.of(2025, 1, 1),
-            tom = null,
-            godkjent = "J",
-            forsikringstype = "2",
-            premiegrunnlag = 816000
+        TestcontainersDatabase.insertVedfrivt(
+            agnrFnr = "03020112345",
+            virkdato = 20250101,
+            forstom = 0,
+            godkj = "J",
+            type = "2",
+            premgrl = 816000
         )
 
         rapid.sendTestMessage(
@@ -195,7 +193,7 @@ internal class ForsikringsløserTest {
                 "@behov": ["SelvstendigForsikring"],
                 "@id": "12345",
                 "@opprettet": "2024-06-01T12:00:00",
-                "fødselsnummer": "01010112345",
+                "fødselsnummer": "01020312345",
                 "SelvstendigForsikring": {
                     "skjæringstidspunkt": "2025-05-01"
                 }
