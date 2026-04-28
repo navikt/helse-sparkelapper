@@ -3,32 +3,28 @@ package nav.no.helse.sparkel.forsikring
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import java.time.LocalDate
 import no.nav.helse.sparkel.forsikring.Fnr
-import no.nav.helse.sparkel.forsikring.ReplikabaseForsikringDao
 import no.nav.helse.sparkel.forsikring.Forsikringsløser
+import no.nav.helse.sparkel.forsikring.ReplikabaseForsikringDao
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestInstance.Lifecycle
 
-@TestInstance(Lifecycle.PER_CLASS)
-internal class ForsikringsløserTest : H2Database() {
+internal class ForsikringsløserTest {
     private val rapid = TestRapid().apply {
         Forsikringsløser(
             rapidsConnection = this,
-            forsikringDao = ReplikabaseForsikringDao(dataSource)
+            forsikringDao = ReplikabaseForsikringDao(TestcontainersDatabase.dataSource)
         )
     }
 
     @BeforeEach
     fun beforeEach() {
-        rapid.reset()
-        clear()
+        TestcontainersDatabase.clear()
     }
 
     @Test
     fun `Får svar når forsikringen er godkjent, i riktig periode og av gyldig type`() {
-        opprettPeriode(
+        TestcontainersDatabase.opprettPeriode(
             fnr = Fnr("01010112345"),
             virkningsdato = LocalDate.of(2024, 1, 1),
             tom = LocalDate.of(2024, 12, 31),
@@ -61,8 +57,8 @@ internal class ForsikringsløserTest : H2Database() {
     }
 
     @Test
-    fun `Tomt svar når forsikringen ikke dekker skjæringstidspunkt` () {
-        opprettPeriode(
+    fun `Tomt svar når forsikringen ikke dekker skjæringstidspunkt`() {
+        TestcontainersDatabase.opprettPeriode(
             fnr = Fnr("01010112345"),
             virkningsdato = LocalDate.of(2023, 1, 1),
             tom = LocalDate.of(2023, 12, 31),
@@ -88,8 +84,8 @@ internal class ForsikringsløserTest : H2Database() {
     }
 
     @Test
-    fun `Tomt svar når forsikringen ikke er godkjent` () {
-        opprettPeriode(
+    fun `Tomt svar når forsikringen ikke er godkjent`() {
+        TestcontainersDatabase.opprettPeriode(
             fnr = Fnr("01010112345"),
             virkningsdato = null,
             tom = LocalDate.of(2024, 12, 31),
@@ -115,8 +111,8 @@ internal class ForsikringsløserTest : H2Database() {
     }
 
     @Test
-    fun `Tomt svar når forsikringen ikke er interessant` () {
-        opprettPeriode(
+    fun `Tomt svar når forsikringen ikke er interessant`() {
+        TestcontainersDatabase.opprettPeriode(
             fnr = Fnr("01010112345"),
             virkningsdato = LocalDate.of(2024, 1, 1),
             tom = LocalDate.of(2024, 12, 31),
@@ -142,8 +138,8 @@ internal class ForsikringsløserTest : H2Database() {
     }
 
     @Test
-    fun `Bare ett svar når bare en forsikring er gyldig` () {
-        opprettPeriode(
+    fun `Bare ett svar når bare en forsikring er gyldig`() {
+        TestcontainersDatabase.opprettPeriode(
             fnr = Fnr("01010112345"),
             virkningsdato = LocalDate.of(2024, 1, 1),
             tom = LocalDate.of(2024, 12, 31),
@@ -152,7 +148,7 @@ internal class ForsikringsløserTest : H2Database() {
             premiegrunnlag = 816000
         )
 
-        opprettPeriode(
+        TestcontainersDatabase.opprettPeriode(
             fnr = Fnr("01010112345"),
             virkningsdato = LocalDate.of(2024, 1, 1),
             tom = LocalDate.of(2024, 12, 31),
@@ -183,8 +179,8 @@ internal class ForsikringsløserTest : H2Database() {
     }
 
     @Test
-    fun `virkdato er 0, siden den er løpende` () {
-        opprettPeriode(
+    fun `virkdato er 0, siden den er løpende`() {
+        TestcontainersDatabase.opprettPeriode(
             fnr = Fnr("01010112345"),
             virkningsdato = LocalDate.of(2025, 1, 1),
             tom = null,

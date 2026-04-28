@@ -16,11 +16,6 @@ internal class `ForsikringsløserMockTest` {
         )
     }
 
-    @BeforeEach
-    fun beforeEach() {
-        rapid.reset()
-    }
-
     @ParameterizedTest
     @CsvSource(
         "29500053761, HundreProsentFraDagSytten",
