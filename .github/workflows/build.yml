@@ -1,6 +1,9 @@
-name: Build
+name: Bygg og deploy
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
   schedule:
@@ -68,7 +71,7 @@ jobs:
 
   build:
     needs: generate_vars
-    name: build
+    name: Build
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -83,20 +86,20 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 21
-      - name: cache gradle wrapper
+      - name: Cache gradle wrapper
         uses: actions/cache@v4
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}
-      - name: cache gradle caches
+      - name: Cache gradle caches
         uses: actions/cache@v4
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-caches-${{ hashFiles('**/build.gradle.kts') }}
           restore-keys: |
             ${{ runner.os }}-gradle-caches-
-      - name: test and build
-        run: ./gradlew ${{ matrix.project }}:test ${{ matrix.project }}:build
+      - name: Test and build
+        run: ./gradlew ${{ matrix.project }}:build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Check app.jar existence
@@ -104,8 +107,8 @@ jobs:
         uses: andstor/file-existence-action@v3
         with:
           files: "${{ matrix.project }}/build/libs/app.jar"
-      - name: build docker image
-        if: steps.app_jar.outputs.files_exists == 'true'
+      - name: Build container image
+        if: ${{ steps.app_jar.outputs.files_exists == 'true' && github.ref_name == 'main' }}
         uses: nais/docker-build-push@v0
         id: docker-build-push
         with:
@@ -113,12 +116,12 @@ jobs:
           image_suffix: ${{ matrix.project }}
           dockerfile: Dockerfile
           docker_context: ${{ matrix.project }}
-      - name: lage build-fil
-        if: ${{ always() }}
+      - name: Lage build-fil
+        if: ${{ always() && github.ref_name == 'main' }}
         run: |
           echo "${{ steps.docker-build-push.outputs.image }}" > "${{ matrix.project }}_build_${{ steps.docker-build-push.outcome }}.txt"
-      - name: laste opp build-fil
-        if: ${{ always() }}
+      - name: Laste opp build-fil
+        if: ${{ always() && github.ref_name == 'main' }}
         uses: actions/upload-artifact@v4
         with:
           overwrite: true
@@ -127,9 +130,9 @@ jobs:
           path: "${{ matrix.project }}_build_${{ steps.docker-build-push.outcome }}.txt"
 
   deploy:
+    name: Deploy
     needs: [generate_vars, build]
-    name: deploy
-    if: always() && needs.generate_vars.outputs.emptyDeployMatrix == 'false'
+    if: ${{ always() && needs.generate_vars.outputs.emptyDeployMatrix == 'false' && github.ref_name == 'main' }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.generate_vars.outputs.deployMatrix) }}
@@ -137,27 +140,27 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - name: create env vars
+      - name: Create env vars
         run: |
           NAIS_VARS_FILE="config/${{ matrix.project }}/${{ matrix.cluster }}.yml"
           echo "NAIS_VARS_FILE=$NAIS_VARS_FILE" >> $GITHUB_ENV
       - name: Fetch sources
         uses: actions/checkout@v4
-      - name: laste ned build-fil
+      - name: Laste ned build-fil
         uses: actions/download-artifact@v4
         with:
           name: "${{ matrix.project }}_build_result"
-      - name: ser om vi har nais config og at bygget gikk bra
+      - name: Ser om vi har nais config og at bygget gikk bra
         id: deploy-files
         uses: andstor/file-existence-action@v3
         with:
           files: "${{ env.NAIS_VARS_FILE }}, ${{ matrix.project }}_build_success.txt"
-      - name: hente ut image fra build-fil
+      - name: Hente ut image fra build-fil
         run: |
           NAIS_IMAGE=$(cat "${{ matrix.project }}_build_success.txt")
           echo "NAIS_IMAGE=$NAIS_IMAGE" >> $GITHUB_ENV
-      - name: deploy
-        if: steps.deploy-files.outputs.files_exists == 'true'
+      - name: Deploy
+        if: ${{ steps.deploy-files.outputs.files_exists == 'true' && github.ref_name == 'main' }}
         uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: ${{ matrix.cluster }}
