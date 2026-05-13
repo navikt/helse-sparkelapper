@@ -1,5 +1,4 @@
 replicas:
-  min: 24
   max: 24
 limits:
   cpu: 2000m
