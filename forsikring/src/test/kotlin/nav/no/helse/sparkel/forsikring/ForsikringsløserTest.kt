@@ -136,6 +136,23 @@ internal class ForsikringsløserTest {
     }
 
     @Test
+    fun `Tomt svar når det ikke finnes noen forsikring`() {
+        rapid.sendTestMessage(
+            """
+             {
+                "@behov": ["SelvstendigForsikring"],
+                "@id": "12345",
+                "@opprettet": "2024-06-01T12:00:00",
+                "fødselsnummer": "01020312345",
+                "SelvstendigForsikring": {
+                    "skjæringstidspunkt": "2024-05-01"
+                }
+            }
+            """.trimIndent()
+        )
+        assertEquals(emptyList<Any>(), rapid.inspektør.message(0)["@løsning"]?.get("SelvstendigForsikring")?.toList())
+    }
+    @Test
     fun `Bare ett svar når bare en forsikring er gyldig`() {
         TestcontainersDatabase.insertVedfrivt(
             agnrFnr = "03020112345",
