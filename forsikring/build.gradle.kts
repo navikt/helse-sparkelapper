@@ -11,4 +11,5 @@ dependencies {
     api("com.oracle.database.jdbc:ojdbc11:${ojdbcVersion}")
     testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
     testImplementation("org.testcontainers:testcontainers-oracle-free:$testcontainersVersion")
+    testImplementation(kotlin("test"))
 }

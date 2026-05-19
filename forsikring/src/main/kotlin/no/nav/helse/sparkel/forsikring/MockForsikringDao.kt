@@ -43,4 +43,6 @@ class MockForsikringDao : ForsikringDao {
 
             else -> emptyList()
         }
+
+    override fun hentFullstendigeForsikringer(fødselsnummer: String): List<ForsikringDao.RåForsikringDto> = emptyList()
 }

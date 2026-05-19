@@ -23,12 +23,12 @@ internal class ForsikringsløserTest {
     @Test
     fun `Får svar når forsikringen er godkjent, i riktig periode og av gyldig type`() {
         TestcontainersDatabase.insertVedfrivt(
-            agnrFnr = "03020112345",
-            virkdato = 20240101,
-            forstom = 20241231,
-            godkj = "J",
-            type = "1",
-            premgrl = 816000
+            IF01_AGNR_FNR = 3020112345L,
+            IF10_VIRKDATO = 20240101,
+            IF10_FORSTOM = 20241231,
+            IF10_GODKJ = 'J',
+            IF10_TYPE = '1',
+            IF10_PREMGRL = 816000
         )
 
         rapid.sendTestMessage(
@@ -57,12 +57,12 @@ internal class ForsikringsløserTest {
     @Test
     fun `Tomt svar når forsikringen ikke dekker skjæringstidspunkt`() {
         TestcontainersDatabase.insertVedfrivt(
-            agnrFnr = "03020112345",
-            virkdato = 20230101,
-            forstom = 20231231,
-            godkj = "J",
-            type = "2",
-            premgrl = 816000
+            IF01_AGNR_FNR = 3020112345L,
+            IF10_VIRKDATO = 20230101,
+            IF10_FORSTOM = 20231231,
+            IF10_GODKJ = 'J',
+            IF10_TYPE = '2',
+            IF10_PREMGRL = 816000
         )
 
         rapid.sendTestMessage(
@@ -84,12 +84,12 @@ internal class ForsikringsløserTest {
     @Test
     fun `Tomt svar når forsikringen ikke er godkjent`() {
         TestcontainersDatabase.insertVedfrivt(
-            agnrFnr = "03020112345",
-            virkdato = 0,
-            forstom = 20241231,
-            godkj = "N",
-            type = " ",
-            premgrl = 0
+            IF01_AGNR_FNR = 3020112345L,
+            IF10_VIRKDATO = 0,
+            IF10_FORSTOM = 20241231,
+            IF10_GODKJ = 'N',
+            IF10_TYPE = ' ',
+            IF10_PREMGRL = 0
         )
 
         rapid.sendTestMessage(
@@ -111,12 +111,12 @@ internal class ForsikringsløserTest {
     @Test
     fun `Tomt svar når forsikringen ikke er interessant`() {
         TestcontainersDatabase.insertVedfrivt(
-            agnrFnr = "03020112345",
-            virkdato = 20240101,
-            forstom = 20241231,
-            godkj = "J",
-            type = "5",
-            premgrl = 816000
+            IF01_AGNR_FNR = 3020112345L,
+            IF10_VIRKDATO = 20240101,
+            IF10_FORSTOM = 20241231,
+            IF10_GODKJ = 'J',
+            IF10_TYPE = '5',
+            IF10_PREMGRL = 816000
         )
 
         rapid.sendTestMessage(
@@ -155,21 +155,21 @@ internal class ForsikringsløserTest {
     @Test
     fun `Bare ett svar når bare en forsikring er gyldig`() {
         TestcontainersDatabase.insertVedfrivt(
-            agnrFnr = "03020112345",
-            virkdato = 20240101,
-            forstom = 20241231,
-            godkj = "J",
-            type = "2",
-            premgrl = 816000
+            IF01_AGNR_FNR = 3020112345L,
+            IF10_VIRKDATO = 20240101,
+            IF10_FORSTOM = 20241231,
+            IF10_GODKJ = 'J',
+            IF10_TYPE = '2',
+            IF10_PREMGRL = 816000
         )
 
         TestcontainersDatabase.insertVedfrivt(
-            agnrFnr = "03020112345",
-            virkdato = 20240101,
-            forstom = 20241231,
-            godkj = "J",
-            type = "5",
-            premgrl = 816000
+            IF01_AGNR_FNR = 3020112345L,
+            IF10_VIRKDATO = 20240101,
+            IF10_FORSTOM = 20241231,
+            IF10_GODKJ = 'J',
+            IF10_TYPE = '5',
+            IF10_PREMGRL = 816000
         )
 
         rapid.sendTestMessage(
@@ -196,12 +196,12 @@ internal class ForsikringsløserTest {
     @Test
     fun `virkdato er 0, siden den er løpende`() {
         TestcontainersDatabase.insertVedfrivt(
-            agnrFnr = "03020112345",
-            virkdato = 20250101,
-            forstom = 0,
-            godkj = "J",
-            type = "2",
-            premgrl = 816000
+            IF01_AGNR_FNR = 3020112345L,
+            IF10_VIRKDATO = 20250101,
+            IF10_FORSTOM = 0,
+            IF10_GODKJ = 'J',
+            IF10_TYPE = '2',
+            IF10_PREMGRL = 816000
         )
 
         rapid.sendTestMessage(
