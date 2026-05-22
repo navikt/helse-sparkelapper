@@ -41,7 +41,11 @@ class GosysOppgaveEndretProducer(
     }
 
     fun shipIt() {
-        identer.onEach { ident -> packetAndPublish(ident) }.clear()
+        identer.forEach { ident ->
+            packetAndPublish(ident)
+            Thread.sleep(10)
+        }
+        identer.clear()
     }
 
 }
