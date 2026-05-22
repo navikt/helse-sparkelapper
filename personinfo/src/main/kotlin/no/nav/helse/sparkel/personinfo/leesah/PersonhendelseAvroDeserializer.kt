@@ -1,8 +1,8 @@
 package no.nav.helse.sparkel.personinfo.leesah
 
 import java.util.Base64
-import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseAvroDeserializer.Skjema.Companion.V4
-import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseAvroDeserializer.Skjema.Companion.V7
+import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseAvroDeserializer.SkjemaOgVersjon.V4
+import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseAvroDeserializer.SkjemaOgVersjon.V7
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericDatumReader
 import org.apache.avro.generic.GenericRecord
@@ -14,22 +14,14 @@ import org.slf4j.LoggerFactory
 class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
     private val decoderFactory: DecoderFactory = DecoderFactory.get()
 
-    override fun deserialize(topic: String, data: ByteArray): GenericRecord {
-        tryDeserialize(data, V4).run {
-            if (isSuccess) return getOrThrow()
-        }
+    override fun deserialize(topic: String, data: ByteArray): GenericRecord =
+        listOf(V7, V4).map {
+            runCatching { deserialize(data, it.skjema) }
+                .onSuccess { deserializedRecord -> return deserializedRecord }
+                .onFailure { exception -> sikkerlogg.feilVedDeserialisering(data, exception, it.versjon) }
+        }.first().getOrThrow()
 
-        tryDeserialize(data, V7).run {
-            if (isSuccess) return getOrThrow()
-            throw exceptionOrNull()!!
-        }
-    }
-
-    private fun tryDeserialize(data: ByteArray, skjema: Skjema): Result<GenericRecord> =
-        runCatching { deserialize(data, skjema.skjema()) }
-            .onFailure { sikkerlogg.feilVedDeserialisering(data, it, skjema.versjon) }
-
-    private fun deserialize(data: ByteArray, schema: Schema) : GenericRecord {
+    private fun deserialize(data: ByteArray, schema: Schema): GenericRecord {
         val reader = GenericDatumReader<GenericRecord>(schema)
         val decoder = decoderFactory.binaryDecoder(data, null)
         /*
@@ -45,18 +37,17 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private fun Logger.feilVedDeserialisering(data: ByteArray, throwable: Throwable, versjon: String) =
             warn("Klarte ikke å deserialisere Personhendelse-melding fra Leesah med $versjon. Base64='${Base64.getEncoder().encodeToString(data)}'", throwable)
-        private fun String.lastSkjema() =
-            Schema.Parser().parse(PersonhendelseAvroDeserializer::class.java.getResourceAsStream("/pdl/Personhendelse_$this.avsc"))
 
-        val sisteSkjema: Schema = V7.skjema()
+        val sisteSkjema: Schema = V7.skjema
     }
 
-    class Skjema private constructor(val versjon: String) {
-        companion object {
-            val V4 = Skjema("V4")
-            val V7 = Skjema("V7")
-        }
+    private enum class SkjemaOgVersjon {
+        V4, V7;
 
-        fun skjema(): Schema = versjon.lastSkjema()
+        val versjon = name
+
+        val skjema: Schema by lazy { lastSkjema() }
+
+        private fun lastSkjema() = Schema.Parser().parse(this::class.java.getResourceAsStream("/pdl/Personhendelse_$versjon.avsc"))
     }
 }
