@@ -112,15 +112,6 @@ spec:
   - name: {{ item.name }}
     value: "{{ item.value }}"
 {{/each}}
-{{#if gcp}}
-  gcp:
-    sqlInstances:
-      - type: {{ gcp.type }}
-        databases:
-          - name: {{ gcp.name }}
-            envVarPrefix: {{ gcp.envVarPrefix }}
-        tier: {{ gcp.tier }}
-{{/if}}
   accessPolicy:
 {{#if accessPolicy.inbound.rules}}
     inbound:
