@@ -17,3 +17,5 @@ env:
   value: api://dev-gcp.medlemskap.medlemskap-sykepenger-listener/.default
 - name: MEDLEMSKAP_BASE_URL
   value: http://medlemskap-sykepenger-listener.medlemskap.svc.cluster.local
+- name: KAFKA_EXTRA_TOPIC
+  value: medlemskap.medlemskapsvurderinger

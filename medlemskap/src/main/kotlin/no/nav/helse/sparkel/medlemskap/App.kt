@@ -13,5 +13,6 @@ fun main() {
             scope = env.getValue("MEDLEMSKAP_SCOPE")
         )
         Medlemskap(this, client)
+        VurderingerRiver(this)
     }.start()
 }
