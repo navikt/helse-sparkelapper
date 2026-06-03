@@ -10,10 +10,15 @@ import org.slf4j.LoggerFactory
 
 internal class VurderingerRiver(rapidsConnection: RapidsConnection) : River.PacketListener {
 
+    // https://github.com/navikt/medlemskap-sykepengerlytter/blob/e4abb7bd5796357e9fe9bc1e6da77506f761c560/src/main/kotlin/no/nav/medlemskap/sykepenger/lytter/speil_medlemskapsvurdering/SpeilRespons.kt#L5-L10
+    private val forventedeSpeilSvarVerdier = setOf("JA", "NEI", "UAVKLART", "UAVKLART_MED_BRUKERSPORSMAAL")
+
     init {
         River(rapidsConnection).apply {
-            precondition { it.forbid("@id") }
-            precondition { it.requireKey("soknadId", "fnr", "speilSvar") }
+            precondition {
+                it.requireKey("soknadId", "fnr")
+                it.require("speilSvar") { node -> check(node.asText() in forventedeSpeilSvarVerdier) }
+            }
         }.register(this)
     }
 
@@ -21,7 +26,6 @@ internal class VurderingerRiver(rapidsConnection: RapidsConnection) : River.Pack
         log.info("Mottok medlemskapsvurdering")
         sikkerlogg.debug("Mottok medlemskapsvurdering for fnr: ${packet.toJson()}")
     }
-
 
     private companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
