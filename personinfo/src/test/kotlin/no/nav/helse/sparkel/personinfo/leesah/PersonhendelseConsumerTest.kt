@@ -51,7 +51,8 @@ class PersonhendelseConsumerTest {
                 ?.let {
                     val record = ConsumerRecord("Leesah", 0, 0, byteArrayOf(), it)
                     ConsumerRecords(
-                        mapOf(TopicPartition("Leesah", 0) to mutableListOf(record))
+                        mapOf(TopicPartition("Leesah", 0) to mutableListOf(record)),
+                        mapOf(),
                     )
                 } ?: ConsumerRecords.empty()
         }

@@ -38,7 +38,8 @@ class SkjermetConsumerTest {
                 ?.let {
                     val record = ConsumerRecord(SKJERMET_TOPIC, 0, 0, FNR, it)
                     ConsumerRecords(
-                        mapOf(TopicPartition(SKJERMET_TOPIC, 0) to mutableListOf(record))
+                        mapOf(TopicPartition(SKJERMET_TOPIC, 0) to mutableListOf(record)),
+                        mapOf(),
                     )
                 } ?: ConsumerRecords.empty()
         }
