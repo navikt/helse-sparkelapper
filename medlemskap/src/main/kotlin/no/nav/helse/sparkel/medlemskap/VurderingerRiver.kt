@@ -24,7 +24,7 @@ internal class VurderingerRiver(rapidsConnection: RapidsConnection) : River.Pack
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         log.info("Mottok medlemskapsvurdering")
-        sikkerlogg.debug("Mottok medlemskapsvurdering for fnr: ${packet.toJson()}")
+        sikkerlogg.debug("Mottok medlemskapsvurdering: ${packet.toJson()}")
     }
 
     private companion object {
