@@ -4,13 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME
+import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 
 
 internal fun interface Oppgavehenter {
-    fun hentÅpneOppgaver(aktørId: String, behovId: String): JsonNode
+    suspend fun hentÅpneOppgaver(aktørId: String, behovId: String): JsonNode
 }
 
 internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
@@ -24,10 +25,7 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
         ikkeEldreEnn: LocalDate,
     ): Int? = withMDC("id" to behovId) {
         try {
-            val response = oppgavehenter.hentÅpneOppgaver(
-                aktørId = aktørId,
-                behovId = behovId
-            )
+            val response = runBlocking { oppgavehenter.hentÅpneOppgaver(aktørId, behovId) }
             log.info(
                 "løser behov: {}",
                 keyValue("id", behovId)
@@ -48,12 +46,12 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
             }
         } catch (err: Exception) {
             log.warn(
-                "feil ved henting av oppgave-data: ${err.message} for behov {}",
+                "feil ved henting av oppgave-data: ${err.message}, for behov {}",
                 keyValue("behovId", behovId),
                 err
             )
             sikkerlogg.warn(
-                "feil ved henting av oppgave-data: ${err.message} for behov {}",
+                "feil ved henting av oppgave-data: ${err.message}, for behov {}",
                 keyValue("behovId", behovId),
                 err
             )
@@ -80,7 +78,7 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
         )
 
     private fun JsonNode.opprettetTidspunkt() =
-        LocalDateTime.parse(finnVerdi("opprettetTidspunkt"), ISO_ZONED_DATE_TIME).toLocalDate()
+        LocalDateTime.parse(finnVerdi("opprettetTidspunkt")!!, ISO_ZONED_DATE_TIME).toLocalDate()
 
     private fun JsonNode.finnVerdi(key: String): String? = path(key).textValue()
 }

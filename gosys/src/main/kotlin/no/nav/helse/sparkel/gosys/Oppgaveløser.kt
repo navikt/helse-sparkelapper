@@ -16,15 +16,12 @@ import com.github.navikt.tbd_libs.speed.SpeedClient
 import io.micrometer.core.instrument.MeterRegistry
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import net.logstash.logback.argument.StructuredArguments.kv
-import org.slf4j.LoggerFactory
 
 internal class Oppgaveløser(
     rapidsConnection: RapidsConnection,
     private val oppgaveService: OppgaveService,
     private val speedClient: SpeedClient
 ) : River.PacketListener {
-
-    private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
     companion object {
         const val behov = "ÅpneOppgaver"
