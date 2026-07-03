@@ -22,10 +22,10 @@ internal class StoppknappRiverTest {
         testRapid.sendTestMessage(stoppknappMelding())
         val svar = testRapid.inspektør.message(0)
 
-        assertEquals("stans_automatisk_behandling", svar["@event_name"].asText())
-        assertEquals("STOPP_AUTOMATIKK", svar["status"].asText())
-        assertEquals(listOf("MEDISINSK_VILKAR"), svar["årsaker"].map { it.asText() })
-        assertEquals("12345678910", svar["fødselsnummer"].asText())
+        assertEquals("stans_automatisk_behandling", svar["@event_name"].asString())
+        assertEquals("STOPP_AUTOMATIKK", svar["status"].asString())
+        assertEquals(listOf("MEDISINSK_VILKAR"), svar["årsaker"].toList().map { it.asString() })
+        assertEquals("12345678910", svar["fødselsnummer"].asString())
     }
 
     @Test
@@ -33,10 +33,10 @@ internal class StoppknappRiverTest {
         testRapid.sendTestMessage(opphevingAvStansMelding())
         val svar = testRapid.inspektør.message(0)
 
-        assertEquals("stans_automatisk_behandling", svar["@event_name"].asText())
-        assertEquals("NORMAL", svar["status"].asText())
-        assertEquals(emptyList<String>(), svar["årsaker"].map { it.asText() })
-        assertEquals("12345678910", svar["fødselsnummer"].asText())
+        assertEquals("stans_automatisk_behandling", svar["@event_name"].asString())
+        assertEquals("NORMAL", svar["status"].asString())
+        assertEquals(emptyList<String>(), svar["årsaker"].toList().map { it.asString() })
+        assertEquals("12345678910", svar["fødselsnummer"].asString())
     }
 
     @Language("JSON")

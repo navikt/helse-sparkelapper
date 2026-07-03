@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.aareg
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.tomakehurst.wiremock.client.WireMock.get
 import com.github.tomakehurst.wiremock.client.WireMock.notFound
 import com.github.tomakehurst.wiremock.client.WireMock.okJson
@@ -13,7 +12,7 @@ import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
-import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.serialization.jackson3.JacksonConverter
 import java.util.UUID
 import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
@@ -21,6 +20,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
 
 class HentOrganisasjonApiIntegrationTests {
     @Test
@@ -37,8 +37,8 @@ class HentOrganisasjonApiIntegrationTests {
 
         // Then:
         assertEquals(200, httpStatusCode)
-        assertEquals(organisasjonsnummer, responseJson["organisasjonsnummer"].asText())
-        assertEquals("Happy!", responseJson["navn"].asText())
+        assertEquals(organisasjonsnummer, responseJson["organisasjonsnummer"].asString())
+        assertEquals("Happy!", responseJson["navn"].asString())
     }
 
     @Test

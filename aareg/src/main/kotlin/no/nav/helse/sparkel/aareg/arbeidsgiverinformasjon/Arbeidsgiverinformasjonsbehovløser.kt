@@ -1,7 +1,5 @@
 package no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ArrayNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
@@ -13,6 +11,8 @@ import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.aareg.kodeverk.KodeverkClient
 import no.nav.helse.sparkel.aareg.sikkerlogg
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.node.ArrayNode
 
 class Arbeidsgiverinformasjonsbehovløser(
     rapidsConnection: RapidsConnection,
@@ -21,16 +21,16 @@ class Arbeidsgiverinformasjonsbehovløser(
 ) : River.PacketListener {
     companion object {
         internal const val behov = "Arbeidsgiverinformasjon"
-        fun validateOrganisasjonsnummer(node:JsonNode) {
+        fun validateOrganisasjonsnummer(node: JsonNode) {
             when(node) {
                 is ArrayNode -> node.forEach { n -> valider(n) }
                 else -> valider(node)
             }
         }
         private fun valider(node: JsonNode) {
-            if (!node.asText().matches("\\d{9}".toRegex())) {
-                sikkerlogg.error("Kunne ikke gjenkjenne melding; organisasjonsnummer er ugyldig: ${node.asText()}")
-                throw RuntimeException("${node.asText()} er ikke et gyldig organisasjonsnummer.")
+            if (!node.asString().matches("\\d{9}".toRegex())) {
+                sikkerlogg.error("Kunne ikke gjenkjenne melding; organisasjonsnummer er ugyldig: ${node.asString()}")
+                throw RuntimeException("${node.asString()} er ikke et gyldig organisasjonsnummer.")
             }
         }
     }
@@ -52,9 +52,9 @@ class Arbeidsgiverinformasjonsbehovløser(
 
         runBlocking {
             try {
-                løsBehov(organisasjonsnummer, UUID.fromString(packet["@id"].asText()))
+                løsBehov(organisasjonsnummer, UUID.fromString(packet["@id"].asString()))
                     .also { packet.setLøsning(behov, it) }
-                sikkerlogg.info("løser $behov-behov {}", keyValue("id", packet["@id"].asText()))
+                sikkerlogg.info("løser $behov-behov {}", keyValue("id", packet["@id"].asString()))
 
                 context.publish(packet.toJson())
             } catch (ex: FeilVedHenting) {
@@ -65,9 +65,9 @@ class Arbeidsgiverinformasjonsbehovløser(
 
     private suspend fun løsBehov(organisasjonsnummer: JsonNode, callId: UUID): Any =
         if (organisasjonsnummer.isArray) {
-            organisasjonsnummer.map { løsningFor(it.asText(), callId) }
+            organisasjonsnummer.toList().map { løsningFor(it.asString(), callId) }
         } else {
-            løsningFor(organisasjonsnummer.asText(), callId)
+            løsningFor(organisasjonsnummer.asString(), callId)
         }
 
     private suspend fun løsningFor(organisasjonsnummer: String, callId: UUID) =

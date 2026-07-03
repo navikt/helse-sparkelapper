@@ -17,7 +17,7 @@ internal class VurderingerRiver(rapidsConnection: RapidsConnection) : River.Pack
         River(rapidsConnection).apply {
             precondition {
                 it.requireKey("soknadId", "fnr")
-                it.require("speilSvar") { node -> check(node.asText() in forventedeSpeilSvarVerdier) }
+                it.require("speilSvar") { node -> check(node.asString() in forventedeSpeilSvarVerdier) }
             }
         }.register(this)
     }

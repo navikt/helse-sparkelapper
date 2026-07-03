@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
@@ -12,6 +11,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.helse.sparkel.arbeidsgiver.ArbeidsgiveropplysningerProducer
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
 
 internal class TrengerArbeidsgiveropplysningerRiver(
     rapidsConnection: RapidsConnection,
@@ -37,7 +37,7 @@ internal class TrengerArbeidsgiveropplysningerRiver(
                 require("tom", JsonNode::asLocalDate)
             }}
             validate { it.requireArray("førsteFraværsdager") {
-                require("organisasjonsnummer", JsonNode::asText)
+                require("organisasjonsnummer", JsonNode::asString)
                 require("førsteFraværsdag", JsonNode::asLocalDate)
             }}
             validate { it.require("forespurteOpplysninger", JsonNode::validateForespurteOpplysninger) }

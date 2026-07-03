@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*
 import org.intellij.lang.annotations.Language
@@ -15,6 +14,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 import no.nav.helse.sparkel.infotrygd.PeriodeDAO
 import no.nav.helse.sparkel.infotrygd.UtbetalingDAO
+import tools.jackson.databind.JsonNode
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SykepengehistorikkløserTest : H2Database() {
@@ -178,37 +178,37 @@ internal class SykepengehistorikkløserTest : H2Database() {
     }
 
     private fun JsonNode.løsning() =
-        this.path("@løsning").path(Sykepengehistorikkløser.behov).map {
+        this.path("@løsning").path(Sykepengehistorikkløser.behov).toList().map {
             Utbetalingshistorikk(it)
         }
 
     private class Utbetalingshistorikk(json: JsonNode) {
 
-        val utbetalteSykeperioder = json["utbetalteSykeperioder"].map {
+        val utbetalteSykeperioder = json["utbetalteSykeperioder"].toList().map {
             UtbetalteSykeperiode(it)
         }
-        val inntektsopplysninger = json["inntektsopplysninger"].map {
+        val inntektsopplysninger = json["inntektsopplysninger"].toList().map {
             Inntektsopplysning(it)
         }
         val statslønn = json["statslønn"].asBoolean()
-        val arbeidsKategoriKode = json["arbeidsKategoriKode"].asText()
+        val arbeidsKategoriKode = json["arbeidsKategoriKode"].asString()
 
         class UtbetalteSykeperiode(json: JsonNode) {
             val fom = json["fom"].asLocalDate()
             val tom = json["tom"].asLocalDate()
-            val utbetalingsGrad = json["utbetalingsGrad"].asText()
-            val orgnummer = json["orgnummer"].asText()
+            val utbetalingsGrad = json["utbetalingsGrad"].asString()
+            val orgnummer = json["orgnummer"].asString()
             val dagsats = json["dagsats"].asDouble()
         }
 
         class Inntektsopplysning(json: JsonNode) {
             val sykepengerFom = json["sykepengerFom"].asLocalDate()
             val inntekt = json["inntekt"].asInt()
-            val orgnummer = json["orgnummer"].asText()
+            val orgnummer = json["orgnummer"].asString()
         }
 
         private companion object {
-            fun JsonNode.asLocalDate() = LocalDate.parse(this.asText())
+            fun JsonNode.asLocalDate() = LocalDate.parse(this.asString())
         }
     }
 

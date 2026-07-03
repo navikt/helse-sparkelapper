@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.personinfo
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import com.github.navikt.tbd_libs.result_object.ok
 import com.github.navikt.tbd_libs.speed.IdentResponse
@@ -13,6 +12,7 @@ import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.JsonNode
 
 internal class VergemålløserTest {
 
@@ -51,7 +51,7 @@ internal class VergemålløserTest {
         val svar = rapid.inspektør.message(0)
         assertEquals(1, svar.vergemålLøsning()["vergemål"].size())
         val vergemål = svar.vergemålLøsning()["vergemål"][0]
-        assertEquals("voksen", vergemål["type"].asText())
+        assertEquals("voksen", vergemål["type"].asString())
     }
 
     @Test
@@ -68,7 +68,7 @@ internal class VergemålløserTest {
         val svar = rapid.inspektør.message(0)
         assertEquals(1, svar.vergemålLøsning()["fremtidsfullmakter"].size())
         val fremtidsfullmakt = svar.vergemålLøsning()["fremtidsfullmakter"][0]
-        assertEquals(Vergemålløser.VergemålType.stadfestetFremtidsfullmakt.name, fremtidsfullmakt["type"].asText())
+        assertEquals(Vergemålløser.VergemålType.stadfestetFremtidsfullmakt.name, fremtidsfullmakt["type"].asString())
     }
 
     @Language("JSON")

@@ -1,7 +1,5 @@
 package no.nav.helse.sparkel.medlemskap
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.retry.PredefinerteUtsettelser
 import com.github.navikt.tbd_libs.retry.retryBlocking
 import java.time.Duration.ofSeconds
@@ -9,6 +7,8 @@ import java.time.LocalDate
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 data class Tolk(
     private val fødselsnummer: String,
@@ -31,8 +31,8 @@ data class Tolk(
             throw Medlemskapsfeil(Medlemskap.Ubesvart(exception))
         }
         val jsonBody = responseBody.safeJson()
-        if (jsonBody.path("resultat").path("svar").isTextual) return Medlemskap.Avklart(jsonBody.path("resultat").path("svar").asText(), jsonBody)
-        if (jsonBody.path("speilSvar").isTextual) return Medlemskap.SpeilAvklart(jsonBody.path("speilSvar").asText(),jsonBody)
+        if (jsonBody.path("resultat").path("svar").isString) return Medlemskap.Avklart(jsonBody.path("resultat").path("svar").asString(), jsonBody)
+        if (jsonBody.path("speilSvar").isString) return Medlemskap.SpeilAvklart(jsonBody.path("speilSvar").asString(),jsonBody)
         if (status >= 500 && responseBody.contains("GradertAdresse")) return Medlemskap.Gradert(responseBody)
         throw Medlemskapsfeil(Medlemskap.Uventet(status, responseBody))
     }

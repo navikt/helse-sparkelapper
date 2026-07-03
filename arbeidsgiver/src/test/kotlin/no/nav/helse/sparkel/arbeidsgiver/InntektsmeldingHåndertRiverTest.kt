@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import com.github.navikt.tbd_libs.result_object.Result
 import com.github.navikt.tbd_libs.result_object.ok
@@ -15,6 +14,7 @@ import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.Inntektsmeldi
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndtertDto
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import tools.jackson.databind.JsonNode
 
 class InntektsmeldingHåndertRiverTest {
 

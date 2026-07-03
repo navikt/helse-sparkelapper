@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.egenansatt
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.every
 import io.mockk.mockk
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
+import tools.jackson.databind.JsonNode
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class EgenAnsattLøserTest {

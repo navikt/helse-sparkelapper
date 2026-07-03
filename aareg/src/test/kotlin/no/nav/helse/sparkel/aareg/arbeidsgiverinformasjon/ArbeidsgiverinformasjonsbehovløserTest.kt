@@ -1,7 +1,5 @@
 package no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.coEvery
 import io.mockk.every
@@ -15,6 +13,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.node.JsonNodeFactory
 
 internal class ArbeidsgiverinformasjonsbehovløserTest {
     private val testRapid = TestRapid()
@@ -55,9 +55,9 @@ internal class ArbeidsgiverinformasjonsbehovløserTest {
 
         assertTrue(løsning.hasNonNull("Arbeidsgiverinformasjon")) { "Skal ha løsning for Arbeidsgiverinformasjon" }
         assertFalse(løsning["Arbeidsgiverinformasjon"].isArray)
-        assertEquals(gyldigOrganisasjonsnummer2, løsning["Arbeidsgiverinformasjon"]["orgnummer"].asText())
-        assertEquals("Plantasjen Gaming", løsning["Arbeidsgiverinformasjon"]["navn"].asText())
-        assertEquals(listOf("Gartneri", "Elektronikk", "E-sport"), løsning["Arbeidsgiverinformasjon"]["bransjer"].map(JsonNode::asText))
+        assertEquals(gyldigOrganisasjonsnummer2, løsning["Arbeidsgiverinformasjon"]["orgnummer"].asString())
+        assertEquals("Plantasjen Gaming", løsning["Arbeidsgiverinformasjon"]["navn"].asString())
+        assertEquals(listOf("Gartneri", "Elektronikk", "E-sport"), løsning["Arbeidsgiverinformasjon"]["bransjer"].toList().map(JsonNode::asString))
     }
 
     @Test
@@ -75,7 +75,7 @@ internal class ArbeidsgiverinformasjonsbehovløserTest {
         val løsning = testRapid.inspektør.message(testRapid.inspektør.size - 1).path("@løsning")
         assertTrue(løsning["Arbeidsgiverinformasjon"].isArray)
         assertEquals(2, løsning["Arbeidsgiverinformasjon"].size())
-        val orgnumre = løsning["Arbeidsgiverinformasjon"].map { it["orgnummer"].asText() }.toSet()
+        val orgnumre = løsning["Arbeidsgiverinformasjon"].toList().map { it["orgnummer"].asString() }.toSet()
         assertEquals(setOf(gyldigOrganisasjonsnummer1, gyldigOrganisasjonsnummer2), orgnumre)
     }
 
@@ -106,9 +106,9 @@ internal class ArbeidsgiverinformasjonsbehovløserTest {
         val toOrgnummer = JsonNodeFactory.instance.arrayNode().add(gyldigOrganisasjonsnummer2).add(gyldigOrganisasjonsnummer1)
         assertDoesNotThrow { Arbeidsgiverinformasjonsbehovløser.validateOrganisasjonsnummer(toOrgnummer) }
 
-        val ettOrgnummerAlene = JsonNodeFactory.instance.textNode(gyldigOrganisasjonsnummer1)
+        val ettOrgnummerAlene = JsonNodeFactory.instance.stringNode(gyldigOrganisasjonsnummer1)
         assertDoesNotThrow { Arbeidsgiverinformasjonsbehovløser.validateOrganisasjonsnummer(ettOrgnummerAlene) }
-        val ettFnrAlene = JsonNodeFactory.instance.textNode(ugyldigOrganisasjonsnummer)
+        val ettFnrAlene = JsonNodeFactory.instance.stringNode(ugyldigOrganisasjonsnummer)
         assertThrows<RuntimeException>  { Arbeidsgiverinformasjonsbehovløser.validateOrganisasjonsnummer(ettFnrAlene) }
     }
 }

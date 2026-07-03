@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.dokumenter
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
@@ -16,6 +15,7 @@ import io.ktor.http.HttpMethod
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import no.nav.helse.sparkel.retry
+import tools.jackson.databind.JsonNode
 
 class SøknadClient(
     private val baseUrl: String,

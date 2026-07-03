@@ -18,10 +18,10 @@ internal data class InntektsmeldingHåndtertDto(
 }
 
 internal fun JsonMessage.toInntektsmeldingHåndtertDto(dokumentId: UUID) = InntektsmeldingHåndtertDto(
-    fødselsnummer = this["fødselsnummer"].asText(),
-    organisasjonsnummer = this["organisasjonsnummer"].asText(),
-    vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
+    fødselsnummer = this["fødselsnummer"].asString(),
+    organisasjonsnummer = this["organisasjonsnummer"].asString(),
+    vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asString()),
     dokumentId = dokumentId,
     opprettet = this["@opprettet"].asLocalDateTime(),
-    vedtaksperioderMedSammeFørsteFraværsdag = this["vedtaksperioderMedSammeFørsteFraværsdag"].asIterable().map { UUID.fromString(it.asText()) }
+    vedtaksperioderMedSammeFørsteFraværsdag = this["vedtaksperioderMedSammeFørsteFraværsdag"].asIterable().map { UUID.fromString(it.asString()) }
 )

@@ -5,7 +5,6 @@ import ch.qos.logback.classic.Level.WARN
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
@@ -18,6 +17,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
 
 internal class ArbeidsforholdLøserV2Test {
 
@@ -93,12 +93,13 @@ internal class ArbeidsforholdLøserV2Test {
     private fun JsonNode.løsning(behov: String): List<Arbeidsforhold> =
         this.path("@løsning")
             .path(behov)
+            .toList()
             .map {
                 Arbeidsforhold(
-                    it["orgnummer"].asText(),
+                    it["orgnummer"].asString(),
                     it["ansattSiden"].asLocalDate(),
                     it["ansattTil"].asOptionalLocalDate(),
-                    Arbeidsforholdtype.valueOf(it["type"].asText())
+                    Arbeidsforholdtype.valueOf(it["type"].asString())
                 )
             }
 }

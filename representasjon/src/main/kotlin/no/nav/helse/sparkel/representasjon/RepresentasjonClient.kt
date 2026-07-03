@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.representasjon
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
@@ -20,6 +19,7 @@ import java.util.UUID
 import javax.net.ssl.SSLHandshakeException
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import no.nav.helse.sparkel.retry
+import tools.jackson.databind.JsonNode
 
 private val retryableExceptions = arrayOf(
     IOException::class,

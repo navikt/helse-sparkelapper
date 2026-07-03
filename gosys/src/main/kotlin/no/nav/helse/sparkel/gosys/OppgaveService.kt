@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.gosys
 
-import com.fasterxml.jackson.databind.JsonNode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME
@@ -8,7 +7,7 @@ import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
-
+import tools.jackson.databind.JsonNode
 
 internal fun interface Oppgavehenter {
     suspend fun hentÅpneOppgaver(aktørId: String, behovId: String): JsonNode
@@ -80,7 +79,7 @@ internal class OppgaveService(private val oppgavehenter: Oppgavehenter) {
     private fun JsonNode.opprettetTidspunkt() =
         LocalDateTime.parse(finnVerdi("opprettetTidspunkt")!!, ISO_ZONED_DATE_TIME).toLocalDate()
 
-    private fun JsonNode.finnVerdi(key: String): String? = path(key).textValue()
+    private fun JsonNode.finnVerdi(key: String): String? = path(key).asString(null)
 }
 
 private fun <T> withMDC(vararg values: Pair<String, String>, block: () -> T): T = try {

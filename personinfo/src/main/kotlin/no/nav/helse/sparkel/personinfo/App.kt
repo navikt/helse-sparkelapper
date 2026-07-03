@@ -1,7 +1,7 @@
 package no.nav.helse.sparkel.personinfo
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper as jackson2ObjectMapper
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import com.github.navikt.tbd_libs.speed.SpeedClient
@@ -11,6 +11,7 @@ import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseConsumer
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseRiver
 import no.nav.helse.sparkel.personinfo.leesah.createConsumer
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 fun main() {
     val app = createApp(System.getenv())
@@ -19,10 +20,11 @@ fun main() {
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
     val azureClient = createAzureTokenClientFromEnvironment(env)
-    val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
+    val objectMapperJackson2 = jackson2ObjectMapper().registerModule(JavaTimeModule())
+    val objectMapper = jacksonObjectMapper()
     val speedClient = SpeedClient(
         httpClient = HttpClient.newHttpClient(),
-        objectMapper = objectMapper,
+        objectMapper = objectMapperJackson2,
         tokenProvider = azureClient
     )
     val personinfoService = PersoninfoService(speedClient)

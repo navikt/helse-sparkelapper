@@ -1,13 +1,12 @@
 package no.nav.helse.sparkel.inntekt
 
-import com.fasterxml.jackson.databind.node.ObjectNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.asYearMonth
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.ktor.client.*
 import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.*
-import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.serialization.jackson3.JacksonConverter
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
@@ -17,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import tools.jackson.databind.node.ObjectNode
 
 internal class InntekterTest {
     private val testRapid = TestRapid()
@@ -46,7 +46,7 @@ internal class InntekterTest {
         }
     }, tokenSupplier = { "token" })
 
-    private fun ByteArray.getFilter() = objectMapper.readTree(this).get("ainntektsfilter").asText()
+    private fun ByteArray.getFilter() = objectMapper.readTree(this).get("ainntektsfilter").asString()
 
     private fun ByteArray.getAntallMåneder(): Int {
         val månedFom = objectMapper.readTree(this).get("maanedFom").asYearMonth()
@@ -103,8 +103,8 @@ internal class InntekterTest {
         assertEquals(0, inntekt0["inntektsliste"].size())
         assertEquals(1, inntekt1["inntektsliste"].size())
         inntekt1["inntektsliste"].forEach {
-            assertEquals("fastloenn", it.path("beskrivelse").textValue())
-            assertEquals("kontantytelse", it.path("fordel").textValue())
+            assertEquals("fastloenn", it.path("beskrivelse").stringValue())
+            assertEquals("kontantytelse", it.path("fordel").stringValue())
         }
     }
 
@@ -120,8 +120,8 @@ internal class InntekterTest {
         assertEquals(0, inntekt0["inntektsliste"].size())
         assertEquals(1, inntekt1["inntektsliste"].size())
         inntekt1["inntektsliste"].forEach {
-            assertEquals("fastloenn", it.path("beskrivelse").textValue())
-            assertEquals("kontantytelse", it.path("fordel").textValue())
+            assertEquals("fastloenn", it.path("beskrivelse").stringValue())
+            assertEquals("kontantytelse", it.path("fordel").stringValue())
         }
     }
 
@@ -142,7 +142,7 @@ internal class InntekterTest {
     private fun assertLøsning(behovType: Inntekter.Type, vararg yearsMonths: YearMonth) {
         assertTrue(testRapid.inspektør.message(0).hasNonNull("@løsning"))
         assertEquals(yearsMonths.toList(),
-            testRapid.inspektør.message(0).path("@løsning").path(behovType.name)
+            testRapid.inspektør.message(0).path("@løsning").path(behovType.name).toList()
                 .map { it.path("årMåned").asYearMonth() }
         )
     }

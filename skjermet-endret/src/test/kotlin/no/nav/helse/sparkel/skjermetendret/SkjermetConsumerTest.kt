@@ -50,13 +50,13 @@ class SkjermetConsumerTest {
         assertEquals(2, testRapid.inspektør.size)
 
         val melding1 = testRapid.inspektør.message(0)
-        assertEquals(FNR, melding1["fødselsnummer"].asText())
+        assertEquals(FNR, melding1["fødselsnummer"].asString())
         assertTrue(melding1["skjermet"].asBoolean())
-        assertEquals("endret_skjermetinfo", melding1["@event_name"].asText())
+        assertEquals("endret_skjermetinfo", melding1["@event_name"].asString())
         val opprettet = melding1["@opprettet"]::asLocalDateTime.invoke()
         assertTrue(opprettet.isAfter(localDateTimeFørKonsumering))
         assertTrue(opprettet.isBefore(LocalDateTime.now()))
-        assertNotNull(melding1["@id"].asText())
+        assertNotNull(melding1["@id"].asString())
 
         val melding2 = testRapid.inspektør.message(1)
         assertFalse(melding2["skjermet"].asBoolean())

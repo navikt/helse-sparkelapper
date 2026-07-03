@@ -16,6 +16,7 @@ import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforhold
 import no.nav.helse.sparkel.aareg.arbeidsforhold.model.Arbeidsstedtype.Underenhet
 import org.slf4j.LoggerFactory
 
+// Løser behov fra spleis
 class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aaregClient: AaregClient) :
     River.PacketListener {
 
@@ -46,24 +47,24 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
         sikkerlogg.info("Mottok melding: ${packet.toJson()}")
 
         val arbeidsforhold = try {
-            log.info("løser behov={}", keyValue("id", packet["@id"].asText()))
+            log.info("løser behov={}", keyValue("id", packet["@id"].asString()))
             runBlocking {
                 aaregClient
-                    .hentFraAareg<AaregArbeidsforhold>(packet["fødselsnummer"].asText(), UUID.fromString(packet["@id"].asText()))
+                    .hentFraAareg<AaregArbeidsforhold>(packet["fødselsnummer"].asString(), UUID.fromString(packet["@id"].asString()))
                     .toArbeidsforhold()
             }
         } catch (_: UkjentIdentException) {
-            log.warn("Ignorerer behov={}, personen finnes ikke", packet["@id"].asText())
+            log.warn("Ignorerer behov={}, personen finnes ikke", packet["@id"].asString())
             return
         } catch (err: AaregException) {
             log.error(
                 "Feilmelding for behov={} ved oppslag i AAreg, fikk status={}, se sikkerlogg for detaljer. Ignorerer behov.",
-                keyValue("id", packet["@id"].asText()),
+                keyValue("id", packet["@id"].asString()),
                 err.statusFromAareg()
             )
             sikkerlogg.error(
                 "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Ignorerer behov. Response:\n\t{}",
-                keyValue("id", packet["@id"].asText()),
+                keyValue("id", packet["@id"].asString()),
                 err.responseValue(),
                 err
             )
@@ -71,18 +72,18 @@ class ArbeidsforholdLøserV2(rapidsConnection: RapidsConnection, private val aar
         } catch (err: ClientRequestException) {
             log.warn(
                 "Feilmelding for behov={} ved oppslag i AAreg. Svarer med tom liste",
-                keyValue("id", packet["@id"].asText())
+                keyValue("id", packet["@id"].asString())
             )
             sikkerlogg.warn(
                 "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Svarer med tom liste. Response: {}",
-                keyValue("id", packet["@id"].asText()),
+                keyValue("id", packet["@id"].asString()),
                 runBlocking { err.response.bodyAsText() },
                 err
             )
             emptyList()
         }
 
-        val behov = packet["@behov"].first { it.asText() in listOf("ArbeidsforholdV2", "AlleArbeidsforhold") }.asText()
+        val behov = packet["@behov"].first { it.asString() in listOf("ArbeidsforholdV2", "AlleArbeidsforhold") }.asString()
         packet.setLøsning(behov, arbeidsforhold)
         context.publish(packet.toJson())
     }

@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.oppgaveendret.oppgave
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import java.time.Clock
 import java.time.Duration
@@ -10,6 +9,7 @@ import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveEndretProducer
 import no.nav.helse.sparkel.oppgaveendret.Hendelse
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.ObjectMapper
 
 internal class OppgaveEndretConsumer(
     private val rapidConnection: RapidsConnection,

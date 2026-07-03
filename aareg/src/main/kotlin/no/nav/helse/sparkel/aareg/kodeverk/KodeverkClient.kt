@@ -1,7 +1,5 @@
 package no.nav.helse.sparkel.aareg.kodeverk
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.http.encodeURLPath
@@ -14,6 +12,8 @@ import java.util.UUID
 import no.nav.helse.sparkel.aareg.objectMapper
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
 
 private val log = LoggerFactory.getLogger("sparkel-aareg")
 
@@ -80,7 +80,7 @@ fun JsonNode.hentTekst(kode: String): String =
     path("betydninger").path(kode)
         .takeIf { !it.isMissingNode }
         ?.first()
-        ?.path("beskrivelser")?.path("nb")?.path("tekst")?.asText()
+        ?.path("beskrivelser")?.path("nb")?.path("tekst")?.asString()
         ?: let {
             log.warn("Mangler betydning for næringskode $kode")
             "Ukjent"

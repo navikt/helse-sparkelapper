@@ -62,12 +62,12 @@ class PersonhendelseRiverTest {
         personhendelseRiver.onPackage(dødsfall(FNR, dødsdato))
         assertEquals(1, testRapid.inspektør.size)
         val melding = testRapid.inspektør.message(0)
-        assertEquals(FNR, melding["fødselsnummer"].asText())
-        assertEquals(AKTØRID, melding["aktørId"].asText())
-        assertEquals("dødsmelding", melding["@event_name"].asText())
-        assertEquals("$dødsdato", melding["dødsdato"].asText())
+        assertEquals(FNR, melding["fødselsnummer"].asString())
+        assertEquals(AKTØRID, melding["aktørId"].asString())
+        assertEquals("dødsmelding", melding["@event_name"].asString())
+        assertEquals("$dødsdato", melding["dødsdato"].asString())
         assertDoesNotThrow(melding["@opprettet"]::asLocalDateTime)
-        assertDoesNotThrow { UUID.fromString(melding["@id"].asText()) }
+        assertDoesNotThrow { UUID.fromString(melding["@id"].asString()) }
     }
 
     @Test
@@ -85,13 +85,13 @@ class PersonhendelseRiverTest {
         personhendelseRiver.onPackage(folkeregisteridentifikator(FNR))
         assertEquals(1, testRapid.inspektør.size)
         val melding = testRapid.inspektør.message(0)
-        assertEquals(FNR, melding["fødselsnummer"].asText())
-        assertEquals(nyAktørId, melding["aktørId"].asText())
-        assertEquals(nyttFnr, melding["nye_identer"].path("fødselsnummer").asText())
-        assertEquals(nyAktørId, melding["nye_identer"].path("aktørId").asText())
-        assertEquals("ident_opphørt", melding["@event_name"].asText())
+        assertEquals(FNR, melding["fødselsnummer"].asString())
+        assertEquals(nyAktørId, melding["aktørId"].asString())
+        assertEquals(nyttFnr, melding["nye_identer"].path("fødselsnummer").asString())
+        assertEquals(nyAktørId, melding["nye_identer"].path("aktørId").asString())
+        assertEquals("ident_opphørt", melding["@event_name"].asString())
         assertDoesNotThrow(melding["@opprettet"]::asLocalDateTime)
-        assertDoesNotThrow { UUID.fromString(melding["@id"].asText()) }
+        assertDoesNotThrow { UUID.fromString(melding["@id"].asString()) }
     }
 
     @Test
@@ -128,11 +128,11 @@ class PersonhendelseRiverTest {
         )
         assertEquals(1, testRapid.inspektør.size)
         val melding = testRapid.inspektør.message(0)
-        assertEquals(FNR, melding["fødselsnummer"].asText())
-        assertEquals(AKTØRID, melding["aktørId"].asText())
-        assertEquals("adressebeskyttelse_endret", melding["@event_name"].asText())
+        assertEquals(FNR, melding["fødselsnummer"].asString())
+        assertEquals(AKTØRID, melding["aktørId"].asString())
+        assertEquals("adressebeskyttelse_endret", melding["@event_name"].asString())
         assertDoesNotThrow(melding["@opprettet"]::asLocalDateTime)
-        assertDoesNotThrow { UUID.fromString(melding["@id"].asText()) }
+        assertDoesNotThrow { UUID.fromString(melding["@id"].asString()) }
     }
 
     @Test

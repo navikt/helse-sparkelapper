@@ -1,9 +1,9 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
+import tools.jackson.databind.JsonNode
 
-internal fun JsonNode.toPerioder() = map {
+internal fun JsonNode.toPerioder() = toList().map {
     mapOf(
         "fom" to it["fom"].asLocalDate(),
         "tom" to it["tom"].asLocalDate()

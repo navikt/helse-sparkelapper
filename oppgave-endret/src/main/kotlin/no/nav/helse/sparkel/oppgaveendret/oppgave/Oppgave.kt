@@ -1,10 +1,10 @@
 package no.nav.helse.sparkel.oppgaveendret.oppgave
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.helse.sparkel.oppgaveendret.oppgave.Identtype.FOLKEREGISTERIDENT
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
 
 enum class Identtype {
     // FNR eller DNR
@@ -36,9 +36,9 @@ data class Oppgave(
             }
             return Oppgave(
                 oppgaveId,
-                jsonNode.path("oppgave").path("kategorisering").path("tema").asText(),
-                brukerJson.path("ident").asText(),
-                enumValueOf(jsonNode.path("oppgave").path("bruker").path("identType").asText()),
+                jsonNode.path("oppgave").path("kategorisering").path("tema").asString(),
+                brukerJson.path("ident").asString(),
+                enumValueOf(jsonNode.path("oppgave").path("bruker").path("identType").asString()),
             )
         }
     }

@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import java.time.LocalDate
 import java.util.UUID
@@ -12,6 +11,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import tools.jackson.databind.JsonNode
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class UtbetalingsperiodeløserTest : H2Database() {
@@ -93,21 +93,21 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
         assertTrue(løsninger.isEmpty())
     }
 
-    private fun JsonNode.løsning() = this.path("@løsning").path(Utbetalingsperiodeløser.behov).map {
+    private fun JsonNode.løsning() = this.path("@løsning").path(Utbetalingsperiodeløser.behov).toList().map {
         Infotrygdperiode(it)
     }
 
     class Infotrygdperiode(json: JsonNode) {
         val fom = json["fom"].asLocalDate()
         val tom = json["tom"].asLocalDate()
-        val grad = json["grad"].asText()
+        val grad = json["grad"].asString()
         val dagsats = json["dagsats"].asDouble()
-        val typetekst = json["typetekst"].asText()
-        val organisasjonsnummer = json["organisasjonsnummer"].asText()
-        val arbeidsKategoriKode = json["arbeidsKategoriKode"].asText()
+        val typetekst = json["typetekst"].asString()
+        val organisasjonsnummer = json["organisasjonsnummer"].asString()
+        val arbeidsKategoriKode = json["arbeidsKategoriKode"].asString()
 
         private companion object {
-            fun JsonNode.asLocalDate() = LocalDate.parse(this.asText())
+            fun JsonNode.asLocalDate() = LocalDate.parse(this.asString())
         }
     }
 

@@ -1,8 +1,5 @@
 package no.nav.helse.sparkel.dokumenter
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.every
 import io.mockk.mockk
@@ -10,6 +7,9 @@ import java.util.UUID
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.node.JsonNodeFactory
 
 internal class DokumentRiverTest {
 
@@ -27,7 +27,7 @@ internal class DokumentRiverTest {
         val svar = rapid.inspektør.message(0)
         val dokument = svar.løsning()["dokument"]
         assertEquals(1, dokument.size())
-        assertEquals("123", dokument["søknadId"].asText())
+        assertEquals("123", dokument["søknadId"].asString())
     }
 
     @Test
@@ -37,7 +37,7 @@ internal class DokumentRiverTest {
         val svar = rapid.inspektør.message(0)
         val dokument = svar.løsning()["dokument"]
         assertEquals(1, dokument.size())
-        assertEquals("123", dokument["inntektsmeldingId"].asText())
+        assertEquals("123", dokument["inntektsmeldingId"].asString())
     }
 
     @Test

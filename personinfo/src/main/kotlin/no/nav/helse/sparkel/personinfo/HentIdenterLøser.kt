@@ -33,12 +33,12 @@ internal class HentIdenterLøser(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        val hendelseId = packet["@id"].asText()
+        val hendelseId = packet["@id"].asString()
         withMDC(mapOf(
             "id" to hendelseId
         )) {
             sikkerLogg.info("løser HentIdenter")
-            val kildeIdent = packet["ident"].asText()
+            val kildeIdent = packet["ident"].asString()
             try {
                 when (val identer = speedClient.hentFødselsnummerOgAktørId(kildeIdent, hendelseId)) {
                     is Result.Error -> {

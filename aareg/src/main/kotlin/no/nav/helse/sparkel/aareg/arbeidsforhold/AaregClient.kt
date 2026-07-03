@@ -1,7 +1,5 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
@@ -18,6 +16,8 @@ import java.util.UUID
 import no.nav.helse.sparkel.aareg.objectMapper
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import no.nav.helse.sparkel.retry
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.readValue
 
 class AaregClient(
     private val baseUrl: String,
@@ -94,7 +94,7 @@ enum class Arbeidsforholdtype {
 }
 
 internal fun JsonNode.asOptionalLocalDate() =
-    takeIf(JsonNode::isTextual)?.asText()?.takeIf(String::isNotEmpty)?.let { LocalDate.parse(it.substring(0, 10)) }
+    takeIf(JsonNode::isString)?.asString()?.takeIf(String::isNotEmpty)?.let { LocalDate.parse(it.substring(0, 10)) }
 
 internal fun JsonNode.asLocalDate() =
-    asText().substring(0, 10).let { LocalDate.parse(it) }
+    asString().substring(0, 10).let { LocalDate.parse(it) }

@@ -1,8 +1,5 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -10,13 +7,12 @@ import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeids
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerIkkeArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert.InntektsmeldingHåndtertDto
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal const val FNR = "fnr"
 internal const val ORGNUMMER = "orgnummer"
 
 internal val objectMapper = jacksonObjectMapper()
-    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    .registerModules(JavaTimeModule())
 
 private fun mockTrengerArbeidsgiveropplysningerDto(
     vedtaksperiodeId: UUID,

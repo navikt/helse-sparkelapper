@@ -1,11 +1,11 @@
 package no.nav.helse.sparkel.tilbakedatert
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import java.util.UUID
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class TilbakedatertRiverTest {
 
@@ -35,8 +35,8 @@ internal class TilbakedatertRiverTest {
     fun `Sender tilbakedatering_behandlet for godkjente sykmeldinger`() {
         sendEvent(Meldinger.Godkjent)
         assertEquals(1, rapid.inspektør.size)
-        val expectedSykmeldingId = jacksonObjectMapper().readTree(Meldinger.Godkjent)["sykmelding"]["id"].asText()
-        assertEquals(expectedSykmeldingId, rapid.inspektør.field(0, "sykmeldingId").asText())
+        val expectedSykmeldingId = jacksonObjectMapper().readTree(Meldinger.Godkjent)["sykmelding"]["id"].asString()
+        assertEquals(expectedSykmeldingId, rapid.inspektør.field(0, "sykmeldingId").asString())
         val expectedPerioder = jacksonObjectMapper().readTree(Meldinger.Godkjent)["sykmelding"]["aktivitet"]
         assertEquals(expectedPerioder, rapid.inspektør.field(0, "perioder"))
     }
@@ -45,8 +45,8 @@ internal class TilbakedatertRiverTest {
     fun `Sender tilbakedatering_behandlet for godkjente sykmeldinger hvor det har vært etterspurt flere opplysninger`() {
         sendEvent(Meldinger.GodkjentEtterFlereOpplysninger)
         assertEquals(1, rapid.inspektør.size)
-        val expectedSykmeldingId = jacksonObjectMapper().readTree(Meldinger.GodkjentEtterFlereOpplysninger)["sykmelding"]["id"].asText()
-        assertEquals(expectedSykmeldingId, rapid.inspektør.field(0, "sykmeldingId").asText())
+        val expectedSykmeldingId = jacksonObjectMapper().readTree(Meldinger.GodkjentEtterFlereOpplysninger)["sykmelding"]["id"].asString()
+        assertEquals(expectedSykmeldingId, rapid.inspektør.field(0, "sykmeldingId").asString())
         val expectedPerioder = jacksonObjectMapper().readTree(Meldinger.GodkjentEtterFlereOpplysninger)["sykmelding"]["aktivitet"]
         assertEquals(expectedPerioder, rapid.inspektør.field(0, "perioder"))
     }

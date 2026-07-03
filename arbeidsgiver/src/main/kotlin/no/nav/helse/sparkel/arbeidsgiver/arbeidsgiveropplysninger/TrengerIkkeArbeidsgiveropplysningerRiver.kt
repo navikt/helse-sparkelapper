@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
@@ -12,6 +11,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import java.util.*
 import no.nav.helse.sparkel.arbeidsgiver.ArbeidsgiveropplysningerProducer
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
 
 internal class TrengerIkkeArbeidsgiveropplysningerRiver(
     rapidsConnection: RapidsConnection,
@@ -58,5 +58,5 @@ internal class TrengerIkkeArbeidsgiveropplysningerRiver(
 }
 
 fun JsonNode.asUuid(): UUID =
-    asText().let { UUID.fromString(it) }
+    asString().let { UUID.fromString(it) }
 

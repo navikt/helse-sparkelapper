@@ -3,10 +3,6 @@ package no.nav.helse.sparkel.arbeidsgiver
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.mockk
 import io.mockk.verify
@@ -18,14 +14,14 @@ import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeids
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class TrengerArbeidsgiveropplysningerRiverTest {
     private val FNR = "fnr"
     private val ORGNUMMER = "orgnummer"
 
     private val objectMapper = jacksonObjectMapper()
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        .registerModules(JavaTimeModule())
 
     private val testRapid = TestRapid()
     private val mockproducer: ArbeidsgiveropplysningerProducer = mockk(relaxed = true)

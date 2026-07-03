@@ -37,7 +37,7 @@ internal class Sputnik(
         val (fom, tom) = stønader.omsluttendePeriode(packet)
         val abakusYtelser = stønader.abakusYtelser()
 
-        val fødselsnummer = packet["fødselsnummer"].asText()
+        val fødselsnummer = packet["fødselsnummer"].asString()
         val stønadsperioder = abakusClient.hent(fødselsnummer, fom, tom, *abakusYtelser)
 
         stønader.forEach { stønad ->

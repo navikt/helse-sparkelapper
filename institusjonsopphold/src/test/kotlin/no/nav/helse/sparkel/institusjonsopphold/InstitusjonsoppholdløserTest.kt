@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.institusjonsopphold
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.azure.AzureAuthMethod
 import com.github.navikt.tbd_libs.azure.AzureTokenClient
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.TestInstance.Lifecycle
+import tools.jackson.databind.JsonNode
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class InstitusjonsoppholdløserTest {
@@ -73,7 +73,7 @@ internal class InstitusjonsoppholdløserTest {
         assertTrue(perioder.isEmpty())
     }
 
-    private fun JsonNode.løsning() = this.path("@løsning").path(Institusjonsoppholdløser.behov).map {
+    private fun JsonNode.løsning() = this.path("@løsning").path(Institusjonsoppholdløser.behov).toList().map {
         Institusjonsoppholdperiode(it)
     }
 

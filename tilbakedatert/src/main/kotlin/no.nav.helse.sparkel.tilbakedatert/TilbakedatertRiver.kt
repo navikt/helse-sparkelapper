@@ -37,7 +37,7 @@ internal class TilbakedatertRiver(
                 it.requireValue("validation.status", "OK")
                 it.require("validation.rules") { node ->
                     check(node.isArray)
-                    check(node.any { rule -> rule["name"].asText() in statuser && rule["type"].asText() == "OK" })
+                    check(node.any { rule -> rule["name"].asString() in statuser && rule["type"].asString() == "OK" })
                 }
             }
         }.register(this)
@@ -48,10 +48,10 @@ internal class TilbakedatertRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        val fødselsnummer = packet["sykmelding.pasient.fnr"].asText()
-        val sykmeldingId = packet["sykmelding.id"].asText()
+        val fødselsnummer = packet["sykmelding.pasient.fnr"].asString()
+        val sykmeldingId = packet["sykmelding.id"].asString()
         log.info("Leser melding for {}", keyValue("sykmeldingId", sykmeldingId))
-        val perioder = packet["sykmelding.aktivitet"].map {
+        val perioder = packet["sykmelding.aktivitet"].toList().map {
             mapOf(
                 "fom" to it["fom"].asLocalDate(),
                 "tom" to it["tom"].asLocalDate(),

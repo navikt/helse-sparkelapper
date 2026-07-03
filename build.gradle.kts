@@ -1,26 +1,26 @@
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 
 plugins {
-    kotlin("jvm") version "2.3.0"
+    kotlin("jvm") version "2.4.0"
 }
 
 val junitJupiterVersion = "6.0.1"
-val rapidsAndRiversVersion = "2026011411051768385145.e8ebad1177b4"
-val tbdLibsVersion = "20260423.1246"
-val ktorVersion = "3.2.3"
+val rapidsAndRiversVersion = "2026051812441779101082"
+val tbdLibsVersion = "20260701.2248"
+val ktorVersion = "3.5.0"
 val mockkVersion = "1.13.17"
 val wiremockVersion = "3.9.2"
 val jsonAssertVersion = "1.5.3"
 val avroVersion = "1.12.0"
 val kotliqueryVersion = "1.9.0"
-val postgresqlVersion = "42.7.7"
-val flywayCoreVersion = "11.5.0"
+val postgresqlVersion = "42.7.11"
+val flywayCoreVersion = "11.20.2"
 val hikariCPVersion = "6.3.0"
-val jacksonVersion = "2.18.3"
+val jacksonVersion = "3.2.0"
 
 buildscript {
     repositories { mavenCentral() }
-    dependencies { "classpath"(group = "com.fasterxml.jackson.core", name = "jackson-databind", version = "2.13.2.2") }
+    dependencies { classpath("tools.jackson.core:jackson-databind:3.2.0") }
 }
 
 val mapper = ObjectMapper()
@@ -133,6 +133,22 @@ allprojects {
         }
     }
 
+    configurations.all {
+        // Blokker direkte avhengigheter på Jackson 2
+        val config = this
+        incoming.beforeResolve {
+            config.dependencies
+                .filterIsInstance<ExternalDependency>()
+                .filterNot { it.group?.startsWith("com.fasterxml.jackson.annotation") == true }
+                .filter { it.group?.startsWith("com.fasterxml.jackson") == true }
+                .forEach { dep ->
+                    throw GradleException(
+                        "Direkte avhengighet på Jackson 2 er ikke ønsket: ${dep.group}:${dep.name} – bruk tools.jackson (Jackson 3)",
+                    )
+                }
+        }
+    }
+
     tasks {
         withType<Test> {
             useJUnitPlatform()
@@ -147,6 +163,7 @@ subprojects {
     ext.set("ktorVersion", ktorVersion)
     ext.set("rapidsAndRiversVersion", rapidsAndRiversVersion)
     ext.set("tbdLibsVersion", tbdLibsVersion)
+    ext.set("jacksonVersion", jacksonVersion)
     ext.set("junitJupiterVersion", junitJupiterVersion)
     ext.set("mockkVersion", mockkVersion)
     ext.set("jsonAssertVersion", jsonAssertVersion)
@@ -158,7 +175,7 @@ subprojects {
 
     dependencies {
         constraints {
-            api("com.fasterxml.jackson:jackson-bom:$jacksonVersion") {
+            api("tools.jackson:jackson-bom:$jacksonVersion") {
                 because("Alle moduler skal bruke samme versjon av jackson")
             }
         }

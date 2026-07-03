@@ -31,17 +31,17 @@ private val logger: Logger = LoggerFactory.getLogger("sparkel-arbeidsgiver")
 fun main() {
     val env = System.getenv()
 
-    val objectMapper = jacksonObjectMapper()
+    val objectMapperJackson2 = jacksonObjectMapper()
         .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .registerModules(JavaTimeModule())
 
     val consumerProducerFactory = ConsumerProducerFactory(AivenConfig.default)
-    val producer = ArbeidsgiveropplysningerProducer(consumerProducerFactory.createProducer(), objectMapper)
+    val producer = ArbeidsgiveropplysningerProducer(consumerProducerFactory.createProducer(), objectMapperJackson2)
 
     val azureClient = createAzureTokenClientFromEnvironment(env)
     val spedisjonClient = SpedisjonClient(
         httpClient = HttpClient.newHttpClient(),
-        objectMapper = objectMapper,
+        objectMapper = objectMapperJackson2,
         tokenProvider = azureClient
     )
 

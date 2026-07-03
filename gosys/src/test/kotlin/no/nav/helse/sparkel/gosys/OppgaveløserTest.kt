@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.gosys
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.azure.AzureToken
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
@@ -30,6 +29,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import tools.jackson.databind.JsonNode
 
 internal class OppgaveløserTest {
 

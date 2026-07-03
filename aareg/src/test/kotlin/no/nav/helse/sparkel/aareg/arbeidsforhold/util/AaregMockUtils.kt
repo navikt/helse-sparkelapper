@@ -13,14 +13,14 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.http.fullPath
 import io.ktor.http.headersOf
-import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.serialization.jackson3.JacksonConverter
 import java.time.LocalDateTime
 import no.nav.helse.sparkel.aareg.objectMapper
 import org.intellij.lang.annotations.Language
 
 fun azureTokenStub() = object : AzureTokenProvider {
-    override fun bearerToken(scope: String) = com.github.navikt.tbd_libs.result_object.Result.Ok(AzureToken("superToken", LocalDateTime.MAX))
-    override fun onBehalfOfToken(scope: String, token: String): com.github.navikt.tbd_libs.result_object.Result<AzureToken> =
+    override fun bearerToken(scope: String) = Result.Ok(AzureToken("superToken", LocalDateTime.MAX))
+    override fun onBehalfOfToken(scope: String, token: String): Result<AzureToken> =
         throw NotImplementedError("Ikke implementert i mock")
 }
 

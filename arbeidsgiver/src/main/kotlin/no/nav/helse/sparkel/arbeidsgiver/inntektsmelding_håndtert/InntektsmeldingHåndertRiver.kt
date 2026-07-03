@@ -45,11 +45,11 @@ internal class InntektsmeldingHåndertRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        MDC.putCloseable("meldingId", packet["@id"].asText()).use {
+        MDC.putCloseable("meldingId", packet["@id"].asString()).use {
             logg.info("Melding mottatt")
             sikkerlogg.info("Melding mottatt:\n${packet.toJson()}")
 
-            val hendelseId = UUID.fromString(packet["inntektsmeldingId"].asText())
+            val hendelseId = UUID.fromString(packet["inntektsmeldingId"].asString())
 
             val callId = UUID.randomUUID().toString()
             sikkerlogg.info("Henter dokument for callId=$callId, inntektsmeldingId=$hendelseId")

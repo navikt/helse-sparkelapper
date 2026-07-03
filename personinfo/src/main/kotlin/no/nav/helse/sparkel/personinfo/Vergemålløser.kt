@@ -39,8 +39,8 @@ internal class Vergemålløser(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
-        val behovId = packet["@id"].asText()
-        val fødselsnummer = packet["fødselsnummer"].asText()
+        val behovId = packet["@id"].asString()
+        val fødselsnummer = packet["fødselsnummer"].asString()
         withMDC("callId" to behovId) {
             try {
                 sikkerlogg.info("løser behov Vergemål {}", keyValue("id", behovId))

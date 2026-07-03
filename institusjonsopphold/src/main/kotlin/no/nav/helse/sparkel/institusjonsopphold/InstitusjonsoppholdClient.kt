@@ -1,12 +1,12 @@
 package no.nav.helse.sparkel.institusjonsopphold
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class InstitusjonsoppholdClient(
     private val baseUrl: String,
@@ -15,7 +15,7 @@ internal class InstitusjonsoppholdClient(
 ) {
 
     companion object {
-        private val objectMapper = ObjectMapper()
+        private val objectMapper = jacksonObjectMapper()
     }
 
     internal fun hentInstitusjonsopphold(

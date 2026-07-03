@@ -17,8 +17,8 @@ internal data class VedtaksperiodeForkastetDto(
 
 internal fun JsonMessage.toVedtaksperiodeForkastetDto(): VedtaksperiodeForkastetDto =
     VedtaksperiodeForkastetDto(
-        fødselsnummer = this["fødselsnummer"].asText(),
-        organisasjonsnummer = this["organisasjonsnummer"].asText(),
-        vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
+        fødselsnummer = this["fødselsnummer"].asString(),
+        organisasjonsnummer = this["organisasjonsnummer"].asString(),
+        vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asString()),
         opprettet = this["@opprettet"].asLocalDateTime()
     )

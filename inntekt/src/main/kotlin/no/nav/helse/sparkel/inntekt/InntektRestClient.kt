@@ -1,7 +1,6 @@
 package no.nav.helse.sparkel.inntekt
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.github.navikt.tbd_libs.retry.retry
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.expectSuccess
@@ -15,6 +14,8 @@ import io.ktor.http.contentType
 import java.time.YearMonth
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.readValue
 
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
@@ -66,7 +67,7 @@ class InntektRestClient(
     }
 }
 
-private fun tilMånedListe(node: JsonNode, orgnummer: String? = null) = node.path("arbeidsInntektMaaned")
+private fun tilMånedListe(node: JsonNode, orgnummer: String? = null) = node.path("arbeidsInntektMaaned").toList()
     .map { tilMåned(it, orgnummer) }
 
 private fun tilInntekt(node: JsonNode, inntekterForOrgnummer: String? = null): Inntekt? {
@@ -77,23 +78,24 @@ private fun tilInntekt(node: JsonNode, inntekterForOrgnummer: String? = null): I
     if (inntekterForOrgnummer != null && inntekterForOrgnummer != orgnr) return null
     return Inntekt(
         beløp = node["beloep"].asDouble(),
-        inntektstype = Inntektstype.valueOf(node["inntektType"].textValue()),
+        inntektstype = Inntektstype.valueOf(node["inntektType"].stringValue()),
         orgnummer = orgnr,
         fødselsnummer = identifikator(node, "NATURLIG_IDENT"),
-        beskrivelse = node["beskrivelse"].textValue(),
-        fordel = node["fordel"].textValue()
+        beskrivelse = node["beskrivelse"].stringValue(),
+        fordel = node["fordel"].stringValue()
     )
 }
 
 private fun identifikator(node: JsonNode, type: String) =
-    node["virksomhet"].takeIf { it["aktoerType"].asText() == type }?.get("identifikator")?.asText()
+    node["virksomhet"].takeIf { it["aktoerType"].asString() == type }?.get("identifikator")?.asString()
 
 private fun tilMåned(node: JsonNode, orgnummer: String?) = Måned(
-    årMåned = YearMonth.parse(node["aarMaaned"].asText()),
+    årMåned = YearMonth.parse(node["aarMaaned"].asString()),
     inntektsliste = node.path("arbeidsInntektInformasjon").path("inntektListe").mapNotNull { tilInntekt(it, orgnummer) }
 )
 
 data class Måned(
+    @get:JsonProperty("årMåned")
     val årMåned: YearMonth,
     val inntektsliste: List<Inntekt>
 )

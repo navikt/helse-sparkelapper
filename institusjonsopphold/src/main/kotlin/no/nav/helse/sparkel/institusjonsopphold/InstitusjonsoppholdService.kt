@@ -1,9 +1,9 @@
 package no.nav.helse.sparkel.institusjonsopphold
 
-import com.fasterxml.jackson.databind.JsonNode
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
+import tools.jackson.databind.JsonNode
 
 internal class InstitusjonsoppholdService(private val institusjonsoppholdClient: InstitusjonsoppholdClient) {
 

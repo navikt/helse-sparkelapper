@@ -1,12 +1,12 @@
 package no.nav.helse.sparkel.oppgaveendret
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import no.nav.helse.sparkel.oppgaveendret.oppgave.Identtype.FOLKEREGISTERIDENT
 import no.nav.helse.sparkel.oppgaveendret.oppgave.Oppgave
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.JsonNode
 
 internal class GosysOppgaveEndretProducerTest {
 

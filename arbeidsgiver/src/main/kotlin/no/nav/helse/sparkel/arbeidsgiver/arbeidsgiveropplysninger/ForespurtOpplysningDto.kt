@@ -1,8 +1,8 @@
 package no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
 
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
@@ -32,12 +32,12 @@ internal data object Arbeidsgiverperiode : ForespurtOpplysning()
 internal data object Inntekt: ForespurtOpplysning()
 
 internal fun JsonNode.asBestemmendeFraværsdager() =
-    associate { it["organisasjonsnummer"].asText() to it["førsteFraværsdag"].asLocalDate() }
+    associate { it["organisasjonsnummer"].asString() to it["førsteFraværsdag"].asLocalDate() }
 
 internal fun JsonNode.asForespurteOpplysninger(): List<ForespurtOpplysning> =
     mapNotNull(JsonNode::asForespurtOpplysning)
 
-internal fun JsonNode.asForespurtOpplysning() = when (val opplysningstype = this["opplysningstype"].asText()) {
+internal fun JsonNode.asForespurtOpplysning() = when (val opplysningstype = this["opplysningstype"].asString()) {
     "Inntekt" -> Inntekt
     "Refusjon" -> Refusjon
     "Arbeidsgiverperiode" -> Arbeidsgiverperiode

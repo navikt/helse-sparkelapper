@@ -33,10 +33,10 @@ internal class EgenAnsattLøser(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
-        val meldingId = packet["@id"].asText()
+        val meldingId = packet["@id"].asString()
 
         val personErSkjermet = try {
-            skjermedePersoner.erSkjermetPerson(packet["fødselsnummer"].asText(), meldingId)
+            skjermedePersoner.erSkjermetPerson(packet["fødselsnummer"].asString(), meldingId)
         } catch (err: Exception) {
             loggFeil(err, packet)
             return
@@ -51,7 +51,7 @@ internal class EgenAnsattLøser(
     }
 
     private fun loggFeil(err: Exception, packet: JsonMessage) {
-        val idArgument = keyValue("id", packet["@id"].asText())
+        val idArgument = keyValue("id", packet["@id"].asString())
         log.error("feil ved henting av egen ansatt: ${err.message} for behov {}", idArgument, err)
         sikkerlogg.error("feil ved henting av egen ansatt: ${err.message} for behov {}", idArgument, err)
     }

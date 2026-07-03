@@ -1,7 +1,5 @@
 package no.nav.helse.sparkel.sputnik.abakus
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
@@ -14,6 +12,8 @@ import no.nav.helse.sparkel.sputnik.abakus.HttpRequest.postJson
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
 import kotlin.math.roundToInt
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.node.ObjectNode
 
 internal interface AbakusClient {
     fun hent(fødselsnummer: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse): Set<Stønadsperiode>
@@ -49,7 +49,7 @@ internal class RestAbakusClient(
         } catch (exception: Exception) {
             sikkerlogg.error("Feil ved mapping av ${ytelser.toSet()} fra Abakus-response for {} med {}.",
                 keyValue("fødselsnummer", fødselsnummer), keyValue("callId", callId), exception)
-            throw throw IllegalStateException("Feil ved mapping av response fra Abakus")
+            throw IllegalStateException("Feil ved mapping av response fra Abakus")
         }
     }
 
@@ -73,22 +73,23 @@ internal class RestAbakusClient(
         """
 
         private fun JsonNode.abakusResponseTilStønadsperioder(fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse) = asSequence()
-            .filter { it.get("ytelseStatus").asText() in aktiveYtelseStatuser }
+            .filter { it.get("ytelseStatus").asString() in aktiveYtelseStatuser }
             .map { ytelse -> ytelse.get("anvist").onEach {
                 it as ObjectNode
-                it.put("@ytelse", ytelse.path("ytelse").asText())
-                it.put("@vedtattTidspunkt", ytelse.path("vedtattTidspunkt").asText())
+                it.put("@ytelse", ytelse.path("ytelse").asString())
+                it.put("@vedtattTidspunkt", ytelse.path("vedtattTidspunkt").asString())
             }}
             .flatten()
+            .toList()
             .map { anvisning ->
                 Stønadsperiode(
-                    fom = LocalDate.parse(anvisning.get("periode").get("fom").asText()),
-                    tom = LocalDate.parse(anvisning.get("periode").get("tom").asText()),
+                    fom = LocalDate.parse(anvisning.get("periode").get("fom").asString()),
+                    tom = LocalDate.parse(anvisning.get("periode").get("tom").asString()),
                     grad = anvisning.path("utbetalingsgrad").path("verdi")
                         .takeUnless { it.isMissingOrNull() }
                         ?.asDouble()
                         ?.roundToInt() ?: 100,
-                    ytelse = Ytelse(anvisning.get("@ytelse").asText()),
+                    ytelse = Ytelse(anvisning.get("@ytelse").asString()),
                     vedtatt = anvisning.get("@vedtattTidspunkt").asLocalDateTime()
                 )
             }

@@ -37,22 +37,22 @@ internal class DokumentRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        log.info("Leser melding med @id=${packet["@id"].asText()}")
-        sikkerlogg.info("Leser melding med @id=${packet["@id"].asText()}\n${packet.toJson()}")
-        when (val dokumentType = packet["dokumentType"].asText()) {
+        log.info("Leser melding med @id=${packet["@id"].asString()}")
+        sikkerlogg.info("Leser melding med @id=${packet["@id"].asString()}\n${packet.toJson()}")
+        when (val dokumentType = packet["dokumentType"].asString()) {
             "SØKNAD" -> håndter(packet, context, søknadClient)
             "INNTEKTSMELDING" -> håndter(packet, context, inntektsmeldingClient)
             else -> sikkerlogg.info(
                 "Uhåndtert melding, dokumentType={}, @id={}",
                 dokumentType,
-                packet["@id"].asText(),
+                packet["@id"].asString(),
             )
         }
     }
 
     private fun håndter(packet: JsonMessage, context: MessageContext, dokumentClient: DokumentClient) {
-        val dokumentId = packet["dokumentId"].asText()
-        val id = packet["@id"].asText()
+        val dokumentId = packet["dokumentId"].asString()
+        val id = packet["@id"].asString()
 
         dokumentClient.hentDokument(dokumentId).fold(
             onSuccess = {

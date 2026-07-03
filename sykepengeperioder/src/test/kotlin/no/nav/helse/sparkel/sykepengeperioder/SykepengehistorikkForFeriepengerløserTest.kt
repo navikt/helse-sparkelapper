@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import java.time.LocalDate
@@ -16,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
+import tools.jackson.databind.JsonNode
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
@@ -500,42 +500,42 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         }
 
     private class Sykepengehistorikk(json: JsonNode) {
-        val utbetalinger = json["utbetalinger"].map(::UtbetalteSykeperiode)
-        val inntektshistorikk = json["inntektshistorikk"].map(::Inntektsopplysning)
-        val feriepengehistorikk = json["feriepengehistorikk"].map(::Feriepenger)
+        val utbetalinger = json["utbetalinger"].toList().map(::UtbetalteSykeperiode)
+        val inntektshistorikk = json["inntektshistorikk"].toList().map(::Inntektsopplysning)
+        val feriepengehistorikk = json["feriepengehistorikk"].toList().map(::Feriepenger)
         val harStatslønn = json["harStatslønn"].asBoolean()
         val feriepengerSkalBeregnesManuelt = json["feriepengerSkalBeregnesManuelt"].asBoolean()
-        val arbeidskategorikoder = json["arbeidskategorikoder"].map(::Arbeidskategori)
+        val arbeidskategorikoder = json["arbeidskategorikoder"].toList().map(::Arbeidskategori)
 
         class UtbetalteSykeperiode(json: JsonNode) {
             val fom = json["fom"].asOptionalLocalDate()
             val tom = json["tom"].asOptionalLocalDate()
-            val utbetalingsGrad = json["utbetalingsGrad"].asText()
-            val orgnummer = json["orgnummer"].asText()
+            val utbetalingsGrad = json["utbetalingsGrad"].asString()
+            val orgnummer = json["orgnummer"].asString()
             val dagsats = json["dagsats"].asDouble()
         }
 
         class Inntektsopplysning(json: JsonNode) {
             val sykepengerFom = json["sykepengerFom"].asLocalDate()
             val inntekt = json["inntekt"].asInt()
-            val orgnummer = json["orgnummer"].asText()
+            val orgnummer = json["orgnummer"].asString()
         }
 
         class Feriepenger(json: JsonNode) {
-            val orgnummer = json["orgnummer"].asText()
+            val orgnummer = json["orgnummer"].asString()
             val beløp = json["beløp"].asDouble()
             val fom = json["fom"].asLocalDate()
             val tom = json["tom"].asLocalDate()
         }
 
         class Arbeidskategori(json: JsonNode) {
-            val kode = json["kode"].asText()
+            val kode = json["kode"].asString()
             val fom = json["fom"].asLocalDate()
             val tom = json["tom"].asLocalDate()
         }
 
         private companion object {
-            fun JsonNode.asLocalDate() = LocalDate.parse(this.asText())
+            fun JsonNode.asLocalDate() = LocalDate.parse(this.asString())
             fun JsonNode.asOptionalLocalDate() = takeUnless { this.isMissingOrNull() }?.asLocalDate()
         }
     }

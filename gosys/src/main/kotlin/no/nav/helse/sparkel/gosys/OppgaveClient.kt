@@ -1,7 +1,5 @@
 package no.nav.helse.sparkel.gosys
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.client.HttpClient
@@ -12,8 +10,14 @@ import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.jackson.JacksonConverter
+import io.ktor.serialization.jackson3.JacksonConverter
+import java.io.IOException
+import javax.net.ssl.SSLHandshakeException
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import no.nav.helse.sparkel.retry
+import tools.jackson.core.exc.StreamReadException
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
 
 internal class OppgaveClient(
     private val baseUrl: String,
@@ -58,7 +62,12 @@ internal class OppgaveClient(
     override suspend fun hentÅpneOppgaver(
         aktørId: String,
         behovId: String,
-    ): JsonNode = retry("oppgavetjenesten") {
+    ): JsonNode = retry("oppgavetjenesten", legalExceptions = arrayOf(
+        StreamReadException::class, // I Jackson 3 har man gått vekk fra checked exceptions
+        IOException::class,
+        ClosedReceiveChannelException::class,
+        SSLHandshakeException::class,
+    )) {
         kallOppgavetjenesten(aktørId, behovId)
     }
 }

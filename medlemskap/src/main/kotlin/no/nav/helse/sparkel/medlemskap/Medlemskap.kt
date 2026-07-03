@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.medlemskap
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
@@ -12,6 +11,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
+import tools.jackson.databind.JsonNode
 
 internal class Medlemskap(
     rapidsConnection: RapidsConnection,
@@ -40,8 +40,8 @@ internal class Medlemskap(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        val behovId = packet["@id"].asText()
-        val vedtaksperiodeId = packet["vedtaksperiodeId"].asText()
+        val behovId = packet["@id"].asString()
+        val vedtaksperiodeId = packet["vedtaksperiodeId"].asString()
         withMDC(mapOf(
             "behovId" to behovId,
             "vedtaksperiodeId" to vedtaksperiodeId
@@ -58,13 +58,13 @@ internal class Medlemskap(
     private fun håndter(packet: JsonMessage, context: MessageContext) {
         packet["@løsning"] = mapOf<String, Any>(
             behov to client.hentMedlemskapsvurdering(
-                fnr = packet["fødselsnummer"].asText(),
+                fnr = packet["fødselsnummer"].asString(),
                 fom = packet["$behov.medlemskapPeriodeFom"].asLocalDate(),
                 tom = packet["$behov.medlemskapPeriodeTom"].asLocalDate()
             )
         )
         context.publish(packet.toJson()).also {
-            sikkerlogg.info("sender {} som {}", keyValue("id", packet["@id"].asText()), packet.toJson())
+            sikkerlogg.info("sender {} som {}", keyValue("id", packet["@id"].asString()), packet.toJson())
         }
     }
 

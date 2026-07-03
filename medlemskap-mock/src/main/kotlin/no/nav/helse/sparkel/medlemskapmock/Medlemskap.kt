@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.medlemskapmock
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
@@ -13,6 +12,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
 
 internal class Medlemskap(
     rapidsConnection: RapidsConnection
@@ -48,7 +48,7 @@ internal class Medlemskap(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        val fødselsnummer = packet["fødselsnummer"].asText()
+        val fødselsnummer = packet["fødselsnummer"].asString()
         packet["@løsning"] = mapOf<String, Any>(
             behov to mapOf(
                 "resultat" to mapOf(
@@ -59,7 +59,7 @@ internal class Medlemskap(
         context.publish(packet.toJson())
         sikkerlogg.info(
             "Sender hardkodet svar for behov {}:\n{}",
-            keyValue("id", packet["@id"].asText()),
+            keyValue("id", packet["@id"].asString()),
             packet.toJson()
         )
     }
@@ -78,7 +78,7 @@ private class Medlemskapvurderinger : River.PacketListener {
     private fun gyldigFødselsnummer(fødselsnummer: String): String = try {
         LocalDate.parse(fødselsnummer.substring(0, 6), formatter)
         "JA"
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         "UAVKLART"
     }
 
@@ -87,8 +87,8 @@ private class Medlemskapvurderinger : River.PacketListener {
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        val ident = packet["ident"].asText()
-        val svar = packet["medlemskapVerdi"].asText()
+        val ident = packet["ident"].asString()
+        val svar = packet["medlemskapVerdi"].asString()
         sikkerlogg.info("forbereder medlemskapvurdering for $ident=$svar")
         vurderinger[ident] = svar
     }

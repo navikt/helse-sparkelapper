@@ -1,13 +1,13 @@
 package no.nav.helse.sparkel.medlemskap
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.time.LocalDate
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class MedlemskapClient(
     private val baseUrl: URI,

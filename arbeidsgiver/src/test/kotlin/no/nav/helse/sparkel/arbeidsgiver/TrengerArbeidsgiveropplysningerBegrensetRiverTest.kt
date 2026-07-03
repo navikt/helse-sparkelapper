@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.mockk
 import io.mockk.verify
@@ -10,6 +9,7 @@ import java.util.*
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerBegrensetRiver
 import no.nav.helse.sparkel.arbeidsgiver.vedtaksperiode_forkastet.VedtaksperiodeForkastetDto
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.JsonNode
 
 internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
 

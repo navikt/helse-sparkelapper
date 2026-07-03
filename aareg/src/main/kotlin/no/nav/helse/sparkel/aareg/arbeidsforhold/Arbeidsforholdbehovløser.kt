@@ -17,6 +17,7 @@ import no.nav.helse.sparkel.aareg.arbeidsforhold.model.Arbeidsstedtype.Underenhe
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import org.slf4j.LoggerFactory
 
+// Løser behov fra spesialist
 class Arbeidsforholdbehovløser(
     rapidsConnection: RapidsConnection,
     private val aaregClient: AaregClient,
@@ -28,7 +29,7 @@ class Arbeidsforholdbehovløser(
             LøsningDto(
                 startdato = arbeidsforhold.ansettelsesperiode.startdato,
                 sluttdato = arbeidsforhold.ansettelsesperiode.sluttdato,
-                stillingsprosent = arbeidsforhold.ansettelsesdetaljer.first().avtaltStillingsprosent,
+                stillingsprosent = arbeidsforhold.ansettelsesdetaljer.first().avtaltStillingsprosent ?: 0,
                 stillingstittel = arbeidsforhold.ansettelsesdetaljer.first().yrke.beskrivelse,
             )
         }
@@ -53,7 +54,7 @@ class Arbeidsforholdbehovløser(
 
         sikkerlogg.info(
             "løser behov {}, {}",
-            keyValue("id", packet["@id"].asText()),
+            keyValue("id", packet["@id"].asString()),
             keyValue("løsning", packet["@løsning"])
         )
 
@@ -61,9 +62,9 @@ class Arbeidsforholdbehovløser(
     }
 
     private fun løsBehov(packet: JsonMessage): List<LøsningDto> {
-        val fnr = packet["$behov.fødselsnummer"].asText()
-        val id = UUID.fromString(packet["@id"].asText())
-        val organisasjonsnummer = packet["$behov.organisasjonsnummer"].asText()
+        val fnr = packet["$behov.fødselsnummer"].asString()
+        val id = UUID.fromString(packet["@id"].asString())
+        val organisasjonsnummer = packet["$behov.organisasjonsnummer"].asString()
 
         return try {
             log.info("løser behov={}", keyValue("id", id))

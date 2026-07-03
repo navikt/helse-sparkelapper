@@ -1,4 +1,5 @@
 val tbdLibsVersion: String by project
+val rapidsAndRiversVersion: String by project
 
 dependencies {
     implementation(project(":felles"))
@@ -7,7 +8,7 @@ dependencies {
     implementation("com.github.navikt.tbd-libs:retry:$tbdLibsVersion")
     implementation("com.github.navikt.tbd-libs:spedisjon-client:$tbdLibsVersion")
 
-    testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
+    testImplementation("com.github.navikt.rapids-and-rivers:rapids-and-rivers-test:$rapidsAndRiversVersion")
 }
 
 tasks.withType<Test> {

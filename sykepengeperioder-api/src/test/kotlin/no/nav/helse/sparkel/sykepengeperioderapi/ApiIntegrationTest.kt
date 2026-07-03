@@ -15,12 +15,12 @@ import io.ktor.server.testing.testApplication
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
-import kotlin.test.assertEquals
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.helse.sparkel.infotrygd.Fnr
 import no.nav.security.mock.oauth2.MockOAuth2Server
 import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.skyscreamer.jsonassert.JSONAssert

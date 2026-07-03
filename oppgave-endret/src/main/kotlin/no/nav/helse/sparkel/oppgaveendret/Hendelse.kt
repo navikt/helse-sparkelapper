@@ -1,6 +1,6 @@
 package no.nav.helse.sparkel.oppgaveendret
 
-import com.fasterxml.jackson.databind.JsonNode
+import tools.jackson.databind.JsonNode
 
 data class Hendelse(
     private val hendelsestype: Hendelsetype
@@ -10,7 +10,7 @@ data class Hendelse(
     companion object {
         fun fromJson(jsonNode: JsonNode): Hendelse {
             return Hendelse(
-                enumValueOf(jsonNode.path("hendelse").path("hendelsestype").asText())
+                enumValueOf(jsonNode.path("hendelse").path("hendelsestype").asString())
             )
         }
     }

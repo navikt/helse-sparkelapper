@@ -1,7 +1,5 @@
 package no.nav.helse.sparkel.representasjon
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -11,6 +9,8 @@ import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
 
 internal class RepresentasjonRiverTest {
     private val representasjonClient: RepresentasjonClient = mockk(relaxed = true)

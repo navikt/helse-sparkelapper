@@ -1,27 +1,19 @@
 package no.nav.helse.sparkel.oppgaveendret
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import java.time.Clock
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.sparkel.oppgaveendret.kafka.createConsumer
 import no.nav.helse.sparkel.oppgaveendret.oppgave.OppgaveEndretConsumer
-
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 fun main() {
     val app = createApp(System.getenv())
     app.start()
 }
 
-internal val objectMapper: ObjectMapper = ObjectMapper()
-    .registerModule(JavaTimeModule())
-    .registerKotlinModule()
-    .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+internal val objectMapper: ObjectMapper = jacksonObjectMapper()
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
 

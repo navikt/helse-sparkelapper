@@ -1,14 +1,11 @@
 package no.nav.helse.sparkel.sykepengeperioderapi
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.ktor.http.HttpStatusCode.Companion.InternalServerError
-import io.ktor.serialization.jackson.JacksonConverter
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode.Companion.InternalServerError
+import io.ktor.serialization.jackson3.JacksonConverter
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.authenticate
@@ -44,14 +41,12 @@ import no.nav.helse.sparkel.infotrygd.api.Periodetype
 import no.nav.helse.sparkel.infotrygd.api.Personidentifikator
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 private val logg = LoggerFactory.getLogger(::main::class.java)
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 private val String.env get() = checkNotNull(System.getenv(this)) { "Fant ikke environment variablen $this" }
-private val objectMapper = jacksonObjectMapper().apply {
-    registerModule(JavaTimeModule())
-    disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-}
+private val objectMapper = jacksonObjectMapper()
 
 fun main() {
     val dataSource = try {

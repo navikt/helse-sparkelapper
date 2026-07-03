@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import io.ktor.client.HttpClient
 import io.ktor.client.request.accept
@@ -14,6 +13,7 @@ import java.util.UUID
 import no.nav.helse.sparkel.aareg.objectMapper
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import no.nav.helse.sparkel.retry
+import tools.jackson.databind.JsonNode
 
 class EregClient(
     private val baseUrl: String,
@@ -60,7 +60,7 @@ class EregClient(
             EregResponse(
                 navn = trekkUtNavn(json),
                 næringer = json.path("organisasjonDetaljer").path("naeringer").takeIf { !it.isMissingNode }
-                    ?.map { it["naeringskode"].asText() } ?: emptyList()
+                    ?.toList()?.map { it["naeringskode"].asString() } ?: emptyList()
             )
         }
 
@@ -68,7 +68,7 @@ class EregClient(
         organisasjon["navn"].let { navn ->
             (1..5).mapNotNull { index -> navn["navnelinje$index"] }
                 .filterNot(JsonNode::isMissingOrNull)
-                .map(JsonNode::asText)
+                .map(JsonNode::asString)
                 .filterNot(String::isBlank)
         }.joinToString()
 

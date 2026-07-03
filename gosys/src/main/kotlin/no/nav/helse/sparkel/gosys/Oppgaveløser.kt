@@ -43,8 +43,8 @@ internal class Oppgaveløser(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
-        val behovId = packet["@id"].asText()
-        val fnr = packet["fødselsnummer"].asText()
+        val behovId = packet["@id"].asString()
+        val fnr = packet["fødselsnummer"].asString()
         withMDC("callId" to behovId) {
             when (val result = tryCatch {
                 retryBlocking {

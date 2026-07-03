@@ -1,20 +1,19 @@
 package no.nav.helse.sparkel.institusjonsopphold
 
-import com.fasterxml.jackson.databind.JsonNode
 import java.time.LocalDate
+import tools.jackson.databind.JsonNode
 
 class Institusjonsoppholdperiode(jsonNode: JsonNode) {
-    val institusjonstype = jsonNode["institusjonstype"].asEnumValue<Institusjonstype>()
     val kategori = jsonNode["kategori"].asEnumValue<Oppholdstype>()
-    val startdato = jsonNode["startdato"].textValue().let { LocalDate.parse(it) }
-    val faktiskSluttdato = jsonNode["faktiskSluttdato"]?.takeUnless { it.isNull }?.textValue()?.let { LocalDate.parse(it) }
+    val startdato = jsonNode["startdato"].stringValue().let { LocalDate.parse(it) }
+    val faktiskSluttdato = jsonNode["faktiskSluttdato"]?.takeUnless { it.isNull }?.stringValue()?.let { LocalDate.parse(it) }
 
     internal companion object {
         internal fun List<Institusjonsoppholdperiode>.filtrer(fom: LocalDate, tom: LocalDate) = filter { it.overlapperMed(fom, tom) }
     }
 
     internal fun overlapperMed(fom: LocalDate, tom: LocalDate) =
-        maxOf(startdato, fom) <= faktiskSluttdato?.let { minOf(it, tom) } ?: tom
+        maxOf(startdato, fom) <= (faktiskSluttdato?.let { minOf(it, tom) } ?: tom)
 
 }
 
@@ -35,4 +34,4 @@ enum class Oppholdstype(val beskrivelse: String) {
     V("Varetektsfange")
 }
 
-private inline fun <reified T : Enum<T>> JsonNode?.asEnumValue() = this?.takeUnless { it.isNull }?.textValue()?.takeUnless { it == "" }?.let { enumValueOf<T>(it) }
+private inline fun <reified T : Enum<T>> JsonNode?.asEnumValue() = this?.takeUnless { it.isNull }?.stringValue()?.takeUnless { it == "" }?.let { enumValueOf<T>(it) }

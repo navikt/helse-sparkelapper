@@ -1,7 +1,5 @@
 package no.nav.helse.sparkel.sykepengeperiodermock
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ArrayNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
@@ -11,6 +9,9 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.node.ArrayNode
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class SparkelUtbetalingsperioderMockRiver(
     rapidsConnection: RapidsConnection,
@@ -41,8 +42,8 @@ internal class SparkelUtbetalingsperioderMockRiver(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
-        log.info("besvarer behov for infotrygdutbetalingshistorikk på id: ${packet["@id"].textValue()}")
-        val fødselsnummer = packet["fødselsnummer"].asText()
+        log.info("besvarer behov for infotrygdutbetalingshistorikk på id: ${packet["@id"].stringValue()}")
+        val fødselsnummer = packet["fødselsnummer"].asString()
         val utbetalingsperioder = svar[fødselsnummer]
             ?: run {
                 log.info("Fant ikke forhåndskonfigurert infotrygdutbetalingshistorikk blant ${svar.size} forhåndskonfigurerte. Svarer ikke på behov.")
@@ -54,4 +55,5 @@ internal class SparkelUtbetalingsperioderMockRiver(
         )
         context.publish(packet.toJson())
     }
+    private val objectMapper = jacksonObjectMapper()
 }

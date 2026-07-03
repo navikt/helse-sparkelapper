@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
@@ -12,6 +11,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.infotrygd.Fnr
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
 
 internal class Utbetalingsperiodeløser(
     rapidsConnection: RapidsConnection,
@@ -46,8 +46,8 @@ internal class Utbetalingsperiodeløser(
         val historikkTom = packet["$behov.historikkTom"].asLocalDate()
 
         infotrygdService.løsningForHentInfotrygdutbetalingerbehov(
-            packet["@id"].asText(),
-            Fnr(packet["fødselsnummer"].asText()),
+            packet["@id"].asString(),
+            Fnr(packet["fødselsnummer"].asString()),
             historikkFom,
             historikkTom
         )
@@ -58,7 +58,7 @@ internal class Utbetalingsperiodeløser(
                 context.publish(packet.toJson().also { json ->
                     sikkerlogg.info(
                         "sender svar {}:\n\t{}",
-                        keyValue("id", packet["@id"].asText()),
+                        keyValue("id", packet["@id"].asString()),
                         json
                     )
                 })

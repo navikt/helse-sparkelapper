@@ -1,7 +1,5 @@
 package no.nav.helse.sparkel.personinfo
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
@@ -20,6 +18,8 @@ import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.runBlocking
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
 
 internal class HentPersoninfoV2Løser(
     rapidsConnection: RapidsConnection,
@@ -43,8 +43,8 @@ internal class HentPersoninfoV2Løser(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) = runBlocking {
-        val behovId = packet["@id"].asText()
-        val hendelseId = packet["hendelseId"].asText()
+        val behovId = packet["@id"].asString()
+        val hendelseId = packet["hendelseId"].asString()
         withMDC(mapOf(
                 "hendelseId" to hendelseId,
                 "behovId" to behovId
@@ -52,7 +52,7 @@ internal class HentPersoninfoV2Løser(
             sikkerLogg.info("mottok melding: ${packet.toJson()}")
             val ident = packet["HentPersoninfoV2.ident"].takeUnless { it.isMissingOrNull() } ?: packet["fødselsnummer"]
 
-            val identer = if (ident.isArray) ident.map { it.asText() } else listOf(ident.asText())
+            val identer = if (ident.isArray) ident.toList().map { it.asString() } else listOf(ident.asString())
             val løsninger = identer
                 .map {
                     personinfoService.løsningForPersoninfo(behovId, it)

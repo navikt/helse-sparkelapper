@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.inntekt
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
@@ -24,6 +23,7 @@ import java.time.YearMonth
 import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForOpptjeningsvurdering
+import tools.jackson.databind.JsonNode
 
 class Inntekter(
     rapidsConnection: RapidsConnection,
@@ -127,8 +127,8 @@ class Inntekter(
     ) {
         withMDC(
             mapOf(
-                "behovId" to packet["@id"].asText(),
-                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asText()
+                "behovId" to packet["@id"].asString(),
+                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asString()
             )
         ) {
             val beregningStart = packet["${InntekterForSammenligningsgrunnlag.name}.beregningStart"].asYearMonth()
@@ -144,8 +144,8 @@ class Inntekter(
     ) {
         withMDC(
             mapOf(
-                "behovId" to packet["@id"].asText(),
-                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asText()
+                "behovId" to packet["@id"].asString(),
+                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asString()
             )
         ) {
             val beregningStart = packet["${InntekterForSykepengegrunnlag.name}.beregningStart"].asYearMonth()
@@ -161,8 +161,8 @@ class Inntekter(
     ) {
         withMDC(
             mapOf(
-                "behovId" to packet["@id"].asText(),
-                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asText()
+                "behovId" to packet["@id"].asString(),
+                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asString()
             )
         ) {
             val beregningStart = packet["${InntekterForOpptjeningsvurdering.name}.beregningStart"].asYearMonth()
@@ -183,23 +183,24 @@ class Inntekter(
         try {
             val callId = if (packet["vedtaksperiodeId"].isMissingOrNull()) UUID.randomUUID().toString().also {
                 log.info("Genererer en ny callId: $it i hentInntekter")
-            } else packet["vedtaksperiodeId"].asText()
+            } else packet["vedtaksperiodeId"].asString()
 
-            log.info("Behandler behov {}", kv("id", packet["@id"].asText()))
+            log.info("Behandler behov {}", kv("id", packet["@id"].asString()))
             packet["@løsning"] = mapOf<String, Any>(
                 type.name to runBlocking {
                     inntektsRestClient.hentInntektsliste(
-                        fnr = packet["fødselsnummer"].asText(),
+                        fnr = packet["fødselsnummer"].asString(),
                         fom = beregningStart,
                         tom = beregningSlutt,
                         filter = type.ainntektfilter,
-                        callId = "$callId-${packet["@id"].asText()}",
+                        callId = "$callId-${packet["@id"].asString()}",
                         orgnummer = orgnr
                     )
-                })
+                }
+            )
             context.publish(packet.toJson().also {
-                log.info("løser behov: {}", keyValue("id", packet["@id"].asText()))
-                sikkerlogg.info("svarer behov {} med {}", keyValue("id", packet["@id"].asText()), it)
+                log.info("løser behov: {}", keyValue("id", packet["@id"].asString()))
+                sikkerlogg.info("svarer behov {} med {}", keyValue("id", packet["@id"].asString()), it)
             })
         } catch (e: ResponseException) {
             log.warn("Feilet ved løsing av behov: ${e.message}", e)

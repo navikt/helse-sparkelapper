@@ -1,9 +1,9 @@
 val ktorVersion: String by project
 val hikariCPVersion: String by project
 val jsonAssertVersion: String by project
+val jacksonVersion: String by project
 val logbackClassicVersion = "1.5.25"
 val logbackEncoderVersion = "8.0"
-val jacksonVersion = "2.18.3"
 val testcontainersVersion = "2.0.5"
 
 dependencies {
@@ -21,11 +21,10 @@ dependencies {
     implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
     implementation("io.ktor:ktor-server-call-id:$ktorVersion")
 
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    implementation("tools.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.zaxxer:HikariCP:$hikariCPVersion")
     implementation(project(":infotrygd"))
 

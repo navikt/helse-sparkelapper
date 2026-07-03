@@ -38,7 +38,9 @@ data class Ansettelsesperiode(
 )
 
 data class Ansettelsesdetaljer(
-    val avtaltStillingsprosent: Int,
+    // Dette feltet er nullable fordi vi mapper både ordinære og forenklede arbeidsforhold til
+    // AaregArbeidsforholdMedDetaljer, jeg tror vi heller burde støtte forenklede arbeidsforhold eksplisitt
+    val avtaltStillingsprosent: Int?,
     val yrke: Yrke,
 )
 

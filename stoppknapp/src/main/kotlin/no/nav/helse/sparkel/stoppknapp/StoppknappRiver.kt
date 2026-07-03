@@ -34,10 +34,10 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("Leser stoppknapp-melding:\n{}", packet.toJson())
 
-        val fødselsnummer: String = packet["sykmeldtFnr"]["value"].asText()
-        val opprettet: LocalDateTime = utcToLocalDateTime(packet["opprettet"].asText())
-        val status: String = packet["status"].asText()
-        val årsaker: List<String> = packet["arsakList"].map { it["type"].asText() }
+        val fødselsnummer: String = packet["sykmeldtFnr"]["value"].asString()
+        val opprettet: LocalDateTime = utcToLocalDateTime(packet["opprettet"].asString())
+        val status: String = packet["status"].asString()
+        val årsaker: List<String> = packet["arsakList"].toList().map { it["type"].asString() }
         val originalMelding: String = packet.toJson()
 
         val returEvent =

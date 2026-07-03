@@ -42,15 +42,15 @@ internal class RepresentasjonRiver(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        val id = packet["@id"].asText()
+        val id = packet["@id"].asString()
         log.info("Leser melding {}", id)
-        val fnr = packet["fødselsnummer"].asText()
+        val fnr = packet["fødselsnummer"].asString()
 
         val representasjonResponse = runBlocking { representasjonClient.hentFullmakt(fnr) }
         val svar = representasjonResponse.mapCatching { fullmakt ->
-            fullmakt.map {
+            fullmakt.toList().map {
                 Fullmakt(
-                    områder = it["omraade"].map { område -> Område.fra(område["tema"].asText()) },
+                    områder = it["omraade"].toList().map { område -> Område.fra(område["tema"].asString()) },
                     gyldigFraOgMed = it["gyldigFraOgMed"].asLocalDate(),
                     gyldigTilOgMed = it["gyldigTilOgMed"].asOptionalLocalDate()
                 )

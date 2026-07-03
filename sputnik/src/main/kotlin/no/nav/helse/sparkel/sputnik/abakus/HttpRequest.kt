@@ -1,13 +1,13 @@
 package no.nav.helse.sparkel.sputnik.abakus
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.retry.retryBlocking
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal object HttpRequest {
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -34,7 +34,7 @@ internal object HttpRequest {
         }
         responseCode to try {
             objectMapper.readTree(responseBody)
-        } catch (ex: Exception) {
+        } catch (_: Exception) {
             sikkerlogg.info("Klarte ikke mappe response til JSON.\nBody:\n $responseBody")
             throw IllegalStateException("Klarte ikke å mappe response til JSON fra $url")
         }

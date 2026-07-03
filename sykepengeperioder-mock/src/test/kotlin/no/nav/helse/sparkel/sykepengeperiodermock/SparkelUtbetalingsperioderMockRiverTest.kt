@@ -51,9 +51,9 @@ internal class SparkelUtbetalingsperioderMockRiverTest {
         assertEquals(LocalDate.of(2020, 6, 1), utbetalingsperiode["fom"].asOptionalLocalDate())
         assertEquals(LocalDate.of(2020, 6, 30), utbetalingsperiode["tom"].asOptionalLocalDate())
         assertEquals(utbetalingsperiode["dagsats"].asDouble(), 1234.0)
-        assertEquals(utbetalingsperiode["grad"].asText(), "100")
-        assertEquals(utbetalingsperiode["typetekst"].asText(), "Utbetaling")
-        assertEquals(utbetalingsperiode["organisasjonsnummer"].asText(), orgnummer)
+        assertEquals(utbetalingsperiode["grad"].asString(), "100")
+        assertEquals(utbetalingsperiode["typetekst"].asString(), "Utbetaling")
+        assertEquals(utbetalingsperiode["organisasjonsnummer"].asString(), orgnummer)
     }
 
     private fun enkeltBehov(fødselsnummer: String) =

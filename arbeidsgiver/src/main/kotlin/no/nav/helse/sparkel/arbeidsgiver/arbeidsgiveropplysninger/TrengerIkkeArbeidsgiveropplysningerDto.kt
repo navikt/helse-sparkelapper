@@ -17,8 +17,8 @@ internal data class TrengerIkkeArbeidsgiveropplysningerDto(
 
 internal fun JsonMessage.toTrengerIkkeArbeidsgiverDto(): TrengerIkkeArbeidsgiveropplysningerDto =
     TrengerIkkeArbeidsgiveropplysningerDto(
-        fødselsnummer = this["fødselsnummer"].asText(),
-        organisasjonsnummer = this["organisasjonsnummer"].asText(),
-        vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
+        fødselsnummer = this["fødselsnummer"].asString(),
+        organisasjonsnummer = this["organisasjonsnummer"].asString(),
+        vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asString()),
         opprettet = this["@opprettet"].asLocalDateTime()
     )

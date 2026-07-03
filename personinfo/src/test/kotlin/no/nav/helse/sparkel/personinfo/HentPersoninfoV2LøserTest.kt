@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.personinfo
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import com.github.navikt.tbd_libs.result_object.ok
 import com.github.navikt.tbd_libs.speed.PersonResponse
@@ -12,6 +11,7 @@ import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class HentPersoninfoV2LøserTest {
     private val personinfoService = mockk<PersoninfoService>(relaxed = true)

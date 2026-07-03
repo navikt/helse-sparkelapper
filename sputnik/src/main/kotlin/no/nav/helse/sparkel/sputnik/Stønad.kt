@@ -98,7 +98,7 @@ internal class Stønad private constructor(
         )}
 
         private val AlleStønader = setOf(Foreldrepenger, Pleiepenger, Omsorgspenger, Opplæringspenger)
-        private val JsonMessage.behov get() = get("@behov").map { it.asText() }
+        private val JsonMessage.behov get() = get("@behov").toList().map { it.asString() }
 
         internal fun stønaderSomSkalLøses(packet: JsonMessage) = AlleStønader.filter { it.skalLøses(packet) }
         internal fun harRelevanteBehov(packet: JsonMessage) {

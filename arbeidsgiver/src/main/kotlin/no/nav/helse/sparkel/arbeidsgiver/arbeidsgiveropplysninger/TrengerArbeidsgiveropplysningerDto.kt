@@ -39,9 +39,9 @@ internal data class TrengerArbeidsgiveropplysningerBegrensetDto(
 
 internal fun JsonMessage.toKomplettTrengerArbeidsgiveropplysningerDto(): TrengerArbeidsgiveropplysningerDto =
     TrengerArbeidsgiveropplysningerDto(
-        fødselsnummer = this["fødselsnummer"].asText(),
-        organisasjonsnummer = this["organisasjonsnummer"].asText(),
-        vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
+        fødselsnummer = this["fødselsnummer"].asString(),
+        organisasjonsnummer = this["organisasjonsnummer"].asString(),
+        vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asString()),
         skjæringstidspunkt = this["skjæringstidspunkt"].asLocalDate(),
         bestemmendeFraværsdager = this["førsteFraværsdager"].asBestemmendeFraværsdager(),
         sykmeldingsperioder = this["sykmeldingsperioder"].toPerioder(),
@@ -52,9 +52,9 @@ internal fun JsonMessage.toKomplettTrengerArbeidsgiveropplysningerDto(): Trenger
 
 internal fun JsonMessage.toBegrensetTrengerArbeidsgiveropplysningerDto(): TrengerArbeidsgiveropplysningerBegrensetDto =
     TrengerArbeidsgiveropplysningerBegrensetDto(
-        fødselsnummer = this["fødselsnummer"].asText(),
-        organisasjonsnummer = this["organisasjonsnummer"].asText(),
-        vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asText()),
+        fødselsnummer = this["fødselsnummer"].asString(),
+        organisasjonsnummer = this["organisasjonsnummer"].asString(),
+        vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asString()),
         skjæringstidspunkt = null,
         bestemmendeFraværsdager = emptyMap(),
         sykmeldingsperioder = this["sykmeldingsperioder"].toPerioder(),
