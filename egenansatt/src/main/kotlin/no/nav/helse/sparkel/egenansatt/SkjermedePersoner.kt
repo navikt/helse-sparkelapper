@@ -26,18 +26,18 @@ class SkjermedePersoner(
             register(ContentType.Application.Json, JacksonConverter(objectMapper))
         }
         install(HttpTimeout) {
-            connectTimeoutMillis = Duration.ofSeconds(60).toMillis()
-            requestTimeoutMillis = Duration.ofSeconds(60).toMillis()
-            socketTimeoutMillis = Duration.ofSeconds(60).toMillis()
+            connectTimeoutMillis = Duration.ofSeconds(1).toMillis()
+            requestTimeoutMillis = Duration.ofSeconds(10).toMillis()
+            socketTimeoutMillis = Duration.ofSeconds(5).toMillis()
         }
     }
 ) {
 
-    internal fun erSkjermetPerson(fødselsnummer: String, behovId: String): Boolean =
-        runBlocking {
+    internal fun erSkjermetPerson(fødselsnummer: String, behovId: String): Boolean {
+        val token = tokenSupplier.bearerToken(scope).getOrThrow()
+        return runBlocking {
             val httpResponse = ktorHttpClient.preparePost("$baseUrl/skjermet") {
-                val bearerToken = tokenSupplier.bearerToken(scope).getOrThrow()
-                header("Authorization", "Bearer ${bearerToken.token}")
+                header("Authorization", "Bearer ${token.token}")
                 header("Nav-Call-Id", behovId)
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
@@ -45,14 +45,16 @@ class SkjermedePersoner(
             }.execute()
             when (httpResponse.status.value) {
                 200 -> {
-                    val response = httpResponse.call.response.body<Boolean>()
+                    val response = httpResponse.body<Boolean>()
                     return@runBlocking response
                 }
+
                 else -> {
                     throw RuntimeException("error (responseCode=${httpResponse.status.value}) from Skjerming")
                 }
             }
         }
+    }
 }
 
 private data class SkjermetDataRequestDTO(
