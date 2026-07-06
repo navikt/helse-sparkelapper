@@ -53,9 +53,9 @@ private fun simpleHttpClient() = HttpClient {
     }
 
     install(HttpTimeout) {
-        connectTimeoutMillis = 10000
-        requestTimeoutMillis = 10000
-        socketTimeoutMillis = 10000
+        connectTimeoutMillis = 1000
+        requestTimeoutMillis = 120_000
+        socketTimeoutMillis = 120_000
     }
 
     install(ContentNegotiation) {
