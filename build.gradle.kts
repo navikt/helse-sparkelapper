@@ -7,7 +7,7 @@ plugins {
 val junitJupiterVersion = "6.0.1"
 val rapidsAndRiversVersion = "2026051812441779101082"
 val tbdLibsVersion = "20260701.2248"
-val ktorVersion = "3.5.0"
+val ktorVersion = "3.5.1"
 val mockkVersion = "1.13.17"
 val wiremockVersion = "3.9.2"
 val jsonAssertVersion = "1.5.3"
