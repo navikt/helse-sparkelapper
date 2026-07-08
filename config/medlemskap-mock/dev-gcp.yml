@@ -2,5 +2,3 @@ kafkaPool: nav-dev
 replicas:
   min: 0
   max: 0
-limits:
-  cpu: 2000m
