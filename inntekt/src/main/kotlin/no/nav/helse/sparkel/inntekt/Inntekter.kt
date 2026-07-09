@@ -4,7 +4,6 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers.asYearMonth
-import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import com.github.navikt.tbd_libs.rapids_and_rivers.withMDC
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
@@ -181,11 +180,10 @@ class Inntekter(
         orgnr: String? = null
     ) {
         try {
-            val callId = if (packet["vedtaksperiodeId"].isMissingOrNull()) UUID.randomUUID().toString().also {
-                log.info("Genererer en ny callId: $it i hentInntekter")
-            } else packet["vedtaksperiodeId"].asString()
+            val meldingId = packet["@id"].asString()
+            val callId = lagCallId(meldingId, packet["vedtaksperiodeId"].stringValue(null))
 
-            log.info("Henter inntekt for {}, callId: {}", kv("meldingId", packet["@id"].asString()), callId)
+            log.info("Henter inntekt for {}, callId: {}", kv("meldingId", meldingId), callId)
             packet["@løsning"] = mapOf<String, Any>(
                 type.name to runBlocking {
                     inntektsRestClient.hentInntektsliste(
@@ -193,7 +191,7 @@ class Inntekter(
                         fom = beregningStart,
                         tom = beregningSlutt,
                         filter = type.ainntektfilter,
-                        callId = "$callId-${packet["@id"].asString()}",
+                        callId = callId,
                         orgnummer = orgnr
                     )
                 }
@@ -218,6 +216,14 @@ class Inntekter(
 
     private fun JsonNode.måVæreFersktNok() = check(asLocalDateTime().isAfter(LocalDateTime.now().minusMinutes(ferskhetsgrense))) {
         "Ignorerer behov fordi det er over $ferskhetsgrense minutter gammelt"
+    }
+
+    private fun lagCallId(meldingId: String, vedtaksperiodeId: String?): String {
+        val base = vedtaksperiodeId ?: UUID.randomUUID().toString().also {
+            log.info("Ingen vedtaksperiode i behovet, bruker $it som starten på callId")
+        }
+
+        return "$base-$meldingId"
     }
 
 }

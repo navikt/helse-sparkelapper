@@ -125,9 +125,25 @@ internal class InntekterTest {
         }
     }
 
+    @Test
+    fun `henter inntekter selv om det mangler vedtaksperiodeId i behovet`() {
+        val start = YearMonth.of(2020, 2)
+        val slutt = YearMonth.of(2021, 1)
+        val behov = behov(start, slutt, Inntekter.Type.InntekterForSykepengegrunnlag)
+        testRapid.sendTestMessage((objectMapper.readTree(behov) as ObjectNode).also { it.remove("vedtaksperiodeId") }.toString())
+        val hentedeInntekter = testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[1]
+        hentedeInntekter["inntektsliste"].let { inntektsliste ->
+            assertEquals(1, inntektsliste.size())
+            inntektsliste.forEach { enInntekt ->
+                assertEquals("fastloenn", enInntekt.path("beskrivelse").stringValue())
+                assertEquals("kontantytelse", enInntekt.path("fordel").stringValue())
+            }
+        }
+    }
+
     @ParameterizedTest
     @EnumSource(Inntekter.Type::class)
-    fun `ignorerer for gamle behov`() {
+    fun `ignorerer behov som er for gamle`() {
         val behov = objectMapper.readTree(behov(
             YearMonth.of(2020, 2),
             YearMonth.of(2021, 1),
