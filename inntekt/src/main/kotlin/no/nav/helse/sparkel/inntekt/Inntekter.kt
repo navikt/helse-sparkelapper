@@ -185,7 +185,7 @@ class Inntekter(
                 log.info("Genererer en ny callId: $it i hentInntekter")
             } else packet["vedtaksperiodeId"].asString()
 
-            log.info("Behandler behov {}", kv("id", packet["@id"].asString()))
+            log.info("Henter inntekt for {}, callId: {}", kv("meldingId", packet["@id"].asString()), callId)
             packet["@løsning"] = mapOf<String, Any>(
                 type.name to runBlocking {
                     inntektsRestClient.hentInntektsliste(
