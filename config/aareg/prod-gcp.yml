@@ -1,6 +1,4 @@
 kafkaPool: nav-prod
-limits:
-  cpu: 2000m
 azure:
   enabled: true
   allowAllUsers: false

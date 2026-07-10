@@ -1,7 +1,5 @@
 replicas:
   max: 24
-limits:
-  cpu: 2000m
 kafkaPool: nav-prod
 mountPaths:
   - mountPath: /var/run/secrets/nais.io/oracle/creds
