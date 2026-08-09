@@ -1,3 +1,4 @@
+app: institusjonsopphold
 kafkaPool: nav-prod
 azure:
   enabled: true

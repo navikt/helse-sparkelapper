@@ -1,3 +1,4 @@
+app: arbeidsgiver
 kafkaPool: nav-prod
 replicas:
   min: 1

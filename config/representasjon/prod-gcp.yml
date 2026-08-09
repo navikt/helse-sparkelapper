@@ -1,3 +1,4 @@
+app: representasjon
 kafkaPool: nav-prod
 replicas:
   min: 2

@@ -1,3 +1,4 @@
+app: egenansatt
 kafkaPool: nav-prod
 azure:
   enabled: true

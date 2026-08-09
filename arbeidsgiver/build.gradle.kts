@@ -1,20 +1,18 @@
-val tbdLibsVersion: String by project
-val rapidsAndRiversVersion: String by project
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
+}
+
+sasDeployable {
+    mainClass = "no.nav.helse.sparkel.arbeidsgiver.AppKt"
+    imageName = "helse-sparkelapper-arbeidsgiver"
+}
 
 dependencies {
     implementation(project(":felles"))
+    implementation(libs.tbd.libs.azure)
+    implementation(libs.tbd.libs.retry)
+    implementation(libs.tbd.libs.spedisjon.client)
 
-    implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
-    implementation("com.github.navikt.tbd-libs:retry:$tbdLibsVersion")
-    implementation("com.github.navikt.tbd-libs:spedisjon-client:$tbdLibsVersion")
-
-    testImplementation("com.github.navikt.rapids-and-rivers:rapids-and-rivers-test:$rapidsAndRiversVersion")
-}
-
-tasks.withType<Test> {
-    val parallellDisabled = System.getenv("CI" ) == "true"
-    systemProperty("junit.jupiter.execution.parallel.enabled", parallellDisabled.not().toString())
-    systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
-    systemProperty("junit.jupiter.execution.parallel.config.strategy", "fixed")
-    systemProperty("junit.jupiter.execution.parallel.config.fixed.parallelism", "8")
+    testImplementation(libs.rapids.and.rivers.test)
+    testImplementation(libs.mockk)
 }

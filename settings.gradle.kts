@@ -1,5 +1,61 @@
 rootProject.name = "sparkelapper"
-rootDir
-    .listFiles()
-    ?.filter { it.isDirectory && File(it, "build.gradle.kts").exists() }
-    ?.forEach { include(it.name) }
+include(
+    "aareg",
+    "arbeidsgiver",
+    "dokumenter",
+    "egenansatt",
+    "felles",
+    "gosys",
+    "infotrygd",
+    "inntekt",
+    "institusjonsopphold",
+    "medlemskap",
+    "medlemskap-mock",
+    "oppgave-endret",
+    "personinfo",
+    "representasjon",
+    "skjermet-endret",
+    "sputnik",
+    "stoppknapp",
+    "sykepengeperioder",
+    "sykepengeperioder-api",
+    "sykepengeperioder-mock",
+    "tilbakedatert",
+)
+
+// Sett opp repositories basert på om vi kjører i CI eller ikke
+// Jf. https://github.com/navikt/utvikling/blob/main/docs/teknisk/Konsumere%20biblioteker%20fra%20Github%20Package%20Registry.md
+pluginManagement {
+    repositories {
+        if (providers.environmentVariable("GITHUB_ACTIONS").orNull == "true") {
+            maven("https://maven.pkg.github.com/navikt/maven-release") {
+                credentials {
+                    username = "token"
+                    password = providers.environmentVariable("GITHUB_TOKEN").orNull!!
+                }
+            }
+        } else {
+            maven("https://repo.adeo.no/repository/github-package-registry-navikt/")
+        }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+dependencyResolutionManagement {
+    // Bare tillat repositories-oppsett her i settings.gradle.kts
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+
+    repositories {
+        if (providers.environmentVariable("GITHUB_ACTIONS").orNull == "true") {
+            maven("https://maven.pkg.github.com/navikt/maven-release") {
+                credentials {
+                    username = "token"
+                    password = providers.environmentVariable("GITHUB_TOKEN").orNull!!
+                }
+            }
+        } else {
+            maven("https://repo.adeo.no/repository/github-package-registry-navikt/")
+        }
+        mavenCentral()
+    }
+}

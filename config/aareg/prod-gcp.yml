@@ -1,3 +1,4 @@
+app: aareg
 kafkaPool: nav-prod
 azure:
   enabled: true

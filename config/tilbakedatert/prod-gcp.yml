@@ -1,3 +1,4 @@
+app: tilbakedatert
 kafkaPool: nav-prod
 replicas:
   min: "1"

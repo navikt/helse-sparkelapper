@@ -1,18 +1,24 @@
-val tbdLibsVersion: String by project
-val ktorVersion: String by project
-val rapidsAndRiversVersion: String by project
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
+}
+
+sasDeployable {
+    mainClass = "no.nav.helse.sparkel.gosys.AppKt"
+    imageName = "helse-sparkelapper-gosys"
+}
 
 dependencies {
-    implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
-    implementation("com.github.navikt.tbd-libs:speed-client:$tbdLibsVersion")
-    implementation("com.github.navikt.tbd-libs:retry:$tbdLibsVersion")
     implementation(project(":felles"))
+    implementation(libs.tbd.libs.azure)
+    implementation(libs.tbd.libs.speed.client)
+    implementation(libs.tbd.libs.retry)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.jackson)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.jackson3)
 
-    implementation("io.ktor:ktor-client-core:${ktorVersion}")
-    implementation("io.ktor:ktor-client-cio:${ktorVersion}")
-    implementation("io.ktor:ktor-client-jackson:${ktorVersion}")
-    implementation("io.ktor:ktor-client-content-negotiation:${ktorVersion}")
-    implementation("io.ktor:ktor-serialization-jackson3:${ktorVersion}")
-
-    testImplementation("com.github.navikt.rapids-and-rivers:rapids-and-rivers-test:$rapidsAndRiversVersion")
+    testImplementation(libs.rapids.and.rivers.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.wiremock) { exclude(group = "junit") }
 }

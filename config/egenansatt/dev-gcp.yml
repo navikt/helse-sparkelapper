@@ -1,3 +1,4 @@
+app: egenansatt
 kafkaPool: nav-dev
 replicas:
   min: 1

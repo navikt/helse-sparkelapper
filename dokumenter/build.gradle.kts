@@ -1,14 +1,21 @@
-val ktorVersion: String by project
-val tbdLibsVersion: String by project
-val rapidsAndRiversVersion: String by project
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
+}
+
+sasDeployable {
+    mainClass = "no.nav.helse.sparkel.dokumenter.AppKt"
+    imageName = "helse-sparkelapper-dokumenter"
+}
 
 dependencies {
-    implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
-    implementation("io.ktor:ktor-client-logging:$ktorVersion")
     implementation(project(":felles"))
+    implementation(libs.tbd.libs.azure)
+    implementation(libs.ktor.client.apache)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.serialization.jackson3)
 
-    testImplementation("com.github.navikt.rapids-and-rivers:rapids-and-rivers-test:$rapidsAndRiversVersion")
+    testImplementation(libs.rapids.and.rivers.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.wiremock) { exclude(group = "junit") }
 }

@@ -1,11 +1,16 @@
-val ktorVersion: String by project
-val tbdLibsVersion: String by project
-val rapidsAndRiversVersion: String by project
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
+}
+
+sasDeployable {
+    mainClass = "no.nav.helse.sparkel.stoppknapp.AppKt"
+    imageName = "helse-sparkelapper-stoppknapp"
+}
 
 dependencies {
-    implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
-    implementation("io.ktor:ktor-client-logging:$ktorVersion")
     implementation(project(":felles"))
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.serialization.jackson3)
 
-    testImplementation("com.github.navikt.rapids-and-rivers:rapids-and-rivers-test:$rapidsAndRiversVersion")
+    testImplementation(libs.rapids.and.rivers.test)
 }

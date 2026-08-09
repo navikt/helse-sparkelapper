@@ -1,15 +1,15 @@
-val rapidsAndRiversVersion: String by project
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
+}
+
+sasDeployable {
+    mainClass = "no.nav.helse.sparkel.oppgaveendret.AppKt"
+    imageName = "helse-sparkelapper-oppgave-endret"
+}
 
 dependencies {
     implementation(project(":felles"))
-    testImplementation("com.github.navikt.rapids-and-rivers:rapids-and-rivers-test:$rapidsAndRiversVersion")
 
-    tasks {
-        test {
-            testLogging {
-                events("failed", "standardOut", "standardError")
-                info.events("STARTED", "PASSED", "SKIPPED", "FAILED", "STANDARD_OUT", "STANDARD_ERROR")
-            }
-        }
-    }
+    testImplementation(libs.rapids.and.rivers.test)
+    testImplementation(libs.mockk)
 }

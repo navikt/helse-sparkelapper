@@ -1,0 +1,69 @@
+[versions]
+sasGradlePlugins = "20260805.1534"
+rapidsAndRivers = "2026051812441779101082"
+tbdLibs = "20260701.2248"
+avro = "1.12.0"
+flyway = "11.20.2"
+h2 = "2.2.220"
+hikaricp = "6.3.0"
+jsonassert = "1.5.3"
+kotliquery = "1.9.0"
+mockOauth2Server = "2.1.10"
+mockk = "1.14.11"
+ojdbc = "21.4.0.0"
+testcontainers = "2.0.5"
+wiremock = "3.13.2"
+
+[libraries]
+avro = { module = "org.apache.avro:avro", version.ref = "avro" }
+flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
+jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }
+jsonassert = { module = "org.skyscreamer:jsonassert", version.ref = "jsonassert" }
+kotliquery = { module = "com.github.seratch:kotliquery", version.ref = "kotliquery" }
+logback-classic = { module = "ch.qos.logback:logback-classic" }
+logback-logstash-encoder = "net.logstash.logback:logstash-logback-encoder:8.0"
+mock-oauth2-server = { module = "no.nav.security:mock-oauth2-server", version.ref = "mockOauth2Server" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+ojdbc11 = { module = "com.oracle.database.jdbc:ojdbc11", version.ref = "ojdbc" }
+testcontainers-oracle-free = { module = "org.testcontainers:testcontainers-oracle-free", version.ref = "testcontainers" }
+wiremock = { module = "org.wiremock:wiremock-jetty12", version.ref = "wiremock" }
+
+rapids-and-rivers = { module = "com.github.navikt:rapids-and-rivers", version.ref = "rapidsAndRivers" }
+rapids-and-rivers-impl = { module = "com.github.navikt.rapids-and-rivers:rapids-and-rivers-impl", version.ref = "rapidsAndRivers" }
+rapids-and-rivers-test = { module = "com.github.navikt.rapids-and-rivers:rapids-and-rivers-test", version.ref = "rapidsAndRivers" }
+
+tbd-libs-azure = { module = "com.github.navikt.tbd-libs:azure-token-client-default", version.ref = "tbdLibs" }
+tbd-libs-naisful-app = { module = "com.github.navikt.tbd-libs:naisful-app", version.ref = "tbdLibs" }
+tbd-libs-retry = { module = "com.github.navikt.tbd-libs:retry", version.ref = "tbdLibs" }
+tbd-libs-spedisjon-client = { module = "com.github.navikt.tbd-libs:spedisjon-client", version.ref = "tbdLibs" }
+tbd-libs-speed-client = { module = "com.github.navikt.tbd-libs:speed-client", version.ref = "tbdLibs" }
+
+ktor-client-apache = { module = "io.ktor:ktor-client-apache" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth-jvm" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation" }
+ktor-client-core = { module = "io.ktor:ktor-client-core" }
+ktor-client-jackson = { module = "io.ktor:ktor-client-jackson" }
+ktor-client-json = { module = "io.ktor:ktor-client-json-jvm" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock-jvm" }
+ktor-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson" }
+ktor-serialization-jackson3 = { module = "io.ktor:ktor-serialization-jackson3" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json" }
+ktor-server-auth = { module = "io.ktor:ktor-server-auth" }
+ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt" }
+ktor-server-call-id = { module = "io.ktor:ktor-server-call-id" }
+ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging" }
+ktor-server-cio = { module = "io.ktor:ktor-server-cio" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation" }
+ktor-server-core = { module = "io.ktor:ktor-server-core" }
+ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages-jvm" }
+ktor-server-test-host = { module = "io.ktor:ktor-server-test-host" }
+
+[plugins]
+sas-deployable = { id = "no.nav.helse.sas.sas-deployable", version.ref = "sasGradlePlugins" }
+sas-kotlin = { id = "no.nav.helse.sas.sas-kotlin", version.ref = "sasGradlePlugins" }
+sas-root = { id = "no.nav.helse.sas.sas-root", version.ref = "sasGradlePlugins" }

@@ -1,3 +1,4 @@
+app: dokumenter
 kafkaPool: nav-prod
 replicas:
   max: "12"

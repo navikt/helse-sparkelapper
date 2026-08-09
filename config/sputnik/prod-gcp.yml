@@ -1,3 +1,4 @@
+app: sputnik
 kafkaPool: nav-prod
 azure:
   enabled: true

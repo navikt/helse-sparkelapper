@@ -1,3 +1,4 @@
+app: personinfo
 kafkaPool: nav-prod
 replicas:
   max: "12"

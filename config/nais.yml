@@ -6,7 +6,7 @@
 #
 #docker run --rm -it -v $(PWD)/config:/config \
 #  -e CLUSTER="" \
-#  -e VAR="team=tbd,app=<app_name>" \
+#  -e VAR="team=tbd" \
 #  ghcr.io/nais/deploy/deploy:latest /app/deploy \
 #  --dry-run \
 #  --print-payload \
@@ -22,7 +22,6 @@ metadata:
   labels:
     team: tbd
 spec:
-  image: {{image}}
   port: 8080
 {{#if ingress}}
   ingresses:

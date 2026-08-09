@@ -1,3 +1,4 @@
+app: medlemskap-mock
 kafkaPool: nav-dev
 replicas:
   min: 0

@@ -1,7 +1,8 @@
-val kotliqueryVersion: String by project
-val ojdbcVersion = "21.4.0.0"
+plugins {
+    id("no.nav.helse.sas.sas-kotlin")
+}
 
 dependencies {
-    api("com.github.seratch:kotliquery:$kotliqueryVersion")
-    api("com.oracle.database.jdbc:ojdbc11:$ojdbcVersion")
+    api(libs.kotliquery)
+    api(libs.ojdbc11)
 }

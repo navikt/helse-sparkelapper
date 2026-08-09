@@ -1,11 +1,16 @@
-val tbdLibsVersion: String by project
-val rapidsAndRiversVersion: String by project
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
+}
+
+sasDeployable {
+    mainClass = "no.nav.helse.sparkel.medlemskap.AppKt"
+    imageName = "helse-sparkelapper-medlemskap"
+}
 
 dependencies {
-    implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
-    implementation("com.github.navikt.tbd-libs:retry:$tbdLibsVersion")
     implementation(project(":felles"))
+    implementation(libs.tbd.libs.azure)
+    implementation(libs.tbd.libs.retry)
 
-    testImplementation("com.github.navikt.rapids-and-rivers:rapids-and-rivers-test:$rapidsAndRiversVersion")
-
+    testImplementation(libs.rapids.and.rivers.test)
 }

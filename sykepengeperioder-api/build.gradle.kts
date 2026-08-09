@@ -1,35 +1,29 @@
-val ktorVersion: String by project
-val hikariCPVersion: String by project
-val jsonAssertVersion: String by project
-val jacksonVersion: String by project
-val logbackClassicVersion = "1.5.25"
-val logbackEncoderVersion = "8.0"
-val testcontainersVersion = "2.0.5"
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
+}
+
+sasDeployable {
+    mainClass = "no.nav.helse.sparkel.sykepengeperioderapi.AppKt"
+    imageName = "helse-sparkelapper-sykepengeperioder-api"
+}
 
 dependencies {
-    implementation("ch.qos.logback:logback-classic:$logbackClassicVersion")
-    implementation("net.logstash.logback:logstash-logback-encoder:$logbackEncoderVersion")
-
-    implementation("io.ktor:ktor-server-core:$ktorVersion")
-    implementation("io.ktor:ktor-server-cio:$ktorVersion")
-    implementation("io.ktor:ktor-server-auth:$ktorVersion")
-    implementation("io.ktor:ktor-server-status-pages-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion") {
-        exclude(group = "junit")
-    }
-    implementation("io.ktor:ktor-server-auth-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-server-auth-jwt-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
-    implementation("io.ktor:ktor-server-call-id:$ktorVersion")
-
-    implementation("tools.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    implementation("com.zaxxer:HikariCP:$hikariCPVersion")
     implementation(project(":infotrygd"))
+    implementation(libs.hikaricp)
+    implementation(libs.logback.classic)
+    implementation(libs.logback.logstash.encoder)
+    implementation(libs.jackson.module.kotlin)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.cio)
+    implementation(libs.ktor.server.auth)
+    implementation(libs.ktor.server.auth.jwt) { exclude(group = "junit") }
+    implementation(libs.ktor.server.call.id)
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.server.status.pages)
+    implementation(libs.ktor.serialization.jackson3)
 
-    testImplementation("org.testcontainers:testcontainers-oracle-free:$testcontainersVersion")
-    testImplementation("no.nav.security:mock-oauth2-server:2.1.10")
-    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
-    testImplementation("org.skyscreamer:jsonassert:$jsonAssertVersion")
+    testImplementation(libs.testcontainers.oracle.free)
+    testImplementation(libs.mock.oauth2.server)
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.jsonassert)
 }

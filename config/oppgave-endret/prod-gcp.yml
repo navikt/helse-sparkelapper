@@ -1,3 +1,4 @@
+app: oppgave-endret
 kafkaPool: nav-prod
 replicas:
   min: "1"

@@ -1,3 +1,4 @@
+app: inntekt
 kafkaPool: nav-prod
 azure:
   enabled: true

@@ -1,19 +1,25 @@
-val ktorVersion: String by project
-val tbdLibsVersion: String by project
-val rapidsAndRiversVersion: String by project
-val jacksonVersion: String by project
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
+}
+
+sasDeployable {
+    mainClass = "no.nav.helse.sparkel.inntekt.AppKt"
+    imageName = "helse-sparkelapper-inntekt"
+}
 
 dependencies {
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation("io.ktor:ktor-client-auth-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-client-json-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-client-logging-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
-    implementation("tools.jackson.module:jackson-module-kotlin:${jacksonVersion}")
     implementation(project(":felles"))
-    implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
-    implementation("com.github.navikt.tbd-libs:retry:$tbdLibsVersion")
+    implementation(libs.tbd.libs.azure)
+    implementation(libs.tbd.libs.retry)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.auth)
+    implementation(libs.ktor.client.json)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.jackson3)
+    implementation(libs.jackson.module.kotlin)
 
-    testImplementation("com.github.navikt.rapids-and-rivers:rapids-and-rivers-test:$rapidsAndRiversVersion")
+    testImplementation(libs.rapids.and.rivers.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.ktor.client.mock)
 }

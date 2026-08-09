@@ -1,15 +1,18 @@
-val tbdLibsVersion: String by project
-val rapidsAndRiversVersion: String by project
-val hikariCPVersion: String by project
-val flywayCoreVersion: String by project
-val h2Version = "2.2.220"
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
+}
+
+sasDeployable {
+    mainClass = "no.nav.helse.sparkel.sykepengeperioder.AppKt"
+    imageName = "helse-sparkelapper-sykepengeperioder"
+}
 
 dependencies {
-    implementation("com.zaxxer:HikariCP:$hikariCPVersion")
     implementation(project(":felles"))
     implementation(project(":infotrygd"))
+    implementation(libs.hikaricp)
 
-    testImplementation("com.github.navikt.rapids-and-rivers:rapids-and-rivers-test:$rapidsAndRiversVersion")
-    testImplementation("com.h2database:h2:$h2Version")
-    testImplementation("org.flywaydb:flyway-database-postgresql:$flywayCoreVersion")
+    testImplementation(libs.rapids.and.rivers.test)
+    testImplementation(libs.h2)
+    testImplementation(libs.flyway.database.postgresql)
 }

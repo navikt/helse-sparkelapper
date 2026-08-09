@@ -1,3 +1,4 @@
+app: stoppknapp
 kafkaPool: nav-prod
 replicas:
   min: "1"

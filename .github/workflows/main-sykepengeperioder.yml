@@ -1,0 +1,116 @@
+name: main - sykepengeperioder - Bygg, test og deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # Generelt oppsett - alt unntatt dokumentasjon / urelatert oppsett
+      - '**'
+      - '!**.md'
+      - '!CODEOWNERS'
+      - '!LICENSE'
+      - '!config/**'
+      - '!.github/workflows/standard-dependabot-auto-merge.yml'
+      - '!.github/workflows/standard-dependency-submission.yml'
+      # Ressursene som deployes av denne workflowen
+      - 'config/nais.yml'
+      - 'config/sykepengeperioder/*.yml'
+      # Spesielt for denne tjenesten ellers
+      - '!.github/workflows/standard-pr.yml'
+      - '!.github/workflows/aiven.yml'
+      - '!.github/workflows/main-aareg.yml'
+      - '!aareg/**'
+      - '!.github/workflows/main-arbeidsgiver.yml'
+      - '!arbeidsgiver/**'
+      - '!.github/workflows/main-dokumenter.yml'
+      - '!dokumenter/**'
+      - '!.github/workflows/main-egenansatt.yml'
+      - '!egenansatt/**'
+      - '!.github/workflows/main-gosys.yml'
+      - '!gosys/**'
+      - '!.github/workflows/main-inntekt.yml'
+      - '!inntekt/**'
+      - '!.github/workflows/main-institusjonsopphold.yml'
+      - '!institusjonsopphold/**'
+      - '!.github/workflows/main-medlemskap.yml'
+      - '!medlemskap/**'
+      - '!.github/workflows/main-medlemskap-mock.yml'
+      - '!medlemskap-mock/**'
+      - '!.github/workflows/main-oppgave-endret.yml'
+      - '!oppgave-endret/**'
+      - '!.github/workflows/main-personinfo.yml'
+      - '!personinfo/**'
+      - '!.github/workflows/main-representasjon.yml'
+      - '!representasjon/**'
+      - '!.github/workflows/main-skjermet-endret.yml'
+      - '!skjermet-endret/**'
+      - '!.github/workflows/main-sputnik.yml'
+      - '!sputnik/**'
+      - '!.github/workflows/main-stoppknapp.yml'
+      - '!stoppknapp/**'
+      - '!.github/workflows/main-sykepengeperioder-api.yml'
+      - '!sykepengeperioder-api/**'
+      - '!.github/workflows/main-sykepengeperioder-mock.yml'
+      - '!sykepengeperioder-mock/**'
+      - '!.github/workflows/main-tilbakedatert.yml'
+      - '!tilbakedatert/**'
+  schedule:
+    - cron: '0 4 * * 3'
+      timezone: 'Europe/Oslo'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  actions: read # for sarif
+  contents: read
+  security-events: write # push sarif to github security
+  id-token: write # for nais login
+
+jobs:
+  bygg-og-test:
+    name: Bygg og test
+    uses: navikt/helse-sas-github-workflows/.github/workflows/bygg-og-test-med-gradle.yml@d943bbae32e67f52766859e62f56aab033857bfe # v1.0.0
+    permissions:
+      contents: read
+
+  bygg-image:
+    name: Bygg image
+    needs: bygg-og-test
+    uses: navikt/helse-sas-github-workflows/.github/workflows/bygg-modul-image-med-jib.yml@d943bbae32e67f52766859e62f56aab033857bfe # v1.0.0
+    with:
+      modul: sykepengeperioder
+    permissions:
+      actions: read # for sarif upload on private repos
+      contents: read
+      id-token: write # for nais login
+      security-events: write # push sarif to github security
+
+  deploy-dev:
+    name: Deploy til dev
+    needs: bygg-image
+    uses: navikt/helse-sas-github-workflows/.github/workflows/deploy.yml@d943bbae32e67f52766859e62f56aab033857bfe # v1.0.0
+    with:
+      CLUSTER: dev-fss
+      RESOURCE: config/nais.yml
+      VARS: config/sykepengeperioder/dev-fss.yml
+      WORKLOAD_IMAGE: ${{ needs.bygg-image.outputs.image_ref }}
+    permissions:
+      contents: read
+      id-token: write # for nais login
+
+  deploy-prod:
+    name: Deploy til prod
+    needs: [bygg-image, deploy-dev]
+    uses: navikt/helse-sas-github-workflows/.github/workflows/deploy.yml@d943bbae32e67f52766859e62f56aab033857bfe # v1.0.0
+    with:
+      CLUSTER: prod-fss
+      RESOURCE: config/nais.yml
+      VARS: config/sykepengeperioder/prod-fss.yml
+      WORKLOAD_IMAGE: ${{ needs.bygg-image.outputs.image_ref }}
+    permissions:
+      contents: read
+      id-token: write # for nais login

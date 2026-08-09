@@ -1,21 +1,23 @@
-val ktorVersion: String by project
-val mockkVersion: String by project
-val jsonAssertVersion: String by project
-val avroVersion: String by project
-val tbdLibsVersion: String by project
-val rapidsAndRiversVersion: String by project
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
+}
+
+sasDeployable {
+    mainClass = "no.nav.helse.sparkel.personinfo.AppKt"
+    imageName = "helse-sparkelapper-personinfo"
+}
 
 dependencies {
-    implementation("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
-    implementation("com.github.navikt.tbd-libs:speed-client:$tbdLibsVersion")
-    implementation("com.github.navikt.tbd-libs:retry:$tbdLibsVersion")
-    implementation("org.apache.avro:avro:$avroVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
-
-    testImplementation("com.github.navikt.rapids-and-rivers:rapids-and-rivers-test:$rapidsAndRiversVersion")
-    testImplementation("org.skyscreamer:jsonassert:$jsonAssertVersion")
-    testImplementation("io.mockk:mockk:$mockkVersion")
     implementation(project(":felles"))
+    implementation(libs.tbd.libs.azure)
+    implementation(libs.tbd.libs.speed.client)
+    implementation(libs.tbd.libs.retry)
+    implementation(libs.avro)
+    implementation(libs.ktor.client.apache)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.jackson3)
+
+    testImplementation(libs.rapids.and.rivers.test)
+    testImplementation(libs.jsonassert)
+    testImplementation(libs.mockk)
 }

@@ -1,3 +1,4 @@
+app: sykepengeperioder-api
 replicas:
   min: 2
   max: 4
