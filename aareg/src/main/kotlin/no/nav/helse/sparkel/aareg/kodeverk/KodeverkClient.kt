@@ -3,31 +3,32 @@ package no.nav.helse.sparkel.aareg.kodeverk
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
 import io.ktor.http.encodeURLPath
+import no.nav.helse.sparkel.aareg.objectMapper
+import no.nav.helse.sparkel.aareg.sikkerlogg
+import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URL
 import java.time.LocalDate
 import java.util.UUID
-import no.nav.helse.sparkel.aareg.objectMapper
-import no.nav.helse.sparkel.aareg.sikkerlogg
-import org.slf4j.LoggerFactory
-import tools.jackson.databind.JsonNode
-import tools.jackson.databind.ObjectMapper
 
 private val log = LoggerFactory.getLogger("sparkel-aareg")
 
 class KodeverkClient(
     private val kodeverkBaseUrl: String,
     private val kodeverkOauthScope: String,
-    private val azureTokenProvider: AzureTokenProvider
+    private val azureTokenProvider: AzureTokenProvider,
 ) {
-    private fun ObjectMapper.readTreeLogError(response: String) = try {
-        readTree(response)
-    } catch (throwable: Throwable) {
-        log.error("Klarte ikke å parse response fra Kodeverk som JSON\n$response", throwable)
-        throw throwable
-    }
+    private fun ObjectMapper.readTreeLogError(response: String) =
+        try {
+            readTree(response)
+        } catch (throwable: Throwable) {
+            log.error("Klarte ikke å parse response fra Kodeverk som JSON\n$response", throwable)
+            throw throwable
+        }
 
     private val næringer: JsonNode by lazy {
         objectMapper.readTreeLogError(hentFraKodeverk("/api/v1/kodeverk/Næringskoder/koder/betydninger".encodeURLPath()))
@@ -36,27 +37,24 @@ class KodeverkClient(
         objectMapper.readTreeLogError(hentFraKodeverk("/api/v1/kodeverk/Yrker/koder/betydninger"))
     }
 
-    fun getNæring(kode: String): String {
-        return requireNotNull(næringer.hentTekst(kode))
-    }
+    fun getNæring(kode: String): String = requireNotNull(næringer.hentTekst(kode))
 
-    fun getYrke(kode: String): String {
-        return requireNotNull(yrker.hentTekst(kode))
-    }
+    fun getYrke(kode: String): String = requireNotNull(yrker.hentTekst(kode))
 
     private fun hentFraKodeverk(path: String): String {
         val bearerToken = azureTokenProvider.bearerToken(kodeverkOauthScope).getOrThrow()
-        val (responseCode, body) = URI("$kodeverkBaseUrl$path?spraak=nb&ekskluderUgyldige=true&oppslagsdato=${LocalDate.now()}").toURL().get(
-            "Authorization" to "Bearer ${bearerToken.token}",
-            "Nav-Call-Id" to "${UUID.randomUUID()}",
-        )
+        val (responseCode, body) =
+            URI("$kodeverkBaseUrl$path?spraak=nb&ekskluderUgyldige=true&oppslagsdato=${LocalDate.now()}").toURL().get(
+                "Authorization" to "Bearer ${bearerToken.token}",
+                "Nav-Call-Id" to "${UUID.randomUUID()}",
+            )
         log.info("Kodeverk status $responseCode for path $path")
         return body
     }
 
     private companion object {
         private fun URL.get(
-            vararg headers: Pair<String, String>
+            vararg headers: Pair<String, String>,
         ) = with(openConnection() as HttpURLConnection) {
             requestMethod = "GET"
             connectTimeout = 10000
@@ -77,10 +75,14 @@ class KodeverkClient(
 }
 
 fun JsonNode.hentTekst(kode: String): String =
-    path("betydninger").path(kode)
+    path("betydninger")
+        .path(kode)
         .takeIf { !it.isMissingNode }
         ?.first()
-        ?.path("beskrivelser")?.path("nb")?.path("tekst")?.asString()
+        ?.path("beskrivelser")
+        ?.path("nb")
+        ?.path("tekst")
+        ?.asString()
         ?: let {
             log.warn("Mangler betydning for næringskode $kode")
             "Ukjent"

@@ -13,21 +13,22 @@ fun main() {
     app.start()
 }
 
-internal fun createApp(env: Map<String, String>): RapidsConnection {
-    return RapidApplication.create(env).apply {
-        val httpClient = HttpClient(Apache) {
-            install(ContentNegotiation) { jackson() }
-        }
+internal fun createApp(env: Map<String, String>): RapidsConnection =
+    RapidApplication.create(env).apply {
+        val httpClient =
+            HttpClient(Apache) {
+                install(ContentNegotiation) { jackson() }
+            }
 
         val azureClient = createAzureTokenClientFromEnvironment(env)
 
-        val representasjonClient = RepresentasjonClient(
-            baseUrl = env.getValue("REPR_API_URL"),
-            tokenClient = azureClient,
-            httpClient = httpClient,
-            scope = env.getValue("REPR_API_SCOPE")
-        )
+        val representasjonClient =
+            RepresentasjonClient(
+                baseUrl = env.getValue("REPR_API_URL"),
+                tokenClient = azureClient,
+                httpClient = httpClient,
+                scope = env.getValue("REPR_API_SCOPE"),
+            )
 
         RepresentasjonRiver(rapidsConnection = this, representasjonClient = representasjonClient)
     }
-}

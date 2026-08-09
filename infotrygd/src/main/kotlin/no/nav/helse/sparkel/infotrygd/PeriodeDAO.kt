@@ -8,10 +8,14 @@ import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 
 class PeriodeDAO(
-    private val dataSource: () -> DataSource
+    private val dataSource: () -> DataSource,
 ) {
-    fun perioder(fnr: Fnr, fom: LocalDate, tom: LocalDate): List<PeriodeDTO> {
-        return sessionOf(dataSource()).use { session ->
+    fun perioder(
+        fnr: Fnr,
+        fom: LocalDate,
+        tom: LocalDate,
+    ): List<PeriodeDTO> =
+        sessionOf(dataSource()).use { session ->
             @Language("Oracle")
             val statement = """
                     select 
@@ -64,8 +68,8 @@ class PeriodeDAO(
                     mapOf(
                         "fnr" to fnr.formatAsITFnr(),
                         "fom" to fom.format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt(),
-                        "tom" to tom.format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt()
-                    )
+                        "tom" to tom.format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt(),
+                    ),
                 ).map { rs ->
                     PeriodeDTO(
                         ident = rs.long("is01_personkey"),
@@ -93,12 +97,11 @@ class PeriodeDAO(
                         behandlet = rs.intOrNullToLocalDate("is10_behdato"),
                         yrkesskadeArt = rs.stringOrNull("is10_skadeart")?.trim(),
                         skadet = rs.intOrNullToLocalDate("is10_skdato"),
-                        vedtatt = rs.intOrNullToLocalDate("is10_skm_mott")
+                        vedtatt = rs.intOrNullToLocalDate("is10_skm_mott"),
                     )
-                }.asList
+                }.asList,
             )
         }
-    }
 
     data class PeriodeDTO(
         val ident: Long,
@@ -126,7 +129,7 @@ class PeriodeDAO(
         val behandlet: LocalDate?,
         val yrkesskadeArt: String?,
         val skadet: LocalDate?,
-        val vedtatt: LocalDate?
+        val vedtatt: LocalDate?,
     ) {
         companion object {
             fun List<PeriodeDTO>.ekstraFerieperioder() = flatMap { it.ferie() }
@@ -135,25 +138,31 @@ class PeriodeDAO(
         fun tilUtbetalingshistorikk(
             utbetalingList: List<Utbetalingshistorikk.Utbetaling>,
             inntektList: List<Utbetalingshistorikk.Inntektsopplysninger>,
-            statslønn: Boolean
+            statslønn: Boolean,
         ) = Utbetalingshistorikk(
             inntektsopplysninger = inntektList,
             utbetalteSykeperioder = utbetalingList + ferie(),
             maksDato = slutt,
             statslønn = statslønn,
-            arbeidsKategoriKode = arbeidsKategori
+            arbeidsKategoriKode = arbeidsKategori,
         )
 
-        private fun ferie() = listOfNotNull(
-            feriemapper(ferie1Fom, ferie1Tom),
-            feriemapper(ferie2Fom, ferie2Tom)
-        )
+        private fun ferie() =
+            listOfNotNull(
+                feriemapper(ferie1Fom, ferie1Tom),
+                feriemapper(ferie2Fom, ferie2Tom),
+            )
 
-        private fun feriemapper(fom: LocalDate?, tom: LocalDate?): Utbetalingshistorikk.Utbetaling? =
-            if (fom == null || tom == null) null
-            else Utbetalingshistorikk.Utbetaling(fom, tom, "", "", fom, 0.0, "9", "Ferie", "0")
+        private fun feriemapper(
+            fom: LocalDate?,
+            tom: LocalDate?,
+        ): Utbetalingshistorikk.Utbetaling? =
+            if (fom == null || tom == null) {
+                null
+            } else {
+                Utbetalingshistorikk.Utbetaling(fom, tom, "", "", fom, 0.0, "9", "Ferie", "0")
+            }
 
-        fun tilUtbetalingsperiode(utbetalingList: List<UtbetalingDAO.UtbetalingDTO>) =
-            utbetalingList.map { it.tilUtbetalingsperiode(arbeidsKategori) }
+        fun tilUtbetalingsperiode(utbetalingList: List<UtbetalingDAO.UtbetalingDTO>) = utbetalingList.map { it.tilUtbetalingsperiode(arbeidsKategori) }
     }
 }

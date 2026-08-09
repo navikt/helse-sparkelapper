@@ -1,29 +1,39 @@
 package no.nav.helse.sparkel.institusjonsopphold
 
-import java.time.LocalDate
 import tools.jackson.databind.JsonNode
+import java.time.LocalDate
 
-class Institusjonsoppholdperiode(jsonNode: JsonNode) {
+class Institusjonsoppholdperiode(
+    jsonNode: JsonNode,
+) {
     val kategori = jsonNode["kategori"].asEnumValue<Oppholdstype>()
     val startdato = jsonNode["startdato"].stringValue().let { LocalDate.parse(it) }
     val faktiskSluttdato = jsonNode["faktiskSluttdato"]?.takeUnless { it.isNull }?.stringValue()?.let { LocalDate.parse(it) }
 
     internal companion object {
-        internal fun List<Institusjonsoppholdperiode>.filtrer(fom: LocalDate, tom: LocalDate) = filter { it.overlapperMed(fom, tom) }
+        internal fun List<Institusjonsoppholdperiode>.filtrer(
+            fom: LocalDate,
+            tom: LocalDate,
+        ) = filter { it.overlapperMed(fom, tom) }
     }
 
-    internal fun overlapperMed(fom: LocalDate, tom: LocalDate) =
-        maxOf(startdato, fom) <= (faktiskSluttdato?.let { minOf(it, tom) } ?: tom)
-
+    internal fun overlapperMed(
+        fom: LocalDate,
+        tom: LocalDate,
+    ) = maxOf(startdato, fom) <= (faktiskSluttdato?.let { minOf(it, tom) } ?: tom)
 }
 
-enum class Institusjonstype(val beskrivelse: String) {
+enum class Institusjonstype(
+    val beskrivelse: String,
+) {
     AS("Alders- og sykehjem"),
     FO("Fengsel"),
-    HS("Helseinstitusjon")
+    HS("Helseinstitusjon"),
 }
 
-enum class Oppholdstype(val beskrivelse: String) {
+enum class Oppholdstype(
+    val beskrivelse: String,
+) {
     A("Alders- og sykehjem"),
     D("Dagpasient"),
     F("Ferieopphold"),
@@ -31,7 +41,12 @@ enum class Oppholdstype(val beskrivelse: String) {
     P("Fødsel"),
     R("Opptreningsinstitusjon"),
     S("Soningsfange"),
-    V("Varetektsfange")
+    V("Varetektsfange"),
 }
 
-private inline fun <reified T : Enum<T>> JsonNode?.asEnumValue() = this?.takeUnless { it.isNull }?.stringValue()?.takeUnless { it == "" }?.let { enumValueOf<T>(it) }
+private inline fun <reified T : Enum<T>> JsonNode?.asEnumValue() =
+    this
+        ?.takeUnless { it.isNull }
+        ?.stringValue()
+        ?.takeUnless { it == "" }
+        ?.let { enumValueOf<T>(it) }

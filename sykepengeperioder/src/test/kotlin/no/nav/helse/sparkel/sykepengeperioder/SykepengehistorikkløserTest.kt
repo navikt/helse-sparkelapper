@@ -1,6 +1,8 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
+import no.nav.helse.sparkel.infotrygd.PeriodeDAO
+import no.nav.helse.sparkel.infotrygd.UtbetalingDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.*
@@ -9,16 +11,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
+import tools.jackson.databind.JsonNode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
-import no.nav.helse.sparkel.infotrygd.PeriodeDAO
-import no.nav.helse.sparkel.infotrygd.UtbetalingDAO
-import tools.jackson.databind.JsonNode
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SykepengehistorikkløserTest : H2Database() {
-
     private lateinit var infotrygdService: InfotrygdService
     private val rapid = TestRapid()
 
@@ -26,13 +25,14 @@ internal class SykepengehistorikkløserTest : H2Database() {
 
     @BeforeAll
     fun setup() {
-        infotrygdService = InfotrygdService(
-            PeriodeDAO { dataSource },
-            UtbetalingDAO { dataSource },
-            InntektDAO { dataSource },
-            StatslønnDAO { dataSource },
-            FeriepengeDAO { dataSource }
-        )
+        infotrygdService =
+            InfotrygdService(
+                PeriodeDAO { dataSource },
+                UtbetalingDAO { dataSource },
+                InntektDAO { dataSource },
+                StatslønnDAO { dataSource },
+                FeriepengeDAO { dataSource },
+            )
         rapid.apply {
             Sykepengehistorikkløser(this, infotrygdService)
         }
@@ -72,23 +72,25 @@ internal class SykepengehistorikkløserTest : H2Database() {
     fun `mapper også ut inntekt og dagsats`() {
         opprettPeriode(
             seq = 1,
-            utbetalinger = listOf(
-                Utbetaling(5.september(2020), 25.september(2020), dagsats = 2176.0),
-                Utbetaling(4.september(2020), 4.september(2020))
-            ),
-            inntekter = listOf(Inntekt(4.september(2020), lønn = 565700.0))
+            utbetalinger =
+                listOf(
+                    Utbetaling(5.september(2020), 25.september(2020), dagsats = 2176.0),
+                    Utbetaling(4.september(2020), 4.september(2020)),
+                ),
+            inntekter = listOf(Inntekt(4.september(2020), lønn = 565700.0)),
         )
         opprettPeriode(
             seq = 2,
-            utbetalinger = listOf(
-                Utbetaling(2.juni(2019), 20.juni(2019)),
-                Utbetaling(17.mai(2019), 1.juni(2019)),
-                Utbetaling(1.mai(2019), 16.mai(2019)),
-                Utbetaling(15.april(2019), 30.april(2019)),
-                Utbetaling(30.mars(2019), 14.april(2019)),
-                Utbetaling(4.februar(2019), 29.mars(2019))
-            ),
-            inntekter = listOf(Inntekt(4.februar(2019), lønn = 507680.0))
+            utbetalinger =
+                listOf(
+                    Utbetaling(2.juni(2019), 20.juni(2019)),
+                    Utbetaling(17.mai(2019), 1.juni(2019)),
+                    Utbetaling(1.mai(2019), 16.mai(2019)),
+                    Utbetaling(15.april(2019), 30.april(2019)),
+                    Utbetaling(30.mars(2019), 14.april(2019)),
+                    Utbetaling(4.februar(2019), 29.mars(2019)),
+                ),
+            inntekter = listOf(Inntekt(4.februar(2019), lønn = 507680.0)),
         )
         rapid.sendTestMessage(behov())
 
@@ -106,20 +108,20 @@ internal class SykepengehistorikkløserTest : H2Database() {
             tom = 25.september(2020),
             grad = "100",
             orgnummer = orgnummer,
-            dagsats = 2176.0
+            dagsats = 2176.0,
         )
 
         assertInntektsopplysninger(
             inntektsopplysninger = perioder[0].inntektsopplysninger,
             dato = 4.september(2020),
             inntektPerMåned = 565700 / 12,
-            orgnummer = orgnummer
+            orgnummer = orgnummer,
         )
         assertInntektsopplysninger(
             inntektsopplysninger = perioder[1].inntektsopplysninger,
             dato = 4.februar(2019),
             inntektPerMåned = 507680 / 12,
-            orgnummer = orgnummer
+            orgnummer = orgnummer,
         )
     }
 
@@ -182,18 +184,23 @@ internal class SykepengehistorikkløserTest : H2Database() {
             Utbetalingshistorikk(it)
         }
 
-    private class Utbetalingshistorikk(json: JsonNode) {
-
-        val utbetalteSykeperioder = json["utbetalteSykeperioder"].toList().map {
-            UtbetalteSykeperiode(it)
-        }
-        val inntektsopplysninger = json["inntektsopplysninger"].toList().map {
-            Inntektsopplysning(it)
-        }
+    private class Utbetalingshistorikk(
+        json: JsonNode,
+    ) {
+        val utbetalteSykeperioder =
+            json["utbetalteSykeperioder"].toList().map {
+                UtbetalteSykeperiode(it)
+            }
+        val inntektsopplysninger =
+            json["inntektsopplysninger"].toList().map {
+                Inntektsopplysning(it)
+            }
         val statslønn = json["statslønn"].asBoolean()
         val arbeidsKategoriKode = json["arbeidsKategoriKode"].asString()
 
-        class UtbetalteSykeperiode(json: JsonNode) {
+        class UtbetalteSykeperiode(
+            json: JsonNode,
+        ) {
             val fom = json["fom"].asLocalDate()
             val tom = json["tom"].asLocalDate()
             val utbetalingsGrad = json["utbetalingsGrad"].asString()
@@ -201,7 +208,9 @@ internal class SykepengehistorikkløserTest : H2Database() {
             val dagsats = json["dagsats"].asDouble()
         }
 
-        class Inntektsopplysning(json: JsonNode) {
+        class Inntektsopplysning(
+            json: JsonNode,
+        ) {
             val sykepengerFom = json["sykepengerFom"].asLocalDate()
             val inntekt = json["inntekt"].asInt()
             val orgnummer = json["orgnummer"].asString()
@@ -218,7 +227,7 @@ internal class SykepengehistorikkløserTest : H2Database() {
         tom: LocalDate,
         grad: String,
         orgnummer: String,
-        dagsats: Double
+        dagsats: Double,
     ) {
         assertEquals(fom, sykeperiode.fom)
         assertEquals(tom, sykeperiode.tom)
@@ -231,7 +240,7 @@ internal class SykepengehistorikkløserTest : H2Database() {
         inntektsopplysninger: List<Utbetalingshistorikk.Inntektsopplysning>,
         dato: LocalDate,
         inntektPerMåned: Int,
-        orgnummer: String
+        orgnummer: String,
     ) {
         assertEquals(dato, inntektsopplysninger[0].sykepengerFom)
         assertEquals(inntektPerMåned, inntektsopplysninger[0].inntekt)

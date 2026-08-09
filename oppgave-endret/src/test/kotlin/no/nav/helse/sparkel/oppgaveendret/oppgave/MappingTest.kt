@@ -21,25 +21,28 @@ class MappingTest {
                 1000000,
                 temaSyk,
                 "1000001234567",
-                FOLKEREGISTERIDENT
+                FOLKEREGISTERIDENT,
             ),
-            oppgave
+            oppgave,
         )
     }
+
     @Test
     fun `Mapping returnerer null dersom bruker-objektet ikke er satt`() {
-        val jsonNode = testJson.apply {
-            this as ObjectNode
-            val oppgaveNode = path("oppgave") as ObjectNode
-            oppgaveNode.remove("bruker")
-        }
+        val jsonNode =
+            testJson.apply {
+                this as ObjectNode
+                val oppgaveNode = path("oppgave") as ObjectNode
+                oppgaveNode.remove("bruker")
+            }
         val oppgave = Oppgave.fromJson(jsonNode)
 
         assertEquals(null, oppgave)
     }
 
     @Language("JSON")
-    private val testJson = """
+    private val testJson =
+        """
         {
             "hendelse": {
                 "hendelsestype": "OPPGAVE_OPPRETTET"
@@ -57,6 +60,5 @@ class MappingTest {
         } 
         """.let { jacksonObjectMapper().readTree(it) }
 }
-
 
 private fun String.loadFromResources() = ClassLoader.getSystemResource(this).readText()

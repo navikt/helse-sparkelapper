@@ -14,7 +14,6 @@ internal class EgenAnsattLøser(
     rapidsConnection: RapidsConnection,
     private val skjermedePersoner: SkjermedePersoner,
 ) : River.PacketListener {
-
     companion object {
         internal const val behov = "EgenAnsatt"
     }
@@ -23,24 +22,31 @@ internal class EgenAnsattLøser(
     private val log = LoggerFactory.getLogger(this::class.java)
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireAll("@behov", listOf(behov)) }
-            validate { it.forbid("@løsning") }
-            validate { it.requireKey("@id") }
-            validate { it.requireKey("fødselsnummer") }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireAll("@behov", listOf(behov)) }
+                validate { it.forbid("@løsning") }
+                validate { it.requireKey("@id") }
+                validate { it.requireKey("fødselsnummer") }
+            }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         val meldingId = packet["@id"].asString()
 
-        val personErSkjermet = try {
-            skjermedePersoner.erSkjermetPerson(packet["fødselsnummer"].asString(), meldingId)
-        } catch (err: Exception) {
-            loggFeil(err, packet)
-            return
-        }
+        val personErSkjermet =
+            try {
+                skjermedePersoner.erSkjermetPerson(packet["fødselsnummer"].asString(), meldingId)
+            } catch (err: Exception) {
+                loggFeil(err, packet)
+                return
+            }
 
         packet.setLøsning(behov, personErSkjermet)
 
@@ -50,18 +56,28 @@ internal class EgenAnsattLøser(
         context.publish(packet.toJson())
     }
 
-    private fun loggFeil(err: Exception, packet: JsonMessage) {
+    private fun loggFeil(
+        err: Exception,
+        packet: JsonMessage,
+    ) {
         val idArgument = keyValue("id", packet["@id"].asString())
         log.error("feil ved henting av egen ansatt: ${err.message} for behov {}", idArgument, err)
         sikkerlogg.error("feil ved henting av egen ansatt: ${err.message} for behov {}", idArgument, err)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {}
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {}
 
-    private fun JsonMessage.setLøsning(nøkkel: String, data: Any) {
-        this["@løsning"] = mapOf(
-            nøkkel to data
-        )
+    private fun JsonMessage.setLøsning(
+        nøkkel: String,
+        data: Any,
+    ) {
+        this["@løsning"] =
+            mapOf(
+                nøkkel to data,
+            )
     }
-
 }

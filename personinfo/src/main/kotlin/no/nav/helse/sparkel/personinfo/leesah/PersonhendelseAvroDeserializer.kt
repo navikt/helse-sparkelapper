@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.personinfo.leesah
 
-import java.util.Base64
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseAvroDeserializer.SkjemaOgVersjon.V4
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseAvroDeserializer.SkjemaOgVersjon.V7
 import org.apache.avro.Schema
@@ -10,18 +9,27 @@ import org.apache.avro.io.DecoderFactory
 import org.apache.kafka.common.serialization.Deserializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.Base64
 
 class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
     private val decoderFactory: DecoderFactory = DecoderFactory.get()
 
-    override fun deserialize(topic: String, data: ByteArray): GenericRecord =
-        listOf(V7, V4).map {
-            runCatching { deserialize(data, it.skjema) }
-                .onSuccess { deserializedRecord -> return deserializedRecord }
-                .onFailure { exception -> sikkerlogg.feilVedDeserialisering(data, exception, it.versjon) }
-        }.first().getOrThrow()
+    override fun deserialize(
+        topic: String,
+        data: ByteArray,
+    ): GenericRecord =
+        listOf(V7, V4)
+            .map {
+                runCatching { deserialize(data, it.skjema) }
+                    .onSuccess { deserializedRecord -> return deserializedRecord }
+                    .onFailure { exception -> sikkerlogg.feilVedDeserialisering(data, exception, it.versjon) }
+            }.first()
+            .getOrThrow()
 
-    private fun deserialize(data: ByteArray, schema: Schema): GenericRecord {
+    private fun deserialize(
+        data: ByteArray,
+        schema: Schema,
+    ): GenericRecord {
         val reader = GenericDatumReader<GenericRecord>(schema)
         val decoder = decoderFactory.binaryDecoder(data, null)
         /*
@@ -35,14 +43,20 @@ class PersonhendelseAvroDeserializer : Deserializer<GenericRecord> {
 
     companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-        private fun Logger.feilVedDeserialisering(data: ByteArray, throwable: Throwable, versjon: String) =
-            warn("Klarte ikke å deserialisere Personhendelse-melding fra Leesah med $versjon. Base64='${Base64.getEncoder().encodeToString(data)}'", throwable)
+
+        private fun Logger.feilVedDeserialisering(
+            data: ByteArray,
+            throwable: Throwable,
+            versjon: String,
+        ) = warn("Klarte ikke å deserialisere Personhendelse-melding fra Leesah med $versjon. Base64='${Base64.getEncoder().encodeToString(data)}'", throwable)
 
         val sisteSkjema: Schema = V7.skjema
     }
 
     private enum class SkjemaOgVersjon {
-        V4, V7;
+        V4,
+        V7,
+        ;
 
         val versjon = name
 

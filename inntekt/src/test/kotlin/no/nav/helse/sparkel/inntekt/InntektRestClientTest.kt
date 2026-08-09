@@ -13,46 +13,62 @@ import io.ktor.http.fullPath
 import io.ktor.serialization.jackson3.JacksonConverter
 import io.mockk.every
 import io.mockk.mockk
-import java.time.YearMonth
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.YearMonth
 
 class InntektRestClientTest {
-
     private val responsMock = mockk<Mock>(relaxed = true)
 
     @Test
-    fun `person uten inntektshistorikk`() = runBlocking {
-        every { responsMock.get() } returns tomRespons()
-        val inntektsliste =
-            inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId")
+    fun `person uten inntektshistorikk`() =
+        runBlocking {
+            every { responsMock.get() } returns tomRespons()
+            val inntektsliste =
+                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId")
 
-        assertNotNull(inntektsliste)
-        assertEquals(0, inntektsliste.size)
-    }
-
-    @Test
-    fun `person med inntektshistorikk fra org`() = runBlocking {
-        every { responsMock.get() } returns responsMedInntekt("orgnummer1", "ORGANISASJON")
-        val inntektsliste =
-            inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId")
-        assertNotNull(inntektsliste)
-        assertEquals(1, inntektsliste.size)
-        assertEquals("orgnummer1", inntektsliste.first().inntektsliste.first().orgnummer)
-    }
+            assertNotNull(inntektsliste)
+            assertEquals(0, inntektsliste.size)
+        }
 
     @Test
-    fun `person med inntektshistorikk fra fødselsnummer`() = runBlocking {
-        every { responsMock.get() } returns responsMedInntekt("fødselsnummer1", "NATURLIG_IDENT")
-        val inntektsliste =
-            inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId")
-        assertNotNull(inntektsliste)
-        assertEquals(1, inntektsliste.size)
-        assertEquals("fødselsnummer1", inntektsliste.first().inntektsliste.first().fødselsnummer)
-    }
+    fun `person med inntektshistorikk fra org`() =
+        runBlocking {
+            every { responsMock.get() } returns responsMedInntekt("orgnummer1", "ORGANISASJON")
+            val inntektsliste =
+                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId")
+            assertNotNull(inntektsliste)
+            assertEquals(1, inntektsliste.size)
+            assertEquals(
+                "orgnummer1",
+                inntektsliste
+                    .first()
+                    .inntektsliste
+                    .first()
+                    .orgnummer,
+            )
+        }
+
+    @Test
+    fun `person med inntektshistorikk fra fødselsnummer`() =
+        runBlocking {
+            every { responsMock.get() } returns responsMedInntekt("fødselsnummer1", "NATURLIG_IDENT")
+            val inntektsliste =
+                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId")
+            assertNotNull(inntektsliste)
+            assertEquals(1, inntektsliste.size)
+            assertEquals(
+                "fødselsnummer1",
+                inntektsliste
+                    .first()
+                    .inntektsliste
+                    .first()
+                    .fødselsnummer,
+            )
+        }
 
     @Test
     fun `person med inntektshistorikk fra aktørId`() {
@@ -93,25 +109,26 @@ class InntektRestClientTest {
         }
     }
 
-    private val inntektRestClient = InntektRestClient(
-        "http://localhost.no",
-        "resourceId",
-        HttpClient(MockEngine) {
-            install(ContentNegotiation) {
-                register(ContentType.Application.Json, JacksonConverter(objectMapper))
-            }
-            engine {
-                addHandler { request ->
-                    if (request.url.fullPath.startsWith("/api/v1/hentinntektliste")) {
-                        respond(content = responsMock.get(), status = responsMock.status())
-                    } else {
-                        error("Endepunktet finnes ikke ${request.url.fullPath}")
+    private val inntektRestClient =
+        InntektRestClient(
+            "http://localhost.no",
+            "resourceId",
+            HttpClient(MockEngine) {
+                install(ContentNegotiation) {
+                    register(ContentType.Application.Json, JacksonConverter(objectMapper))
+                }
+                engine {
+                    addHandler { request ->
+                        if (request.url.fullPath.startsWith("/api/v1/hentinntektliste")) {
+                            respond(content = responsMock.get(), status = responsMock.status())
+                        } else {
+                            error("Endepunktet finnes ikke ${request.url.fullPath}")
+                        }
                     }
                 }
-            }
-        },
-        tokenSupplier = { "token" }
-    )
+            },
+            tokenSupplier = { "token" },
+        )
 }
 
 private fun tomRespons() =
@@ -122,8 +139,10 @@ private fun tomRespons() =
         }
     }"""
 
-private fun responsMedInntekt(identifikator: String, aktoerType: String) =
-    """
+private fun responsMedInntekt(
+    identifikator: String,
+    aktoerType: String,
+) = """
         {"arbeidsInntektMaaned": [
                     {
                         "aarMaaned": "2018-12",
@@ -163,5 +182,6 @@ private fun responsMedInntekt(identifikator: String, aktoerType: String) =
 
 private class Mock {
     fun status(): HttpStatusCode = HttpStatusCode.OK
+
     fun get() = "{}"
 }

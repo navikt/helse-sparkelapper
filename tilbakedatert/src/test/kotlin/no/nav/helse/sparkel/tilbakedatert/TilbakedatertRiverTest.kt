@@ -1,14 +1,13 @@
 package no.nav.helse.sparkel.tilbakedatert
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
-import java.util.UUID
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import tools.jackson.module.kotlin.jacksonObjectMapper
+import java.util.UUID
 
 internal class TilbakedatertRiverTest {
-
     private val rapid: TestRapid = TestRapid().apply(::TilbakedatertRiver)
 
     private fun sendEvent(behov: String) = rapid.sendTestMessage(behov)
@@ -53,7 +52,8 @@ internal class TilbakedatertRiverTest {
 
     object Meldinger {
         @Language("JSON")
-        internal val Ok = """
+        internal val Ok =
+            """
             {
                 "sykmelding": {
                     "id": "${UUID.randomUUID()}",
@@ -68,10 +68,11 @@ internal class TilbakedatertRiverTest {
                     "rules": []
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         @Language("JSON")
-        internal val UnderBehandling = """
+        internal val UnderBehandling =
+            """
             {
                 "sykmelding": {
                     "id": "${UUID.randomUUID()}",
@@ -97,10 +98,11 @@ internal class TilbakedatertRiverTest {
                     ]
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         @Language("JSON")
-        internal val Godkjent = """
+        internal val Godkjent =
+            """
             {
                 "sykmelding": {
                     "id": "${UUID.randomUUID()}",
@@ -137,10 +139,11 @@ internal class TilbakedatertRiverTest {
                     ]
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         @Language("JSON")
-        internal val GodkjentEtterFlereOpplysninger = """
+        internal val GodkjentEtterFlereOpplysninger =
+            """
             {
                 "sykmelding": {
                     "id": "${UUID.randomUUID()}",
@@ -187,10 +190,11 @@ internal class TilbakedatertRiverTest {
                     ]
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         @Language("JSON")
-        internal val DelvisGodkjent = """
+        internal val DelvisGodkjent =
+            """
             {
                 "sykmelding": {
                     "id": "${UUID.randomUUID()}",
@@ -227,6 +231,6 @@ internal class TilbakedatertRiverTest {
                     ]
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
     }
 }

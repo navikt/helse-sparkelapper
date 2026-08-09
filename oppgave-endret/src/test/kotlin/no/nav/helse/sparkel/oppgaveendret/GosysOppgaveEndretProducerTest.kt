@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import tools.jackson.databind.JsonNode
 
 internal class GosysOppgaveEndretProducerTest {
-
     private val rapid = TestRapid()
     private val oppgaveEndretProducer: GosysOppgaveEndretProducer = GosysOppgaveEndretProducer(rapid)
 
@@ -49,7 +48,10 @@ internal class GosysOppgaveEndretProducerTest {
         assertEquals(2, rapid.inspektør.size)
     }
 
-    private fun assertMeldingsinnhold(forventet: String, faktisk: JsonNode) {
+    private fun assertMeldingsinnhold(
+        forventet: String,
+        faktisk: JsonNode,
+    ) {
         val forventetNode = objectMapper.readTree(forventet)
         setOf("@event_name", "fødselsnummer").forEach {
             assertEquals(forventetNode[it], faktisk[it])
@@ -59,10 +61,11 @@ internal class GosysOppgaveEndretProducerTest {
         }
     }
 
-    private val forventetMelding = """
+    private val forventetMelding =
+        """
         {
             "@event_name": "gosys_oppgave_endret",
             "fødselsnummer": "12345678910"
         }
-    """.trimIndent()
+        """.trimIndent()
 }

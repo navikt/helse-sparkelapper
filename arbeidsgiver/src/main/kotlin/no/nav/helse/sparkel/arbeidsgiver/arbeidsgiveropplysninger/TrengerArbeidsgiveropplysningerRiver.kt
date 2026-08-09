@@ -15,7 +15,7 @@ import tools.jackson.databind.JsonNode
 
 internal class TrengerArbeidsgiveropplysningerRiver(
     rapidsConnection: RapidsConnection,
-    private val arbeidsgiverProducer: ArbeidsgiveropplysningerProducer
+    private val arbeidsgiverProducer: ArbeidsgiveropplysningerProducer,
 ) : River.PacketListener {
     private companion object {
         val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -24,38 +24,54 @@ internal class TrengerArbeidsgiveropplysningerRiver(
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireValue("@event_name", eventName) }
-            validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
-            validate { it.require("skjæringstidspunkt", JsonNode::asLocalDate) }
-            validate { it.requireArray("sykmeldingsperioder") {
-                require("fom", JsonNode::asLocalDate)
-                require("tom", JsonNode::asLocalDate)
-            }}
-            validate { it.requireArray("egenmeldingsperioder") {
-                require("fom", JsonNode::asLocalDate)
-                require("tom", JsonNode::asLocalDate)
-            }}
-            validate { it.requireArray("førsteFraværsdager") {
-                require("organisasjonsnummer", JsonNode::asString)
-                require("førsteFraværsdag", JsonNode::asLocalDate)
-            }}
-            validate { it.require("forespurteOpplysninger", JsonNode::validateForespurteOpplysninger) }
-            validate { it.requireKey("organisasjonsnummer", "fødselsnummer", "vedtaksperiodeId") }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireValue("@event_name", eventName) }
+                validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
+                validate { it.require("skjæringstidspunkt", JsonNode::asLocalDate) }
+                validate {
+                    it.requireArray("sykmeldingsperioder") {
+                        require("fom", JsonNode::asLocalDate)
+                        require("tom", JsonNode::asLocalDate)
+                    }
+                }
+                validate {
+                    it.requireArray("egenmeldingsperioder") {
+                        require("fom", JsonNode::asLocalDate)
+                        require("tom", JsonNode::asLocalDate)
+                    }
+                }
+                validate {
+                    it.requireArray("førsteFraværsdager") {
+                        require("organisasjonsnummer", JsonNode::asString)
+                        require("førsteFraværsdag", JsonNode::asLocalDate)
+                    }
+                }
+                validate { it.require("forespurteOpplysninger", JsonNode::validateForespurteOpplysninger) }
+                validate { it.requireKey("organisasjonsnummer", "fødselsnummer", "vedtaksperiodeId") }
+            }.register(this)
     }
 
     private fun loggVennligPacket(packet: JsonMessage): Map<String, Any> =
         mapOf(
             "id" to packet.id,
-            "@event_name" to packet["@event_name"]
+            "@event_name" to packet["@event_name"],
         )
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("forstod ikke $eventName:\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         "Mottok trenger_opplysninger_fra_arbeidsgiver-event fra spleis".let {
             logg.info("$it:\n{}", loggVennligPacket(packet))
             sikkerlogg.info("$it med data:\n{}", packet.toJson())

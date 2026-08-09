@@ -24,46 +24,55 @@ import tools.jackson.databind.ObjectMapper
 internal class HentPersoninfoV2Løser(
     rapidsConnection: RapidsConnection,
     private val personinfoService: PersoninfoService,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
 ) : River.PacketListener {
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
     private val sikkerLogg: Logger = LoggerFactory.getLogger("tjenestekall")
 
     init {
-        River(rapidsConnection).apply {
-            precondition {
-                it.requireAll("@behov", listOf("HentPersoninfoV2"))
-                it.forbid("@løsning")
-            }
-            validate {
-                it.requireKey("fødselsnummer")
-                it.interestedIn("HentPersoninfoV2.ident", "hendelseId", "@id")
-            }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition {
+                    it.requireAll("@behov", listOf("HentPersoninfoV2"))
+                    it.forbid("@løsning")
+                }
+                validate {
+                    it.requireKey("fødselsnummer")
+                    it.interestedIn("HentPersoninfoV2.ident", "hendelseId", "@id")
+                }
+            }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) = runBlocking {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) = runBlocking {
         val behovId = packet["@id"].asString()
         val hendelseId = packet["hendelseId"].asString()
-        withMDC(mapOf(
+        withMDC(
+            mapOf(
                 "hendelseId" to hendelseId,
-                "behovId" to behovId
-        )) {
+                "behovId" to behovId,
+            ),
+        ) {
             sikkerLogg.info("mottok melding: ${packet.toJson()}")
             val ident = packet["HentPersoninfoV2.ident"].takeUnless { it.isMissingOrNull() } ?: packet["fødselsnummer"]
 
             val identer = if (ident.isArray) ident.toList().map { it.asString() } else listOf(ident.asString())
-            val løsninger = identer
-                .map {
-                    personinfoService.løsningForPersoninfo(behovId, it)
-                }
-                .flatten()
-                .map { liste ->
-                    liste.mapIndexed { index, personRespons ->
-                        val identForLøsning = identer[index]
-                        personRespons.løsningJson(identForLøsning)
-                    }.ok()
-                }
+            val løsninger =
+                identer
+                    .map {
+                        personinfoService.løsningForPersoninfo(behovId, it)
+                    }.flatten()
+                    .map { liste ->
+                        liste
+                            .mapIndexed { index, personRespons ->
+                                val identForLøsning = identer[index]
+                                personRespons.løsningJson(identForLøsning)
+                            }.ok()
+                    }
             try {
                 when (løsninger) {
                     is Result.Error -> {
@@ -71,16 +80,17 @@ internal class HentPersoninfoV2Løser(
                         log.warn("Feil under løsing av personinfo-behov: ${løsninger.error}", løsninger.cause)
                     }
                     is Result.Ok -> {
-                        val løsningJson = if (ident.isArray) {
-                            sikkerLogg.warn("Løser PersoninfoV2 med flere identer")
-                            ObjectMapper().createArrayNode().apply {
-                                løsninger.value.forEach { individuellLøsning ->
-                                    this.add(individuellLøsning)
+                        val løsningJson =
+                            if (ident.isArray) {
+                                sikkerLogg.warn("Løser PersoninfoV2 med flere identer")
+                                ObjectMapper().createArrayNode().apply {
+                                    løsninger.value.forEach { individuellLøsning ->
+                                        this.add(individuellLøsning)
+                                    }
                                 }
+                            } else {
+                                løsninger.value.single()
                             }
-                        } else {
-                            løsninger.value.single()
-                        }
 
                         packet["@løsning"] = mapOf("HentPersoninfoV2" to løsningJson)
                         context.publish(packet.toJson())
@@ -93,28 +103,37 @@ internal class HentPersoninfoV2Løser(
         }
     }
 
-    private fun PersonResponse.løsningJson(ident: String): JsonNode {
-        return objectMapper.createObjectNode().apply {
+    private fun PersonResponse.løsningJson(ident: String): JsonNode =
+        objectMapper.createObjectNode().apply {
             put("ident", ident)
             put("fornavn", fornavn)
             if (mellomnavn != null) put("mellomnavn", mellomnavn) else putNull("mellomnavn")
             put("etternavn", etternavn)
             put("fødselsdato", fødselsdato.toString())
-            put("kjønn", when (kjønn) {
-                PersonResponse.Kjønn.MANN -> "Mann"
-                PersonResponse.Kjønn.KVINNE -> "Kvinne"
-                PersonResponse.Kjønn.UKJENT -> "Ukjent"
-            })
-            put("adressebeskyttelse", when (adressebeskyttelse) {
-                FORTROLIG -> "Fortrolig"
-                STRENGT_FORTROLIG -> "StrengtFortrolig"
-                STRENGT_FORTROLIG_UTLAND -> "StrengtFortroligUtland"
-                UGRADERT -> "Ugradert"
-            })
+            put(
+                "kjønn",
+                when (kjønn) {
+                    PersonResponse.Kjønn.MANN -> "Mann"
+                    PersonResponse.Kjønn.KVINNE -> "Kvinne"
+                    PersonResponse.Kjønn.UKJENT -> "Ukjent"
+                },
+            )
+            put(
+                "adressebeskyttelse",
+                when (adressebeskyttelse) {
+                    FORTROLIG -> "Fortrolig"
+                    STRENGT_FORTROLIG -> "StrengtFortrolig"
+                    STRENGT_FORTROLIG_UTLAND -> "StrengtFortroligUtland"
+                    UGRADERT -> "Ugradert"
+                },
+            )
         }
-    }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerLogg.error("Forstod ikke HentPersoninfoV2-behov:\n${problems.toExtendedReport()}")
     }
 }

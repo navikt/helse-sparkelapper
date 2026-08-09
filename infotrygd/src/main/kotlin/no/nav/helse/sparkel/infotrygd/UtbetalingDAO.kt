@@ -1,19 +1,23 @@
 package no.nav.helse.sparkel.infotrygd
 
-import java.time.LocalDate
-import javax.sql.DataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import org.intellij.lang.annotations.Language
+import java.time.LocalDate
+import javax.sql.DataSource
 
 class UtbetalingDAO(
-    private val dataSource: () -> DataSource
+    private val dataSource: () -> DataSource,
 ) {
-    fun utbetalinger(fnr: Fnr, vararg seq: Int): List<UtbetalingDTO> {
-        return utbetalingerSomFunker(fnr, *seq)
-    }
+    fun utbetalinger(
+        fnr: Fnr,
+        vararg seq: Int,
+    ): List<UtbetalingDTO> = utbetalingerSomFunker(fnr, *seq)
 
-    private fun utbetalingerSomFunker(fnr: Fnr, vararg seq: Int): List<UtbetalingDTO> {
+    private fun utbetalingerSomFunker(
+        fnr: Fnr,
+        vararg seq: Int,
+    ): List<UtbetalingDTO> {
         if (seq.isEmpty()) return emptyList()
         return sessionOf(dataSource()).use { session ->
             val antallSpørsmålstegn = seq.joinToString(",") { "?" }
@@ -36,19 +40,20 @@ class UtbetalingDAO(
         and is15_korr <> 'KORR'
                 """
             session.run(
-                queryOf(statement, fnr.formatAsITFnr(), *seq.toTypedArray()).map { rs ->
-                    UtbetalingDTO(
-                        fom = rs.intOrNullToLocalDate("is15_utbetfom"),
-                        tom = rs.intOrNullToLocalDate("is15_utbettom"),
-                        grad = rs.string("is15_grad").trim(),
-                        oppgjorType = rs.string("is15_op").trim { it <= '\u0020' },
-                        utbetalt = rs.intOrNullToLocalDate("is15_utbetdato"),
-                        dagsats = rs.double("is15_dsats"),
-                        periodeType = rs.string("is15_type").trim(),
-                        arbOrgnr = rs.string("is15_arbgivnr"),
-                        sekvensId = rs.int("is10_arbufoer_seq")
-                    )
-                }.asList
+                queryOf(statement, fnr.formatAsITFnr(), *seq.toTypedArray())
+                    .map { rs ->
+                        UtbetalingDTO(
+                            fom = rs.intOrNullToLocalDate("is15_utbetfom"),
+                            tom = rs.intOrNullToLocalDate("is15_utbettom"),
+                            grad = rs.string("is15_grad").trim(),
+                            oppgjorType = rs.string("is15_op").trim { it <= '\u0020' },
+                            utbetalt = rs.intOrNullToLocalDate("is15_utbetdato"),
+                            dagsats = rs.double("is15_dsats"),
+                            periodeType = rs.string("is15_type").trim(),
+                            arbOrgnr = rs.string("is15_arbgivnr"),
+                            sekvensId = rs.int("is10_arbufoer_seq"),
+                        )
+                    }.asList,
             )
         }
     }
@@ -62,7 +67,7 @@ class UtbetalingDAO(
         val dagsats: Double,
         val periodeType: String,
         val arbOrgnr: String,
-        val sekvensId: Int
+        val sekvensId: Int,
     ) {
         companion object {
             fun tilHistorikkutbetaling(utbetalinger: List<UtbetalingDTO>) =
@@ -71,27 +76,29 @@ class UtbetalingDAO(
                     .sortedBy { it.fom }
         }
 
-        private fun tilHistorikkUtbetaling() = Utbetalingshistorikk.Utbetaling(
-            fom = fom,
-            tom = tom,
-            utbetalingsGrad = grad,
-            oppgjorsType = oppgjorType,
-            utbetalt = utbetalt,
-            dagsats = dagsats,
-            typeKode = periodeType,
-            typeTekst = periodeType.toTypeTekst(),
-            orgnummer = arbOrgnr
-        )
+        private fun tilHistorikkUtbetaling() =
+            Utbetalingshistorikk.Utbetaling(
+                fom = fom,
+                tom = tom,
+                utbetalingsGrad = grad,
+                oppgjorsType = oppgjorType,
+                utbetalt = utbetalt,
+                dagsats = dagsats,
+                typeKode = periodeType,
+                typeTekst = periodeType.toTypeTekst(),
+                orgnummer = arbOrgnr,
+            )
 
-        internal fun tilUtbetalingsperiode(arbeidsKategori: String) = Utbetalingsperiode(
-            arbeidsKategoriKode = arbeidsKategori,
-            fom = fom,
-            tom = tom,
-            dagsats = dagsats,
-            grad = grad,
-            typetekst = periodeType.toTypeTekst(),
-            organisasjonsnummer = arbOrgnr
-        )
+        internal fun tilUtbetalingsperiode(arbeidsKategori: String) =
+            Utbetalingsperiode(
+                arbeidsKategoriKode = arbeidsKategori,
+                fom = fom,
+                tom = tom,
+                dagsats = dagsats,
+                grad = grad,
+                typetekst = periodeType.toTypeTekst(),
+                organisasjonsnummer = arbOrgnr,
+            )
 
         private fun String.toTypeTekst() =
             when (this) {

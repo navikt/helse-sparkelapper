@@ -11,14 +11,14 @@ enum class Identtype {
     FOLKEREGISTERIDENT,
     NPID,
     ORGNR,
-    SAMHANDLERNR
+    SAMHANDLERNR,
 }
 
 data class Oppgave(
     internal val id: Long,
     private val tema: String,
     internal val ident: String,
-    private val identtype: Identtype
+    private val identtype: Identtype,
 ) {
     internal fun erRelevant() = tema == relevantTema && identtype == FOLKEREGISTERIDENT
 
@@ -28,17 +28,28 @@ data class Oppgave(
 
         fun fromJson(jsonNode: JsonNode): Oppgave? {
             val oppgaveId = jsonNode.path("oppgave").path("oppgaveId").asLong()
-            val brukerJson = jsonNode.path("oppgave").path("bruker").let {
-                if (it.isMissingOrNull()) null else it
-            } ?: kotlin.run {
-                logg.info("Mangler bruker for oppgave med {}", kv("oppgaveId", oppgaveId))
-                return null
-            }
+            val brukerJson =
+                jsonNode.path("oppgave").path("bruker").let {
+                    if (it.isMissingOrNull()) null else it
+                } ?: kotlin.run {
+                    logg.info("Mangler bruker for oppgave med {}", kv("oppgaveId", oppgaveId))
+                    return null
+                }
             return Oppgave(
                 oppgaveId,
-                jsonNode.path("oppgave").path("kategorisering").path("tema").asString(),
+                jsonNode
+                    .path("oppgave")
+                    .path("kategorisering")
+                    .path("tema")
+                    .asString(),
                 brukerJson.path("ident").asString(),
-                enumValueOf(jsonNode.path("oppgave").path("bruker").path("identType").asString()),
+                enumValueOf(
+                    jsonNode
+                        .path("oppgave")
+                        .path("bruker")
+                        .path("identType")
+                        .asString(),
+                ),
             )
         }
     }

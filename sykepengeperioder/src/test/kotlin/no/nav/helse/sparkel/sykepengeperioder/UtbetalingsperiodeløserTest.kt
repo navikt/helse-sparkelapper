@@ -1,8 +1,6 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
-import java.time.LocalDate
-import java.util.UUID
 import no.nav.helse.sparkel.infotrygd.PeriodeDAO
 import no.nav.helse.sparkel.infotrygd.UtbetalingDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*
@@ -12,25 +10,28 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import tools.jackson.databind.JsonNode
+import java.time.LocalDate
+import java.util.UUID
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class UtbetalingsperiodeløserTest : H2Database() {
-
     private lateinit var service: InfotrygdService
     private val rapid = TestRapid()
-    private val sendtMelding get() = rapid.inspektør.let {
-        it.message(it.size - 1)
-    }
+    private val sendtMelding get() =
+        rapid.inspektør.let {
+            it.message(it.size - 1)
+        }
 
     @BeforeAll
     fun setup() {
-        service = InfotrygdService(
-            PeriodeDAO { dataSource },
-            UtbetalingDAO { dataSource },
-            InntektDAO { dataSource },
-            StatslønnDAO { dataSource },
-            FeriepengeDAO { dataSource }
-        )
+        service =
+            InfotrygdService(
+                PeriodeDAO { dataSource },
+                UtbetalingDAO { dataSource },
+                InntektDAO { dataSource },
+                StatslønnDAO { dataSource },
+                FeriepengeDAO { dataSource },
+            )
     }
 
     @BeforeEach
@@ -79,7 +80,7 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
             dagsats = 1000.0,
             typetekst = "ArbRef",
             organisasjonsnummer = orgnummer,
-            arbeidsKategoriKode = "01"
+            arbeidsKategoriKode = "01",
         )
     }
 
@@ -93,11 +94,14 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
         assertTrue(løsninger.isEmpty())
     }
 
-    private fun JsonNode.løsning() = this.path("@løsning").path(Utbetalingsperiodeløser.behov).toList().map {
-        Infotrygdperiode(it)
-    }
+    private fun JsonNode.løsning() =
+        this.path("@løsning").path(Utbetalingsperiodeløser.behov).toList().map {
+            Infotrygdperiode(it)
+        }
 
-    class Infotrygdperiode(json: JsonNode) {
+    class Infotrygdperiode(
+        json: JsonNode,
+    ) {
         val fom = json["fom"].asLocalDate()
         val tom = json["tom"].asLocalDate()
         val grad = json["grad"].asString()
@@ -119,7 +123,8 @@ internal class UtbetalingsperiodeløserTest : H2Database() {
     private fun assertInfotrygdperiode(
         periode: Infotrygdperiode,
         fom: LocalDate,
-        tom: LocalDate, grad: String,
+        tom: LocalDate,
+        grad: String,
         dagsats: Double,
         typetekst: String,
         organisasjonsnummer: String,

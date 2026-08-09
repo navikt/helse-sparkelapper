@@ -18,32 +18,36 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.jackson3.jackson
-import java.time.LocalDateTime
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 
 internal class SøknadClientTest {
     private var wireMockServer: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
     private var søknadClient: SøknadClient
 
-    private val azureTokenProvider = object : AzureTokenProvider {
-        override fun bearerToken(scope: String) =
-            Result.Ok(AzureToken("bearer token", LocalDateTime.now().plusHours(1)))
+    private val azureTokenProvider =
+        object : AzureTokenProvider {
+            override fun bearerToken(scope: String) = Result.Ok(AzureToken("bearer token", LocalDateTime.now().plusHours(1)))
 
-        override fun onBehalfOfToken(scope: String, token: String) = bearerToken(scope)
-    }
+            override fun onBehalfOfToken(
+                scope: String,
+                token: String,
+            ) = bearerToken(scope)
+        }
 
     init {
         wireMockServer.start()
         configureFor(create().port(wireMockServer.port()).build())
 
-        søknadClient = SøknadClient(
-            "http://localhost:${wireMockServer.port()}",
-            azureTokenProvider,
-            httpClient = HttpClient { install(ContentNegotiation) { jackson() } },
-            scope = "scope"
-        )
+        søknadClient =
+            SøknadClient(
+                "http://localhost:${wireMockServer.port()}",
+                azureTokenProvider,
+                httpClient = HttpClient { install(ContentNegotiation) { jackson() } },
+                scope = "scope",
+            )
     }
 
     private val endpoint = "/api/v3/soknader/{dokumentId}/kafkaformat"
@@ -54,8 +58,8 @@ internal class SøknadClientTest {
 
         stubFor(
             get(urlPathTemplate(endpoint)).willReturn(
-                okJson(jacksonObjectMapper().readTree(svar).toString())
-            )
+                okJson(jacksonObjectMapper().readTree(svar).toString()),
+            ),
         )
 
         val respons = runBlocking { søknadClient.hentDokument("en_id") }
@@ -70,14 +74,16 @@ internal class SøknadClientTest {
 
         val scenario = "Feiler først, så ok"
         stubFor(
-            get(urlPathTemplate(endpoint)).inScenario(scenario).willReturn(
-                aResponse().withStatus(500).withBody("noe gikk galt her")
-            ).willSetStateTo("har feilet")
+            get(urlPathTemplate(endpoint))
+                .inScenario(scenario)
+                .willReturn(
+                    aResponse().withStatus(500).withBody("noe gikk galt her"),
+                ).willSetStateTo("har feilet"),
         )
         stubFor(
             get(urlPathTemplate(endpoint)).inScenario(scenario).whenScenarioStateIs("har feilet").willReturn(
-                okJson(jacksonObjectMapper().readTree(svar).toString())
-            )
+                okJson(jacksonObjectMapper().readTree(svar).toString()),
+            ),
         )
 
         val respons = runBlocking { søknadClient.hentDokument("en_id") }

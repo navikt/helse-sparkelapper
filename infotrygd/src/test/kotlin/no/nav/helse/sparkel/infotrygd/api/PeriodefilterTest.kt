@@ -1,14 +1,13 @@
 package no.nav.helse.sparkel.infotrygd.api
 
-import java.math.BigDecimal
-import java.time.LocalDate
 import no.nav.helse.sparkel.infotrygd.api.Infotrygdutbetalinger.Companion.filtrer
 import no.nav.helse.sparkel.infotrygd.api.Organisasjonsnummer.Companion.organisasjosnummerOrNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
+import java.time.LocalDate
 
 internal class PeriodefilterTest {
-
     @Test
     fun `filtrerer bort irrelevante perioder`() {
         val januar = periode(2.januar, 28.januar)
@@ -24,15 +23,19 @@ internal class PeriodefilterTest {
     }
 
     private companion object {
-        private fun periode(fom: LocalDate, tom: LocalDate) = Infotrygdperiode(
+        private fun periode(
+            fom: LocalDate,
+            tom: LocalDate,
+        ) = Infotrygdperiode(
             personidentifikator = Personidentifikator("11111111111"),
             organisasjonsnummer = "999999999".organisasjosnummerOrNull,
             fom = fom,
             tom = tom,
             grad = 100,
             dagsats = BigDecimal.ZERO,
-            type = Periodetype.UKJENT
+            type = Periodetype.UKJENT,
         )
+
         val Int.januar get() = LocalDate.of(2018, 1, this)
         val Int.februar get() = LocalDate.of(2018, 2, this)
         val Int.mars get() = LocalDate.of(2018, 3, this)

@@ -19,10 +19,13 @@ data class AaregArbeidsforholdMedDetaljer(
 enum class Arbeidsforholdkode {
     @JsonProperty("forenkletOppgjoersordning")
     FORENKLET_OPPGJØRSORDNING,
+
     @JsonProperty("frilanserOppdragstakerHonorarPersonerMm")
     FRILANSER,
+
     @JsonProperty("maritimtArbeidsforhold")
     MARITIMT,
+
     @JsonProperty("ordinaertArbeidsforhold")
     ORDINÆRT,
 }
@@ -53,14 +56,12 @@ data class Arbeidssted(
     val type: Arbeidsstedtype,
     val identer: List<Ident>,
 ) {
-    fun getOrgnummer(): String {
-        return identer.first { it.type == Identtype.ORGANISASJONSNUMMER }.ident
-    }
+    fun getOrgnummer(): String = identer.first { it.type == Identtype.ORGANISASJONSNUMMER }.ident
 }
 
 enum class Arbeidsstedtype {
     Underenhet,
-    Person
+    Person,
 }
 
 data class Ident(
@@ -71,6 +72,5 @@ data class Ident(
 enum class Identtype {
     AKTORID,
     FOLKEREGISTERIDENT,
-    ORGANISASJONSNUMMER
+    ORGANISASJONSNUMMER,
 }
-

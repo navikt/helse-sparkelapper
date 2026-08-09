@@ -2,15 +2,18 @@ package no.nav.helse.sparkel.sykepengeperioder.dbting
 
 import kotliquery.queryOf
 import kotliquery.sessionOf
+import no.nav.helse.sparkel.infotrygd.Fnr
 import org.intellij.lang.annotations.Language
 import javax.sql.DataSource
-import no.nav.helse.sparkel.infotrygd.Fnr
 
 class StatslønnDAO(
-    private val dataSource: () -> DataSource
+    private val dataSource: () -> DataSource,
 ) {
-    internal fun harStatslønn(fnr: Fnr, seq: Int): Boolean {
-        return sessionOf(dataSource()).use { session ->
+    internal fun harStatslønn(
+        fnr: Fnr,
+        seq: Int,
+    ): Boolean =
+        sessionOf(dataSource()).use { session ->
             @Language("Oracle")
             val statement = """
                 select
@@ -21,11 +24,11 @@ class StatslønnDAO(
                 """
             requireNotNull(
                 session.run(
-                    queryOf(statement, fnr.formatAsITFnr(), seq).map { rs ->
-                        rs.int("harStatslonn") > 0
-                    }.asSingle
-                )
+                    queryOf(statement, fnr.formatAsITFnr(), seq)
+                        .map { rs ->
+                            rs.int("harStatslonn") > 0
+                        }.asSingle,
+                ),
             )
         }
-    }
 }

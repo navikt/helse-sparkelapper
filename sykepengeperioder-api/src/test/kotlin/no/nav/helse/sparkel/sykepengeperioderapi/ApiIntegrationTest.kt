@@ -12,9 +12,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import javax.sql.DataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.helse.sparkel.infotrygd.Fnr
@@ -26,18 +23,23 @@ import org.junit.jupiter.api.TestInstance
 import org.skyscreamer.jsonassert.JSONAssert
 import org.skyscreamer.jsonassert.JSONCompareMode
 import org.testcontainers.oracle.OracleContainer
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import javax.sql.DataSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ApiIntegrationTest {
-
     private val oracleContainer = OracleContainer("gvenzl/oracle-free:23-slim-faststart").also { it.start() }
     private val oauthServer = MockOAuth2Server().also { it.start() }
-    private val dataSource: HikariDataSource = HikariDataSource(HikariConfig().apply {
-        jdbcUrl = oracleContainer.jdbcUrl
-        username = oracleContainer.username
-        password = oracleContainer.password
-        maximumPoolSize = 5
-    })
+    private val dataSource: HikariDataSource =
+        HikariDataSource(
+            HikariConfig().apply {
+                jdbcUrl = oracleContainer.jdbcUrl
+                username = oracleContainer.username
+                password = oracleContainer.password
+                maximumPoolSize = 5
+            },
+        )
 
     init {
         opprettTabeller(dataSource)
@@ -55,38 +57,42 @@ class ApiIntegrationTest {
     // -------------------------------------------------------------------------
 
     @Test
-    fun `tomt svar når ingen utbetalinger finnes for perioden`() = withServer {
-        val fnr = randomFnr()
+    fun `tomt svar når ingen utbetalinger finnes for perioden`() =
+        withServer {
+            val fnr = randomFnr()
 
-        val response = post("/") {
-            header(HttpHeaders.Authorization, "Bearer ${token()}")
-            contentType(ContentType.Application.Json)
-            setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+            val response =
+                post("/") {
+                    header(HttpHeaders.Authorization, "Bearer ${token()}")
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            JSONAssert.assertEquals(
+                """{"utbetaltePerioder":[]}""",
+                response.bodyAsText(),
+                JSONCompareMode.NON_EXTENSIBLE,
+            )
         }
-
-        assertEquals(HttpStatusCode.OK, response.status)
-        JSONAssert.assertEquals(
-            """{"utbetaltePerioder":[]}""",
-            response.bodyAsText(),
-            JSONCompareMode.NON_EXTENSIBLE
-        )
-    }
 
     @Test
-    fun `én utbetaling returneres med korrekte felter`() = withServer {
-        val fnr = randomFnr()
-        insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31))
-        insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 80, orgnr = "123456789")
+    fun `én utbetaling returneres med korrekte felter`() =
+        withServer {
+            val fnr = randomFnr()
+            insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31))
+            insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 80, orgnr = "123456789")
 
-        val response = post("/") {
-            header(HttpHeaders.Authorization, "Bearer ${token()}")
-            contentType(ContentType.Application.Json)
-            setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31"}""")
-        }
+            val response =
+                post("/") {
+                    header(HttpHeaders.Authorization, "Bearer ${token()}")
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+                }
 
-        assertEquals(HttpStatusCode.OK, response.status)
-        JSONAssert.assertEquals(
-            """
+            assertEquals(HttpStatusCode.OK, response.status)
+            JSONAssert.assertEquals(
+                """
             {
                 "utbetaltePerioder": [{
                     "personidentifikator": "$fnr",
@@ -100,28 +106,30 @@ class ApiIntegrationTest {
                 }]
             }
             """,
-            response.bodyAsText(),
-            JSONCompareMode.NON_EXTENSIBLE
-        )
-    }
-
-    @Test
-    fun `to overlappende utbetalinger med grad 100 på ulike arbeidsgivere gir UsikkerGrad-tag på begge`() = withServer {
-        val fnr = randomFnr()
-        insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31))
-        insertPeriode(fnr, seq = 2, fom = LocalDate.of(2018, 1, 10), tom = LocalDate.of(2018, 2, 10))
-        insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 100, orgnr = "111111111")
-        insertUtbetaling(fnr, seq = 2, fom = LocalDate.of(2018, 1, 10), tom = LocalDate.of(2018, 2, 10), grad = 100, orgnr = "222222222")
-
-        val response = post("/") {
-            header(HttpHeaders.Authorization, "Bearer ${token()}")
-            contentType(ContentType.Application.Json)
-            setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+                response.bodyAsText(),
+                JSONCompareMode.NON_EXTENSIBLE,
+            )
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
-        JSONAssert.assertEquals(
-            """
+    @Test
+    fun `to overlappende utbetalinger med grad 100 på ulike arbeidsgivere gir UsikkerGrad-tag på begge`() =
+        withServer {
+            val fnr = randomFnr()
+            insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31))
+            insertPeriode(fnr, seq = 2, fom = LocalDate.of(2018, 1, 10), tom = LocalDate.of(2018, 2, 10))
+            insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 100, orgnr = "111111111")
+            insertUtbetaling(fnr, seq = 2, fom = LocalDate.of(2018, 1, 10), tom = LocalDate.of(2018, 2, 10), grad = 100, orgnr = "222222222")
+
+            val response =
+                post("/") {
+                    header(HttpHeaders.Authorization, "Bearer ${token()}")
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            JSONAssert.assertEquals(
+                """
             {
                 "utbetaltePerioder": [
                     {
@@ -147,29 +155,31 @@ class ApiIntegrationTest {
                 ]
             }
             """,
-            response.bodyAsText(),
-            JSONCompareMode.NON_EXTENSIBLE
-        )
-    }
-
-    @Test
-    fun `utbetalinger for to fnr i én forespørsel returnerer begges perioder`() = withServer {
-        val fnr1 = randomFnr()
-        val fnr2 = randomFnr()
-        insertPeriode(fnr1, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31))
-        insertUtbetaling(fnr1, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 100, orgnr = "111111111")
-        insertPeriode(fnr2, seq = 1, fom = LocalDate.of(2018, 6, 1), tom = LocalDate.of(2018, 6, 30))
-        insertUtbetaling(fnr2, seq = 1, fom = LocalDate.of(2018, 6, 1), tom = LocalDate.of(2018, 6, 30), grad = 50, orgnr = "222222222")
-
-        val response = post("/") {
-            header(HttpHeaders.Authorization, "Bearer ${token()}")
-            contentType(ContentType.Application.Json)
-            setBody("""{"personidentifikatorer":["$fnr1","$fnr2"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+                response.bodyAsText(),
+                JSONCompareMode.NON_EXTENSIBLE,
+            )
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
-        JSONAssert.assertEquals(
-            """
+    @Test
+    fun `utbetalinger for to fnr i én forespørsel returnerer begges perioder`() =
+        withServer {
+            val fnr1 = randomFnr()
+            val fnr2 = randomFnr()
+            insertPeriode(fnr1, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31))
+            insertUtbetaling(fnr1, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 100, orgnr = "111111111")
+            insertPeriode(fnr2, seq = 1, fom = LocalDate.of(2018, 6, 1), tom = LocalDate.of(2018, 6, 30))
+            insertUtbetaling(fnr2, seq = 1, fom = LocalDate.of(2018, 6, 1), tom = LocalDate.of(2018, 6, 30), grad = 50, orgnr = "222222222")
+
+            val response =
+                post("/") {
+                    header(HttpHeaders.Authorization, "Bearer ${token()}")
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"personidentifikatorer":["$fnr1","$fnr2"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            JSONAssert.assertEquals(
+                """
             {
                 "utbetaltePerioder": [
                     {
@@ -195,56 +205,62 @@ class ApiIntegrationTest {
                 ]
             }
             """,
-            response.bodyAsText(),
-            JSONCompareMode.NON_EXTENSIBLE
-        )
-    }
-
-    @Test
-    fun `forespørsel uten token gir 401`() = withServer {
-        val response = post("/") {
-            contentType(ContentType.Application.Json)
-            setBody("""{"personidentifikatorer":["12345678901"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+                response.bodyAsText(),
+                JSONCompareMode.NON_EXTENSIBLE,
+            )
         }
 
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
-    }
-
     @Test
-    fun `utbetalinger med periodeType som ikke er en utbetalingstype filtreres bort som standard`() = withServer {
-        val fnr = randomFnr()
-        insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31))
-        insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 80, orgnr = "123456789", periodeType = "2")
+    fun `forespørsel uten token gir 401`() =
+        withServer {
+            val response =
+                post("/") {
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"personidentifikatorer":["12345678901"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+                }
 
-        val response = post("/") {
-            header(HttpHeaders.Authorization, "Bearer ${token()}")
-            contentType(ContentType.Application.Json)
-            setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+            assertEquals(HttpStatusCode.Unauthorized, response.status)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
-        JSONAssert.assertEquals(
-            """{"utbetaltePerioder":[]}""",
-            response.bodyAsText(),
-            JSONCompareMode.NON_EXTENSIBLE
-        )
-    }
-
     @Test
-    fun `utbetalinger med periodeType som ikke er en utbetalingstype inkluderes når inkluderAllePeriodetyper er true`() = withServer {
-        val fnr = randomFnr()
-        insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31))
-        insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 80, orgnr = "123456789", periodeType = "2")
+    fun `utbetalinger med periodeType som ikke er en utbetalingstype filtreres bort som standard`() =
+        withServer {
+            val fnr = randomFnr()
+            insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31))
+            insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 80, orgnr = "123456789", periodeType = "2")
 
-        val response = post("/") {
-            header(HttpHeaders.Authorization, "Bearer ${token()}")
-            contentType(ContentType.Application.Json)
-            setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31","inkluderAllePeriodetyper":true}""")
+            val response =
+                post("/") {
+                    header(HttpHeaders.Authorization, "Bearer ${token()}")
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            JSONAssert.assertEquals(
+                """{"utbetaltePerioder":[]}""",
+                response.bodyAsText(),
+                JSONCompareMode.NON_EXTENSIBLE,
+            )
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
-        JSONAssert.assertEquals(
-            """
+    @Test
+    fun `utbetalinger med periodeType som ikke er en utbetalingstype inkluderes når inkluderAllePeriodetyper er true`() =
+        withServer {
+            val fnr = randomFnr()
+            insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31))
+            insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 80, orgnr = "123456789", periodeType = "2")
+
+            val response =
+                post("/") {
+                    header(HttpHeaders.Authorization, "Bearer ${token()}")
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31","inkluderAllePeriodetyper":true}""")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            JSONAssert.assertEquals(
+                """
             {
                 "utbetaltePerioder": [{
                     "personidentifikator": "$fnr",
@@ -258,10 +274,10 @@ class ApiIntegrationTest {
                 }]
             }
             """,
-            response.bodyAsText(),
-            JSONCompareMode.NON_EXTENSIBLE
-        )
-    }
+                response.bodyAsText(),
+                JSONCompareMode.NON_EXTENSIBLE,
+            )
+        }
 
     // -------------------------------------------------------------------------
     // Infrastructure helpers
@@ -274,23 +290,30 @@ class ApiIntegrationTest {
                     dataSource = dataSource,
                     jwksUri = oauthServer.jwksUrl(ISSUER_ID).toString(),
                     issuer = oauthServer.issuerUrl(ISSUER_ID).toString(),
-                    audience = AUDIENCE
+                    audience = AUDIENCE,
                 )
             }
             client.block()
         }
     }
 
-    private fun token() = oauthServer.issueToken(
-        issuerId = ISSUER_ID,
-        audience = AUDIENCE
-    ).serialize()
+    private fun token() =
+        oauthServer
+            .issueToken(
+                issuerId = ISSUER_ID,
+                audience = AUDIENCE,
+            ).serialize()
 
     // -------------------------------------------------------------------------
     // Test data helpers
     // -------------------------------------------------------------------------
 
-    private fun insertPeriode(fnr: String, seq: Int, fom: LocalDate, tom: LocalDate) {
+    private fun insertPeriode(
+        fnr: String,
+        seq: Int,
+        fom: LocalDate,
+        tom: LocalDate,
+    ) {
         val itFnr = Fnr(fnr).formatAsITFnr()
         sessionOf(dataSource).use { session ->
             session.run(
@@ -306,14 +329,22 @@ class ApiIntegrationTest {
                         "seq" to seq,
                         "fnr" to itFnr,
                         "fom" to fom.toInfotrygdInt(),
-                        "tom" to tom.toInfotrygdInt()
-                    )
-                ).asUpdate
+                        "tom" to tom.toInfotrygdInt(),
+                    ),
+                ).asUpdate,
             )
         }
     }
 
-    private fun insertUtbetaling(fnr: String, seq: Int, fom: LocalDate, tom: LocalDate, grad: Int, orgnr: String, periodeType: String = "0") {
+    private fun insertUtbetaling(
+        fnr: String,
+        seq: Int,
+        fom: LocalDate,
+        tom: LocalDate,
+        grad: Int,
+        orgnr: String,
+        periodeType: String = "0",
+    ) {
         val itFnr = Fnr(fnr).formatAsITFnr()
         sessionOf(dataSource).use { session ->
             session.run(
@@ -332,9 +363,9 @@ class ApiIntegrationTest {
                         "tom" to tom.toInfotrygdInt(),
                         "grad" to grad.toString(),
                         "orgnr" to orgnr,
-                        "periodeType" to periodeType
-                    )
-                ).asUpdate
+                        "periodeType" to periodeType,
+                    ),
+                ).asUpdate,
             )
         }
     }
@@ -385,8 +416,8 @@ class ApiIntegrationTest {
                             is10_stoenads_type    VARCHAR2(2)   DEFAULT '  ',
                             is10_frisk            VARCHAR2(2)
                         )
-                        """
-                    )
+                        """,
+                    ),
                 )
                 session.execute(
                     queryOf(
@@ -404,8 +435,8 @@ class ApiIntegrationTest {
                             is15_type         VARCHAR2(2)   NOT NULL,
                             is15_arbgivnr     VARCHAR2(15)  NOT NULL
                         )
-                        """
-                    )
+                        """,
+                    ),
                 )
             }
         }

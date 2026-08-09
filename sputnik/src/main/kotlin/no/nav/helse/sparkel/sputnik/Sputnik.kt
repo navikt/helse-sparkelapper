@@ -7,31 +7,37 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.helse.sparkel.sputnik.abakus.AbakusClient
 import no.nav.helse.sparkel.sputnik.Stønad.Companion.abakusYtelser
 import no.nav.helse.sparkel.sputnik.Stønad.Companion.omsluttendePeriode
+import no.nav.helse.sparkel.sputnik.abakus.AbakusClient
 import org.slf4j.LoggerFactory
 
 internal class Sputnik(
     rapidsConnection: RapidsConnection,
-    private val abakusClient: AbakusClient
+    private val abakusClient: AbakusClient,
 ) : River.PacketListener {
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireValue("@event_name", "behov") }
-            precondition { it.forbid("@løsning") }
-            precondition { packet ->
-                packet.requireKey("@behov")
-                packet.require("@behov") {
-                    Stønad.harRelevanteBehov(packet)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireValue("@event_name", "behov") }
+                precondition { it.forbid("@løsning") }
+                precondition { packet ->
+                    packet.requireKey("@behov")
+                    packet.require("@behov") {
+                        Stønad.harRelevanteBehov(packet)
+                    }
                 }
-            }
-            validate { it.requireKey("fødselsnummer", "@behov") }
-            validate { Stønad.validate(it) }
-        }.register(this)
+                validate { it.requireKey("fødselsnummer", "@behov") }
+                validate { Stønad.validate(it) }
+            }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) = try {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) = try {
         val stønader = Stønad.stønaderSomSkalLøses(packet)
         sikkerlogg.info("Mottok behov for $stønader:\n ${packet.toJson()}")
         val (fom, tom) = stønader.omsluttendePeriode(packet)
@@ -51,7 +57,11 @@ internal class Sputnik(
         sikkerlogg.error("Feil ved løsing av behov:\n ${packet.toJson()}", ex)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("Forstod ikke behovet: \n${problems.toExtendedReport()}")
     }
 

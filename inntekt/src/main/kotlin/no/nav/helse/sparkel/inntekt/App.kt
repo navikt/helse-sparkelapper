@@ -19,46 +19,52 @@ val objectMapper: ObjectMapper = jacksonObjectMapper()
 fun main() {
     val env = setUpEnvironment()
     val tokenProvider = createAzureTokenClientFromEnvironment(env.raw)
-    val inntektRestClient = InntektRestClient(
-        baseUrl = env.inntektRestUrl,
-        inntektskomponentenOAuthScope = env.inntektOAuthScope,
-        httpClient = simpleHttpClient(),
-        tokenSupplier = {
-            tokenProvider.bearerToken(it).getOrThrow().token
-        },
-    )
+    val inntektRestClient =
+        InntektRestClient(
+            baseUrl = env.inntektRestUrl,
+            inntektskomponentenOAuthScope = env.inntektOAuthScope,
+            httpClient = simpleHttpClient(),
+            tokenSupplier = {
+                tokenProvider.bearerToken(it).getOrThrow().token
+            },
+        )
 
-    RapidApplication.create(System.getenv()).apply {
-        Inntekter(this, inntektRestClient)
-    }.start()
+    RapidApplication
+        .create(System.getenv())
+        .apply {
+            Inntekter(this, inntektRestClient)
+        }.start()
 }
 
 internal typealias TokenSupplier = (String) -> String
 
-private fun simpleHttpClient() = HttpClient {
-    val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
+private fun simpleHttpClient() =
+    HttpClient {
+        val sikkerLogg = LoggerFactory.getLogger("tjenestekall")
 
-    install(Logging) {
-        level = LogLevel.BODY
-        logger = object : io.ktor.client.plugins.logging.Logger {
-            private var logBody = false
-            override fun log(message: String) {
-                when {
-                    message == "BODY START" -> logBody = true
-                    message == "BODY END" -> logBody = false
-                    logBody -> sikkerLogg.debug("respons fra Inntektskomponenten: $message")
+        install(Logging) {
+            level = LogLevel.BODY
+            logger =
+                object : io.ktor.client.plugins.logging.Logger {
+                    private var logBody = false
+
+                    override fun log(message: String) {
+                        when {
+                            message == "BODY START" -> logBody = true
+                            message == "BODY END" -> logBody = false
+                            logBody -> sikkerLogg.debug("respons fra Inntektskomponenten: $message")
+                        }
+                    }
                 }
-            }
+        }
+
+        install(HttpTimeout) {
+            connectTimeoutMillis = 1000
+            requestTimeoutMillis = 120_000
+            socketTimeoutMillis = 120_000
+        }
+
+        install(ContentNegotiation) {
+            register(ContentType.Application.Json, JacksonConverter(objectMapper))
         }
     }
-
-    install(HttpTimeout) {
-        connectTimeoutMillis = 1000
-        requestTimeoutMillis = 120_000
-        socketTimeoutMillis = 120_000
-    }
-
-    install(ContentNegotiation) {
-        register(ContentType.Application.Json, JacksonConverter(objectMapper))
-    }
-}

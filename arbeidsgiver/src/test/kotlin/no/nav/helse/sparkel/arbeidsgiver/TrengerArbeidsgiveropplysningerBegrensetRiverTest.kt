@@ -3,16 +3,15 @@ package no.nav.helse.sparkel.arbeidsgiver
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.mockk
 import io.mockk.verify
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.*
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerBegrensetRiver
 import no.nav.helse.sparkel.arbeidsgiver.vedtaksperiode_forkastet.VedtaksperiodeForkastetDto
 import org.junit.jupiter.api.Test
 import tools.jackson.databind.JsonNode
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.*
 
 internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
-
     private val testRapid = TestRapid()
     private val mockproducer: ArbeidsgiveropplysningerProducer = mockk(relaxed = true)
 
@@ -28,8 +27,8 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
                 LocalDate.MIN,
                 LocalDate.MIN.plusDays(15),
                 eventName = "tull",
-                tilstand = "START"
-            )
+                tilstand = "START",
+            ),
         )
         verify(exactly = 0) {
             mockproducer.send(any<VedtaksperiodeForkastetDto>())
@@ -45,13 +44,14 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
                 LocalDate.MIN.plusDays(15),
                 eventName = "vedtaksperiode_forkastet",
                 orgnummer = "ARBEIDSLEDIG",
-                tilstand = "START"
-            )
+                tilstand = "START",
+            ),
         )
         verify(exactly = 0) {
             mockproducer.send(any<VedtaksperiodeForkastetDto>())
         }
     }
+
     @Test
     fun `ignorerer frilansere`() {
         testRapid.sendTestMessage(
@@ -61,8 +61,8 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
                 LocalDate.MIN.plusDays(15),
                 eventName = "vedtaksperiode_forkastet",
                 orgnummer = "FRILANS",
-                tilstand = "START"
-            )
+                tilstand = "START",
+            ),
         )
         verify(exactly = 0) {
             mockproducer.send(any<VedtaksperiodeForkastetDto>())
@@ -78,8 +78,8 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
                 LocalDate.MIN.plusDays(15),
                 eventName = "vedtaksperiode_forkastet",
                 orgnummer = "SELVSTENDIG",
-                tilstand = "START"
-            )
+                tilstand = "START",
+            ),
         )
         verify(exactly = 0) {
             mockproducer.send(any<VedtaksperiodeForkastetDto>())
@@ -95,7 +95,7 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
                 fom = LocalDate.MIN.plusDays(1),
                 tom = LocalDate.MIN.plusDays(30),
                 tilstand = "START",
-            )
+            ),
         )
 
         val payload = mockTrengerArbeidsgiverOpplysningerForespørAlt(vedtaksperiodeId)
@@ -113,7 +113,7 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
                 fom = LocalDate.MIN.plusDays(1),
                 tom = LocalDate.MIN.plusDays(30),
                 tilstand = "AVVENTER_INFOTRYGDHISTORIKK",
-            )
+            ),
         )
 
         val payload = mockTrengerArbeidsgiverOpplysningerForespørAlt(vedtaksperiodeId)
@@ -129,8 +129,8 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
                 UUID.randomUUID(),
                 LocalDate.MIN,
                 LocalDate.MIN.plusDays(16),
-                tilstand = "tulletilstand"
-            )
+                tilstand = "tulletilstand",
+            ),
         )
         verify(exactly = 0) {
             mockproducer.send(any<VedtaksperiodeForkastetDto>())
@@ -145,8 +145,8 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
                 fom = LocalDate.MIN,
                 tom = LocalDate.MIN.plusDays(16),
                 tilstand = "START",
-                trengerArbeidsgiveropplysninger = false
-            )
+                trengerArbeidsgiveropplysninger = false,
+            ),
         )
         verify(exactly = 0) {
             mockproducer.send(any<VedtaksperiodeForkastetDto>())
@@ -161,19 +161,20 @@ internal class TrengerArbeidsgiveropplysningerBegrensetRiverTest {
         tilstand: String,
         orgnummer: String = ORGNUMMER,
         trengerArbeidsgiveropplysninger: Boolean = true,
-    ) = objectMapper.valueToTree<JsonNode>(
-        mapOf(
-            "@event_name" to eventName,
-            "fødselsnummer" to FNR,
-            "yrkesaktivitetstype" to "ARBEIDSTAKER",
-            "organisasjonsnummer" to orgnummer,
-            "vedtaksperiodeId" to vedtaksperiodeId,
-            "tilstand" to tilstand,
-            "trengerArbeidsgiveropplysninger" to trengerArbeidsgiveropplysninger,
-            "fom" to fom,
-            "tom" to tom,
-            "sykmeldingsperioder" to listOf(mapOf("fom" to fom, "tom" to tom)),
-            "@opprettet" to LocalDateTime.MAX
-        )
-    ).toString()
+    ) = objectMapper
+        .valueToTree<JsonNode>(
+            mapOf(
+                "@event_name" to eventName,
+                "fødselsnummer" to FNR,
+                "yrkesaktivitetstype" to "ARBEIDSTAKER",
+                "organisasjonsnummer" to orgnummer,
+                "vedtaksperiodeId" to vedtaksperiodeId,
+                "tilstand" to tilstand,
+                "trengerArbeidsgiveropplysninger" to trengerArbeidsgiveropplysninger,
+                "fom" to fom,
+                "tom" to tom,
+                "sykmeldingsperioder" to listOf(mapOf("fom" to fom, "tom" to tom)),
+                "@opprettet" to LocalDateTime.MAX,
+            ),
+        ).toString()
 }

@@ -1,21 +1,21 @@
 package no.nav.helse.sparkel.aareg.arbeidsforhold
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
-import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.statement.bodyAsText
 import io.micrometer.core.instrument.MeterRegistry
-import java.time.LocalDate
-import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.aareg.arbeidsforhold.model.AaregArbeidsforholdMedDetaljer
 import no.nav.helse.sparkel.aareg.arbeidsforhold.model.Arbeidsstedtype.Underenhet
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
+import java.util.UUID
 
 // Løser behov fra spesialist
 class Arbeidsforholdbehovløser(
@@ -25,29 +25,39 @@ class Arbeidsforholdbehovløser(
     companion object {
         internal const val behov = "Arbeidsforhold"
 
-        internal fun List<AaregArbeidsforholdMedDetaljer>.toLøsningDto(): List<LøsningDto> = this.map { arbeidsforhold ->
-            LøsningDto(
-                startdato = arbeidsforhold.ansettelsesperiode.startdato,
-                sluttdato = arbeidsforhold.ansettelsesperiode.sluttdato,
-                stillingsprosent = arbeidsforhold.ansettelsesdetaljer.first().avtaltStillingsprosent ?: 0,
-                stillingstittel = arbeidsforhold.ansettelsesdetaljer.first().yrke.beskrivelse,
-            )
-        }
+        internal fun List<AaregArbeidsforholdMedDetaljer>.toLøsningDto(): List<LøsningDto> =
+            this.map { arbeidsforhold ->
+                LøsningDto(
+                    startdato = arbeidsforhold.ansettelsesperiode.startdato,
+                    sluttdato = arbeidsforhold.ansettelsesperiode.sluttdato,
+                    stillingsprosent = arbeidsforhold.ansettelsesdetaljer.first().avtaltStillingsprosent ?: 0,
+                    stillingstittel =
+                        arbeidsforhold.ansettelsesdetaljer
+                            .first()
+                            .yrke.beskrivelse,
+                )
+            }
     }
 
     private val log = LoggerFactory.getLogger(this::class.java)
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireAll("@behov", listOf(behov)) }
-            validate { it.forbid("@løsning") }
-            validate { it.requireKey("@id") }
-            validate { it.requireKey("$behov.fødselsnummer") }
-            validate { it.requireKey("$behov.organisasjonsnummer") }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireAll("@behov", listOf(behov)) }
+                validate { it.forbid("@løsning") }
+                validate { it.requireKey("@id") }
+                validate { it.requireKey("$behov.fødselsnummer") }
+                validate { it.requireKey("$behov.organisasjonsnummer") }
+            }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
 
         packet.setLøsning(behov, løsBehov(packet))
@@ -55,7 +65,7 @@ class Arbeidsforholdbehovløser(
         sikkerlogg.info(
             "løser behov {}, {}",
             keyValue("id", packet["@id"].asString()),
-            keyValue("løsning", packet["@løsning"])
+            keyValue("løsning", packet["@løsning"]),
         )
 
         context.publish(packet.toJson())
@@ -69,12 +79,15 @@ class Arbeidsforholdbehovløser(
         return try {
             log.info("løser behov={}", keyValue("id", id))
             runBlocking {
-                val arbeidsforholdFraAareg = aaregClient.hentFraAareg<AaregArbeidsforholdMedDetaljer>(fnr, id)
-                    .filter { arbeidsforhold -> arbeidsforhold.arbeidssted.run { type == Underenhet && getOrgnummer() == organisasjonsnummer } }
+                val arbeidsforholdFraAareg =
+                    aaregClient
+                        .hentFraAareg<AaregArbeidsforholdMedDetaljer>(fnr, id)
+                        .filter { arbeidsforhold -> arbeidsforhold.arbeidssted.run { type == Underenhet && getOrgnummer() == organisasjonsnummer } }
                 val løsning = arbeidsforholdFraAareg.toLøsningDto()
 
-                if (løsning.isEmpty())
+                if (løsning.isEmpty()) {
                     sikkerlogg.info("Fant ingen arbeidsforhold for fnr $fnr på orgnummer $organisasjonsnummer i aareg, fikk svar:\n$arbeidsforholdFraAareg")
+                }
 
                 løsning
             }
@@ -82,7 +95,7 @@ class Arbeidsforholdbehovløser(
             log.error(
                 "Feilmelding for behov={} ved oppslag i AAreg, fikk status={}, se sikkerlogg for detaljer. Svarer med tom liste",
                 keyValue("id", id),
-                err.statusFromAareg()
+                err.statusFromAareg(),
             )
             sikkerlogg.error(
                 "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Svarer med tom liste. Response:\n\t{}",
@@ -94,13 +107,13 @@ class Arbeidsforholdbehovløser(
         } catch (err: ClientRequestException) {
             log.warn(
                 "Feilmelding for behov={} ved oppslag i AAreg. Svarer med tom liste",
-                keyValue("id", id)
+                keyValue("id", id),
             )
             sikkerlogg.warn(
                 "Feilmelding for behov={} ved oppslag i AAreg: ${err.message}. Svarer med tom liste. Response: {}",
                 keyValue("id", id),
                 runBlocking { err.response.bodyAsText() },
-                err
+                err,
             )
             emptyList()
         } catch (err: Exception) {
@@ -109,16 +122,20 @@ class Arbeidsforholdbehovløser(
         }
     }
 
-    private fun JsonMessage.setLøsning(nøkkel: String, data: Any) {
-        this["@løsning"] = mapOf(
-            nøkkel to data
-        )
+    private fun JsonMessage.setLøsning(
+        nøkkel: String,
+        data: Any,
+    ) {
+        this["@løsning"] =
+            mapOf(
+                nøkkel to data,
+            )
     }
 
     data class LøsningDto(
         val stillingstittel: String,
         val stillingsprosent: Int,
         val startdato: LocalDate,
-        val sluttdato: LocalDate?
+        val sluttdato: LocalDate?,
     )
 }

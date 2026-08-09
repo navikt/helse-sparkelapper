@@ -1,6 +1,8 @@
 package no.nav.helse.sparkel.infotrygd
 
-class Fnr(private val fnr: String) {
+class Fnr(
+    private val fnr: String,
+) {
     init {
         require(fnr.length == 11) { "Fødselsnummer skal være 11 tegn, var ${fnr.length}" }
     }

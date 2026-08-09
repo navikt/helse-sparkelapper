@@ -1,17 +1,16 @@
 package no.nav.helse.sparkel.personinfo.leesah
 
-import java.io.EOFException
-import java.util.Base64
-import java.util.UUID
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.adressebeskyttelse
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.navn
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.serialize
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.io.EOFException
+import java.util.Base64
+import java.util.UUID
 
 internal class PersonhendelseAvroDeserializerTest {
-
     @Test
     fun `klarer å parse personhendelsedokument fra leesah`() {
         val melding = adressebeskyttelse("20046913337")
@@ -44,12 +43,13 @@ internal class PersonhendelseAvroDeserializerTest {
     @Test
     fun `ugyldig melding`() {
         assertThrows<EOFException> {
-           """{"test": true}""".toByteArray().deserialiser()
+            """{"test": true}""".toByteArray().deserialiser()
         }
     }
 
     private companion object {
         private val deserializer = PersonhendelseAvroDeserializer()
+
         private fun ByteArray.deserialiser() = deserializer.deserialize("leesah", this)
     }
 }

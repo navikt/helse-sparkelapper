@@ -3,21 +3,21 @@ package no.nav.helse.sparkel.dokumenter
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.every
 import io.mockk.mockk
-import java.util.UUID
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.node.JsonNodeFactory
+import java.util.UUID
 
 internal class DokumentRiverTest {
-
     private val søknadClient: SøknadClient = mockk(relaxed = true)
     private val inntektsmeldingClient: InntektsmeldingClient = mockk(relaxed = true)
-    private val rapid = TestRapid().apply {
-        DokumentRiver(this, søknadClient, inntektsmeldingClient)
-    }
+    private val rapid =
+        TestRapid().apply {
+            DokumentRiver(this, søknadClient, inntektsmeldingClient)
+        }
     private val objectMapper = ObjectMapper()
 
     @Test
@@ -57,7 +57,8 @@ internal class DokumentRiverTest {
     }
 
     @Language("JSON")
-    fun behov(dokumenttype: String) = """
+    fun behov(dokumenttype: String) =
+        """
         {
             "@event_name" : "hent-dokument",
             "@id" : "${UUID.randomUUID()}",

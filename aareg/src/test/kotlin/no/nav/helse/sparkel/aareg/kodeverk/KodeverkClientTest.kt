@@ -41,47 +41,55 @@ internal class KodeverkClientTest {
 
     @Test
     fun `henter næring`() {
-        val kodeverkClient = KodeverkClient(
-            kodeverkBaseUrl = server.baseUrl(),
-            kodeverkOauthScope = "kodeverk-oauth-scope",
-            azureTokenProvider = azureTokenStub()
-        )
+        val kodeverkClient =
+            KodeverkClient(
+                kodeverkBaseUrl = server.baseUrl(),
+                kodeverkOauthScope = "kodeverk-oauth-scope",
+                azureTokenProvider = azureTokenStub(),
+            )
 
         assertEquals(kodeverkverdi, kodeverkClient.getNæring(kodeverkRef))
     }
 
     @Test
     fun `henter yrke`() {
-        val kodeverkClient = KodeverkClient(
-            kodeverkBaseUrl = server.baseUrl(),
-            kodeverkOauthScope = "kodeverk-oauth-scope",
-            azureTokenProvider = azureTokenStub()
-        )
+        val kodeverkClient =
+            KodeverkClient(
+                kodeverkBaseUrl = server.baseUrl(),
+                kodeverkOauthScope = "kodeverk-oauth-scope",
+                azureTokenProvider = azureTokenStub(),
+            )
 
         assertEquals(yrkeverdi, kodeverkClient.getYrke(yrkeRef))
     }
 
     @Test
     fun `cacher responsen`() {
-        val kodeverkClient = KodeverkClient(
-            kodeverkBaseUrl = server.baseUrl(),
-            kodeverkOauthScope = "kodeverk-oauth-scope",
-            azureTokenProvider = azureTokenStub()
-        )
+        val kodeverkClient =
+            KodeverkClient(
+                kodeverkBaseUrl = server.baseUrl(),
+                kodeverkOauthScope = "kodeverk-oauth-scope",
+                azureTokenProvider = azureTokenStub(),
+            )
 
         assertEquals(kodeverkverdi, kodeverkClient.getNæring(kodeverkRef))
         mock("/api/v1/kodeverk/N%c3%a6ringskoder/koder/betydninger", "TEXT/PLAIN", 503)
         assertEquals(kodeverkverdi, kodeverkClient.getNæring(kodeverkRef))
     }
 
-    private fun mock(path: String, response: String, status: Int = 200) {
+    private fun mock(
+        path: String,
+        response: String,
+        status: Int = 200,
+    ) {
         WireMock.stubFor(
-            WireMock.get(WireMock.urlPathMatching("$path.*".encodeURLPath()))
+            WireMock
+                .get(WireMock.urlPathMatching("$path.*".encodeURLPath()))
                 .withHeader("Nav-Call-Id", AnythingPattern())
                 .withQueryParam("spraak", WireMock.equalTo("nb"))
                 .withQueryParam("ekskluderUgyldige", WireMock.equalTo("true"))
                 .withQueryParam("oppslagsdato", WireMock.matching("\\d{4}-\\d{2}-\\d{2}"))
-                .willReturn(WireMock.aResponse().withStatus(status).withBody(response))
+                .willReturn(WireMock.aResponse().withStatus(status).withBody(response)),
         )
     }
 

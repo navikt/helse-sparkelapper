@@ -20,8 +20,6 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension
 import io.mockk.every
 import io.mockk.mockk
-import java.time.LocalDateTime
-import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -30,31 +28,40 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import tools.jackson.databind.JsonNode
+import java.time.LocalDateTime
+import java.util.UUID
 
 internal class OppgaveløserTest {
-
     val endepunkt = "/api/v1/oppgaver"
 
-    private val speedClient = mockk<SpeedClient> {
-        every { hentFødselsnummerOgAktørId(any(), any()) } returns IdentResponse(
-            fødselsnummer = "fnr",
-            aktørId = "aktørId",
-            npid = null,
-            kilde = IdentResponse.KildeResponse.PDL
-        ).ok()
-    }
-    private val azureClient = object : AzureTokenProvider {
-        override fun bearerToken(scope: String) = AzureToken("token", LocalDateTime.now()).ok()
-        override fun onBehalfOfToken(scope: String, token: String): Result<AzureToken> {
-            TODO("Not yet implemented")
+    private val speedClient =
+        mockk<SpeedClient> {
+            every { hentFødselsnummerOgAktørId(any(), any()) } returns
+                IdentResponse(
+                    fødselsnummer = "fnr",
+                    aktørId = "aktørId",
+                    npid = null,
+                    kilde = IdentResponse.KildeResponse.PDL,
+                ).ok()
         }
-    }
+    private val azureClient =
+        object : AzureTokenProvider {
+            override fun bearerToken(scope: String) = AzureToken("token", LocalDateTime.now()).ok()
+
+            override fun onBehalfOfToken(
+                scope: String,
+                token: String,
+            ): Result<AzureToken> {
+                TODO("Not yet implemented")
+            }
+        }
     private val rapid = TestRapid()
 
     private val sistSendteMelding
-        get() = rapid.inspektør.let {
-            it.message(it.size - 1)
-        }
+        get() =
+            rapid.inspektør.let {
+                it.message(it.size - 1)
+            }
 
     companion object {
         @RegisterExtension
@@ -65,13 +72,14 @@ internal class OppgaveløserTest {
     fun setup() {
         configureFor(create().port(wireMock.runtimeInfo.httpPort).build())
         stubOppgaveendepunkt()
-        val service = OppgaveService(
-            OppgaveClient(
-                baseUrl = wireMock.runtimeInfo.httpBaseUrl,
-                scope = "oppgave-scope",
-                azureClient = azureClient
+        val service =
+            OppgaveService(
+                OppgaveClient(
+                    baseUrl = wireMock.runtimeInfo.httpBaseUrl,
+                    scope = "oppgave-scope",
+                    azureClient = azureClient,
+                ),
             )
-        )
         Oppgaveløser(rapid, service, speedClient)
     }
 
@@ -99,12 +107,24 @@ internal class OppgaveløserTest {
         verify(
             2,
             getRequestedFor(urlPathEqualTo(endepunkt))
-                .withHeader("X-Correlation-ID", equalTo(Scenarioer.behovIdForUgyldigRespons.first.toString()))
+                .withHeader("X-Correlation-ID", equalTo(Scenarioer.behovIdForUgyldigRespons.first.toString())),
         )
     }
 
-    private fun JsonNode.antall() = this.path("@løsning").path(Oppgaveløser.behov).path("antall").takeUnless { it.isNull }?.asInt()
-    private fun JsonNode.oppslagFeilet() = this.path("@løsning").path(Oppgaveløser.behov).path("oppslagFeilet").asBoolean()
+    private fun JsonNode.antall() =
+        this
+            .path("@løsning")
+            .path(Oppgaveløser.behov)
+            .path("antall")
+            .takeUnless { it.isNull }
+            ?.asInt()
+
+    private fun JsonNode.oppslagFeilet() =
+        this
+            .path("@løsning")
+            .path(Oppgaveløser.behov)
+            .path("oppslagFeilet")
+            .asBoolean()
 
     private fun behov(behovId: UUID) =
         """
@@ -122,11 +142,13 @@ internal class OppgaveløserTest {
         """
 
     object Scenarioer {
-        val behovIdOk = UUID.randomUUID() to aResponse()
-            .withStatus(200)
-            .withHeader("Content-Type", "application/json")
-            .withBody(
-                """
+        val behovIdOk =
+            UUID.randomUUID() to
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        """
                 {
                     "antallTreffTotalt": 1,
                     "oppgaver": [
@@ -170,16 +192,20 @@ internal class OppgaveløserTest {
                         }
                     ]
                 }
-                """
-            )
-        val behovIdForUautentisertKall = UUID.randomUUID() to aResponse()
-            .withStatus(401)
-            .withHeader("Content-Type", "application/json")
+                """,
+                    )
+        val behovIdForUautentisertKall =
+            UUID.randomUUID() to
+                aResponse()
+                    .withStatus(401)
+                    .withHeader("Content-Type", "application/json")
 
-        val behovIdForUgyldigRespons = UUID.randomUUID() to aResponse()
-            .withStatus(200)
-            .withHeader("Content-Type", "application/json")
-            .withBody("ikke gyldig JSON")
+        val behovIdForUgyldigRespons =
+            UUID.randomUUID() to
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody("ikke gyldig JSON")
     }
 
     private fun stubOppgaveendepunkt() {
@@ -188,7 +214,7 @@ internal class OppgaveløserTest {
                 get(urlPathEqualTo(endepunkt))
                     .withQueryParam("aktoerId", equalTo("aktørId"))
                     .withHeader("X-Correlation-ID", equalTo(behovId.toString()))
-                    .willReturn(respons)
+                    .willReturn(respons),
             )
         }
 
@@ -196,7 +222,7 @@ internal class OppgaveløserTest {
             stubFor(
                 get(urlPathEqualTo(endepunkt))
                     .withHeader("X-Correlation-ID", equalTo(behovId.toString()))
-                    .willReturn(respons)
+                    .willReturn(respons),
             )
         }
 
@@ -207,7 +233,7 @@ internal class OppgaveløserTest {
                     .inScenario(scenarioUgyldigRespons)
                     .withHeader("X-Correlation-ID", equalTo(behovId.toString()))
                     .willReturn(respons)
-                    .willSetStateTo("har feilet")
+                    .willSetStateTo("har feilet"),
             )
             stubFor(
                 get(urlPathEqualTo(endepunkt))
@@ -215,8 +241,8 @@ internal class OppgaveløserTest {
                     .withHeader("X-Correlation-ID", equalTo(behovId.toString()))
                     .whenScenarioStateIs("har feilet")
                     .willReturn(
-                        Scenarioer.behovIdOk.second
-                    )
+                        Scenarioer.behovIdOk.second,
+                    ),
             )
         }
     }

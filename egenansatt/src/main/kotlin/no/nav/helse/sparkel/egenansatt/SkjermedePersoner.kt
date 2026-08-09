@@ -13,36 +13,41 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.jackson3.JacksonConverter
+import kotlinx.coroutines.runBlocking
 import java.net.URL
 import java.time.Duration
-import kotlinx.coroutines.runBlocking
 
 class SkjermedePersoner(
     private val tokenSupplier: AzureTokenProvider,
     private val baseUrl: URL,
     private val scope: String,
-    private val ktorHttpClient: HttpClient = HttpClient {
-        install(ContentNegotiation) {
-            register(ContentType.Application.Json, JacksonConverter(objectMapper))
-        }
-        install(HttpTimeout) {
-            connectTimeoutMillis = Duration.ofSeconds(1).toMillis()
-            requestTimeoutMillis = Duration.ofSeconds(10).toMillis()
-            socketTimeoutMillis = Duration.ofSeconds(5).toMillis()
-        }
-    }
+    private val ktorHttpClient: HttpClient =
+        HttpClient {
+            install(ContentNegotiation) {
+                register(ContentType.Application.Json, JacksonConverter(objectMapper))
+            }
+            install(HttpTimeout) {
+                connectTimeoutMillis = Duration.ofSeconds(1).toMillis()
+                requestTimeoutMillis = Duration.ofSeconds(10).toMillis()
+                socketTimeoutMillis = Duration.ofSeconds(5).toMillis()
+            }
+        },
 ) {
-
-    internal fun erSkjermetPerson(fødselsnummer: String, behovId: String): Boolean {
+    internal fun erSkjermetPerson(
+        fødselsnummer: String,
+        behovId: String,
+    ): Boolean {
         val token = tokenSupplier.bearerToken(scope).getOrThrow()
         return runBlocking {
-            val httpResponse = ktorHttpClient.preparePost("$baseUrl/skjermet") {
-                header("Authorization", "Bearer ${token.token}")
-                header("Nav-Call-Id", behovId)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                setBody(SkjermetDataRequestDTO(fødselsnummer))
-            }.execute()
+            val httpResponse =
+                ktorHttpClient
+                    .preparePost("$baseUrl/skjermet") {
+                        header("Authorization", "Bearer ${token.token}")
+                        header("Nav-Call-Id", behovId)
+                        accept(ContentType.Application.Json)
+                        contentType(ContentType.Application.Json)
+                        setBody(SkjermetDataRequestDTO(fødselsnummer))
+                    }.execute()
             when (httpResponse.status.value) {
                 200 -> {
                     val response = httpResponse.body<Boolean>()
@@ -58,6 +63,5 @@ class SkjermedePersoner(
 }
 
 private data class SkjermetDataRequestDTO(
-    val personident: String
+    val personident: String,
 )
-

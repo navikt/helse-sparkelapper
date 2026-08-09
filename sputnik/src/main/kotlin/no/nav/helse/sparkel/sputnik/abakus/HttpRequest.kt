@@ -1,13 +1,13 @@
 package no.nav.helse.sparkel.sputnik.abakus
 
 import com.github.navikt.tbd_libs.retry.retryBlocking
+import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
-import org.slf4j.LoggerFactory
-import tools.jackson.databind.JsonNode
-import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal object HttpRequest {
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -16,37 +16,40 @@ internal object HttpRequest {
     private fun URI.request(
         method: String,
         body: ((outputStream: OutputStream) -> Unit)?,
-        vararg headers: Pair<String, String>
-    ) = retryBlocking { with(toURL().openConnection() as HttpURLConnection) {
-        requestMethod = method
-        connectTimeout = 10000
-        readTimeout = 10000
-        doOutput = true
-        headers.forEach { (key, value) ->
-            setRequestProperty(key, value)
+        vararg headers: Pair<String, String>,
+    ) = retryBlocking {
+        with(toURL().openConnection() as HttpURLConnection) {
+            requestMethod = method
+            connectTimeout = 10000
+            readTimeout = 10000
+            doOutput = true
+            headers.forEach { (key, value) ->
+                setRequestProperty(key, value)
+            }
+            body?.let { outputStream.use(it) }
+            val stream: InputStream? = if (responseCode < 300) this.inputStream else this.errorStream
+            val responseBody = stream?.use { it.bufferedReader().readText() }
+            if (responseBody == null || responseCode >= 300) {
+                sikkerlogg.error("Mottok responseCode=$responseCode, url=$url:\nBody:\n$responseBody")
+                throw IllegalStateException("Mottok responseCode=$responseCode, url=$url")
+            }
+            responseCode to
+                try {
+                    objectMapper.readTree(responseBody)
+                } catch (_: Exception) {
+                    sikkerlogg.info("Klarte ikke mappe response til JSON.\nBody:\n $responseBody")
+                    throw IllegalStateException("Klarte ikke å mappe response til JSON fra $url")
+                }
         }
-        body?.let { outputStream.use(it) }
-        val stream: InputStream? = if (responseCode < 300) this.inputStream else this.errorStream
-        val responseBody = stream?.use { it.bufferedReader().readText() }
-        if (responseBody == null || responseCode >= 300) {
-            sikkerlogg.error("Mottok responseCode=$responseCode, url=$url:\nBody:\n$responseBody")
-            throw IllegalStateException("Mottok responseCode=$responseCode, url=$url")
-        }
-        responseCode to try {
-            objectMapper.readTree(responseBody)
-        } catch (_: Exception) {
-            sikkerlogg.info("Klarte ikke mappe response til JSON.\nBody:\n $responseBody")
-            throw IllegalStateException("Klarte ikke å mappe response til JSON fra $url")
-        }
-    }}
+    }
 
     internal fun URI.get(
-        vararg headers: Pair<String, String>
+        vararg headers: Pair<String, String>,
     ) = request(method = "GET", body = null, *headers)
 
     internal fun URI.post(
         requestBody: String,
-        vararg headers: Pair<String, String>
+        vararg headers: Pair<String, String>,
     ) = request(method = "POST", body = {
         it.bufferedWriter().apply {
             write(requestBody)
@@ -56,11 +59,13 @@ internal object HttpRequest {
 
     internal fun URI.postJson(
         requestBody: String,
-        vararg headers: Pair<String, String>
+        vararg headers: Pair<String, String>,
     ): Pair<Int, JsonNode> {
-        val alleHeaders = headers.toList()
-            .plus("Accept" to "application/json")
-            .plus("Content-Type" to "application/json")
+        val alleHeaders =
+            headers
+                .toList()
+                .plus("Accept" to "application/json")
+                .plus("Content-Type" to "application/json")
 
         return request(method = "POST", body = { outputStream ->
             objectMapper.writeValue(outputStream, objectMapper.readTree(requestBody))

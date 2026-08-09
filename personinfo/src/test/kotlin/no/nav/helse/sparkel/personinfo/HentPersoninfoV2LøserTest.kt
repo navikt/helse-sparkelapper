@@ -6,20 +6,20 @@ import com.github.navikt.tbd_libs.speed.PersonResponse
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.time.LocalDate
-import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import tools.jackson.module.kotlin.jacksonObjectMapper
+import java.time.LocalDate
+import java.util.UUID
 
 internal class HentPersoninfoV2LøserTest {
     private val personinfoService = mockk<PersoninfoService>(relaxed = true)
     private val objectMapper = jacksonObjectMapper()
-    private val rapid = TestRapid().apply {
-        HentPersoninfoV2Løser(this, personinfoService, objectMapper)
-    }
-
+    private val rapid =
+        TestRapid().apply {
+            HentPersoninfoV2Løser(this, personinfoService, objectMapper)
+        }
 
     @Test
     fun `besvarer behov`() {
@@ -34,8 +34,9 @@ internal class HentPersoninfoV2LøserTest {
         }
         """
 
-        val løsning = objectMapper.readTree(
-            """
+        val løsning =
+            objectMapper.readTree(
+                """
             {
               "ident": "fnr",
               "fornavn": "LITEN",
@@ -45,19 +46,19 @@ internal class HentPersoninfoV2LøserTest {
               "kjønn": "Ukjent",
               "adressebeskyttelse": "Ugradert"
             }
-        """
-        )
+        """,
+            )
 
-
-        every { personinfoService.løsningForPersoninfo(any(), any()) } returns PersonResponse(
-            fødselsdato = LocalDate.of(1976, 4, 9),
-            dødsdato = null,
-            fornavn = "LITEN",
-            mellomnavn = null,
-            etternavn = "TRANFLASKE",
-            adressebeskyttelse = PersonResponse.Adressebeskyttelse.UGRADERT,
-            kjønn = PersonResponse.Kjønn.UKJENT
-        ).ok()
+        every { personinfoService.løsningForPersoninfo(any(), any()) } returns
+            PersonResponse(
+                fødselsdato = LocalDate.of(1976, 4, 9),
+                dødsdato = null,
+                fornavn = "LITEN",
+                mellomnavn = null,
+                etternavn = "TRANFLASKE",
+                adressebeskyttelse = PersonResponse.Adressebeskyttelse.UGRADERT,
+                kjønn = PersonResponse.Kjønn.UKJENT,
+            ).ok()
         rapid.sendTestMessage(behov)
 
         assertEquals(løsning, rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"])
@@ -76,8 +77,9 @@ internal class HentPersoninfoV2LøserTest {
         }
         """
 
-        val løsning = objectMapper.readTree(
-            """
+        val løsning =
+            objectMapper.readTree(
+                """
             {
               "ident": "fnr",
               "fornavn": "LITEN",
@@ -87,19 +89,19 @@ internal class HentPersoninfoV2LøserTest {
               "kjønn": "Ukjent",
               "adressebeskyttelse": "Ugradert"
             }
-        """
-        )
+        """,
+            )
 
-
-        every { personinfoService.løsningForPersoninfo(any(), any()) } returns PersonResponse(
-            fødselsdato = LocalDate.of(1976, 4, 9),
-            dødsdato = null,
-            fornavn = "LITEN",
-            mellomnavn = null,
-            etternavn = "TRANFLASKE",
-            adressebeskyttelse = PersonResponse.Adressebeskyttelse.UGRADERT,
-            kjønn = PersonResponse.Kjønn.UKJENT
-        ).ok()
+        every { personinfoService.løsningForPersoninfo(any(), any()) } returns
+            PersonResponse(
+                fødselsdato = LocalDate.of(1976, 4, 9),
+                dødsdato = null,
+                fornavn = "LITEN",
+                mellomnavn = null,
+                etternavn = "TRANFLASKE",
+                adressebeskyttelse = PersonResponse.Adressebeskyttelse.UGRADERT,
+                kjønn = PersonResponse.Kjønn.UKJENT,
+            ).ok()
         rapid.sendTestMessage(behov)
 
         assertEquals(løsning, rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"])
@@ -121,8 +123,9 @@ internal class HentPersoninfoV2LøserTest {
         }
         """
 
-        val løsning = objectMapper.readTree(
-            """
+        val løsning =
+            objectMapper.readTree(
+                """
             {
               "ident": "bruker denne",
               "fornavn": "LITEN",
@@ -132,18 +135,19 @@ internal class HentPersoninfoV2LøserTest {
               "kjønn": "Ukjent",
               "adressebeskyttelse": "Ugradert"
             }
-        """
-        )
+        """,
+            )
 
-        every { personinfoService.løsningForPersoninfo(any(), any()) } returns PersonResponse(
-            fødselsdato = LocalDate.of(1976, 4, 9),
-            dødsdato = null,
-            fornavn = "LITEN",
-            mellomnavn = null,
-            etternavn = "TRANFLASKE",
-            adressebeskyttelse = PersonResponse.Adressebeskyttelse.UGRADERT,
-            kjønn = PersonResponse.Kjønn.UKJENT
-        ).ok()
+        every { personinfoService.løsningForPersoninfo(any(), any()) } returns
+            PersonResponse(
+                fødselsdato = LocalDate.of(1976, 4, 9),
+                dødsdato = null,
+                fornavn = "LITEN",
+                mellomnavn = null,
+                etternavn = "TRANFLASKE",
+                adressebeskyttelse = PersonResponse.Adressebeskyttelse.UGRADERT,
+                kjønn = PersonResponse.Kjønn.UKJENT,
+            ).ok()
         rapid.sendTestMessage(behov)
         assertEquals(løsning, rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"])
         verify { personinfoService.løsningForPersoninfo(any(), eq("bruker denne")) }
@@ -165,8 +169,9 @@ internal class HentPersoninfoV2LøserTest {
         }
         """
 
-        val løsning1 = objectMapper.readTree(
-            """
+        val løsning1 =
+            objectMapper.readTree(
+                """
             {
               "ident": "ident1",
               "fornavn": "LITEN",
@@ -176,11 +181,12 @@ internal class HentPersoninfoV2LøserTest {
               "kjønn": "Ukjent",
               "adressebeskyttelse": "Ugradert"
             }
-        """
-        )
+        """,
+            )
 
-        val løsning2 = objectMapper.readTree(
-            """
+        val løsning2 =
+            objectMapper.readTree(
+                """
             {
               "ident": "ident2",
               "fornavn": "STOR",
@@ -190,27 +196,29 @@ internal class HentPersoninfoV2LøserTest {
               "kjønn": "Mann",
               "adressebeskyttelse": "Ugradert"
             }
-        """
-        )
+        """,
+            )
 
-        every { personinfoService.løsningForPersoninfo(any(), eq("ident1")) } returns PersonResponse(
-            fødselsdato = LocalDate.of(1976, 4, 9),
-            dødsdato = null,
-            fornavn = "LITEN",
-            mellomnavn = null,
-            etternavn = "TRANFLASKE",
-            adressebeskyttelse = PersonResponse.Adressebeskyttelse.UGRADERT,
-            kjønn = PersonResponse.Kjønn.UKJENT
-        ).ok()
-        every { personinfoService.løsningForPersoninfo(any(), eq("ident2")) } returns PersonResponse(
-            fødselsdato = LocalDate.of(1980, 1, 1),
-            dødsdato = null,
-            fornavn = "STOR",
-            mellomnavn = null,
-            etternavn = "HYGGE",
-            adressebeskyttelse = PersonResponse.Adressebeskyttelse.UGRADERT,
-            kjønn = PersonResponse.Kjønn.MANN
-        ).ok()
+        every { personinfoService.løsningForPersoninfo(any(), eq("ident1")) } returns
+            PersonResponse(
+                fødselsdato = LocalDate.of(1976, 4, 9),
+                dødsdato = null,
+                fornavn = "LITEN",
+                mellomnavn = null,
+                etternavn = "TRANFLASKE",
+                adressebeskyttelse = PersonResponse.Adressebeskyttelse.UGRADERT,
+                kjønn = PersonResponse.Kjønn.UKJENT,
+            ).ok()
+        every { personinfoService.løsningForPersoninfo(any(), eq("ident2")) } returns
+            PersonResponse(
+                fødselsdato = LocalDate.of(1980, 1, 1),
+                dødsdato = null,
+                fornavn = "STOR",
+                mellomnavn = null,
+                etternavn = "HYGGE",
+                adressebeskyttelse = PersonResponse.Adressebeskyttelse.UGRADERT,
+                kjønn = PersonResponse.Kjønn.MANN,
+            ).ok()
         rapid.sendTestMessage(behov)
         assertEquals(løsning1, rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"][0])
         assertEquals(løsning2, rapid.inspektør.message(0)["@løsning"]["HentPersoninfoV2"][1])

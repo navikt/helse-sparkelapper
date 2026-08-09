@@ -12,26 +12,37 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
 
-internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
-    River.PacketListener {
+internal class StoppknappRiver(
+    rapidsConnection: RapidsConnection,
+) : River.PacketListener {
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
     init {
-        River(rapidsConnection).apply {
-            precondition {
-                it.requireKey("sykmeldtFnr")
-                it.requireKey("status")
-                it.requireKey("opprettet")
-            }
-            validate { it.interestedIn("arsakList") }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition {
+                    it.requireKey("sykmeldtFnr")
+                    it.requireKey("status")
+                    it.requireKey("opprettet")
+                }
+                validate { it.interestedIn("arsakList") }
+            }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("Forstod ikke stoppknapp-melding:\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         sikkerlogg.info("Leser stoppknapp-melding:\n{}", packet.toJson())
 
         val fødselsnummer: String = packet["sykmeldtFnr"]["value"].asString()
@@ -58,6 +69,5 @@ internal class StoppknappRiver(rapidsConnection: RapidsConnection) :
         }
     }
 
-    private fun utcToLocalDateTime(dateTimeString: String): LocalDateTime =
-        OffsetDateTime.parse(dateTimeString).atZoneSameInstant(ZoneId.of("Europe/Oslo")).toLocalDateTime()
+    private fun utcToLocalDateTime(dateTimeString: String): LocalDateTime = OffsetDateTime.parse(dateTimeString).atZoneSameInstant(ZoneId.of("Europe/Oslo")).toLocalDateTime()
 }

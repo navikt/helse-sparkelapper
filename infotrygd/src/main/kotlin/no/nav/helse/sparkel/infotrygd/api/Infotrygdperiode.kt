@@ -10,9 +10,10 @@ open class Infotrygdperiode(
     val tom: LocalDate,
     val grad: Int,
     val dagsats: BigDecimal,
-    val type: Periodetype
+    val type: Periodetype,
 ) {
-    override fun equals(other: Any?) = other is Infotrygdperiode &&
+    override fun equals(other: Any?) =
+        other is Infotrygdperiode &&
             other.personidentifikator == this.personidentifikator &&
             other.organisasjonsnummer == this.organisasjonsnummer &&
             other.fom == this.fom &&

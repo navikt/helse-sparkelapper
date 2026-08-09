@@ -13,14 +13,14 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.serialization.jackson3.JacksonConverter
-import java.util.UUID
-import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import tools.jackson.databind.JsonNode
+import java.util.UUID
+import kotlin.random.Random
 
 class HentOrganisasjonApiIntegrationTests {
     @Test
@@ -29,7 +29,7 @@ class HentOrganisasjonApiIntegrationTests {
         val organisasjonsnummer = Random.nextInt(800000000, 1000000000).toString()
         IntegrationTestApplikasjon.eregWireMock.stubFor(
             get(urlPathEqualTo("/api/v1/organisasjon/$organisasjonsnummer"))
-                .willReturn(okJson("""{ "navn": { "navnelinje1": "Happy!" } }"""))
+                .willReturn(okJson("""{ "navn": { "navnelinje1": "Happy!" } }""")),
         )
 
         // When:
@@ -47,7 +47,7 @@ class HentOrganisasjonApiIntegrationTests {
         val organisasjonsnummer = Random.nextInt(800000000, 1000000000).toString()
         IntegrationTestApplikasjon.eregWireMock.stubFor(
             get(urlPathEqualTo("/api/v1/organisasjon/$organisasjonsnummer"))
-                .willReturn(okJson("""{ "navn": { "navnelinje1": "Happy!" } }"""))
+                .willReturn(okJson("""{ "navn": { "navnelinje1": "Happy!" } }""")),
         )
 
         // When:
@@ -63,7 +63,7 @@ class HentOrganisasjonApiIntegrationTests {
         val organisasjonsnummer = Random.nextInt(800000000, 1000000000).toString()
         IntegrationTestApplikasjon.eregWireMock.stubFor(
             get(urlPathEqualTo("/api/v1/organisasjon/$organisasjonsnummer"))
-                .willReturn(okJson("""{ "navn": { "navnelinje1": "Happy!" } }"""))
+                .willReturn(okJson("""{ "navn": { "navnelinje1": "Happy!" } }""")),
         )
 
         // When:
@@ -79,7 +79,7 @@ class HentOrganisasjonApiIntegrationTests {
         val organisasjonsnummer = Random.nextInt(800000000, 1000000000).toString()
         IntegrationTestApplikasjon.eregWireMock.stubFor(
             get(urlPathEqualTo("/api/v1/organisasjon/$organisasjonsnummer"))
-                .willReturn(okJson("""{ "navn": { "navnelinje1": "Happy!" } }"""))
+                .willReturn(okJson("""{ "navn": { "navnelinje1": "Happy!" } }""")),
         )
 
         // When:
@@ -95,7 +95,7 @@ class HentOrganisasjonApiIntegrationTests {
         val organisasjonsnummer = Random.nextInt(800000000, 1000000000).toString()
         IntegrationTestApplikasjon.eregWireMock.stubFor(
             get(urlPathEqualTo("/api/v1/organisasjon/$organisasjonsnummer"))
-                .willReturn(notFound())
+                .willReturn(notFound()),
         )
 
         // When:
@@ -107,27 +107,33 @@ class HentOrganisasjonApiIntegrationTests {
 
     private fun bearerAuthToken(
         audience: String = IntegrationTestApplikasjon.CLIENT_ID,
-        issuerId: String = IntegrationTestApplikasjon.ISSUER_ID
-    ) = IntegrationTestApplikasjon.mockOAuth2Server.issueToken(
+        issuerId: String = IntegrationTestApplikasjon.ISSUER_ID,
+    ) = IntegrationTestApplikasjon.mockOAuth2Server
+        .issueToken(
             issuerId = issuerId,
             audience = audience,
             subject = UUID.randomUUID().toString(),
-            claims = mapOf(
-                "NAVident" to "a1234567",
-                "preferred_username" to "nav.navesen@nav.no",
-                "oid" to UUID.randomUUID().toString(),
-                "name" to "Nav Navesen"
-            )
+            claims =
+                mapOf(
+                    "NAVident" to "a1234567",
+                    "preferred_username" to "nav.navesen@nav.no",
+                    "oid" to UUID.randomUUID().toString(),
+                    "name" to "Nav Navesen",
+                ),
         ).serialize()
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    private fun callForJson(urlPath: String, token: String? = bearerAuthToken()): Pair<Int, JsonNode> =
+    private fun callForJson(
+        urlPath: String,
+        token: String? = bearerAuthToken(),
+    ): Pair<Int, JsonNode> =
         runBlocking {
-            httpClient.get("http://localhost:${IntegrationTestApplikasjon.port}$urlPath") {
-                accept(ContentType.Application.Json)
-                token?.let(::bearerAuth)
-            }.let { it.status to it.bodyAsText() }
+            httpClient
+                .get("http://localhost:${IntegrationTestApplikasjon.port}$urlPath") {
+                    accept(ContentType.Application.Json)
+                    token?.let(::bearerAuth)
+                }.let { it.status to it.bodyAsText() }
         }.let { (status, bodyAsText) ->
             logger.info("Respons fra tjeneste:\nHTTP ${status.value} ${status.description}\n$bodyAsText")
             status.value to objectMapper.readTree(bodyAsText)

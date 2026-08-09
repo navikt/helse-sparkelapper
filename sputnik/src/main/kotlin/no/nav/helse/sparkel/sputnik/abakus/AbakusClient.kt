@@ -4,51 +4,75 @@ import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import com.github.navikt.tbd_libs.result_object.getOrThrow
-import java.net.URI
-import java.time.LocalDate
-import java.util.UUID
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.sparkel.sputnik.abakus.HttpRequest.postJson
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
-import kotlin.math.roundToInt
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.node.ObjectNode
+import java.net.URI
+import java.time.LocalDate
+import java.util.UUID
+import kotlin.math.roundToInt
 
 internal interface AbakusClient {
-    fun hent(fødselsnummer: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse): Set<Stønadsperiode>
+    fun hent(
+        fødselsnummer: String,
+        fom: LocalDate,
+        tom: LocalDate,
+        vararg ytelser: Ytelse,
+    ): Set<Stønadsperiode>
 }
 
 internal class RestAbakusClient(
     private val url: URI,
     private val scope: String,
-    private val accessTokenClient: AzureTokenProvider
+    private val accessTokenClient: AzureTokenProvider,
 ) : AbakusClient {
-    override fun hent(fødselsnummer: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse): Set<Stønadsperiode> {
+    override fun hent(
+        fødselsnummer: String,
+        fom: LocalDate,
+        tom: LocalDate,
+        vararg ytelser: Ytelse,
+    ): Set<Stønadsperiode> {
         check(fom <= tom) { "fom $fom må være før eller lik tom $tom" }
         val callId = "${UUID.randomUUID()}"
         val requestBody = requestBody(fødselsnummer, fom, tom, *ytelser)
 
-        val response = try {
-            url.postJson(requestBody,
-                "Authorization" to "Bearer ${accessTokenClient.bearerToken(scope).getOrThrow().token}",
-                "Nav-Consumer-Id" to "Sykepenger",
-                "Nav-Callid" to callId
-            ).second
-        } catch (exception: Exception) {
-            sikkerlogg.error("Feil ved henting av ${ytelser.toSet()} fra Abakus for {} med {}.",
-                keyValue("fødselsnummer", fødselsnummer), keyValue("callId", callId), exception)
-            throw IllegalStateException("Feil ved henting fra Abakus")
-        }
+        val response =
+            try {
+                url
+                    .postJson(
+                        requestBody,
+                        "Authorization" to "Bearer ${accessTokenClient.bearerToken(scope).getOrThrow().token}",
+                        "Nav-Consumer-Id" to "Sykepenger",
+                        "Nav-Callid" to callId,
+                    ).second
+            } catch (exception: Exception) {
+                sikkerlogg.error(
+                    "Feil ved henting av ${ytelser.toSet()} fra Abakus for {} med {}.",
+                    keyValue("fødselsnummer", fødselsnummer),
+                    keyValue("callId", callId),
+                    exception,
+                )
+                throw IllegalStateException("Feil ved henting fra Abakus")
+            }
 
-        sikkerlogg.info("Hentet ${ytelser.toSet()} fra Abakus for {} med {}. Response:\n\t$response",
-            keyValue("fødselsnummer", fødselsnummer), keyValue("callId", callId))
+        sikkerlogg.info(
+            "Hentet ${ytelser.toSet()} fra Abakus for {} med {}. Response:\n\t$response",
+            keyValue("fødselsnummer", fødselsnummer),
+            keyValue("callId", callId),
+        )
 
         return try {
             response.abakusResponseTilStønadsperioder(fom, tom, *ytelser)
         } catch (exception: Exception) {
-            sikkerlogg.error("Feil ved mapping av ${ytelser.toSet()} fra Abakus-response for {} med {}.",
-                keyValue("fødselsnummer", fødselsnummer), keyValue("callId", callId), exception)
+            sikkerlogg.error(
+                "Feil ved mapping av ${ytelser.toSet()} fra Abakus-response for {} med {}.",
+                keyValue("fødselsnummer", fødselsnummer),
+                keyValue("callId", callId),
+                exception,
+            )
             throw IllegalStateException("Feil ved mapping av response fra Abakus")
         }
     }
@@ -59,7 +83,12 @@ internal class RestAbakusClient(
         private val aktiveYtelseStatuser = setOf("LØPENDE", "AVSLUTTET", "UNDER_BEHANDLING")
 
         @Language("JSON")
-        private fun requestBody(fødselsnummer: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse) = """
+        private fun requestBody(
+            fødselsnummer: String,
+            fom: LocalDate,
+            tom: LocalDate,
+            vararg ytelser: Ytelse,
+        ) = """
         {
             "ident": {
                 "verdi": "$fødselsnummer"
@@ -72,28 +101,35 @@ internal class RestAbakusClient(
         }
         """
 
-        private fun JsonNode.abakusResponseTilStønadsperioder(fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse) = asSequence()
+        private fun JsonNode.abakusResponseTilStønadsperioder(
+            fom: LocalDate,
+            tom: LocalDate,
+            vararg ytelser: Ytelse,
+        ) = asSequence()
             .filter { it.get("ytelseStatus").asString() in aktiveYtelseStatuser }
-            .map { ytelse -> ytelse.get("anvist").onEach {
-                it as ObjectNode
-                it.put("@ytelse", ytelse.path("ytelse").asString())
-                it.put("@vedtattTidspunkt", ytelse.path("vedtattTidspunkt").asString())
-            }}
-            .flatten()
+            .map { ytelse ->
+                ytelse.get("anvist").onEach {
+                    it as ObjectNode
+                    it.put("@ytelse", ytelse.path("ytelse").asString())
+                    it.put("@vedtattTidspunkt", ytelse.path("vedtattTidspunkt").asString())
+                }
+            }.flatten()
             .toList()
             .map { anvisning ->
                 Stønadsperiode(
                     fom = LocalDate.parse(anvisning.get("periode").get("fom").asString()),
                     tom = LocalDate.parse(anvisning.get("periode").get("tom").asString()),
-                    grad = anvisning.path("utbetalingsgrad").path("verdi")
-                        .takeUnless { it.isMissingOrNull() }
-                        ?.asDouble()
-                        ?.roundToInt() ?: 100,
+                    grad =
+                        anvisning
+                            .path("utbetalingsgrad")
+                            .path("verdi")
+                            .takeUnless { it.isMissingOrNull() }
+                            ?.asDouble()
+                            ?.roundToInt() ?: 100,
                     ytelse = Ytelse(anvisning.get("@ytelse").asString()),
-                    vedtatt = anvisning.get("@vedtattTidspunkt").asLocalDateTime()
+                    vedtatt = anvisning.get("@vedtattTidspunkt").asLocalDateTime(),
                 )
-            }
-            .filter { it.ytelse in ytelser }
+            }.filter { it.ytelse in ytelser }
             .filterNot { it.fom > tom } // Filtrerer bort perioder som starter etter tom
             .filterNot { it.tom < fom } // Filtrerer bort perioder som slutter før fom
             .toSet()

@@ -12,9 +12,6 @@ import com.github.navikt.tbd_libs.speed.IdentResponse
 import com.github.navikt.tbd_libs.speed.SpeedClient
 import io.mockk.every
 import io.mockk.mockk
-import java.time.Duration
-import java.time.LocalDate
-import java.util.UUID
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.adressebeskyttelse
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.dødsfall
 import no.nav.helse.sparkel.personinfo.leesah.PersonhendelseFactory.folkeregisteridentifikator
@@ -25,17 +22,21 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.time.LocalDate
+import java.util.UUID
 
 class PersonhendelseRiverTest {
     private val FNR = "20046913337"
     private val AKTØRID = "1234567890123"
     private val speedClient = mockk<SpeedClient>()
     private val testRapid = TestRapid()
-    private val personhendelseRiver = PersonhendelseRiver(
-        rapidsConnection = testRapid,
-        speedClient = speedClient,
-        cacheTimeout = Duration.ofMillis(500)
-    )
+    private val personhendelseRiver =
+        PersonhendelseRiver(
+            rapidsConnection = testRapid,
+            speedClient = speedClient,
+            cacheTimeout = Duration.ofMillis(500),
+        )
     private val logCollector = ListAppender<ILoggingEvent>()
 
     init {
@@ -51,12 +52,13 @@ class PersonhendelseRiverTest {
 
     @Test
     fun `håndterer dødsfall`() {
-        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns IdentResponse(
-            fødselsnummer = FNR,
-            aktørId = AKTØRID,
-            npid = null,
-            kilde = IdentResponse.KildeResponse.PDL
-        ).ok()
+        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns
+            IdentResponse(
+                fødselsnummer = FNR,
+                aktørId = AKTØRID,
+                npid = null,
+                kilde = IdentResponse.KildeResponse.PDL,
+            ).ok()
 
         val dødsdato = LocalDate.of(2018, 1, 1)
         personhendelseRiver.onPackage(dødsfall(FNR, dødsdato))
@@ -74,12 +76,13 @@ class PersonhendelseRiverTest {
     fun `håndterer endring av ident`() {
         val nyttFnr = "11111111111"
         val nyAktørId = "2222222222222"
-        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns IdentResponse(
-            fødselsnummer = nyttFnr,
-            aktørId = nyAktørId,
-            npid = null,
-            kilde = IdentResponse.KildeResponse.PDL
-        ).ok()
+        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns
+            IdentResponse(
+                fødselsnummer = nyttFnr,
+                aktørId = nyAktørId,
+                npid = null,
+                kilde = IdentResponse.KildeResponse.PDL,
+            ).ok()
         every { speedClient.hentHistoriskeFødselsnumre(FNR, any()) } returns HistoriskeIdenterResponse(emptyList()).ok()
 
         personhendelseRiver.onPackage(folkeregisteridentifikator(FNR))
@@ -96,17 +99,18 @@ class PersonhendelseRiverTest {
 
     @Test
     fun `logger kun informasjon om endring av adressebeskyttelse`() {
-        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns IdentResponse(
-            fødselsnummer = FNR,
-            aktørId = AKTØRID,
-            npid = null,
-            kilde = IdentResponse.KildeResponse.PDL
-        ).ok()
+        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns
+            IdentResponse(
+                fødselsnummer = FNR,
+                aktørId = AKTØRID,
+                npid = null,
+                kilde = IdentResponse.KildeResponse.PDL,
+            ).ok()
         personhendelseRiver.onPackage(
             adressebeskyttelse(
                 FNR,
-                gradering = PersonhendelseOversetter.Gradering.FORTROLIG
-            )
+                gradering = PersonhendelseOversetter.Gradering.FORTROLIG,
+            ),
         )
         assertEquals(listOf("mottok endring på adressebeskyttelse"), logCollector.list.map(ILoggingEvent::getMessage))
         logCollector.list.forEach { assertNull(it.argumentArray) }
@@ -114,17 +118,18 @@ class PersonhendelseRiverTest {
 
     @Test
     fun `slår opp i pdl og legger adressebeskyttelse_endret på rapid`() {
-        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns IdentResponse(
-            fødselsnummer = FNR,
-            aktørId = AKTØRID,
-            npid = null,
-            kilde = IdentResponse.KildeResponse.PDL
-        ).ok()
+        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns
+            IdentResponse(
+                fødselsnummer = FNR,
+                aktørId = AKTØRID,
+                npid = null,
+                kilde = IdentResponse.KildeResponse.PDL,
+            ).ok()
         personhendelseRiver.onPackage(
             adressebeskyttelse(
                 FNR,
-                gradering = PersonhendelseOversetter.Gradering.FORTROLIG
-            )
+                gradering = PersonhendelseOversetter.Gradering.FORTROLIG,
+            ),
         )
         assertEquals(1, testRapid.inspektør.size)
         val melding = testRapid.inspektør.message(0)
@@ -137,12 +142,13 @@ class PersonhendelseRiverTest {
 
     @Test
     fun `klarer å lese en avro melding som er deserialisert`() {
-        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns IdentResponse(
-            fødselsnummer = FNR,
-            aktørId = AKTØRID,
-            npid = null,
-            kilde = IdentResponse.KildeResponse.PDL
-        ).ok()
+        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns
+            IdentResponse(
+                fødselsnummer = FNR,
+                aktørId = AKTØRID,
+                npid = null,
+                kilde = IdentResponse.KildeResponse.PDL,
+            ).ok()
 
         val dokument = adressebeskyttelse(FNR, PersonhendelseOversetter.Gradering.FORTROLIG)
         val deserialisertDokument = PersonhendelseAvroDeserializer().deserialize("leesah", serialize(dokument))
@@ -153,18 +159,19 @@ class PersonhendelseRiverTest {
 
     @Test
     fun `throttler meldinger fra PDL på samme ident som kommer inn tilnærmet samtidig`() {
-        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns IdentResponse(
-            fødselsnummer = FNR,
-            aktørId = AKTØRID,
-            npid = null,
-            kilde = IdentResponse.KildeResponse.PDL
-        ).ok()
+        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns
+            IdentResponse(
+                fødselsnummer = FNR,
+                aktørId = AKTØRID,
+                npid = null,
+                kilde = IdentResponse.KildeResponse.PDL,
+            ).ok()
         repeat(5) {
             personhendelseRiver.onPackage(
                 adressebeskyttelse(
                     FNR,
-                    gradering = PersonhendelseOversetter.Gradering.FORTROLIG
-                )
+                    gradering = PersonhendelseOversetter.Gradering.FORTROLIG,
+                ),
             )
         }
         assertEquals(1, testRapid.inspektør.size)
@@ -172,26 +179,27 @@ class PersonhendelseRiverTest {
 
     @Test
     fun `throttler ikke når cacheTimeout er utløpt`() {
-        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns IdentResponse(
-            fødselsnummer = FNR,
-            aktørId = AKTØRID,
-            npid = null,
-            kilde = IdentResponse.KildeResponse.PDL
-        ).ok()
+        every { speedClient.hentFødselsnummerOgAktørId(FNR, any()) } returns
+            IdentResponse(
+                fødselsnummer = FNR,
+                aktørId = AKTØRID,
+                npid = null,
+                kilde = IdentResponse.KildeResponse.PDL,
+            ).ok()
         repeat(5) {
             personhendelseRiver.onPackage(
                 adressebeskyttelse(
                     FNR,
-                    gradering = PersonhendelseOversetter.Gradering.FORTROLIG
-                )
+                    gradering = PersonhendelseOversetter.Gradering.FORTROLIG,
+                ),
             )
         }
         Thread.sleep(600)
         personhendelseRiver.onPackage(
             adressebeskyttelse(
                 FNR,
-                gradering = PersonhendelseOversetter.Gradering.FORTROLIG
-            )
+                gradering = PersonhendelseOversetter.Gradering.FORTROLIG,
+            ),
         )
         assertEquals(2, testRapid.inspektør.size)
     }
@@ -208,11 +216,10 @@ class PersonhendelseRiverTest {
         personhendelseRiver.onPackage(
             adressebeskyttelse(
                 FNR,
-                gradering = PersonhendelseOversetter.Gradering.FORTROLIG
-            )
+                gradering = PersonhendelseOversetter.Gradering.FORTROLIG,
+            ),
         )
         assertEquals(listOf("mottok endring på adressebeskyttelse", "Fikk feil ved pdl-oppslag på ident $FNR, ignorerer melding"), logCollector.list.map(ILoggingEvent::getMessage))
         assertEquals(0, testRapid.inspektør.size)
     }
-
 }

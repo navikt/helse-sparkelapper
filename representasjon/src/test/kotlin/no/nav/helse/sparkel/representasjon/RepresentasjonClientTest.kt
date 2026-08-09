@@ -17,23 +17,26 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.jackson3.jackson
-import java.time.LocalDateTime
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import tools.jackson.module.kotlin.jacksonObjectMapper
+import java.time.LocalDateTime
 
 internal class RepresentasjonClientTest {
     private lateinit var wireMockServer: WireMockServer
     private lateinit var representasjonClient: RepresentasjonClient
 
-    private val azureTokenProvider = object : AzureTokenProvider {
-        override fun bearerToken(scope: String) =
-            Result.Ok(AzureToken("bearer token", LocalDateTime.now().plusHours(1)))
+    private val azureTokenProvider =
+        object : AzureTokenProvider {
+            override fun bearerToken(scope: String) = Result.Ok(AzureToken("bearer token", LocalDateTime.now().plusHours(1)))
 
-        override fun onBehalfOfToken(scope: String, token: String) = bearerToken(scope)
-    }
+            override fun onBehalfOfToken(
+                scope: String,
+                token: String,
+            ) = bearerToken(scope)
+        }
 
     private val endepunkt = "/api/internbruker/fullmakt/fullmaktsgiver"
 
@@ -43,12 +46,13 @@ internal class RepresentasjonClientTest {
         wireMockServer.start()
         configureFor(create().port(wireMockServer.port()).build())
 
-        representasjonClient = RepresentasjonClient(
-            "http://localhost:${wireMockServer.port()}",
-            azureTokenProvider,
-            httpClient = HttpClient { install(ContentNegotiation) { jackson() } },
-            scope = "scope"
-        )
+        representasjonClient =
+            RepresentasjonClient(
+                "http://localhost:${wireMockServer.port()}",
+                azureTokenProvider,
+                httpClient = HttpClient { install(ContentNegotiation) { jackson() } },
+                scope = "scope",
+            )
     }
 
     @Test
@@ -57,8 +61,8 @@ internal class RepresentasjonClientTest {
 
         stubFor(
             post(endepunkt).willReturn(
-                okJson(jacksonObjectMapper().readTree(svar).toString())
-            )
+                okJson(jacksonObjectMapper().readTree(svar).toString()),
+            ),
         )
 
         val respons = runBlocking { representasjonClient.hentFullmakt("en ident") }
@@ -73,14 +77,16 @@ internal class RepresentasjonClientTest {
 
         val scenario = "Feiler først, så ok"
         stubFor(
-            post(endepunkt).inScenario(scenario).willReturn(
-                aResponse().withStatus(500).withBody("noe gikk galt her")
-            ).willSetStateTo("har feilet")
+            post(endepunkt)
+                .inScenario(scenario)
+                .willReturn(
+                    aResponse().withStatus(500).withBody("noe gikk galt her"),
+                ).willSetStateTo("har feilet"),
         )
         stubFor(
             post(endepunkt).inScenario(scenario).whenScenarioStateIs("har feilet").willReturn(
-                okJson(jacksonObjectMapper().readTree(svar).toString())
-            )
+                okJson(jacksonObjectMapper().readTree(svar).toString()),
+            ),
         )
 
         val respons = runBlocking { representasjonClient.hentFullmakt("en ident") }

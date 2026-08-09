@@ -5,10 +5,10 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import com.github.navikt.tbd_libs.speed.SpeedClient
-import java.net.http.HttpClient
 import no.nav.helse.rapids_rivers.RapidApplication
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.net.http.HttpClient
 
 fun main() {
     val app = createApp(System.getenv())
@@ -17,16 +17,18 @@ fun main() {
 
 internal fun createApp(env: Map<String, String>): RapidsConnection {
     val azureClient = createAzureTokenClientFromEnvironment(env)
-    val oppgaveClient = OppgaveClient(
-        baseUrl = env.getValue("OPPGAVE_URL"),
-        scope = env.getValue("OPPGAVE_SCOPE"),
-        azureClient = azureClient
-    )
-    val speedClient = SpeedClient(
-        httpClient = HttpClient.newHttpClient(),
-        objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),
-        tokenProvider = azureClient
-    )
+    val oppgaveClient =
+        OppgaveClient(
+            baseUrl = env.getValue("OPPGAVE_URL"),
+            scope = env.getValue("OPPGAVE_SCOPE"),
+            azureClient = azureClient,
+        )
+    val speedClient =
+        SpeedClient(
+            httpClient = HttpClient.newHttpClient(),
+            objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),
+            tokenProvider = azureClient,
+        )
     val oppgaveService = OppgaveService(oppgaveClient)
 
     return RapidApplication.create(env).apply {

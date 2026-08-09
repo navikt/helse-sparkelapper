@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory
 
 internal class VedtaksperiodeForkastetRiver(
     rapidsConnection: RapidsConnection,
-    private val arbeidsgiverProducer: ArbeidsgiveropplysningerProducer
+    private val arbeidsgiverProducer: ArbeidsgiveropplysningerProducer,
 ) : River.PacketListener {
     private companion object {
         val logg = LoggerFactory.getLogger(this::class.java)
@@ -21,21 +21,27 @@ internal class VedtaksperiodeForkastetRiver(
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireValue("@event_name", eventName) }
-            precondition { it.requireValue("yrkesaktivitetstype", "ARBEIDSTAKER") }
-            validate {
-                it.requireKey(
-                    "fødselsnummer",
-                    "organisasjonsnummer",
-                    "vedtaksperiodeId",
-                    "@opprettet"
-                )
-            }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireValue("@event_name", eventName) }
+                precondition { it.requireValue("yrkesaktivitetstype", "ARBEIDSTAKER") }
+                validate {
+                    it.requireKey(
+                        "fødselsnummer",
+                        "organisasjonsnummer",
+                        "vedtaksperiodeId",
+                        "@opprettet",
+                    )
+                }
+            }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         "Forkastet vedtaksperiode".let {
             logg.info(it)
             sikkerlogg.info("$it med data :\n{}", packet.toJson())
@@ -50,7 +56,11 @@ internal class VedtaksperiodeForkastetRiver(
         }
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("forstod ikke $eventName:\n${problems.toExtendedReport()}")
     }
 }

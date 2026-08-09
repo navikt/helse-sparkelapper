@@ -5,23 +5,23 @@ import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
-import java.time.LocalDateTime
-import java.util.UUID
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
+import java.util.UUID
 
 class VurderingerRiverTest {
-
     private val rapid: TestRapid = TestRapid().apply(::VurderingerRiver)
 
     private fun sendEvent(behov: String) = rapid.sendTestMessage(behov)
 
-    private fun opprettLogglytter() = ListAppender<ILoggingEvent>().apply {
-        (LoggerFactory.getLogger(VurderingerRiver::class.java) as Logger).addAppender(this)
-        start()
-    }
+    private fun opprettLogglytter() =
+        ListAppender<ILoggingEvent>().apply {
+            (LoggerFactory.getLogger(VurderingerRiver::class.java) as Logger).addAppender(this)
+            start()
+        }
 
     @Test
     fun `behandler relevante meldinger`() {
@@ -47,25 +47,28 @@ class VurderingerRiverTest {
 
     object Meldinger {
         @Language("json")
-        internal val Ok = """
+        internal val Ok =
+            """
             {
                 "soknadId": "${UUID.randomUUID()}",
                 "speilSvar": "JA",
                 "fnr": "12345678910"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         @Language("json")
-        internal val Bogus = """
+        internal val Bogus =
+            """
             {
                 "soknadId": "${UUID.randomUUID()}",
                 "speilSvar": "JASSSS",
                 "fnr": "12345678910"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         @Language("json")
-        internal val NoeHeltAnnet = """
+        internal val NoeHeltAnnet =
+            """
             {
                 "@event_name": "stans_automatisk_behandling",
                 "@id": "${UUID.randomUUID()}",
@@ -78,6 +81,6 @@ class VurderingerRiverTest {
                 "opprettet": "${LocalDateTime.now()}",
                 "originalMelding": "{}"
             }
-        """.trimIndent()
+            """.trimIndent()
     }
 }

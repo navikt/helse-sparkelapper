@@ -15,9 +15,8 @@ import tools.jackson.databind.JsonNode
 
 internal class Institusjonsoppholdløser(
     rapidsConnection: RapidsConnection,
-    private val institusjonsoppholdService: InstitusjonsoppholdService
+    private val institusjonsoppholdService: InstitusjonsoppholdService,
 ) : River.PacketListener {
-
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
     companion object {
@@ -25,41 +24,55 @@ internal class Institusjonsoppholdløser(
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireAll("@behov", listOf(behov)) }
-            precondition { it.forbid("@løsning") }
-            validate { it.requireKey("@id") }
-            validate { it.requireKey("fødselsnummer") }
-            validate { it.requireKey("vedtaksperiodeId") }
-            validate { it.require("$behov.institusjonsoppholdFom", JsonNode::asLocalDate) }
-            validate { it.require("$behov.institusjonsoppholdTom", JsonNode::asLocalDate) }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireAll("@behov", listOf(behov)) }
+                precondition { it.forbid("@løsning") }
+                validate { it.requireKey("@id") }
+                validate { it.requireKey("fødselsnummer") }
+                validate { it.requireKey("vedtaksperiodeId") }
+                validate { it.require("$behov.institusjonsoppholdFom", JsonNode::asLocalDate) }
+                validate { it.require("$behov.institusjonsoppholdTom", JsonNode::asLocalDate) }
+            }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("forstod ikke $behov med melding\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         val fom = packet["$behov.institusjonsoppholdFom"].asLocalDate()
         val tom = packet["$behov.institusjonsoppholdTom"].asLocalDate()
-        institusjonsoppholdService.løsningForBehov(
-            packet["@id"].asString(),
-            packet["vedtaksperiodeId"].asString(),
-            packet["fødselsnummer"].asString()
-        ).let { løsning ->
-            packet["@løsning"] = mapOf(
-                behov to (løsning?.toList()?.map { Institusjonsoppholdperiode(it) }?.filtrer(fom, tom) ?: emptyList())
-            )
-            context.publish(packet.toJson().also { json ->
-                sikkerlogg.info(
-                    "sender svar {} for {}:\n\t{}",
-                    keyValue("id", packet["@id"].asString()),
-                    keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asString()),
-                    json
+        institusjonsoppholdService
+            .løsningForBehov(
+                packet["@id"].asString(),
+                packet["vedtaksperiodeId"].asString(),
+                packet["fødselsnummer"].asString(),
+            ).let { løsning ->
+                packet["@løsning"] =
+                    mapOf(
+                        behov to (løsning?.toList()?.map { Institusjonsoppholdperiode(it) }?.filtrer(fom, tom) ?: emptyList()),
+                    )
+                context.publish(
+                    packet.toJson().also { json ->
+                        sikkerlogg.info(
+                            "sender svar {} for {}:\n\t{}",
+                            keyValue("id", packet["@id"].asString()),
+                            keyValue("vedtaksperiodeId", packet["vedtaksperiodeId"].asString()),
+                            json,
+                        )
+                    },
                 )
-            })
-        }
+            }
     }
 }

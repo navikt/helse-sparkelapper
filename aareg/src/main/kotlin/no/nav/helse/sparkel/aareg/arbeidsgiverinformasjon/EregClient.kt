@@ -9,16 +9,16 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.isSuccess
-import java.util.UUID
 import no.nav.helse.sparkel.aareg.objectMapper
 import no.nav.helse.sparkel.aareg.sikkerlogg
 import no.nav.helse.sparkel.retry
 import tools.jackson.databind.JsonNode
+import java.util.UUID
 
 class EregClient(
     private val baseUrl: String,
     private val appName: String,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) {
     suspend fun hentOrganisasjon(
         organisasjonsnummer: String,
@@ -33,13 +33,14 @@ class EregClient(
     private suspend fun hentFraEreg(
         organisasjonsnummer: String,
         callId: UUID,
-    ): EregResponse = retry("ereg") {
-        hentFraEregUtenRetry(organisasjonsnummer, callId)
-    }
+    ): EregResponse =
+        retry("ereg") {
+            hentFraEregUtenRetry(organisasjonsnummer, callId)
+        }
 
     private suspend fun hentFraEregUtenRetry(
         organisasjonsnummer: String,
-        callId: UUID
+        callId: UUID,
     ): EregResponse {
         val response: HttpResponse =
             httpClient.get("$baseUrl/api/v1/organisasjon/$organisasjonsnummer?inkluderHierarki=true&inkluderHistorikk=true") {
@@ -59,19 +60,25 @@ class EregClient(
         objectMapper.readTree(response.bodyAsText()).let { json ->
             EregResponse(
                 navn = trekkUtNavn(json),
-                næringer = json.path("organisasjonDetaljer").path("naeringer").takeIf { !it.isMissingNode }
-                    ?.toList()?.map { it["naeringskode"].asString() } ?: emptyList()
+                næringer =
+                    json
+                        .path("organisasjonDetaljer")
+                        .path("naeringer")
+                        .takeIf { !it.isMissingNode }
+                        ?.toList()
+                        ?.map { it["naeringskode"].asString() } ?: emptyList(),
             )
         }
 
     private fun trekkUtNavn(organisasjon: JsonNode) =
-        organisasjon["navn"].let { navn ->
-            (1..5).mapNotNull { index -> navn["navnelinje$index"] }
-                .filterNot(JsonNode::isMissingOrNull)
-                .map(JsonNode::asString)
-                .filterNot(String::isBlank)
-        }.joinToString()
-
+        organisasjon["navn"]
+            .let { navn ->
+                (1..5)
+                    .mapNotNull { index -> navn["navnelinje$index"] }
+                    .filterNot(JsonNode::isMissingOrNull)
+                    .map(JsonNode::asString)
+                    .filterNot(String::isBlank)
+            }.joinToString()
 }
 
 data class EregResponse(
@@ -79,4 +86,6 @@ data class EregResponse(
     val næringer: List<String>,
 )
 
-class FeilVedHenting(val statusCode: Int) : RuntimeException("ereg svarte med $statusCode")
+class FeilVedHenting(
+    val statusCode: Int,
+) : RuntimeException("ereg svarte med $statusCode")

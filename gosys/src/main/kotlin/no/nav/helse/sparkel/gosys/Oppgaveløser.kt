@@ -20,56 +20,72 @@ import net.logstash.logback.argument.StructuredArguments.kv
 internal class Oppgaveløser(
     rapidsConnection: RapidsConnection,
     private val oppgaveService: OppgaveService,
-    private val speedClient: SpeedClient
+    private val speedClient: SpeedClient,
 ) : River.PacketListener {
-
     companion object {
         const val behov = "ÅpneOppgaver"
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireAll("@behov", listOf(behov)) }
-            precondition { it.forbid("@løsning") }
-            validate { it.requireKey("@id") }
-            validate { it.requireKey("fødselsnummer") }
-            validate { it.requireKey("ÅpneOppgaver.ikkeEldreEnn") }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireAll("@behov", listOf(behov)) }
+                precondition { it.forbid("@løsning") }
+                validate { it.requireKey("@id") }
+                validate { it.requireKey("fødselsnummer") }
+                validate { it.requireKey("ÅpneOppgaver.ikkeEldreEnn") }
+            }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("forstod ikke $behov med melding\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         val behovId = packet["@id"].asString()
         val fnr = packet["fødselsnummer"].asString()
         withMDC("callId" to behovId) {
-            when (val result = tryCatch {
-                retryBlocking {
-                    speedClient.hentFødselsnummerOgAktørId(fnr, behovId).getOrThrow()
-                }
-            }) {
+            when (
+                val result =
+                    tryCatch {
+                        retryBlocking {
+                            speedClient.hentFødselsnummerOgAktørId(fnr, behovId).getOrThrow()
+                        }
+                    }
+            ) {
                 is Result.Error -> sikkerlogg.error("Feil ved løsning av behov: ${result.error}", result.cause)
                 is Result.Ok -> {
                     val ikkeEldreEnn = packet["ÅpneOppgaver.ikkeEldreEnn"].asLocalDate()
                     sikkerlogg.info("slår opp åpne oppgaver for {} ikke eldre enn $ikkeEldreEnn", kv("aktørId", result.value.aktørId))
                     val antall = oppgaveService.løsningForBehov(behovId, result.value.aktørId, ikkeEldreEnn)
 
-                    packet["@løsning"] = mapOf(
-                        behov to mapOf(
-                            "antall" to antall,
-                            "oppslagFeilet" to (antall == null)
+                    packet["@løsning"] =
+                        mapOf(
+                            behov to
+                                mapOf(
+                                    "antall" to antall,
+                                    "oppslagFeilet" to (antall == null),
+                                ),
                         )
+                    context.publish(
+                        packet.toJson().also { json ->
+                            sikkerlogg.info(
+                                "sender svar {} for {}",
+                                keyValue("id", behovId),
+                                json,
+                            )
+                        },
                     )
-                    context.publish(packet.toJson().also { json ->
-                        sikkerlogg.info(
-                            "sender svar {} for {}",
-                            keyValue("id", behovId),
-                            json
-                        )
-                    })
                 }
             }
         }

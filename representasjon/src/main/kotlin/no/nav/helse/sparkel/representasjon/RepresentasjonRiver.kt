@@ -9,53 +9,65 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
-import java.time.LocalDate
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.kv
 import no.nav.helse.sparkel.representasjon.RepresentasjonRiver.Område.Alle
 import no.nav.helse.sparkel.representasjon.RepresentasjonRiver.Område.Syk
 import no.nav.helse.sparkel.representasjon.RepresentasjonRiver.Område.Sym
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 
 internal class RepresentasjonRiver(
     rapidsConnection: RapidsConnection,
     private val representasjonClient: RepresentasjonClient,
 ) : River.PacketListener {
-
     companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private val log = LoggerFactory.getLogger(RepresentasjonRiver::class.java)
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition {
-                it.requireAll("@behov", listOf("Fullmakt"))
-                it.forbid("@løsning")
-            }
-            validate { it.requireKey("@id", "fødselsnummer") }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition {
+                    it.requireAll("@behov", listOf("Fullmakt"))
+                    it.forbid("@løsning")
+                }
+                validate { it.requireKey("@id", "fødselsnummer") }
+            }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("forstod ikke behov 'fullmakt':\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         val id = packet["@id"].asString()
         log.info("Leser melding {}", id)
         val fnr = packet["fødselsnummer"].asString()
 
         val representasjonResponse = runBlocking { representasjonClient.hentFullmakt(fnr) }
-        val svar = representasjonResponse.mapCatching { fullmakt ->
-            fullmakt.toList().map {
-                Fullmakt(
-                    områder = it["omraade"].toList().map { område -> Område.fra(område["tema"].asString()) },
-                    gyldigFraOgMed = it["gyldigFraOgMed"].asLocalDate(),
-                    gyldigTilOgMed = it["gyldigTilOgMed"].asOptionalLocalDate()
-                )
-            }.filter { it.områder.any { område -> område in listOf(Syk, Sym, Alle) } }
-        }
+        val svar =
+            representasjonResponse.mapCatching { fullmakt ->
+                fullmakt
+                    .toList()
+                    .map {
+                        Fullmakt(
+                            områder = it["omraade"].toList().map { område -> Område.fra(område["tema"].asString()) },
+                            gyldigFraOgMed = it["gyldigFraOgMed"].asLocalDate(),
+                            gyldigTilOgMed = it["gyldigTilOgMed"].asOptionalLocalDate(),
+                        )
+                    }.filter { it.områder.any { område -> område in listOf(Syk, Sym, Alle) } }
+            }
         svar.fold(
             onSuccess = { fullmakt: List<Fullmakt> ->
                 packet["@løsning"] = mapOf("Fullmakt" to fullmakt)
@@ -64,7 +76,7 @@ internal class RepresentasjonRiver(
                 sikkerlogg.info(
                     "Besvarte behov {}:\n{}",
                     kv("id", id),
-                    packet.toJson()
+                    packet.toJson(),
                 )
             },
             onFailure = { t: Throwable ->
@@ -73,28 +85,31 @@ internal class RepresentasjonRiver(
                     sikkerlogg.error("$message: {}", t, t)
                 }
                 throw t
-            }
+            },
         )
     }
 
     internal data class Fullmakt(
         val områder: List<Område>,
         val gyldigFraOgMed: LocalDate,
-        val gyldigTilOgMed: LocalDate?
+        val gyldigTilOgMed: LocalDate?,
     )
 
     enum class Område {
-        Alle, Syk, Sym, Annet;
+        Alle,
+        Syk,
+        Sym,
+        Annet,
+        ;
 
         companion object {
-            fun fra(verdi: String): Område {
-                return when (verdi) {
+            fun fra(verdi: String): Område =
+                when (verdi) {
                     "*" -> Alle
                     "SYK" -> Syk
                     "SYM" -> Sym
                     else -> Annet
                 }
-            }
         }
     }
 }

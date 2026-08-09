@@ -15,9 +15,8 @@ import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class SparkelUtbetalingsperioderMockRiver(
     rapidsConnection: RapidsConnection,
-    private val svar: Map<String, List<Utbetalingsperiode>>
+    private val svar: Map<String, List<Utbetalingsperiode>>,
 ) : River.PacketListener {
-
     private val log = LoggerFactory.getLogger("SparkelUtbetalingsperioderMockRiver")
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
@@ -26,34 +25,47 @@ internal class SparkelUtbetalingsperioderMockRiver(
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireAll("@behov", listOf(behov)) }
-            precondition { it.forbid("@løsning") }
-            validate { it.requireKey("@id") }
-            validate { it.requireKey("fødselsnummer") }
-            validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
-            validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireAll("@behov", listOf(behov)) }
+                precondition { it.forbid("@løsning") }
+                validate { it.requireKey("@id") }
+                validate { it.requireKey("fødselsnummer") }
+                validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
+                validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
+            }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("forstod ikke $behov med melding\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         log.info("besvarer behov for infotrygdutbetalingshistorikk på id: ${packet["@id"].stringValue()}")
         val fødselsnummer = packet["fødselsnummer"].asString()
-        val utbetalingsperioder = svar[fødselsnummer]
-            ?: run {
-                log.info("Fant ikke forhåndskonfigurert infotrygdutbetalingshistorikk blant ${svar.size} forhåndskonfigurerte. Svarer ikke på behov.")
-                return
-            }
+        val utbetalingsperioder =
+            svar[fødselsnummer]
+                ?: run {
+                    log.info("Fant ikke forhåndskonfigurert infotrygdutbetalingshistorikk blant ${svar.size} forhåndskonfigurerte. Svarer ikke på behov.")
+                    return
+                }
 
-        packet["@løsning"] = mapOf(
-            behov to objectMapper.convertValue(utbetalingsperioder, ArrayNode::class.java)
-        )
+        packet["@løsning"] =
+            mapOf(
+                behov to objectMapper.convertValue(utbetalingsperioder, ArrayNode::class.java),
+            )
         context.publish(packet.toJson())
     }
+
     private val objectMapper = jacksonObjectMapper()
 }

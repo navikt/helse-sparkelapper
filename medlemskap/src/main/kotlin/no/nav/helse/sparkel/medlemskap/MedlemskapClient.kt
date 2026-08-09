@@ -2,21 +2,20 @@ package no.nav.helse.sparkel.medlemskap
 
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.time.LocalDate
-import tools.jackson.databind.JsonNode
-import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class MedlemskapClient(
     private val baseUrl: URI,
     private val azureClient: AzureTokenProvider,
-    private val scope: String
+    private val scope: String,
 ) {
-
-    private fun request(requestBody: String): Pair<Int, String> {
-        return with(URI("$baseUrl/speilvurdering").toURL().openConnection() as HttpURLConnection) {
+    private fun request(requestBody: String): Pair<Int, String> =
+        with(URI("$baseUrl/speilvurdering").toURL().openConnection() as HttpURLConnection) {
             requestMethod = "POST"
             val bearerToken = azureClient.bearerToken(scope).getOrThrow()
             setRequestProperty("Authorization", "Bearer ${bearerToken.token}")
@@ -35,9 +34,12 @@ internal class MedlemskapClient(
             val stream: InputStream? = if (responseCode < 300) this.inputStream else this.errorStream
             responseCode to (stream?.bufferedReader()?.readText() ?: "null")
         }
-    }
 
-    internal fun hentMedlemskapsvurdering(fnr: String, fom: LocalDate, tom: LocalDate): JsonNode {
+    internal fun hentMedlemskapsvurdering(
+        fnr: String,
+        fom: LocalDate,
+        tom: LocalDate,
+    ): JsonNode {
         val svar = Tolk(fnr, fom, tom, ::request).tolk()
         return objectMapper.createObjectNode().set("resultat", objectMapper.createObjectNode().put("svar", svar))
     }

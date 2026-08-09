@@ -1,9 +1,6 @@
 package no.nav.helse.sparkel.sputnik
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 import no.nav.helse.sparkel.sputnik.abakus.AbakusClient
 import no.nav.helse.sparkel.sputnik.abakus.Stønadsperiode
 import no.nav.helse.sparkel.sputnik.abakus.Ytelse
@@ -12,12 +9,15 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 internal class SputnikTest {
-
-    private val testRapid = TestRapid().also {
-        Sputnik(it, testAbakusClient)
-    }
+    private val testRapid =
+        TestRapid().also {
+            Sputnik(it, testAbakusClient)
+        }
 
     @BeforeEach
     fun reset() {
@@ -259,7 +259,7 @@ internal class SputnikTest {
     @Test
     fun `Ignorerer andre behov`() {
         @Language("JSON")
-        val behov =  """
+        val behov = """
         {
             "@event_name":"behov",
             "@behov": ["Dagpenger"],
@@ -284,8 +284,10 @@ internal class SputnikTest {
 
     private companion object {
         private val vedtatt = LocalDateTime.parse("2023-02-16T09:52:35.255").truncatedTo(ChronoUnit.MILLIS)
+
         @Language("JSON")
-        private fun foreldrepengerBehov(fødselsnummer: String = "fødselsnummer") = """
+        private fun foreldrepengerBehov(fødselsnummer: String = "fødselsnummer") =
+            """
         {
             "@event_name":"behov",
             "@behov": ["Foreldrepenger"],
@@ -298,7 +300,8 @@ internal class SputnikTest {
         """
 
         @Language("JSON")
-        private fun behovForAlleStønadstyper(fødselsnummer: String = "fødselsnummer") = """
+        private fun behovForAlleStønadstyper(fødselsnummer: String = "fødselsnummer") =
+            """
         {
             "@event_name":"behov",
             "@behov": ["Foreldrepenger", "Pleiepenger", "Omsorgspenger", "Opplæringspenger", "Dagpenger"],
@@ -326,35 +329,48 @@ internal class SputnikTest {
         }
         """
 
-        private fun assertJsonEquals(forventet: String, faktisk: String) = JSONAssert.assertEquals(forventet, faktisk, true)
-
+        private fun assertJsonEquals(
+            forventet: String,
+            faktisk: String,
+        ) = JSONAssert.assertEquals(forventet, faktisk, true)
 
         private const val IngenStønadstyperFødselsnummer = "0"
         private const val AltUntattSvangerskapspengerFødselsnummer = "1"
         private const val AltUntattForeldrepengerFødselsnummer = "2"
         private const val FeilVedoppslagFødselsnummer = "3"
 
-        private val testAbakusClient = object : AbakusClient {
-            private val AlleYtelser = setOf("FORELDREPENGER", "SVANGERSKAPSPENGER", "PLEIEPENGER_SYKT_BARN", "OMSORGSPENGER", "OPPLÆRINGSPENGER", "PLEIEPENGER_NÆRSTÅENDE")
-            override fun hent(fødselsnummer: String, fom: LocalDate, tom: LocalDate, vararg ytelser: Ytelse): Set<Stønadsperiode> {
-               val medILøsning = when (fødselsnummer) {
-                   IngenStønadstyperFødselsnummer -> emptySet()
-                   AltUntattSvangerskapspengerFødselsnummer -> AlleYtelser.minus("SVANGERSKAPSPENGER")
-                   AltUntattForeldrepengerFødselsnummer -> AlleYtelser.minus("FORELDREPENGER")
-                   FeilVedoppslagFødselsnummer -> throw IllegalStateException("Noe gikk feil")
-                   else -> AlleYtelser
-               }
+        private val testAbakusClient =
+            object : AbakusClient {
+                private val AlleYtelser = setOf("FORELDREPENGER", "SVANGERSKAPSPENGER", "PLEIEPENGER_SYKT_BARN", "OMSORGSPENGER", "OPPLÆRINGSPENGER", "PLEIEPENGER_NÆRSTÅENDE")
 
-                val (snuteFom, snuteTom) = fom.minusMonths(1) to fom.minusDays(1)
-                val (haleFom, haleTom) = tom.plusDays(1) to tom.plusMonths(1)
-                return medILøsning.map { Ytelse(it) }.flatMap { listOf(
-                    Stønadsperiode(snuteFom, snuteTom, 100, it, vedtatt),
-                    Stønadsperiode(fom, tom.minusDays(15), 100, it, vedtatt),
-                    Stønadsperiode(tom.minusDays(14), tom, 50, it, vedtatt),
-                    Stønadsperiode(haleFom, haleTom, 100, it, vedtatt),
-                )}.toSet()
+                override fun hent(
+                    fødselsnummer: String,
+                    fom: LocalDate,
+                    tom: LocalDate,
+                    vararg ytelser: Ytelse,
+                ): Set<Stønadsperiode> {
+                    val medILøsning =
+                        when (fødselsnummer) {
+                            IngenStønadstyperFødselsnummer -> emptySet()
+                            AltUntattSvangerskapspengerFødselsnummer -> AlleYtelser.minus("SVANGERSKAPSPENGER")
+                            AltUntattForeldrepengerFødselsnummer -> AlleYtelser.minus("FORELDREPENGER")
+                            FeilVedoppslagFødselsnummer -> throw IllegalStateException("Noe gikk feil")
+                            else -> AlleYtelser
+                        }
+
+                    val (snuteFom, snuteTom) = fom.minusMonths(1) to fom.minusDays(1)
+                    val (haleFom, haleTom) = tom.plusDays(1) to tom.plusMonths(1)
+                    return medILøsning
+                        .map { Ytelse(it) }
+                        .flatMap {
+                            listOf(
+                                Stønadsperiode(snuteFom, snuteTom, 100, it, vedtatt),
+                                Stønadsperiode(fom, tom.minusDays(15), 100, it, vedtatt),
+                                Stønadsperiode(tom.minusDays(14), tom, 50, it, vedtatt),
+                                Stønadsperiode(haleFom, haleTom, 100, it, vedtatt),
+                            )
+                        }.toSet()
+                }
             }
-        }
     }
-
 }

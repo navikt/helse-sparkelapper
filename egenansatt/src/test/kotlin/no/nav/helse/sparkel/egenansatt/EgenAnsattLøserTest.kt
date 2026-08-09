@@ -3,7 +3,6 @@ package no.nav.helse.sparkel.egenansatt
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.every
 import io.mockk.mockk
-import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -11,17 +10,18 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import tools.jackson.databind.JsonNode
+import java.util.UUID
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class EgenAnsattLøserTest {
-
     private val skjermedePersoner = mockk<SkjermedePersoner>()
 
     private val rapid = TestRapid()
 
-    private val sendtMelding get() = rapid.inspektør.let {
-        it.message(it.size - 1)
-    }
+    private val sendtMelding get() =
+        rapid.inspektør.let {
+            it.message(it.size - 1)
+        }
 
     @BeforeEach
     fun reset() {
@@ -45,7 +45,6 @@ internal class EgenAnsattLøserTest {
 
         assertFalse(sendtMelding.løsning())
     }
-
 
     @Test
     internal fun `løser behov egen ansatt`() {

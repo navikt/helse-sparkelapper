@@ -3,14 +3,6 @@ package no.nav.helse.sparkel.oppgaveendret.oppgave
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.io.IOException
-import java.time.Clock
-import java.time.Duration
-import java.time.Instant
-import java.time.Instant.now
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.temporal.ChronoField
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,6 +20,14 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertTimeoutPreemptively
 import org.slf4j.LoggerFactory
 import tools.jackson.databind.node.ObjectNode
+import java.io.IOException
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import java.time.Instant.now
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.temporal.ChronoField
 
 class OppgaveEndretConsumerTest {
     private val rapidApplication = mockk<RapidApplication>(relaxed = true)
@@ -44,7 +44,7 @@ class OppgaveEndretConsumerTest {
                 kafkaConsumer,
                 gosysOppgaveEndretProducer,
                 objectMapper,
-                manipulerbarKlokke
+                manipulerbarKlokke,
             )
 
         assertTrue(oppgaveEndretConsumer.åpentVindu())
@@ -53,7 +53,7 @@ class OppgaveEndretConsumerTest {
         queueMessages(
             consumer = oppgaveEndretConsumer,
             records = List(7) { testJson.toString() },
-            pollSize = 3
+            pollSize = 3,
         )
 
         logger.info("Starter consumeren")
@@ -83,17 +83,18 @@ class OppgaveEndretConsumerTest {
 
         assertTrue(oppgaveEndretConsumer.åpentVindu())
 
-        val json = testJson.apply {
-            this as ObjectNode
-            val hendelseNode = this.path("hendelse") as ObjectNode
-            hendelseNode.put("hendelsestype", Hendelsetype.OPPGAVE_ENDRET.name)
-        }
+        val json =
+            testJson.apply {
+                this as ObjectNode
+                val hendelseNode = this.path("hendelse") as ObjectNode
+                hendelseNode.put("hendelsestype", Hendelsetype.OPPGAVE_ENDRET.name)
+            }
 
         logger.info("Køer opp noen testmeldinger")
         queueMessages(
             consumer = oppgaveEndretConsumer,
             records = listOf(json.toString()),
-            pollSize = 3
+            pollSize = 3,
         )
 
         logger.info("Starter consumeren")
@@ -122,7 +123,7 @@ class OppgaveEndretConsumerTest {
 
         assertTimeoutPreemptively(
             Duration.ofMillis(200),
-            "Det ser ut til at appen ikke gjorde det den skulle."
+            "Det ser ut til at appen ikke gjorde det den skulle.",
         ) { oppgaveEndretConsumer.run() }
 
         verify(exactly = 1) { rapidApplication.stop() }
@@ -151,7 +152,9 @@ class OppgaveEndretConsumerTest {
         scope.launch {
             oppgaveEndretConsumer.run()
         }
-        while (manipulerbarKlokke.count == 0) { Thread.sleep(100)}
+        while (manipulerbarKlokke.count == 0) {
+            Thread.sleep(100)
+        }
         verify(exactly = 0) { kafkaConsumer.poll(any<Duration>()) }
 
         manipulerbarKlokke.instant = fixedClock(time = 21, minutt = 16).instant()
@@ -160,11 +163,17 @@ class OppgaveEndretConsumerTest {
         scope.launch {
             oppgaveEndretConsumer.run()
         }
-        while (manipulerbarKlokke.count == 1) { Thread.sleep(100)}
+        while (manipulerbarKlokke.count == 1) {
+            Thread.sleep(100)
+        }
         verify(atLeast = 1) { kafkaConsumer.poll(any<Duration>()) }
     }
 
-    private fun queueMessages(consumer: OppgaveEndretConsumer, records: List<String?>, pollSize: Int) {
+    private fun queueMessages(
+        consumer: OppgaveEndretConsumer,
+        records: List<String?>,
+        pollSize: Int,
+    ) {
         val mutableRecords = records.reversed().toMutableList()
         logger.info("setter opp mock for kafka-consumer")
         every { kafkaConsumer.poll(any<Duration>()) } answers {
@@ -178,12 +187,15 @@ class OppgaveEndretConsumerTest {
             if (pollRecords.isNotEmpty()) {
                 logger.info("sender $antallRecords record{} til kafka-consumeren", if (antallRecords > 1) "(s)" else "")
                 ConsumerRecords(mapOf(TopicPartition("oppgave-endret", 0) to pollRecords), mapOf())
-            } else ConsumerRecords.empty()
+            } else {
+                ConsumerRecords.empty()
+            }
         }
     }
 
     @Language("JSON")
-    private val testJson = """
+    private val testJson =
+        """
         {
             "hendelse": {
                 "hendelsestype": "OPPGAVE_OPPRETTET"
@@ -203,29 +215,39 @@ class OppgaveEndretConsumerTest {
 
     private fun nesteRecords(
         mutableRecords: MutableList<String?>,
-        pollRecordsSize: Int
+        pollRecordsSize: Int,
     ): List<ConsumerRecord<String, String?>> {
         val pollResult = mutableRecords.subList(0, pollRecordsSize)
-        return pollResult.map {
-            ConsumerRecord("oppgave-endret", 0, 0, "", it)
-        }.also { pollResult.clear() }
+        return pollResult
+            .map {
+                ConsumerRecord("oppgave-endret", 0, 0, "", it)
+            }.also { pollResult.clear() }
     }
 
-    private fun fixedClock(time: Int, minutt: Int) = Clock.fixed(
-        LocalDateTime.now()
+    private fun fixedClock(
+        time: Int,
+        minutt: Int,
+    ) = Clock.fixed(
+        LocalDateTime
+            .now()
             .with(ChronoField.HOUR_OF_DAY, time.toLong())
             .with(ChronoField.MINUTE_OF_HOUR, minutt.toLong())
             .toInstant(ZoneId.systemDefault().rules.getOffset(now())),
-        ZoneId.systemDefault()
+        ZoneId.systemDefault(),
     )
 }
 
-class MutableClock(var instant: Instant) : Clock() {
+class MutableClock(
+    var instant: Instant,
+) : Clock() {
     var count: Int = 0
-    override fun instant() = instant.also {
-        count++
-    }
+
+    override fun instant() =
+        instant.also {
+            count++
+        }
 
     override fun getZone(): ZoneId = ZoneId.systemDefault()
+
     override fun withZone(zoneId: ZoneId): Clock = throw UnsupportedOperationException()
 }

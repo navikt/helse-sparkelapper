@@ -4,32 +4,34 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import java.util.UUID
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ObjectMapper
+import java.util.UUID
 
 internal class RepresentasjonRiverTest {
     private val representasjonClient: RepresentasjonClient = mockk(relaxed = true)
-    private val rapid: TestRapid = TestRapid().apply {
-        RepresentasjonRiver(this, representasjonClient)
-    }
+    private val rapid: TestRapid =
+        TestRapid().apply {
+            RepresentasjonRiver(this, representasjonClient)
+        }
     private val objectMapper = ObjectMapper()
 
     @Test
     fun `svarer ut behov for fullmakt`() {
         @Language("JSON")
-        val fullmaktJson = """
-               [
-                    {
-                        "omraade": [{"tema": "SYK"}], 
-                        "gyldigFraOgMed": "2020-01-01", 
-                        "gyldigTilOgMed": "2020-12-31"
-                    }
-                ]
+        val fullmaktJson =
+            """
+            [
+                 {
+                     "omraade": [{"tema": "SYK"}], 
+                     "gyldigFraOgMed": "2020-01-01", 
+                     "gyldigTilOgMed": "2020-12-31"
+                 }
+             ]
             """.trimIndent()
         coEvery { representasjonClient.hentFullmakt(any()) } returns Result.success(objectMapper.readTree(fullmaktJson))
         rapid.sendTestMessage(behov())
@@ -48,7 +50,8 @@ internal class RepresentasjonRiverTest {
     }
 
     @Language("JSON")
-    fun behov() = """
+    fun behov() =
+        """
         {
             "@event_name" : "behov",
             "@behov" : ["Fullmakt"],

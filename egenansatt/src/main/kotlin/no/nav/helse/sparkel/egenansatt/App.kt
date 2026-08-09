@@ -17,7 +17,6 @@ internal val objectMapper: ObjectMapper = jacksonObjectMapper()
 fun createApp(env: Environment): RapidsConnection {
     val rapidsConnection = RapidApplication.create(env.raw)
 
-
     val aad = createAzureTokenClientFromEnvironment(env.raw)
 
     val skjermedePersoner = SkjermedePersoner(aad, env.skjermedeBaseURL, env.skjermendeOauthScope)

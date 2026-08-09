@@ -16,27 +16,35 @@ import org.slf4j.LoggerFactory
 
 internal class HentIdenterLøser(
     rapidsConnection: RapidsConnection,
-    private val speedClient: SpeedClient
+    private val speedClient: SpeedClient,
 ) : River.PacketListener {
     private val sikkerLogg: Logger = LoggerFactory.getLogger("tjenestekall")
 
     init {
-        River(rapidsConnection).apply {
-            precondition {
-                it.requireAll("@behov", listOf("HentIdenter"))
-                it.forbid("@løsning")
-            }
-            validate {
-                it.requireKey("@id", "ident")
-            }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition {
+                    it.requireAll("@behov", listOf("HentIdenter"))
+                    it.forbid("@løsning")
+                }
+                validate {
+                    it.requireKey("@id", "ident")
+                }
+            }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         val hendelseId = packet["@id"].asString()
-        withMDC(mapOf(
-            "id" to hendelseId
-        )) {
+        withMDC(
+            mapOf(
+                "id" to hendelseId,
+            ),
+        ) {
             sikkerLogg.info("løser HentIdenter")
             val kildeIdent = packet["ident"].asString()
             try {
@@ -55,19 +63,25 @@ internal class HentIdenterLøser(
     private fun sendSvar(
         packet: JsonMessage,
         identer: IdentResponse,
-        context: MessageContext
+        context: MessageContext,
     ) {
-        packet["@løsning"] = mapOf(
-            "HentIdenter" to mapOf(
-                "fødselsnummer" to identer.fødselsnummer,
-                "aktørId" to identer.aktørId
+        packet["@løsning"] =
+            mapOf(
+                "HentIdenter" to
+                    mapOf(
+                        "fødselsnummer" to identer.fødselsnummer,
+                        "aktørId" to identer.aktørId,
+                    ),
             )
-        )
         sikkerLogg.info("løser behov=HentIdenter melding:\n${packet.toJson()}")
         context.publish(identer.fødselsnummer, packet.toJson())
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerLogg.error("Forstod ikke HentIdenter-behov:\n${problems.toExtendedReport()}")
     }
 }

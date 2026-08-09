@@ -17,34 +17,38 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.jackson3.jackson
-import java.time.LocalDateTime
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import tools.jackson.databind.node.JsonNodeFactory
 import tools.jackson.module.kotlin.jacksonObjectMapper
+import java.time.LocalDateTime
 
 internal class InntektsmeldingClientTest {
     private var wireMockServer: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
     private var inntektsmeldingClient: InntektsmeldingClient
 
-    private val azureTokenProvider = object : AzureTokenProvider {
-        override fun bearerToken(scope: String) =
-            Result.Ok(AzureToken("bearer token", LocalDateTime.now().plusHours(1)))
+    private val azureTokenProvider =
+        object : AzureTokenProvider {
+            override fun bearerToken(scope: String) = Result.Ok(AzureToken("bearer token", LocalDateTime.now().plusHours(1)))
 
-        override fun onBehalfOfToken(scope: String, token: String) = bearerToken(scope)
-    }
+            override fun onBehalfOfToken(
+                scope: String,
+                token: String,
+            ) = bearerToken(scope)
+        }
 
     init {
         wireMockServer.start()
         configureFor(create().port(wireMockServer.port()).build())
 
-        inntektsmeldingClient = InntektsmeldingClient(
-            "http://localhost:${wireMockServer.port()}",
-            azureTokenProvider,
-            httpClient = HttpClient { install(ContentNegotiation) { jackson() } },
-            scope = "scope"
-        )
+        inntektsmeldingClient =
+            InntektsmeldingClient(
+                "http://localhost:${wireMockServer.port()}",
+                azureTokenProvider,
+                httpClient = HttpClient { install(ContentNegotiation) { jackson() } },
+                scope = "scope",
+            )
     }
 
     private val endpoint = "/api/v1/inntektsmelding/{id}"
@@ -55,8 +59,8 @@ internal class InntektsmeldingClientTest {
 
         stubFor(
             get(urlPathTemplate(endpoint)).willReturn(
-                okJson(jacksonObjectMapper().readTree(svar).toString())
-            )
+                okJson(jacksonObjectMapper().readTree(svar).toString()),
+            ),
         )
 
         val respons = runBlocking { inntektsmeldingClient.hentDokument("en_id") }
@@ -71,14 +75,16 @@ internal class InntektsmeldingClientTest {
 
         val scenario = "Feiler først, så ok"
         stubFor(
-            get(urlPathTemplate(endpoint)).inScenario(scenario).willReturn(
-                aResponse().withStatus(500).withBody("noe gikk galt her")
-            ).willSetStateTo("har feilet")
+            get(urlPathTemplate(endpoint))
+                .inScenario(scenario)
+                .willReturn(
+                    aResponse().withStatus(500).withBody("noe gikk galt her"),
+                ).willSetStateTo("har feilet"),
         )
         stubFor(
             get(urlPathTemplate(endpoint)).inScenario(scenario).whenScenarioStateIs("har feilet").willReturn(
-                okJson(jacksonObjectMapper().readTree(svar).toString())
-            )
+                okJson(jacksonObjectMapper().readTree(svar).toString()),
+            ),
         )
 
         val respons = runBlocking { inntektsmeldingClient.hentDokument("en_id") }
@@ -91,8 +97,8 @@ internal class InntektsmeldingClientTest {
     fun `404 skal ikke retries, har spesiell betydning i spesialist og speil`() {
         stubFor(
             get(urlPathTemplate(endpoint)).willReturn(
-                aResponse().withStatus(404).withBody("nope, ingen IM her")
-            )
+                aResponse().withStatus(404).withBody("nope, ingen IM her"),
+            ),
         )
 
         val respons = runBlocking { inntektsmeldingClient.hentDokument("en_id") }

@@ -5,31 +5,36 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import java.time.LocalDate
 import java.util.UUID
-import org.junit.jupiter.api.Assertions.assertTrue
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SparkelUtbetalingsperioderMockRiverTest {
-
     private val testrapid = TestRapid()
     private val fødselsnummer = "10101012345"
     private val orgnummer = "991024000"
 
     init {
-        SparkelUtbetalingsperioderMockRiver(testrapid, mutableMapOf(
-            fødselsnummer to listOf(Utbetalingsperiode(
-                fom = LocalDate.of(2020, 6, 1),
-                tom = LocalDate.of(2020, 6, 30),
-                dagsats = 1234.0,
-                grad = "100",
-                typetekst = "Utbetaling",
-                organisasjonsnummer = orgnummer
-            ))
-        ))
+        SparkelUtbetalingsperioderMockRiver(
+            testrapid,
+            mutableMapOf(
+                fødselsnummer to
+                    listOf(
+                        Utbetalingsperiode(
+                            fom = LocalDate.of(2020, 6, 1),
+                            tom = LocalDate.of(2020, 6, 30),
+                            dagsats = 1234.0,
+                            grad = "100",
+                            typetekst = "Utbetaling",
+                            organisasjonsnummer = orgnummer,
+                        ),
+                    ),
+            ),
+        )
     }
 
     @Test

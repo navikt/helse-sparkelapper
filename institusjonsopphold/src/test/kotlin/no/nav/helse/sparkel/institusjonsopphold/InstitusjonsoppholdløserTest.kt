@@ -7,42 +7,44 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.matching.AnythingPattern
-import java.net.URI
-import java.util.UUID
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import tools.jackson.databind.JsonNode
+import java.net.URI
+import java.util.UUID
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class InstitusjonsoppholdløserTest {
-
     private val wireMockServer: WireMockServer = WireMockServer(WireMockConfiguration.options().dynamicPort())
 
     private lateinit var service: InstitusjonsoppholdService
     private val rapid = TestRapid()
 
-    private val sendtMelding get() = rapid.inspektør.let {
-        it.message(it.size - 1)
-    }
+    private val sendtMelding get() =
+        rapid.inspektør.let {
+            it.message(it.size - 1)
+        }
 
     @BeforeAll
     fun setup() {
         wireMockServer.start()
         configureFor(create().port(wireMockServer.port()).build())
         stubEksterneEndepunkt()
-        service = InstitusjonsoppholdService(
-            InstitusjonsoppholdClient(
-                baseUrl = wireMockServer.baseUrl(),
-                scope = "inst2-scope",
-                azureClient = AzureTokenClient(
-                    tokenEndpoint = URI(wireMockServer.baseUrl() + "/token"),
-                    clientId = "a client id",
-                    authMethod = AzureAuthMethod.Secret("secret")
-                )
+        service =
+            InstitusjonsoppholdService(
+                InstitusjonsoppholdClient(
+                    baseUrl = wireMockServer.baseUrl(),
+                    scope = "inst2-scope",
+                    azureClient =
+                        AzureTokenClient(
+                            tokenEndpoint = URI(wireMockServer.baseUrl() + "/token"),
+                            clientId = "a client id",
+                            authMethod = AzureAuthMethod.Secret("secret"),
+                        ),
+                ),
             )
-        )
     }
 
     @AfterAll
@@ -73,9 +75,10 @@ internal class InstitusjonsoppholdløserTest {
         assertTrue(perioder.isEmpty())
     }
 
-    private fun JsonNode.løsning() = this.path("@løsning").path(Institusjonsoppholdløser.behov).toList().map {
-        Institusjonsoppholdperiode(it)
-    }
+    private fun JsonNode.løsning() =
+        this.path("@løsning").path(Institusjonsoppholdløser.behov).toList().map {
+            Institusjonsoppholdperiode(it)
+        }
 
     private fun testBehov(behov: String) {
         Institusjonsoppholdløser(rapid, service)
@@ -128,9 +131,9 @@ internal class InstitusjonsoppholdløserTest {
                         "token_type": "Bearer",
                         "expires_in": 3599,
                         "access_token": "1234abc"
-                    }"""
-                        )
-                )
+                    }""",
+                        ),
+                ),
         )
         stubFor(
             post(urlPathEqualTo("/api/v1/person/institusjonsopphold/soek"))
@@ -203,9 +206,9 @@ internal class InstitusjonsoppholdløserTest {
                                             "endretAv": "string",
                                             "endringstidspunkt": "2020-09-30T10:47:17.319Z"
                                           }
-                                    ]"""
-                        )
-                )
+                                    ]""",
+                        ),
+                ),
         )
         stubFor(
             get(urlPathEqualTo("/api/v1/person/institusjonsopphold"))
@@ -214,8 +217,8 @@ internal class InstitusjonsoppholdløserTest {
                 .withHeader("Nav-Call-Id", AnythingPattern())
                 .willReturn(
                     aResponse()
-                        .withStatus(401)
-                )
+                        .withStatus(401),
+                ),
         )
     }
 }

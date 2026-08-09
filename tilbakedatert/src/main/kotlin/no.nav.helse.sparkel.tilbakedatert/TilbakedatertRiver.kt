@@ -8,14 +8,13 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
-import java.time.LocalDate
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 
 internal class TilbakedatertRiver(
     rapidsConnection: RapidsConnection,
 ) : River.PacketListener {
-
     val log = LoggerFactory.getLogger(TilbakedatertRiver::class.java)
 
     // Hvis det kommer OK på en rule med et av disse navnene, skal spesialist få vite om godkjenningen.
@@ -23,47 +22,57 @@ internal class TilbakedatertRiver(
     val statuser = setOf("TILBAKEDATERING_KREVER_FLERE_OPPLYSNINGER", "TILBAKEDATERING_UNDER_BEHANDLING")
 
     init {
-        River(rapidsConnection).apply {
-            precondition {
-                it.forbid("@event_name", "personNrPasient")
-            }
-            validate {
-                it.requireKey("sykmelding.id")
-                it.requireKey("sykmelding.pasient.fnr")
-                it.requireArray("sykmelding.aktivitet") {
-                    requireKey("fom", "tom")
-                    require("fom") { node -> check(node.asLocalDate() > LocalDate.of(2024, 1, 1)) }
+        River(rapidsConnection)
+            .apply {
+                precondition {
+                    it.forbid("@event_name", "personNrPasient")
                 }
-                it.requireValue("validation.status", "OK")
-                it.require("validation.rules") { node ->
-                    check(node.isArray)
-                    check(node.any { rule -> rule["name"].asString() in statuser && rule["type"].asString() == "OK" })
+                validate {
+                    it.requireKey("sykmelding.id")
+                    it.requireKey("sykmelding.pasient.fnr")
+                    it.requireArray("sykmelding.aktivitet") {
+                        requireKey("fom", "tom")
+                        require("fom") { node -> check(node.asLocalDate() > LocalDate.of(2024, 1, 1)) }
+                    }
+                    it.requireValue("validation.status", "OK")
+                    it.require("validation.rules") { node ->
+                        check(node.isArray)
+                        check(node.any { rule -> rule["name"].asString() in statuser && rule["type"].asString() == "OK" })
+                    }
                 }
-            }
-        }.register(this)
+            }.register(this)
     }
 
-    override fun onSevere(error: MessageProblems.MessageException, context: MessageContext) {
+    override fun onSevere(
+        error: MessageProblems.MessageException,
+        context: MessageContext,
+    ) {
         sikkerlogg.info(error.toString())
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         val fødselsnummer = packet["sykmelding.pasient.fnr"].asString()
         val sykmeldingId = packet["sykmelding.id"].asString()
         log.info("Leser melding for {}", keyValue("sykmeldingId", sykmeldingId))
-        val perioder = packet["sykmelding.aktivitet"].toList().map {
-            mapOf(
-                "fom" to it["fom"].asLocalDate(),
-                "tom" to it["tom"].asLocalDate(),
-            )
-        }
+        val perioder =
+            packet["sykmelding.aktivitet"].toList().map {
+                mapOf(
+                    "fom" to it["fom"].asLocalDate(),
+                    "tom" to it["tom"].asLocalDate(),
+                )
+            }
 
         val returEvent = lagReturEvent(fødselsnummer, sykmeldingId, perioder)
         context.publish(fødselsnummer, returEvent).also {
             sikkerlogg.info(
                 "sender tilbakedatering_behandlet for {}:\n{}",
                 keyValue("sykmeldingId", sykmeldingId),
-                returEvent
+                returEvent,
             )
         }
     }
@@ -71,13 +80,15 @@ internal class TilbakedatertRiver(
     private fun lagReturEvent(
         fødselsnummer: String,
         sykmeldingId: String,
-        perioder: List<Map<String, LocalDate>>
-    ) = JsonMessage.newMessage(
-        eventName = "tilbakedatering_behandlet",
-        map = mapOf(
-            "fødselsnummer" to fødselsnummer,
-            "sykmeldingId" to sykmeldingId,
-            "perioder" to perioder,
-        )
-    ).toJson()
+        perioder: List<Map<String, LocalDate>>,
+    ) = JsonMessage
+        .newMessage(
+            eventName = "tilbakedatering_behandlet",
+            map =
+                mapOf(
+                    "fødselsnummer" to fødselsnummer,
+                    "sykmeldingId" to sykmeldingId,
+                    "perioder" to perioder,
+                ),
+        ).toJson()
 }

@@ -1,24 +1,23 @@
 package no.nav.helse.sparkel.sykepengeperioder
 
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import no.nav.helse.sparkel.sykepengeperioder.dbting.*
-import org.slf4j.LoggerFactory
-import java.time.LocalDate
 import no.nav.helse.sparkel.infotrygd.Fnr
 import no.nav.helse.sparkel.infotrygd.PeriodeDAO
 import no.nav.helse.sparkel.infotrygd.PeriodeDAO.PeriodeDTO.Companion.ekstraFerieperioder
 import no.nav.helse.sparkel.infotrygd.UtbetalingDAO
 import no.nav.helse.sparkel.infotrygd.Utbetalingshistorikk
 import no.nav.helse.sparkel.infotrygd.Utbetalingsperiode
+import no.nav.helse.sparkel.sykepengeperioder.dbting.*
+import org.slf4j.LoggerFactory
+import java.time.LocalDate
 
 internal class InfotrygdService(
     private val periodeDAO: PeriodeDAO,
     private val utbetalingDAO: UtbetalingDAO,
     private val inntektDAO: InntektDAO,
     private val statslønnDAO: StatslønnDAO,
-    private val feriepengeDAO: FeriepengeDAO
+    private val feriepengeDAO: FeriepengeDAO,
 ) {
-
     private companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     }
@@ -27,37 +26,38 @@ internal class InfotrygdService(
         behovId: String,
         fødselsnummer: Fnr,
         fom: LocalDate,
-        tom: LocalDate
+        tom: LocalDate,
     ): List<Utbetalingshistorikk>? {
         try {
-            val perioder = periodeDAO.perioder(
-                fødselsnummer,
-                fom,
-                tom
-            )
-            val historikk: List<Utbetalingshistorikk> = perioder
-                .sortedByDescending { it.sykemeldtFom }
-                .mapIndexed { index, periode ->
-                    periode.tilUtbetalingshistorikk(
-                        UtbetalingDAO.UtbetalingDTO.tilHistorikkutbetaling(
-                            utbetalingDAO.utbetalinger(
-                                fødselsnummer,
-                                periode.seq
-                            )
-                        ),
-                        InntektDAO.InntektDTO.tilInntektsopplysninger(
-                            inntektDAO.inntekter(
-                                fødselsnummer,
-                                periode.seq
-                            )
-                        ),
-                        index == 0 && statslønnDAO.harStatslønn(fødselsnummer, periode.seq)
-                    )
-                }
-                .filter { it.inntektsopplysninger.isNotEmpty() || it.utbetalteSykeperioder.isNotEmpty() }
+            val perioder =
+                periodeDAO.perioder(
+                    fødselsnummer,
+                    fom,
+                    tom,
+                )
+            val historikk: List<Utbetalingshistorikk> =
+                perioder
+                    .sortedByDescending { it.sykemeldtFom }
+                    .mapIndexed { index, periode ->
+                        periode.tilUtbetalingshistorikk(
+                            UtbetalingDAO.UtbetalingDTO.tilHistorikkutbetaling(
+                                utbetalingDAO.utbetalinger(
+                                    fødselsnummer,
+                                    periode.seq,
+                                ),
+                            ),
+                            InntektDAO.InntektDTO.tilInntektsopplysninger(
+                                inntektDAO.inntekter(
+                                    fødselsnummer,
+                                    periode.seq,
+                                ),
+                            ),
+                            index == 0 && statslønnDAO.harStatslønn(fødselsnummer, periode.seq),
+                        )
+                    }.filter { it.inntektsopplysninger.isNotEmpty() || it.utbetalteSykeperioder.isNotEmpty() }
             sikkerlogg.info(
                 "løser behov: {}",
-                keyValue("id", behovId)
+                keyValue("id", behovId),
             )
             return historikk
         } catch (err: Exception) {
@@ -65,7 +65,7 @@ internal class InfotrygdService(
                 "feil ved henting av infotrygd-data: ${err.message} for {}, {}",
                 keyValue("id", behovId),
                 keyValue("fødselsnummer", fødselsnummer),
-                err
+                err,
             )
             return null
         }
@@ -75,7 +75,7 @@ internal class InfotrygdService(
         behovId: String,
         fødselsnummer: Fnr,
         fom: LocalDate,
-        tom: LocalDate
+        tom: LocalDate,
     ): Sykepengehistorikk? {
         try {
             val perioder = periodeDAO.perioder(fødselsnummer, fom, tom).sortedByDescending { it.sykemeldtFom }
@@ -86,10 +86,11 @@ internal class InfotrygdService(
 
             val feriepengerSkalBeregnesManuelt = feriepengeDAO.feriepengerSkalBeregnesManuelt(fødselsnummer, fom, tom)
 
-            val utbetalingDAOer = utbetalingDAO.utbetalinger(
-                fødselsnummer,
-                *sekvensIdeer
-            )
+            val utbetalingDAOer =
+                utbetalingDAO.utbetalinger(
+                    fødselsnummer,
+                    *sekvensIdeer,
+                )
 
             val utbetalinger =
                 UtbetalingDAO.UtbetalingDTO.tilHistorikkutbetaling(utbetalingDAOer) + perioder.ekstraFerieperioder()
@@ -99,31 +100,35 @@ internal class InfotrygdService(
 
             val harStatslønn = perioder.firstOrNull()?.let { statslønnDAO.harStatslønn(fødselsnummer, it.seq) } ?: false
 
-            val arbeidskategorikoder = perioder
-                .mapNotNull { periode ->
-                    val periodeFom = utbetalingDAOer
-                        .filter { it.sekvensId == periode.seq }
-                        .filterNot { it.periodeType == "7" }
-                        .mapNotNull { it.fom }
-                        .minOrNull()
-                    val periodeTom = utbetalingDAOer
-                        .filter { it.sekvensId == periode.seq }
-                        .filterNot { it.periodeType == "7" }
-                        .mapNotNull { it.tom }
-                        .maxOrNull()
-                    if (periodeFom != null && periodeTom != null) {
-                        Sykepengehistorikk.Arbeidskategori(
-                            kode = periode.arbeidsKategori,
-                            fom = periodeFom,
-                            tom = periodeTom
-                        )
-                    } else null
-                }
-                .sortedBy { it.fom }
+            val arbeidskategorikoder =
+                perioder
+                    .mapNotNull { periode ->
+                        val periodeFom =
+                            utbetalingDAOer
+                                .filter { it.sekvensId == periode.seq }
+                                .filterNot { it.periodeType == "7" }
+                                .mapNotNull { it.fom }
+                                .minOrNull()
+                        val periodeTom =
+                            utbetalingDAOer
+                                .filter { it.sekvensId == periode.seq }
+                                .filterNot { it.periodeType == "7" }
+                                .mapNotNull { it.tom }
+                                .maxOrNull()
+                        if (periodeFom != null && periodeTom != null) {
+                            Sykepengehistorikk.Arbeidskategori(
+                                kode = periode.arbeidsKategori,
+                                fom = periodeFom,
+                                tom = periodeTom,
+                            )
+                        } else {
+                            null
+                        }
+                    }.sortedBy { it.fom }
 
             sikkerlogg.info(
                 "løser behov: {}",
-                keyValue("id", behovId)
+                keyValue("id", behovId),
             )
 
             return Sykepengehistorikk(
@@ -132,13 +137,13 @@ internal class InfotrygdService(
                 feriepengehistorikk = feriepengehistorikk,
                 harStatslønn = harStatslønn,
                 arbeidskategorikoder = arbeidskategorikoder,
-                feriepengerSkalBeregnesManuelt = feriepengerSkalBeregnesManuelt
+                feriepengerSkalBeregnesManuelt = feriepengerSkalBeregnesManuelt,
             )
         } catch (err: Exception) {
             sikkerlogg.warn(
                 "feil ved henting av infotrygd-data: ${err.message} for {}",
                 keyValue("id", behovId),
-                err
+                err,
             )
             return null
         }
@@ -148,29 +153,31 @@ internal class InfotrygdService(
         behovId: String,
         fødselsnummer: Fnr,
         fom: LocalDate,
-        tom: LocalDate
+        tom: LocalDate,
     ): List<Utbetalingsperiode>? {
         try {
-            val perioder = periodeDAO.perioder(
-                fødselsnummer,
-                fom,
-                tom
-            )
-            val historikk: List<Utbetalingsperiode> = perioder.flatMap { periode ->
-                periode.tilUtbetalingsperiode(
-                    utbetalingDAO.utbetalinger(fødselsnummer, periode.seq)
+            val perioder =
+                periodeDAO.perioder(
+                    fødselsnummer,
+                    fom,
+                    tom,
                 )
-            }
+            val historikk: List<Utbetalingsperiode> =
+                perioder.flatMap { periode ->
+                    periode.tilUtbetalingsperiode(
+                        utbetalingDAO.utbetalinger(fødselsnummer, periode.seq),
+                    )
+                }
             sikkerlogg.info(
                 "løser behov: {}",
-                keyValue("id", behovId)
+                keyValue("id", behovId),
             )
             return historikk
         } catch (err: Exception) {
             sikkerlogg.warn(
                 "feil ved henting av infotrygd-data: ${err.message} for {}",
                 keyValue("id", behovId),
-                err
+                err,
             )
             return null
         }

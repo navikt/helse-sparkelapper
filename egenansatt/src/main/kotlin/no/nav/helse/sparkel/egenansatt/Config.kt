@@ -3,7 +3,6 @@ package no.nav.helse.sparkel.egenansatt
 import java.net.URI
 import java.net.URL
 
-
 fun setUpEnvironment(env: Map<String, String> = System.getenv()) =
     Environment(
         raw = env,
@@ -11,7 +10,7 @@ fun setUpEnvironment(env: Map<String, String> = System.getenv()) =
         skjermendeOauthScope = env.getValue("SKJERMEDE_OAUTH_SCOPE"),
         tokenEndpointURL = URI(env.getValue("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT")),
         clientId = env.getValue("AZURE_APP_CLIENT_ID"),
-        clientSecret = env.getValue("AZURE_APP_CLIENT_SECRET")
+        clientSecret = env.getValue("AZURE_APP_CLIENT_SECRET"),
     )
 
 data class Environment(
@@ -20,5 +19,5 @@ data class Environment(
     val skjermendeOauthScope: String,
     val tokenEndpointURL: URI,
     val clientId: String,
-    val clientSecret: String
+    val clientSecret: String,
 )

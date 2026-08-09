@@ -7,44 +7,56 @@ import io.ktor.client.engine.mock.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.*
 import io.ktor.serialization.jackson3.JacksonConverter
-import java.time.LocalDateTime
-import java.time.YearMonth
-import java.time.temporal.ChronoUnit
-import java.util.UUID
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import tools.jackson.databind.node.ObjectNode
+import java.time.LocalDateTime
+import java.time.YearMonth
+import java.time.temporal.ChronoUnit
+import java.util.UUID
 
 internal class InntekterTest {
     private val testRapid = TestRapid()
-    private val inntektRestClient = InntektRestClient("http://base.url", "", HttpClient(MockEngine) {
-        install(ContentNegotiation) {
-            register(ContentType.Application.Json, JacksonConverter(objectMapper))
-        }
-        engine {
-            addHandler { request ->
-                if (request.url.fullPath.startsWith("/api/v1/hentinntektliste") && request.body.toByteArray()
-                        .getFilter() == Inntekter.Type.InntekterForSykepengegrunnlag.ainntektfilter
-                ) {
-                    respond(sykepengegrunnlagResponse())
-                }  else if (request.url.fullPath.startsWith("/api/v1/hentinntektliste") && request.body.toByteArray()
-                        .getFilter() == Inntekter.Type.InntekterForOpptjeningsvurdering.ainntektfilter
-                    && request.body.toByteArray().getAntallMåneder() == 1
-                ) {
-                    respond(opptjeningsvurderingResponse())
-                } else if (request.url.fullPath.startsWith("/api/v1/hentinntektliste") && request.body.toByteArray()
-                        .getFilter() == Inntekter.Type.InntekterForSammenligningsgrunnlag.ainntektfilter
-                ) {
-                    respond(sammenligningsgrunnlagResponse())
-                } else {
-                    respondError(HttpStatusCode.InternalServerError)
+    private val inntektRestClient =
+        InntektRestClient(
+            "http://base.url",
+            "",
+            HttpClient(MockEngine) {
+                install(ContentNegotiation) {
+                    register(ContentType.Application.Json, JacksonConverter(objectMapper))
                 }
-            }
-        }
-    }, tokenSupplier = { "token" })
+                engine {
+                    addHandler { request ->
+                        if (request.url.fullPath.startsWith("/api/v1/hentinntektliste") &&
+                            request.body
+                                .toByteArray()
+                                .getFilter() == Inntekter.Type.InntekterForSykepengegrunnlag.ainntektfilter
+                        ) {
+                            respond(sykepengegrunnlagResponse())
+                        } else if (request.url.fullPath.startsWith("/api/v1/hentinntektliste") &&
+                            request.body
+                                .toByteArray()
+                                .getFilter() == Inntekter.Type.InntekterForOpptjeningsvurdering.ainntektfilter &&
+                            request.body.toByteArray().getAntallMåneder() == 1
+                        ) {
+                            respond(opptjeningsvurderingResponse())
+                        } else if (request.url.fullPath.startsWith("/api/v1/hentinntektliste") &&
+                            request.body
+                                .toByteArray()
+                                .getFilter() == Inntekter.Type.InntekterForSammenligningsgrunnlag.ainntektfilter
+                        ) {
+                            respond(sammenligningsgrunnlagResponse())
+                        } else {
+                            respondError(HttpStatusCode.InternalServerError)
+                        }
+                    }
+                }
+            },
+            tokenSupplier = { "token" },
+        )
 
     private fun ByteArray.getFilter() = objectMapper.readTree(this).get("ainntektsfilter").asString()
 
@@ -96,10 +108,16 @@ internal class InntekterTest {
         val start = YearMonth.of(2020, 2)
         val slutt = YearMonth.of(2021, 1)
         testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForSammenligningsgrunnlag))
-        val inntekt0 = testRapid.inspektør.message(0).path("@løsning")
-            .path(Inntekter.Type.InntekterForSammenligningsgrunnlag.name)[0]
-        val inntekt1 = testRapid.inspektør.message(0).path("@løsning")
-            .path(Inntekter.Type.InntekterForSammenligningsgrunnlag.name)[1]
+        val inntekt0 =
+            testRapid.inspektør
+                .message(0)
+                .path("@løsning")
+                .path(Inntekter.Type.InntekterForSammenligningsgrunnlag.name)[0]
+        val inntekt1 =
+            testRapid.inspektør
+                .message(0)
+                .path("@løsning")
+                .path(Inntekter.Type.InntekterForSammenligningsgrunnlag.name)[1]
         assertEquals(0, inntekt0["inntektsliste"].size())
         assertEquals(1, inntekt1["inntektsliste"].size())
         inntekt1["inntektsliste"].forEach {
@@ -114,9 +132,15 @@ internal class InntekterTest {
         val slutt = YearMonth.of(2021, 1)
         testRapid.sendTestMessage(behov(start, slutt, Inntekter.Type.InntekterForSykepengegrunnlag))
         val inntekt0 =
-            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[0]
+            testRapid.inspektør
+                .message(0)
+                .path("@løsning")
+                .path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[0]
         val inntekt1 =
-            testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[1]
+            testRapid.inspektør
+                .message(0)
+                .path("@løsning")
+                .path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[1]
         assertEquals(0, inntekt0["inntektsliste"].size())
         assertEquals(1, inntekt1["inntektsliste"].size())
         inntekt1["inntektsliste"].forEach {
@@ -131,7 +155,11 @@ internal class InntekterTest {
         val slutt = YearMonth.of(2021, 1)
         val behov = behov(start, slutt, Inntekter.Type.InntekterForSykepengegrunnlag)
         testRapid.sendTestMessage((objectMapper.readTree(behov) as ObjectNode).also { it.remove("vedtaksperiodeId") }.toString())
-        val hentedeInntekter = testRapid.inspektør.message(0).path("@løsning").path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[1]
+        val hentedeInntekter =
+            testRapid.inspektør
+                .message(0)
+                .path("@løsning")
+                .path(Inntekter.Type.InntekterForSykepengegrunnlag.name)[1]
         hentedeInntekter["inntektsliste"].let { inntektsliste ->
             assertEquals(1, inntektsliste.size())
             inntektsliste.forEach { enInntekt ->
@@ -144,45 +172,70 @@ internal class InntekterTest {
     @ParameterizedTest
     @EnumSource(Inntekter.Type::class)
     fun `ignorerer behov som er for gamle`() {
-        val behov = objectMapper.readTree(behov(
-            YearMonth.of(2020, 2),
-            YearMonth.of(2021, 1),
-            Inntekter.Type.InntekterForSammenligningsgrunnlag
-        )).apply {
-            (this as ObjectNode).put("@opprettet", LocalDateTime.now().minusMinutes(31).toString())
-        }
+        val behov =
+            objectMapper
+                .readTree(
+                    behov(
+                        YearMonth.of(2020, 2),
+                        YearMonth.of(2021, 1),
+                        Inntekter.Type.InntekterForSammenligningsgrunnlag,
+                    ),
+                ).apply {
+                    (this as ObjectNode).put("@opprettet", LocalDateTime.now().minusMinutes(31).toString())
+                }
         testRapid.sendTestMessage(behov.toString())
         assertEquals(0, testRapid.inspektør.size)
     }
 
-    private fun assertLøsning(behovType: Inntekter.Type, vararg yearsMonths: YearMonth) {
+    private fun assertLøsning(
+        behovType: Inntekter.Type,
+        vararg yearsMonths: YearMonth,
+    ) {
         assertTrue(testRapid.inspektør.message(0).hasNonNull("@løsning"))
-        assertEquals(yearsMonths.toList(),
-            testRapid.inspektør.message(0).path("@løsning").path(behovType.name).toList()
-                .map { it.path("årMåned").asYearMonth() }
+        assertEquals(
+            yearsMonths.toList(),
+            testRapid.inspektør
+                .message(0)
+                .path("@løsning")
+                .path(behovType.name)
+                .toList()
+                .map { it.path("årMåned").asYearMonth() },
         )
     }
 
-    private fun behov(start: YearMonth, slutt: YearMonth, type: Inntekter.Type, id: UUID = UUID.randomUUID(), orgnummer: String? = null) =
-        objectMapper.writeValueAsString(behovMap(start, slutt, id, type, orgnummer))
+    private fun behov(
+        start: YearMonth,
+        slutt: YearMonth,
+        type: Inntekter.Type,
+        id: UUID = UUID.randomUUID(),
+        orgnummer: String? = null,
+    ) = objectMapper.writeValueAsString(behovMap(start, slutt, id, type, orgnummer))
 
-    private fun behovMap(start: YearMonth, slutt: YearMonth, id: UUID, type: Inntekter.Type, orgnummer: String? = null): Map<String, Any> {
-        val detaljer = mutableMapOf(
-            "beregningStart" to "$start",
-            "beregningSlutt" to "$slutt"
-        ).apply {
-            compute("organisasjonsnummer") { _, _ -> orgnummer }
-        }
+    private fun behovMap(
+        start: YearMonth,
+        slutt: YearMonth,
+        id: UUID,
+        type: Inntekter.Type,
+        orgnummer: String? = null,
+    ): Map<String, Any> {
+        val detaljer =
+            mutableMapOf(
+                "beregningStart" to "$start",
+                "beregningSlutt" to "$slutt",
+            ).apply {
+                compute("organisasjonsnummer") { _, _ -> orgnummer }
+            }
         return mapOf(
             "@id" to id,
             "@behov" to listOf(type.name),
             "fødselsnummer" to "123",
             "vedtaksperiodeId" to "vedtaksperiodeId",
-            type.name to detaljer
+            type.name to detaljer,
         )
     }
 
-    fun sammenligningsgrunnlagResponse() = """
+    fun sammenligningsgrunnlagResponse() =
+        """
     {
         "arbeidsInntektMaaned": [
             {
@@ -253,7 +306,9 @@ internal class InntekterTest {
         }
     }
 """
-    fun opptjeningsvurderingResponse() = """
+
+    fun opptjeningsvurderingResponse() =
+        """
     {
         "arbeidsInntektMaaned": [
             {
@@ -297,7 +352,8 @@ internal class InntekterTest {
     }
 """
 
-fun sykepengegrunnlagResponse() = """
+    fun sykepengegrunnlagResponse() =
+        """
     {
         "arbeidsInntektMaaned": [
             {
@@ -396,5 +452,4 @@ fun sykepengegrunnlagResponse() = """
         }
     }
 """
-
 }

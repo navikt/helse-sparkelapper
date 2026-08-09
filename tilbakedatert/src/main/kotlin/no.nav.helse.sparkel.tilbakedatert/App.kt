@@ -11,8 +11,7 @@ fun main() {
     app.start()
 }
 
-internal fun createApp(env: Map<String, String>): RapidsConnection {
-    return RapidApplication.create(env).apply {
+internal fun createApp(env: Map<String, String>): RapidsConnection =
+    RapidApplication.create(env).apply {
         TilbakedatertRiver(rapidsConnection = this)
     }
-}

@@ -12,23 +12,22 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.*
 import io.micrometer.core.instrument.MeterRegistry
-import java.time.LocalDateTime
 import kotlinx.coroutines.runBlocking
 import net.logstash.logback.argument.StructuredArguments.keyValue
+import net.logstash.logback.argument.StructuredArguments.kv
+import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForOpptjeningsvurdering
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSammenligningsgrunnlag
 import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForSykepengegrunnlag
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
+import java.time.LocalDateTime
 import java.time.YearMonth
 import java.util.UUID
-import net.logstash.logback.argument.StructuredArguments.kv
-import no.nav.helse.sparkel.inntekt.Inntekter.Type.InntekterForOpptjeningsvurdering
-import tools.jackson.databind.JsonNode
 
 class Inntekter(
     rapidsConnection: RapidsConnection,
-    private val inntektsRestClient: InntektRestClient
+    private val inntektsRestClient: InntektRestClient,
 ) {
-
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     private val log = LoggerFactory.getLogger(this::class.java)
 
@@ -42,93 +41,125 @@ class Inntekter(
         Opptjeningsvurdering(rapidsConnection)
     }
 
-    enum class Type(val ainntektfilter: String) {
+    enum class Type(
+        val ainntektfilter: String,
+    ) {
         InntekterForSykepengegrunnlag("8-28"),
         InntekterForSammenligningsgrunnlag("8-30"),
-        InntekterForOpptjeningsvurdering("8-30")
+        InntekterForOpptjeningsvurdering("8-30"),
     }
 
-    inner class Opptjeningsvurdering(rapidsConnection: RapidsConnection) :
-        River.PacketListener {
-
+    inner class Opptjeningsvurdering(
+        rapidsConnection: RapidsConnection,
+    ) : River.PacketListener {
         init {
-            River(rapidsConnection).apply {
-                precondition { it.requireAll("@behov", listOf(InntekterForOpptjeningsvurdering.name)) }
-                precondition { it.forbid("@løsning") }
-                validate { it.requireKey("@id", "fødselsnummer") }
-                validate { it.interestedIn("vedtaksperiodeId") }
-                validate { it.require("${InntekterForOpptjeningsvurdering.name}.beregningStart", JsonNode::asYearMonth) }
-                validate { it.require("${InntekterForOpptjeningsvurdering.name}.beregningSlutt", JsonNode::asYearMonth) }
-                validate { it.require("@opprettet") { it.måVæreFersktNok() } }
-            }.register(this)
+            River(rapidsConnection)
+                .apply {
+                    precondition { it.requireAll("@behov", listOf(InntekterForOpptjeningsvurdering.name)) }
+                    precondition { it.forbid("@løsning") }
+                    validate { it.requireKey("@id", "fødselsnummer") }
+                    validate { it.interestedIn("vedtaksperiodeId") }
+                    validate { it.require("${InntekterForOpptjeningsvurdering.name}.beregningStart", JsonNode::asYearMonth) }
+                    validate { it.require("${InntekterForOpptjeningsvurdering.name}.beregningSlutt", JsonNode::asYearMonth) }
+                    validate { it.require("@opprettet") { it.måVæreFersktNok() } }
+                }.register(this)
         }
 
-        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+        override fun onPacket(
+            packet: JsonMessage,
+            context: MessageContext,
+            metadata: MessageMetadata,
+            meterRegistry: MeterRegistry,
+        ) {
             this@Inntekter.onOpptjeningsvurderingPacket(packet, context)
         }
 
-        override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+        override fun onError(
+            problems: MessageProblems,
+            context: MessageContext,
+            metadata: MessageMetadata,
+        ) {
             log.error(problems.toString())
         }
     }
 
-    inner class Sykepengegrunnlag(rapidsConnection: RapidsConnection) :
-        River.PacketListener {
-
+    inner class Sykepengegrunnlag(
+        rapidsConnection: RapidsConnection,
+    ) : River.PacketListener {
         init {
-            River(rapidsConnection).apply {
-                precondition { it.requireAll("@behov", listOf(InntekterForSykepengegrunnlag.name)) }
-                precondition { it.forbid("@løsning") }
-                validate { it.requireKey("@id", "fødselsnummer") }
-                validate { it.interestedIn("vedtaksperiodeId") }
-                validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
-                validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
-                validate { it.require("@opprettet") { it.måVæreFersktNok() } }
-            }.register(this)
+            River(rapidsConnection)
+                .apply {
+                    precondition { it.requireAll("@behov", listOf(InntekterForSykepengegrunnlag.name)) }
+                    precondition { it.forbid("@løsning") }
+                    validate { it.requireKey("@id", "fødselsnummer") }
+                    validate { it.interestedIn("vedtaksperiodeId") }
+                    validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
+                    validate { it.require("${InntekterForSykepengegrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
+                    validate { it.require("@opprettet") { it.måVæreFersktNok() } }
+                }.register(this)
         }
 
-        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+        override fun onPacket(
+            packet: JsonMessage,
+            context: MessageContext,
+            metadata: MessageMetadata,
+            meterRegistry: MeterRegistry,
+        ) {
             this@Inntekter.onSykepengegrunnlagPacket(packet, context)
         }
 
-        override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+        override fun onError(
+            problems: MessageProblems,
+            context: MessageContext,
+            metadata: MessageMetadata,
+        ) {
             log.error(problems.toString())
         }
     }
 
-    inner class Sammenligningsgrunnlag(rapidsConnection: RapidsConnection) :
-        River.PacketListener {
-
+    inner class Sammenligningsgrunnlag(
+        rapidsConnection: RapidsConnection,
+    ) : River.PacketListener {
         init {
-            River(rapidsConnection).apply {
-                precondition { it.requireAll("@behov", listOf(InntekterForSammenligningsgrunnlag.name)) }
-                precondition { it.forbid("@løsning") }
-                validate { it.requireKey("@id", "fødselsnummer") }
-                validate { it.interestedIn("vedtaksperiodeId") }
-                validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
-                validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
-                validate { it.require("@opprettet") { it.måVæreFersktNok() } }
-            }.register(this)
+            River(rapidsConnection)
+                .apply {
+                    precondition { it.requireAll("@behov", listOf(InntekterForSammenligningsgrunnlag.name)) }
+                    precondition { it.forbid("@løsning") }
+                    validate { it.requireKey("@id", "fødselsnummer") }
+                    validate { it.interestedIn("vedtaksperiodeId") }
+                    validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningStart", JsonNode::asYearMonth) }
+                    validate { it.require("${InntekterForSammenligningsgrunnlag.name}.beregningSlutt", JsonNode::asYearMonth) }
+                    validate { it.require("@opprettet") { it.måVæreFersktNok() } }
+                }.register(this)
         }
 
-        override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+        override fun onPacket(
+            packet: JsonMessage,
+            context: MessageContext,
+            metadata: MessageMetadata,
+            meterRegistry: MeterRegistry,
+        ) {
             this@Inntekter.onSammenligningsgrunnlagPacket(packet, context)
         }
 
-        override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+        override fun onError(
+            problems: MessageProblems,
+            context: MessageContext,
+            metadata: MessageMetadata,
+        ) {
             log.error(problems.toString())
         }
     }
 
     private fun onSammenligningsgrunnlagPacket(
         packet: JsonMessage,
-        context: MessageContext
+        context: MessageContext,
     ) {
         withMDC(
             mapOf(
                 "behovId" to packet["@id"].asString(),
-                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asString()
-            )
+                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asString(),
+            ),
         ) {
             val beregningStart = packet["${InntekterForSammenligningsgrunnlag.name}.beregningStart"].asYearMonth()
             val beregningSlutt = packet["${InntekterForSammenligningsgrunnlag.name}.beregningSlutt"].asYearMonth()
@@ -139,13 +170,13 @@ class Inntekter(
 
     private fun onSykepengegrunnlagPacket(
         packet: JsonMessage,
-        context: MessageContext
+        context: MessageContext,
     ) {
         withMDC(
             mapOf(
                 "behovId" to packet["@id"].asString(),
-                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asString()
-            )
+                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asString(),
+            ),
         ) {
             val beregningStart = packet["${InntekterForSykepengegrunnlag.name}.beregningStart"].asYearMonth()
             val beregningSlutt = packet["${InntekterForSykepengegrunnlag.name}.beregningSlutt"].asYearMonth()
@@ -156,13 +187,13 @@ class Inntekter(
 
     private fun onOpptjeningsvurderingPacket(
         packet: JsonMessage,
-        context: MessageContext
+        context: MessageContext,
     ) {
         withMDC(
             mapOf(
                 "behovId" to packet["@id"].asString(),
-                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asString()
-            )
+                "vedtaksperiodeId" to packet["vedtaksperiodeId"].asString(),
+            ),
         ) {
             val beregningStart = packet["${InntekterForOpptjeningsvurdering.name}.beregningStart"].asYearMonth()
             val beregningSlutt = packet["${InntekterForOpptjeningsvurdering.name}.beregningSlutt"].asYearMonth()
@@ -177,35 +208,39 @@ class Inntekter(
         beregningStart: YearMonth,
         beregningSlutt: YearMonth,
         context: MessageContext,
-        orgnr: String? = null
+        orgnr: String? = null,
     ) {
         try {
             val meldingId = packet["@id"].asString()
             val callId = lagCallId(meldingId, packet["vedtaksperiodeId"].stringValue(null))
 
             log.info("Henter inntekt for {}, callId: {}", kv("meldingId", meldingId), callId)
-            packet["@løsning"] = mapOf<String, Any>(
-                type.name to runBlocking {
-                    inntektsRestClient.hentInntektsliste(
-                        fnr = packet["fødselsnummer"].asString(),
-                        fom = beregningStart,
-                        tom = beregningSlutt,
-                        filter = type.ainntektfilter,
-                        callId = callId,
-                        orgnummer = orgnr
-                    )
-                }
+            packet["@løsning"] =
+                mapOf<String, Any>(
+                    type.name to
+                        runBlocking {
+                            inntektsRestClient.hentInntektsliste(
+                                fnr = packet["fødselsnummer"].asString(),
+                                fom = beregningStart,
+                                tom = beregningSlutt,
+                                filter = type.ainntektfilter,
+                                callId = callId,
+                                orgnummer = orgnr,
+                            )
+                        },
+                )
+            context.publish(
+                packet.toJson().also {
+                    log.info("løser behov: {}", keyValue("id", packet["@id"].asString()))
+                    sikkerlogg.info("svarer behov {} med {}", keyValue("id", packet["@id"].asString()), it)
+                },
             )
-            context.publish(packet.toJson().also {
-                log.info("løser behov: {}", keyValue("id", packet["@id"].asString()))
-                sikkerlogg.info("svarer behov {} med {}", keyValue("id", packet["@id"].asString()), it)
-            })
         } catch (e: ResponseException) {
             log.warn("Feilet ved løsing av behov: ${e.message}", e)
             runBlocking {
                 sikkerlogg.warn(
                     "Feilet ved løsing av behov: ${e.message}\n\t${e.response.bodyAsText()}",
-                    e
+                    e,
                 )
             }
         } catch (e: Exception) {
@@ -214,16 +249,20 @@ class Inntekter(
         }
     }
 
-    private fun JsonNode.måVæreFersktNok() = check(asLocalDateTime().isAfter(LocalDateTime.now().minusMinutes(ferskhetsgrense))) {
-        "Ignorerer behov fordi det er over $ferskhetsgrense minutter gammelt"
-    }
-
-    private fun lagCallId(meldingId: String, vedtaksperiodeId: String?): String {
-        val base = vedtaksperiodeId ?: UUID.randomUUID().toString().also {
-            log.info("Ingen vedtaksperiode i behovet, bruker $it som starten på callId")
+    private fun JsonNode.måVæreFersktNok() =
+        check(asLocalDateTime().isAfter(LocalDateTime.now().minusMinutes(ferskhetsgrense))) {
+            "Ignorerer behov fordi det er over $ferskhetsgrense minutter gammelt"
         }
+
+    private fun lagCallId(
+        meldingId: String,
+        vedtaksperiodeId: String?,
+    ): String {
+        val base =
+            vedtaksperiodeId ?: UUID.randomUUID().toString().also {
+                log.info("Ingen vedtaksperiode i behovet, bruker $it som starten på callId")
+            }
 
         return "$base-$meldingId"
     }
-
 }

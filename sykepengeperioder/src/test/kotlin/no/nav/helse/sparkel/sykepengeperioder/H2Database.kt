@@ -4,12 +4,12 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import kotliquery.queryOf
 import kotliquery.sessionOf
+import no.nav.helse.sparkel.infotrygd.Fnr
 import org.flywaydb.core.Flyway
 import org.intellij.lang.annotations.Language
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
-import no.nav.helse.sparkel.infotrygd.Fnr
 
 internal abstract class H2Database {
     protected companion object {
@@ -17,16 +17,20 @@ internal abstract class H2Database {
         internal const val orgnummer = "80000000"
     }
 
-    protected val dataSource: DataSource = HikariDataSource(HikariConfig().apply {
-        jdbcUrl = "jdbc:h2:mem:test1;MODE=Oracle;DB_CLOSE_DELAY=-1"
-        username = "sa"
-        password = "sa"
-    }).apply {
-        flyway()
-    }
+    protected val dataSource: DataSource =
+        HikariDataSource(
+            HikariConfig().apply {
+                jdbcUrl = "jdbc:h2:mem:test1;MODE=Oracle;DB_CLOSE_DELAY=-1"
+                username = "sa"
+                password = "sa"
+            },
+        ).apply {
+            flyway()
+        }
 
     private fun DataSource.flyway() {
-        Flyway.configure()
+        Flyway
+            .configure()
             .dataSource(this)
             .load()
             .migrate()
@@ -47,8 +51,8 @@ internal abstract class H2Database {
                 DELETE FROM T_DELYTELSE;
                 DELETE FROM T_DELYTELSE_SP_FA_BS;
                 DELETE FROM IP_MERKNAD_20
-            """
-                ).asExecute
+            """,
+                ).asExecute,
             )
         }
     }
@@ -59,13 +63,13 @@ internal abstract class H2Database {
         val grad: String = "100",
         val dagsats: Double = 1000.0,
         val orgnummer: String = Companion.orgnummer,
-        val periodetype: String = "5"
+        val periodetype: String = "5",
     )
 
     protected class Inntekt(
         val fom: LocalDate,
         val lønn: Double = 565700.0,
-        val orgnummer: String = Companion.orgnummer
+        val orgnummer: String = Companion.orgnummer,
     )
 
     protected fun opprettPeriode(
@@ -77,7 +81,7 @@ internal abstract class H2Database {
         sykmeldtTom: LocalDate = utbetalinger.mapNotNull { it.tom }.maxOrNull() ?: 31.januar(2020),
         inntekter: List<Inntekt> = emptyList(),
         statslønn: Double? = null,
-        arbeidskategori: String = "01"
+        arbeidskategori: String = "01",
     ) {
         insertPeriode(
             fnr = fnr,
@@ -85,7 +89,7 @@ internal abstract class H2Database {
             fom = sykmeldtFom,
             tom = sykmeldtTom,
             maksdato = maksdato,
-            arbeidskategori = arbeidskategori
+            arbeidskategori = arbeidskategori,
         )
         utbetalinger.forEach { utbetaling ->
             insertUtbetaling(
@@ -97,7 +101,7 @@ internal abstract class H2Database {
                 utbetalt = utbetaling.tom,
                 dagsats = utbetaling.dagsats,
                 periodetype = utbetaling.periodetype,
-                arbOrgnr = utbetaling.orgnummer
+                arbOrgnr = utbetaling.orgnummer,
             )
         }
         inntekter.forEach { inntekt ->
@@ -109,15 +113,16 @@ internal abstract class H2Database {
                 refusjonTom = null,
                 refusjonstype = "J",
                 periode = "Å",
-                loenn = inntekt.lønn
+                loenn = inntekt.lønn,
             )
         }
-        if (statslønn != null)
+        if (statslønn != null) {
             insertStatslønn(
                 fnr = fnr,
                 seq = seq,
-                statslønn = statslønn
+                statslønn = statslønn,
             )
+        }
     }
 
     private var id: Int = 0
@@ -133,7 +138,7 @@ internal abstract class H2Database {
         ferie1Fom: LocalDate? = null,
         ferie1Tom: LocalDate? = null,
         ferie2Fom: LocalDate? = null,
-        ferie2Tom: LocalDate? = null
+        ferie2Tom: LocalDate? = null,
     ) {
         sessionOf(dataSource).use { session ->
             @Language("Oracle")
@@ -196,9 +201,9 @@ VALUES (111111111145680, 1111, :seq, :fom, :tom, 100, :slutt, 'j', :ferie1Fom, :
                         "ferie1Tom" to ferie1Tom?.format(),
                         "ferie2Fom" to ferie2Fom?.format(),
                         "ferie2Tom" to ferie2Tom?.format(),
-                        "id" to id
-                    )
-                ).asUpdate
+                        "id" to id,
+                    ),
+                ).asUpdate,
             )
         }
     }
@@ -262,9 +267,9 @@ VALUES (:fom, :tom, :grad, ' ', :utbetalt, :dagsats, :periodetype, :arbOrgnr, :f
                         "dagsats" to dagsats,
                         "periodetype" to periodetype,
                         "arbOrgnr" to arbOrgnr.toInt(),
-                        "id" to id
-                    )
-                ).asUpdate
+                        "id" to id,
+                    ),
+                ).asUpdate,
             )
         }
     }
@@ -277,7 +282,7 @@ VALUES (:fom, :tom, :grad, ' ', :utbetalt, :dagsats, :periodetype, :arbOrgnr, :f
         refusjonTom: LocalDate?,
         refusjonstype: String,
         periode: String,
-        loenn: Double
+        loenn: Double,
     ) {
         sessionOf(dataSource).use { session ->
             @Language("Oracle")
@@ -318,9 +323,9 @@ VALUES (:orgNr, :sykepengerFom, :refusjonTom, :refusjonstype, :periode, :loenn, 
                         "refusjonstype" to refusjonstype,
                         "periode" to periode,
                         "loenn" to loenn,
-                        "id" to id
-                    )
-                ).asUpdate
+                        "id" to id,
+                    ),
+                ).asUpdate,
             )
         }
     }
@@ -328,7 +333,7 @@ VALUES (:orgNr, :sykepengerFom, :refusjonTom, :refusjonstype, :periode, :loenn, 
     private fun insertStatslønn(
         fnr: Fnr,
         seq: Int,
-        statslønn: Double
+        statslønn: Double,
     ) {
         sessionOf(dataSource).use { session ->
             @Language("Oracle")
@@ -359,14 +364,17 @@ VALUES (:fnr, :seq, :id, :statslonn,
                         "fnr" to fnr.formatAsITFnr(),
                         "seq" to seq,
                         "statslonn" to statslønn,
-                        "id" to id
-                    )
-                ).asUpdate
+                        "id" to id,
+                    ),
+                ).asUpdate,
             )
         }
     }
 
-    private fun insertFødselsnummerLøpenummer(fnr: Fnr, løpenummer: Double) {
+    private fun insertFødselsnummerLøpenummer(
+        fnr: Fnr,
+        løpenummer: Double,
+    ) {
         sessionOf(dataSource).use { session ->
             @Language("Oracle")
             val query = """INSERT INTO T_LOPENR_FNR(PERSONNR, PERSON_LOPENR) VALUES (:fnr, :fnr_lopenr)"""
@@ -374,7 +382,11 @@ VALUES (:fnr, :seq, :id, :statslonn,
         }
     }
 
-    private fun insertStønad(løpenummer: Double, datoStart: LocalDate, stønadId: Double) {
+    private fun insertStønad(
+        løpenummer: Double,
+        datoStart: LocalDate,
+        stønadId: Double,
+    ) {
         sessionOf(dataSource).use { session ->
             @Language("Oracle")
             val query = """INSERT INTO T_STONAD(STONAD_ID, PERSON_LOPENR, KODE_RUTINE, DATO_START) 
@@ -382,13 +394,20 @@ VALUES (:fnr, :seq, :id, :statslonn,
             """
             session.run(
                 queryOf(
-                    query, mapOf("lopenr" to løpenummer, "datoStart" to datoStart, "stonad_id" to stønadId)
-                ).asUpdate
+                    query,
+                    mapOf("lopenr" to løpenummer, "datoStart" to datoStart, "stonad_id" to stønadId),
+                ).asUpdate,
             )
         }
     }
 
-    private fun insertVedtak(løpenummer: Double, stønadId: Double, vedtakId: Double, fom: LocalDate, tom: LocalDate) {
+    private fun insertVedtak(
+        løpenummer: Double,
+        stønadId: Double,
+        vedtakId: Double,
+        fom: LocalDate,
+        tom: LocalDate,
+    ) {
         sessionOf(dataSource).use { session ->
             @Language("Oracle")
             val query = """INSERT INTO T_VEDTAK( 
@@ -424,9 +443,9 @@ VALUES (:fnr, :seq, :id, :statslonn,
                         "tom" to tom,
                         "lopenr" to løpenummer,
                         "vedtak_id" to vedtakId,
-                        "stonad_id" to stønadId
-                    )
-                ).asUpdate
+                        "stonad_id" to stønadId,
+                    ),
+                ).asUpdate,
             )
         }
     }
@@ -436,7 +455,7 @@ VALUES (:fnr, :seq, :id, :statslonn,
         fom: LocalDate,
         tom: LocalDate,
         beløp: List<Double>,
-        orgnumre: List<String>
+        orgnumre: List<String>,
     ) {
         sessionOf(dataSource).use { session ->
             beløp.forEach { sum ->
@@ -460,7 +479,7 @@ VALUES (:fnr, :seq, :id, :statslonn,
                 session.run(
                     queryOf(
                         query1,
-                        mapOf("fom" to fom, "tom" to tom, "belop" to sum, "vedtak_id" to vedtakId)
+                        mapOf("fom" to fom, "tom" to tom, "belop" to sum, "vedtak_id" to vedtakId),
                     ).asUpdate,
                 )
             }
@@ -502,7 +521,7 @@ VALUES (:fnr, :seq, :id, :statslonn,
         fnr: Fnr = Companion.fnr,
         kode: String = "242",
         merknadsdato: LocalDate = 31.desember(2021),
-        id: Int = 1
+        id: Int = 1,
     ) {
         sessionOf(dataSource).use { session ->
             @Language("Oracle")
@@ -526,24 +545,24 @@ VALUES (:fnr, :seq, :id, :statslonn,
             """
             session.run(
                 queryOf(
-                    query, mapOf(
+                    query,
+                    mapOf(
                         "fnr" to fnr.formatAsITFnr(),
                         "merknad_kode" to kode,
                         "merknad_dato" to merknadsdato.format(),
-                        "id" to id
-                    )
-                ).asUpdate
+                        "id" to id,
+                    ),
+                ).asUpdate,
             )
         }
     }
-
 
     protected fun opprettFeriepenger(
         fnr: Fnr = Companion.fnr,
         fom: LocalDate = 1.mai(2020),
         tom: LocalDate = 31.mai(2020),
         beløp: List<Double> = listOf(1000.0),
-        orgnumre: List<String> = listOf(Companion.orgnummer)
+        orgnumre: List<String> = listOf(Companion.orgnummer),
     ) {
         val løpenummer = (10000..99999).random().toDouble()
         val stønadId = (10000..99999).random().toDouble()

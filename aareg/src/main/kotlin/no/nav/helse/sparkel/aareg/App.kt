@@ -27,14 +27,15 @@ fun main() {
     val app = App()
     app.start(
         configuration = configurationFromEnvironment(),
-        rapidsConnection = RapidApplication.create(
-            env = System.getenv(),
-            builder = {
-                withKtorModule {
-                    app.ktorSetupCallback(this)
-                }
-            },
-        )
+        rapidsConnection =
+            RapidApplication.create(
+                env = System.getenv(),
+                builder = {
+                    withKtorModule {
+                        app.ktorSetupCallback(this)
+                    }
+                },
+            ),
     )
 }
 
@@ -43,39 +44,44 @@ class App {
 
     fun start(
         configuration: Configuration,
-        rapidsConnection: RapidsConnection
+        rapidsConnection: RapidsConnection,
     ) {
-        val httpClient = HttpClient {
-            install(ContentNegotiation) {
-                register(ContentType.Application.Json, JacksonConverter(objectMapper))
+        val httpClient =
+            HttpClient {
+                install(ContentNegotiation) {
+                    register(ContentType.Application.Json, JacksonConverter(objectMapper))
+                }
+                expectSuccess = false
             }
-            expectSuccess = false
-        }
 
-        val azureAD = createDefaultAzureTokenClient(
-            tokenEndpoint = configuration.tokenEndpointURL,
-            clientId = configuration.clientId,
-            clientSecret = configuration.clientSecret
-        )
+        val azureAD =
+            createDefaultAzureTokenClient(
+                tokenEndpoint = configuration.tokenEndpointURL,
+                clientId = configuration.clientId,
+                clientSecret = configuration.clientSecret,
+            )
 
-        val kodeverkClient = KodeverkClient(
-            kodeverkBaseUrl = configuration.kodeverkBaseUrl,
-            kodeverkOauthScope = configuration.kodeverkOauthScope,
-            azureTokenProvider = azureAD,
-        )
+        val kodeverkClient =
+            KodeverkClient(
+                kodeverkBaseUrl = configuration.kodeverkBaseUrl,
+                kodeverkOauthScope = configuration.kodeverkOauthScope,
+                azureTokenProvider = azureAD,
+            )
 
-        val eregClient = EregClient(
-            baseUrl = configuration.organisasjonBaseUrl,
-            appName = configuration.appName,
-            httpClient = httpClient
-        )
+        val eregClient =
+            EregClient(
+                baseUrl = configuration.organisasjonBaseUrl,
+                appName = configuration.appName,
+                httpClient = httpClient,
+            )
 
-        val aaregClient = AaregClient(
-            baseUrl = configuration.aaregBaseUrlRest,
-            scope = configuration.aaregOauthScope,
-            tokenSupplier = azureAD,
-            httpClient = httpClient
-        )
+        val aaregClient =
+            AaregClient(
+                baseUrl = configuration.aaregBaseUrlRest,
+                scope = configuration.aaregOauthScope,
+                tokenSupplier = azureAD,
+                httpClient = httpClient,
+            )
 
         ktorSetupCallback = { ktorApplication ->
             ktorModule(

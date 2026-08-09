@@ -16,17 +16,17 @@ import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.path
 import io.ktor.server.routing.routing
-import java.net.URI
-import java.util.UUID
 import no.nav.helse.sparkel.aareg.arbeidsgiverinformasjon.EregClient
 import org.slf4j.event.Level
+import java.net.URI
+import java.util.UUID
 
 fun ktorModule(
     application: Application,
     clientId: String,
     issuerUrl: String,
     jwkProviderUri: String,
-    eregClient: EregClient
+    eregClient: EregClient,
 ) {
     with(application) {
         install(CallId) {
@@ -47,7 +47,7 @@ fun ktorModule(
             jwt("oidc") {
                 verifier(
                     jwkProvider = JwkProviderBuilder(URI(jwkProviderUri).toURL()).build(),
-                    issuer = issuerUrl
+                    issuer = issuerUrl,
                 ) {
                     withAudience(clientId)
                 }
@@ -63,6 +63,3 @@ fun ktorModule(
         }
     }
 }
-
-
-

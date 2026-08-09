@@ -8,7 +8,6 @@ import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import com.github.navikt.tbd_libs.kafka.AivenConfig
 import com.github.navikt.tbd_libs.kafka.ConsumerProducerFactory
 import com.github.navikt.tbd_libs.spedisjon.SpedisjonClient
-import java.net.http.HttpClient
 import no.nav.helse.rapids_rivers.RapidApplication
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerBegrensetDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerBegrensetRiver
@@ -25,33 +24,37 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.internals.RecordHeader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.net.http.HttpClient
 
 private val logger: Logger = LoggerFactory.getLogger("sparkel-arbeidsgiver")
 
 fun main() {
     val env = System.getenv()
 
-    val objectMapperJackson2 = jacksonObjectMapper()
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        .registerModules(JavaTimeModule())
+    val objectMapperJackson2 =
+        jacksonObjectMapper()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .registerModules(JavaTimeModule())
 
     val consumerProducerFactory = ConsumerProducerFactory(AivenConfig.default)
     val producer = ArbeidsgiveropplysningerProducer(consumerProducerFactory.createProducer(), objectMapperJackson2)
 
     val azureClient = createAzureTokenClientFromEnvironment(env)
-    val spedisjonClient = SpedisjonClient(
-        httpClient = HttpClient.newHttpClient(),
-        objectMapper = objectMapperJackson2,
-        tokenProvider = azureClient
-    )
+    val spedisjonClient =
+        SpedisjonClient(
+            httpClient = HttpClient.newHttpClient(),
+            objectMapper = objectMapperJackson2,
+            tokenProvider = azureClient,
+        )
 
-    val app = RapidApplication.create(env, consumerProducerFactory).apply {
-        TrengerArbeidsgiveropplysningerRiver(this, producer)
-        TrengerIkkeArbeidsgiveropplysningerRiver(this, producer)
-        TrengerArbeidsgiveropplysningerBegrensetRiver(this, producer)
-        InntektsmeldingHåndertRiver(this, producer, spedisjonClient)
-        VedtaksperiodeForkastetRiver(this, producer)
-    }
+    val app =
+        RapidApplication.create(env, consumerProducerFactory).apply {
+            TrengerArbeidsgiveropplysningerRiver(this, producer)
+            TrengerIkkeArbeidsgiveropplysningerRiver(this, producer)
+            TrengerArbeidsgiveropplysningerBegrensetRiver(this, producer)
+            InntektsmeldingHåndertRiver(this, producer, spedisjonClient)
+            VedtaksperiodeForkastetRiver(this, producer)
+        }
     logger.info("Hei, bro!")
     app.start()
 }
@@ -60,7 +63,6 @@ internal class ArbeidsgiveropplysningerProducer(
     val producer: KafkaProducer<String, String>,
     val objectMapper: ObjectMapper,
 ) {
-
     fun send(payload: TrengerIkkeArbeidsgiveropplysningerDto) {
         payload.sendRecord(payload.fødselsnummer, payload.type)
     }
@@ -81,18 +83,22 @@ internal class ArbeidsgiveropplysningerProducer(
         payload.sendRecord(payload.fødselsnummer, payload.type)
     }
 
-    private fun Any.sendRecord(fnr: String, meldingtype: Meldingstype) {
+    private fun Any.sendRecord(
+        fnr: String,
+        meldingtype: Meldingstype,
+    ) {
         producer.send(record(fnr, meldingtype)).get()
     }
 
-    private fun Any.record(fnr: String, meldingstype: Meldingstype): ProducerRecord<String, String> {
-        return ProducerRecord(
+    private fun Any.record(
+        fnr: String,
+        meldingstype: Meldingstype,
+    ): ProducerRecord<String, String> =
+        ProducerRecord(
             "tbd.arbeidsgiveropplysninger",
             null,
             fnr,
             objectMapper.writeValueAsString(this),
-            listOf(RecordHeader("type", meldingstype.name.lowercase().toByteArray()))
+            listOf(RecordHeader("type", meldingstype.name.lowercase().toByteArray())),
         )
-    }
 }
-

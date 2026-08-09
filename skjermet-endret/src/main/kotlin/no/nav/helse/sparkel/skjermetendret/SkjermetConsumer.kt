@@ -1,15 +1,16 @@
 package no.nav.helse.sparkel.skjermetendret
 
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
-import java.time.Duration
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
+import java.time.Duration
 
 internal class SkjermetConsumer(
     private val rapidConnection: RapidsConnection,
     private val kafkaConsumer: KafkaConsumer<String, String>,
     private val skjermetEndretPubliserer: SkjermetEndretPubliserer,
-    ) : AutoCloseable, Runnable {
+) : AutoCloseable,
+    Runnable {
     private val log = LoggerFactory.getLogger(this::class.java)
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     private var konsumerer = true
@@ -25,7 +26,7 @@ internal class SkjermetConsumer(
                     val maskedFnr = fnr.first() + "#".repeat(9) + fnr.last()
                     val skjermet = it.value().toBoolean()
 
-                    sikkerlogg.info("Leste inn melding for skjermet-status for ${maskedFnr}: Skjermet=$skjermet")
+                    sikkerlogg.info("Leste inn melding for skjermet-status for $maskedFnr: Skjermet=$skjermet")
                     skjermetEndretPubliserer.publiserSkjermetEndring(fnr, skjermet)
                 }
             }

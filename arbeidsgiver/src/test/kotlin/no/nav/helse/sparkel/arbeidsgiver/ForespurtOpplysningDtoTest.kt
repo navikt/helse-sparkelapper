@@ -13,18 +13,20 @@ internal class ForespurtOpplysningDtoTest {
 
     @Test
     fun `tolker forespurt opplysninger korrekt - med inntekt`() {
-        val expectedForespurteOpplysninger = listOf(
-            Inntekt,
-            Refusjon,
-            Arbeidsgiverperiode
-        )
+        val expectedForespurteOpplysninger =
+            listOf(
+                Inntekt,
+                Refusjon,
+                Arbeidsgiverperiode,
+            )
         val actualForespurteOpplysninger = forespurteOpplysningerMedInntektJson().asForespurteOpplysninger()
 
         assertEquals(expectedForespurteOpplysninger, actualForespurteOpplysninger)
     }
 
-    private fun forespurteOpplysningerMedInntektJson() = objectMapper.readTree(
-        """[
+    private fun forespurteOpplysningerMedInntektJson() =
+        objectMapper.readTree(
+            """[
                 {
                     "opplysningstype": "Inntekt"
                 },
@@ -35,6 +37,6 @@ internal class ForespurtOpplysningDtoTest {
                     "opplysningstype": "Arbeidsgiverperiode"
                 }
             ]
-        """
-    )
+        """,
+        )
 }

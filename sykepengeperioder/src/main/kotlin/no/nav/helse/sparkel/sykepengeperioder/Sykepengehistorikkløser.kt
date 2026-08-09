@@ -9,15 +9,14 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
 import net.logstash.logback.argument.StructuredArguments.keyValue
-import org.slf4j.LoggerFactory
 import no.nav.helse.sparkel.infotrygd.Fnr
+import org.slf4j.LoggerFactory
 import tools.jackson.databind.JsonNode
 
 internal class Sykepengehistorikkløser(
     rapidsConnection: RapidsConnection,
-    private val infotrygdService: InfotrygdService
+    private val infotrygdService: InfotrygdService,
 ) : River.PacketListener {
-
     private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
     companion object {
@@ -25,40 +24,53 @@ internal class Sykepengehistorikkløser(
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireAll("@behov", listOf(behov)) }
-            precondition { it.forbid("@løsning") }
-            validate { it.requireKey("@id") }
-            validate { it.requireKey("@opprettet") }
-            validate { it.requireKey("fødselsnummer") }
-            validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
-            validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireAll("@behov", listOf(behov)) }
+                precondition { it.forbid("@løsning") }
+                validate { it.requireKey("@id") }
+                validate { it.requireKey("@opprettet") }
+                validate { it.requireKey("fødselsnummer") }
+                validate { it.require("$behov.historikkFom", JsonNode::asLocalDate) }
+                validate { it.require("$behov.historikkTom", JsonNode::asLocalDate) }
+            }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("forstod ikke $behov med melding\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
-        infotrygdService.løsningForSykepengehistorikkbehov(
-            packet["@id"].asString(),
-            Fnr(packet["fødselsnummer"].asString()),
-            packet["$behov.historikkFom"].asLocalDate(),
-            packet["$behov.historikkTom"].asLocalDate()
-        )
-            ?.let { løsning ->
-                packet["@løsning"] = mapOf(
-                    behov to løsning
-                )
-                context.publish(packet.toJson().also { json ->
-                    sikkerlogg.info(
-                        "sender svar {}:\n\t{}",
-                        keyValue("id", packet["@id"].asString()),
-                        json
+        infotrygdService
+            .løsningForSykepengehistorikkbehov(
+                packet["@id"].asString(),
+                Fnr(packet["fødselsnummer"].asString()),
+                packet["$behov.historikkFom"].asLocalDate(),
+                packet["$behov.historikkTom"].asLocalDate(),
+            )?.let { løsning ->
+                packet["@løsning"] =
+                    mapOf(
+                        behov to løsning,
                     )
-                })
+                context.publish(
+                    packet.toJson().also { json ->
+                        sikkerlogg.info(
+                            "sender svar {}:\n\t{}",
+                            keyValue("id", packet["@id"].asString()),
+                            json,
+                        )
+                    },
+                )
             }
     }
 }

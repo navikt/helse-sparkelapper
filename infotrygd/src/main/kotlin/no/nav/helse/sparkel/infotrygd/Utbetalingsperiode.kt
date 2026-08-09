@@ -9,5 +9,5 @@ class Utbetalingsperiode(
     val dagsats: Double,
     val grad: String,
     val typetekst: String?,
-    val organisasjonsnummer: String?
+    val organisasjonsnummer: String?,
 )

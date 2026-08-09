@@ -7,19 +7,19 @@ import com.github.navikt.tbd_libs.speed.VergemålEllerFremtidsfullmaktResponse
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
-import java.util.UUID
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import tools.jackson.databind.JsonNode
+import java.util.UUID
 
 internal class VergemålløserTest {
-
     private val personinfoService = mockk<PersoninfoService>()
-    private val rapid = TestRapid().apply {
-        Vergemålløser(this, personinfoService)
-    }
+    private val rapid =
+        TestRapid().apply {
+            Vergemålløser(this, personinfoService)
+        }
 
     @BeforeEach
     fun setup() {
@@ -28,10 +28,11 @@ internal class VergemålløserTest {
 
     @Test
     fun `svarer ut behov der det ikke foreligger vergemål eller fremtidsfullmakt`() {
-        every { personinfoService.løsningForVergemål(any(), any()) } returns VergemålEllerFremtidsfullmaktResponse(
-            vergemålEllerFremtidsfullmakter = emptyList(),
-            kilde = IdentResponse.KildeResponse.PDL
-        ).ok()
+        every { personinfoService.løsningForVergemål(any(), any()) } returns
+            VergemålEllerFremtidsfullmaktResponse(
+                vergemålEllerFremtidsfullmakter = emptyList(),
+                kilde = IdentResponse.KildeResponse.PDL,
+            ).ok()
         rapid.sendTestMessage(behov())
         val svar = rapid.inspektør.message(0)
         assertEquals(0, svar.vergemålLøsning()["vergemål"].size())
@@ -39,14 +40,16 @@ internal class VergemålløserTest {
 
     @Test
     fun `svarer ut behov der det foreligger vergemål`() {
-        every { personinfoService.løsningForVergemål(any(), any()) } returns VergemålEllerFremtidsfullmaktResponse(
-            vergemålEllerFremtidsfullmakter = listOf(
-                VergemålEllerFremtidsfullmaktResponse.Vergemål(
-                    type = VergemålEllerFremtidsfullmaktResponse.Vergemåltype.VOKSEN
-                )
-            ),
-            kilde = IdentResponse.KildeResponse.PDL
-        ).ok()
+        every { personinfoService.løsningForVergemål(any(), any()) } returns
+            VergemålEllerFremtidsfullmaktResponse(
+                vergemålEllerFremtidsfullmakter =
+                    listOf(
+                        VergemålEllerFremtidsfullmaktResponse.Vergemål(
+                            type = VergemålEllerFremtidsfullmaktResponse.Vergemåltype.VOKSEN,
+                        ),
+                    ),
+                kilde = IdentResponse.KildeResponse.PDL,
+            ).ok()
         rapid.sendTestMessage(behov())
         val svar = rapid.inspektør.message(0)
         assertEquals(1, svar.vergemålLøsning()["vergemål"].size())
@@ -56,14 +59,16 @@ internal class VergemålløserTest {
 
     @Test
     fun `svarer ut behov der det foreligger fremtidsfullmakt`() {
-        every { personinfoService.løsningForVergemål(any(), any()) } returns VergemålEllerFremtidsfullmaktResponse(
-            vergemålEllerFremtidsfullmakter = listOf(
-                VergemålEllerFremtidsfullmaktResponse.Vergemål(
-                    type = VergemålEllerFremtidsfullmaktResponse.Vergemåltype.STADFESTET_FREMTIDSFULLMAKT
-                )
-            ),
-            kilde = IdentResponse.KildeResponse.PDL
-        ).ok()
+        every { personinfoService.løsningForVergemål(any(), any()) } returns
+            VergemålEllerFremtidsfullmaktResponse(
+                vergemålEllerFremtidsfullmakter =
+                    listOf(
+                        VergemålEllerFremtidsfullmaktResponse.Vergemål(
+                            type = VergemålEllerFremtidsfullmaktResponse.Vergemåltype.STADFESTET_FREMTIDSFULLMAKT,
+                        ),
+                    ),
+                kilde = IdentResponse.KildeResponse.PDL,
+            ).ok()
         rapid.sendTestMessage(behov())
         val svar = rapid.inspektør.message(0)
         assertEquals(1, svar.vergemålLøsning()["fremtidsfullmakter"].size())
@@ -72,7 +77,8 @@ internal class VergemålløserTest {
     }
 
     @Language("JSON")
-    fun behov() = """
+    fun behov() =
+        """
         {
             "@event_name" : "behov",
             "@behov" : [ "Vergemål" ],

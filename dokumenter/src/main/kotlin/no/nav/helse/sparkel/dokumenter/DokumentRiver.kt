@@ -15,42 +15,56 @@ internal class DokumentRiver(
     private val søknadClient: SøknadClient,
     private val inntektsmeldingClient: InntektsmeldingClient,
 ) : River.PacketListener {
-
     companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private val log = LoggerFactory.getLogger(DokumentRiver::class.java)
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireValue("@event_name", "hent-dokument") }
-            precondition { it.forbid("@løsning") }
-            validate { it.requireKey("@id") }
-            validate { it.requireKey("fødselsnummer") }
-            validate { it.requireKey("dokumentId") }
-            validate { it.requireKey("dokumentType") }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireValue("@event_name", "hent-dokument") }
+                precondition { it.forbid("@løsning") }
+                validate { it.requireKey("@id") }
+                validate { it.requireKey("fødselsnummer") }
+                validate { it.requireKey("dokumentId") }
+                validate { it.requireKey("dokumentType") }
+            }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("forstod ikke hent-dokument:\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         log.info("Leser melding med @id=${packet["@id"].asString()}")
         sikkerlogg.info("Leser melding med @id=${packet["@id"].asString()}\n${packet.toJson()}")
         when (val dokumentType = packet["dokumentType"].asString()) {
             "SØKNAD" -> håndter(packet, context, søknadClient)
             "INNTEKTSMELDING" -> håndter(packet, context, inntektsmeldingClient)
-            else -> sikkerlogg.info(
-                "Uhåndtert melding, dokumentType={}, @id={}",
-                dokumentType,
-                packet["@id"].asString(),
-            )
+            else ->
+                sikkerlogg.info(
+                    "Uhåndtert melding, dokumentType={}, @id={}",
+                    dokumentType,
+                    packet["@id"].asString(),
+                )
         }
     }
 
-    private fun håndter(packet: JsonMessage, context: MessageContext, dokumentClient: DokumentClient) {
+    private fun håndter(
+        packet: JsonMessage,
+        context: MessageContext,
+        dokumentClient: DokumentClient,
+    ) {
         val dokumentId = packet["dokumentId"].asString()
         val id = packet["@id"].asString()
 
@@ -66,7 +80,7 @@ internal class DokumentRiver(
             onFailure = {
                 log.warn("Gir opp å hente dokument, svarer ikke på behov $id for dokumentId $dokumentId")
                 sikkerlogg.warn("Gir opp å hente dokument, svarer ikke på behov $id for dokumentId $dokumentId", it)
-            }
+            },
         )
     }
 }

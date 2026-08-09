@@ -9,7 +9,6 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
 import io.ktor.http.HttpStatusCode.Companion.NotFound
-import java.util.UUID
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.aaregMockClient
 import no.nav.helse.sparkel.aareg.arbeidsforhold.util.azureTokenStub
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -18,9 +17,9 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import tools.jackson.databind.JsonNode
+import java.util.UUID
 
 internal class ArbeidsforholdLøserV2Test {
-
     private val sendtMelding get() = rapid.inspektør.message(rapid.inspektør.size - 1)
     private val rapid = TestRapid()
 
@@ -71,27 +70,39 @@ internal class ArbeidsforholdLøserV2Test {
         assertEquals(0, rapid.inspektør.size)
     }
 
-    data class AaregSvar(val response: String, val status: HttpStatusCode)
+    data class AaregSvar(
+        val response: String,
+        val status: HttpStatusCode,
+    )
 
     private fun settOppApp(aaregSvar: AaregSvar? = null) {
-        val mockAaregClient = AaregClient(
-            baseUrl = "http://baseUrl.local",
-            scope = "aareg-scope",
-            tokenSupplier = azureTokenStub(),
-            httpClient = if (aaregSvar != null) aaregMockClient(
-                aaregSvar.response, aaregSvar.status
-            ) else aaregMockClient()
-        )
+        val mockAaregClient =
+            AaregClient(
+                baseUrl = "http://baseUrl.local",
+                scope = "aareg-scope",
+                tokenSupplier = azureTokenStub(),
+                httpClient =
+                    if (aaregSvar != null) {
+                        aaregMockClient(
+                            aaregSvar.response,
+                            aaregSvar.status,
+                        )
+                    } else {
+                        aaregMockClient()
+                    },
+            )
         ArbeidsforholdLøserV2(rapid, mockAaregClient)
     }
 
-    private fun opprettLogglytter() = ListAppender<ILoggingEvent>().apply {
-        (LoggerFactory.getLogger(ArbeidsforholdLøserV2::class.java) as Logger).addAppender(this)
-        start()
-    }
+    private fun opprettLogglytter() =
+        ListAppender<ILoggingEvent>().apply {
+            (LoggerFactory.getLogger(ArbeidsforholdLøserV2::class.java) as Logger).addAppender(this)
+            start()
+        }
 
     private fun JsonNode.løsning(behov: String): List<Arbeidsforhold> =
-        this.path("@løsning")
+        this
+            .path("@løsning")
             .path(behov)
             .toList()
             .map {
@@ -99,7 +110,7 @@ internal class ArbeidsforholdLøserV2Test {
                     it["orgnummer"].asString(),
                     it["ansattSiden"].asLocalDate(),
                     it["ansattTil"].asOptionalLocalDate(),
-                    Arbeidsforholdtype.valueOf(it["type"].asString())
+                    Arbeidsforholdtype.valueOf(it["type"].asString()),
                 )
             }
 }

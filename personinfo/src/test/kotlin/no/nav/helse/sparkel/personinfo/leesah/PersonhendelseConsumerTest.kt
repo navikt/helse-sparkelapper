@@ -21,13 +21,12 @@ class PersonhendelseConsumerTest {
     @Test
     fun `happy case`() {
         val personhendelseConsumer = PersonhendelseConsumer(rapidApplication, kafkaConsumer, personhendelseRiver)
-       queueMessages(
+        queueMessages(
             personhendelseConsumer,
-            listOf(null, null, mockk<GenericRecord>(relaxed = true))
+            listOf(null, null, mockk<GenericRecord>(relaxed = true)),
         )
         personhendelseConsumer.run()
         verify(exactly = 1) { personhendelseRiver.onPackage(any()) }
-
     }
 
     @Test
@@ -36,10 +35,12 @@ class PersonhendelseConsumerTest {
         every { kafkaConsumer.poll(any<Duration>()) } throws IOException()
         personhendelseConsumer.run()
         verify(exactly = 1) { rapidApplication.stop() }
-
     }
 
-    private fun queueMessages(consumer: PersonhendelseConsumer, records: List<GenericRecord?>) {
+    private fun queueMessages(
+        consumer: PersonhendelseConsumer,
+        records: List<GenericRecord?>,
+    ) {
         val mutableRecords = records.toMutableList()
         every { kafkaConsumer.poll(any<Duration>()) } answers {
             if (mutableRecords.isEmpty()) {

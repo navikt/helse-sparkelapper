@@ -8,7 +8,6 @@ import org.junit.jupiter.api.assertThrows
 import kotlin.math.roundToInt
 
 class InntektTest {
-
     @Test
     fun `kan regne om daglig inntekt`() {
         assertInntekt(10833.33, 500.0, Daglig)
@@ -28,7 +27,11 @@ class InntektTest {
         assertThrows<IllegalArgumentException> { PeriodeKode.verdiFraKode("I") }
     }
 
-    private fun assertInntekt(expected: Double, lønn: Double, kode: PeriodeKode) {
+    private fun assertInntekt(
+        expected: Double,
+        lønn: Double,
+        kode: PeriodeKode,
+    ) {
         assertEquals(expected, (kode.omregn(lønn) * 100).roundToInt() / 100.0)
     }
 }

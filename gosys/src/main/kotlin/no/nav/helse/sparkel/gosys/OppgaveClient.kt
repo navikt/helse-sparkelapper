@@ -11,13 +11,13 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson3.JacksonConverter
-import java.io.IOException
-import javax.net.ssl.SSLHandshakeException
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import no.nav.helse.sparkel.retry
 import tools.jackson.core.exc.StreamReadException
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ObjectMapper
+import java.io.IOException
+import javax.net.ssl.SSLHandshakeException
 
 internal class OppgaveClient(
     private val baseUrl: String,
@@ -25,26 +25,30 @@ internal class OppgaveClient(
     private val azureClient: AzureTokenProvider,
     private val httpClient: HttpClient = Companion.httpClient,
 ) : Oppgavehenter {
-
     companion object {
         private val objectMapper = ObjectMapper()
-        val httpClient = HttpClient {
-            install(ContentNegotiation) {
-                register(Json, JacksonConverter(objectMapper))
+        val httpClient =
+            HttpClient {
+                install(ContentNegotiation) {
+                    register(Json, JacksonConverter(objectMapper))
+                }
+                expectSuccess = false
             }
-            expectSuccess = false
-        }
     }
 
-    private suspend fun kallOppgavetjenesten(aktørId: String, behovId: String): JsonNode {
-        val response = httpClient.get("${baseUrl}/api/v1/oppgaver?statuskategori=AAPEN&tema=SYK&aktoerId=${aktørId}") {
-            azureClient.bearerToken(scope).getOrThrow().let { azureToken ->
-                header("Authorization", "Bearer ${azureToken.token}")
+    private suspend fun kallOppgavetjenesten(
+        aktørId: String,
+        behovId: String,
+    ): JsonNode {
+        val response =
+            httpClient.get("$baseUrl/api/v1/oppgaver?statuskategori=AAPEN&tema=SYK&aktoerId=$aktørId") {
+                azureClient.bearerToken(scope).getOrThrow().let { azureToken ->
+                    header("Authorization", "Bearer ${azureToken.token}")
+                }
+                header("X-Correlation-ID", behovId)
+                System.getenv("NAIS_APP_NAME")?.let { header("Nav-Consumer-Id", it) }
+                accept(Json)
             }
-            header("X-Correlation-ID", behovId)
-            System.getenv("NAIS_APP_NAME")?.let { header("Nav-Consumer-Id", it) }
-            accept(Json)
-        }
         val status = response.status
         if (status >= HttpStatusCode.MultipleChoices) {
             throw RuntimeException("Feil fra oppgavetjenesten, status: $status")
@@ -62,12 +66,17 @@ internal class OppgaveClient(
     override suspend fun hentÅpneOppgaver(
         aktørId: String,
         behovId: String,
-    ): JsonNode = retry("oppgavetjenesten", legalExceptions = arrayOf(
-        StreamReadException::class, // I Jackson 3 har man gått vekk fra checked exceptions
-        IOException::class,
-        ClosedReceiveChannelException::class,
-        SSLHandshakeException::class,
-    )) {
-        kallOppgavetjenesten(aktørId, behovId)
-    }
+    ): JsonNode =
+        retry(
+            "oppgavetjenesten",
+            legalExceptions =
+                arrayOf(
+                    StreamReadException::class, // I Jackson 3 har man gått vekk fra checked exceptions
+                    IOException::class,
+                    ClosedReceiveChannelException::class,
+                    SSLHandshakeException::class,
+                ),
+        ) {
+            kallOppgavetjenesten(aktørId, behovId)
+        }
 }

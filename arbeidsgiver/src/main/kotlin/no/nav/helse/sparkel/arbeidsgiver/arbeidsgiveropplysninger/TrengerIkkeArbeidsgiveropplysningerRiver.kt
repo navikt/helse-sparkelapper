@@ -8,14 +8,14 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
-import java.util.*
 import no.nav.helse.sparkel.arbeidsgiver.ArbeidsgiveropplysningerProducer
 import org.slf4j.LoggerFactory
 import tools.jackson.databind.JsonNode
+import java.util.*
 
 internal class TrengerIkkeArbeidsgiveropplysningerRiver(
     rapidsConnection: RapidsConnection,
-    private val arbeidsgiverProducer: ArbeidsgiveropplysningerProducer
+    private val arbeidsgiverProducer: ArbeidsgiveropplysningerProducer,
 ) : River.PacketListener {
     private companion object {
         val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -24,25 +24,35 @@ internal class TrengerIkkeArbeidsgiveropplysningerRiver(
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireValue("@event_name", eventName) }
-            validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
-            validate { it.require("vedtaksperiodeId", JsonNode::asUuid) }
-            validate { it.requireKey("organisasjonsnummer", "fødselsnummer") }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireValue("@event_name", eventName) }
+                validate { it.require("@opprettet", JsonNode::asLocalDateTime) }
+                validate { it.require("vedtaksperiodeId", JsonNode::asUuid) }
+                validate { it.requireKey("organisasjonsnummer", "fødselsnummer") }
+            }.register(this)
     }
 
     private fun loggVennligPacket(packet: JsonMessage): Map<String, Any> =
         mapOf(
             "id" to packet.id,
-            "@event_name" to packet["@event_name"]
+            "@event_name" to packet["@event_name"],
         )
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("forstod ikke $eventName:\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         "Mottok trenger_ikke_opplysninger_fra_arbeidsgiver-event fra spleis".let {
             logg.info("$it:\n{}", loggVennligPacket(packet))
             sikkerlogg.info("$it med data:\n{}", packet.toJson())
@@ -57,6 +67,4 @@ internal class TrengerIkkeArbeidsgiveropplysningerRiver(
     }
 }
 
-fun JsonNode.asUuid(): UUID =
-    asString().let { UUID.fromString(it) }
-
+fun JsonNode.asUuid(): UUID = asString().let { UUID.fromString(it) }

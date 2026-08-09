@@ -14,17 +14,24 @@ import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.http.fullPath
 import io.ktor.http.headersOf
 import io.ktor.serialization.jackson3.JacksonConverter
-import java.time.LocalDateTime
 import no.nav.helse.sparkel.aareg.objectMapper
 import org.intellij.lang.annotations.Language
+import java.time.LocalDateTime
 
-fun azureTokenStub() = object : AzureTokenProvider {
-    override fun bearerToken(scope: String) = Result.Ok(AzureToken("superToken", LocalDateTime.MAX))
-    override fun onBehalfOfToken(scope: String, token: String): Result<AzureToken> =
-        throw NotImplementedError("Ikke implementert i mock")
-}
+fun azureTokenStub() =
+    object : AzureTokenProvider {
+        override fun bearerToken(scope: String) = Result.Ok(AzureToken("superToken", LocalDateTime.MAX))
 
-fun aaregMockClient(aaregResponse: String = defaultArbeidsforholdResponse(), status: HttpStatusCode = OK) = HttpClient(MockEngine) {
+        override fun onBehalfOfToken(
+            scope: String,
+            token: String,
+        ): Result<AzureToken> = throw NotImplementedError("Ikke implementert i mock")
+    }
+
+fun aaregMockClient(
+    aaregResponse: String = defaultArbeidsforholdResponse(),
+    status: HttpStatusCode = OK,
+) = HttpClient(MockEngine) {
     install(ContentNegotiation) {
         register(ContentType.Application.Json, JacksonConverter(objectMapper))
     }
@@ -32,11 +39,12 @@ fun aaregMockClient(aaregResponse: String = defaultArbeidsforholdResponse(), sta
     engine {
         addHandler { request ->
             when {
-                request.url.fullPath.startsWith("/api/v2/arbeidstaker/arbeidsforhold") -> respond(
-                    content = aaregResponse,
-                    status = status,
-                    headers = headersOf(HttpHeaders.ContentType, "application/json")
-                )
+                request.url.fullPath.startsWith("/api/v2/arbeidstaker/arbeidsforhold") ->
+                    respond(
+                        content = aaregResponse,
+                        status = status,
+                        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                    )
 
                 else -> error("Endepunktet finnes ikke: ${request.url.fullPath}")
             }
@@ -45,7 +53,8 @@ fun aaregMockClient(aaregResponse: String = defaultArbeidsforholdResponse(), sta
 }
 
 @Language("JSON")
-fun defaultArbeidsforholdResponse() = """[
+fun defaultArbeidsforholdResponse() =
+    """[
     {
         "id": "1",
         "type": {

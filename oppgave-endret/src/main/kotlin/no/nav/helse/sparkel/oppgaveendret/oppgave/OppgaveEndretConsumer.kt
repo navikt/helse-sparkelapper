@@ -1,15 +1,15 @@
 package no.nav.helse.sparkel.oppgaveendret.oppgave
 
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
-import java.time.Clock
-import java.time.Duration
-import java.time.LocalTime
-import java.time.temporal.ChronoUnit
 import no.nav.helse.sparkel.oppgaveendret.GosysOppgaveEndretProducer
 import no.nav.helse.sparkel.oppgaveendret.Hendelse
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 import tools.jackson.databind.ObjectMapper
+import java.time.Clock
+import java.time.Duration
+import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 
 internal class OppgaveEndretConsumer(
     private val rapidConnection: RapidsConnection,
@@ -17,7 +17,8 @@ internal class OppgaveEndretConsumer(
     private val gosysOppgaveEndretProducer: GosysOppgaveEndretProducer,
     private val objectMapper: ObjectMapper,
     private val clock: Clock,
-) : AutoCloseable, Runnable {
+) : AutoCloseable,
+    Runnable {
     private var konsumerer = true
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -34,23 +35,23 @@ internal class OppgaveEndretConsumer(
                     continue
                 }
                 logger.info("Poller topic")
-                kafkaConsumer.poll(Duration.ofSeconds(5))
+                kafkaConsumer
+                    .poll(Duration.ofSeconds(5))
                     .apply {
                         val count = this.count()
                         if (count == 0) {
                             logger.info("Ingen flere oppgavemeldinger å lese, sender meldinger")
                             gosysOppgaveEndretProducer.shipIt()
-                        } else logger.info("Oppgave-endret record count: {}", count)
-                    }
-                    .filter {
+                        } else {
+                            logger.info("Oppgave-endret record count: {}", count)
+                        }
+                    }.filter {
                         val hendelseJson = objectMapper.readTree(it.value())
                         Hendelse.fromJson(hendelseJson).erRelevant()
-                    }
-                    .mapNotNull {
+                    }.mapNotNull {
                         val jsonNode = objectMapper.readTree(it.value())
                         Oppgave.fromJson(jsonNode)
-                    }
-                    .filter { it.erRelevant() }
+                    }.filter { it.erRelevant() }
                     .onEach { gosysOppgaveEndretProducer.onPacket(it) }
             }
         } catch (exception: Exception) {
@@ -84,5 +85,4 @@ internal class OppgaveEndretConsumer(
         logger.info("close er kalt, avslutter konsumering", RuntimeException("Stack trace for debugging-formål"))
         konsumerer = false
     }
-
 }

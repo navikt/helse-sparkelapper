@@ -15,7 +15,7 @@ import tools.jackson.databind.JsonNode
 
 internal class Medlemskap(
     rapidsConnection: RapidsConnection,
-    private val client: MedlemskapClient
+    private val client: MedlemskapClient,
 ) : River.PacketListener {
     private companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -24,28 +24,40 @@ internal class Medlemskap(
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireAll("@behov", listOf(behov)) }
-            precondition { it.forbid("@løsning") }
-            validate { it.requireKey("@id") }
-            validate { it.requireKey("fødselsnummer") }
-            validate { it.requireKey("vedtaksperiodeId") }
-            validate { it.require("$behov.medlemskapPeriodeFom", JsonNode::asLocalDate) }
-            validate { it.require("$behov.medlemskapPeriodeTom", JsonNode::asLocalDate) }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireAll("@behov", listOf(behov)) }
+                precondition { it.forbid("@løsning") }
+                validate { it.requireKey("@id") }
+                validate { it.requireKey("fødselsnummer") }
+                validate { it.requireKey("vedtaksperiodeId") }
+                validate { it.require("$behov.medlemskapPeriodeFom", JsonNode::asLocalDate) }
+                validate { it.require("$behov.medlemskapPeriodeTom", JsonNode::asLocalDate) }
+            }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("forstod ikke $behov:\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         val behovId = packet["@id"].asString()
         val vedtaksperiodeId = packet["vedtaksperiodeId"].asString()
-        withMDC(mapOf(
-            "behovId" to behovId,
-            "vedtaksperiodeId" to vedtaksperiodeId
-        )) {
+        withMDC(
+            mapOf(
+                "behovId" to behovId,
+                "vedtaksperiodeId" to vedtaksperiodeId,
+            ),
+        ) {
             try {
                 info("løser behov {} for {}", keyValue("id", behovId), keyValue("vedtaksperiodeId", vedtaksperiodeId))
                 håndter(packet, context)
@@ -55,20 +67,28 @@ internal class Medlemskap(
         }
     }
 
-    private fun håndter(packet: JsonMessage, context: MessageContext) {
-        packet["@løsning"] = mapOf<String, Any>(
-            behov to client.hentMedlemskapsvurdering(
-                fnr = packet["fødselsnummer"].asString(),
-                fom = packet["$behov.medlemskapPeriodeFom"].asLocalDate(),
-                tom = packet["$behov.medlemskapPeriodeTom"].asLocalDate()
+    private fun håndter(
+        packet: JsonMessage,
+        context: MessageContext,
+    ) {
+        packet["@løsning"] =
+            mapOf<String, Any>(
+                behov to
+                    client.hentMedlemskapsvurdering(
+                        fnr = packet["fødselsnummer"].asString(),
+                        fom = packet["$behov.medlemskapPeriodeFom"].asLocalDate(),
+                        tom = packet["$behov.medlemskapPeriodeTom"].asLocalDate(),
+                    ),
             )
-        )
         context.publish(packet.toJson()).also {
             sikkerlogg.info("sender {} som {}", keyValue("id", packet["@id"].asString()), packet.toJson())
         }
     }
 
-    private fun withMDC(context: Map<String, String>, block: () -> Unit) {
+    private fun withMDC(
+        context: Map<String, String>,
+        block: () -> Unit,
+    ) {
         val contextMap = MDC.getCopyOfContextMap() ?: emptyMap()
         try {
             MDC.setContextMap(contextMap + context)
@@ -78,12 +98,18 @@ internal class Medlemskap(
         }
     }
 
-    private fun info(format: String, vararg args: Any) {
+    private fun info(
+        format: String,
+        vararg args: Any,
+    ) {
         log.info(format, *args)
         sikkerlogg.info(format, *args)
     }
 
-    private fun error(format: String, vararg args: Any) {
+    private fun error(
+        format: String,
+        vararg args: Any,
+    ) {
         log.error(format, *args)
         sikkerlogg.error(format, *args)
     }

@@ -7,12 +7,15 @@ import com.github.navikt.tbd_libs.retry.retryBlocking
 import com.github.navikt.tbd_libs.speed.PersonResponse
 import com.github.navikt.tbd_libs.speed.SpeedClient
 import com.github.navikt.tbd_libs.speed.VergemålEllerFremtidsfullmaktResponse
-import org.slf4j.MDC
 
-internal class PersoninfoService(private val speedClient: SpeedClient) {
-
-    fun løsningForPersoninfo(callId: String, ident: String): Result<PersonResponse> {
-        return try {
+internal class PersoninfoService(
+    private val speedClient: SpeedClient,
+) {
+    fun løsningForPersoninfo(
+        callId: String,
+        ident: String,
+    ): Result<PersonResponse> =
+        try {
             retryBlocking {
                 when (val svar = speedClient.hentPersoninfo(ident, callId)) {
                     is Result.Error -> throw RuntimeException(svar.error, svar.cause)
@@ -22,10 +25,12 @@ internal class PersoninfoService(private val speedClient: SpeedClient) {
         } catch (err: Exception) {
             err.error(err.message ?: "Ukjent feil")
         }
-    }
 
-    fun løsningForVergemål(behovId: String, fødselsnummer: String): Result<VergemålEllerFremtidsfullmaktResponse> {
-        return try {
+    fun løsningForVergemål(
+        behovId: String,
+        fødselsnummer: String,
+    ): Result<VergemålEllerFremtidsfullmaktResponse> =
+        try {
             retryBlocking {
                 when (val svar = speedClient.hentVergemålEllerFremtidsfullmakt(fødselsnummer, behovId)) {
                     is Result.Error -> throw RuntimeException(svar.error, svar.cause)
@@ -35,5 +40,4 @@ internal class PersoninfoService(private val speedClient: SpeedClient) {
         } catch (err: Exception) {
             err.error(err.message ?: "Ukjent feil")
         }
-    }
 }

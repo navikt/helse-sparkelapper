@@ -15,9 +15,8 @@ import org.slf4j.LoggerFactory
 
 internal class Vergemålløser(
     rapidsConnection: RapidsConnection,
-    private val personinfoService: PersoninfoService
+    private val personinfoService: PersoninfoService,
 ) : River.PacketListener {
-
     companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private val logg = LoggerFactory.getLogger(this::class.java)
@@ -25,19 +24,29 @@ internal class Vergemålløser(
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireAll("@behov", listOf(behov)) }
-            precondition { it.forbid("@løsning") }
-            validate { it.requireKey("@id") }
-            validate { it.requireKey("fødselsnummer") }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireAll("@behov", listOf(behov)) }
+                precondition { it.forbid("@løsning") }
+                validate { it.requireKey("@id") }
+                validate { it.requireKey("fødselsnummer") }
+            }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("forstod ikke behov $behov med melding\n${problems.toExtendedReport()}")
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         sikkerlogg.info("mottok melding: ${packet.toJson()}")
         val behovId = packet["@id"].asString()
         val fødselsnummer = packet["fødselsnummer"].asString()
@@ -48,29 +57,31 @@ internal class Vergemålløser(
                 when (val svar = personinfoService.løsningForVergemål(behovId, fødselsnummer)) {
                     is Result.Error -> sikkerlogg.error("Feil under løsing av vergemål-behov for {}: ${svar.error}", keyValue("fnr", fødselsnummer), svar.cause)
                     is Result.Ok -> {
-                        val (fremtidsfullmakter, vergemål) = svar.value
-                            .vergemålEllerFremtidsfullmakter
-                            .map {
-                                Vergemål(
-                                    type = when (it.type) {
-                                        Vergemåltype.ENSLIG_MINDREÅRIG_ASYLSØKER -> VergemålType.ensligMindreaarigAsylsoeker
-                                        Vergemåltype.ENSLIG_MINDREÅRIG_FLYKTNING -> VergemålType.ensligMindreaarigFlyktning
-                                        Vergemåltype.VOKSEN -> VergemålType.voksen
-                                        Vergemåltype.MIDLERTIDIG_FOR_VOKSEN -> VergemålType.midlertidigForVoksen
-                                        Vergemåltype.MINDREÅRIG -> VergemålType.mindreaarig
-                                        Vergemåltype.MIDLERTIDIG_FOR_MINDREÅRIG -> VergemålType.midlertidigForMindreaarig
-                                        Vergemåltype.FORVALTNING_UTENFOR_VERGEMÅL -> VergemålType.forvaltningUtenforVergemaal
-                                        Vergemåltype.STADFESTET_FREMTIDSFULLMAKT -> VergemålType.stadfestetFremtidsfullmakt
-                                    }
-                                )
-                            }
-                            .partition {
-                                it.type == VergemålType.stadfestetFremtidsfullmakt
-                            }
-                        val løsning = Resultat(
-                            vergemål = vergemål,
-                            fremtidsfullmakter = fremtidsfullmakter
-                        )
+                        val (fremtidsfullmakter, vergemål) =
+                            svar.value
+                                .vergemålEllerFremtidsfullmakter
+                                .map {
+                                    Vergemål(
+                                        type =
+                                            when (it.type) {
+                                                Vergemåltype.ENSLIG_MINDREÅRIG_ASYLSØKER -> VergemålType.ensligMindreaarigAsylsoeker
+                                                Vergemåltype.ENSLIG_MINDREÅRIG_FLYKTNING -> VergemålType.ensligMindreaarigFlyktning
+                                                Vergemåltype.VOKSEN -> VergemålType.voksen
+                                                Vergemåltype.MIDLERTIDIG_FOR_VOKSEN -> VergemålType.midlertidigForVoksen
+                                                Vergemåltype.MINDREÅRIG -> VergemålType.mindreaarig
+                                                Vergemåltype.MIDLERTIDIG_FOR_MINDREÅRIG -> VergemålType.midlertidigForMindreaarig
+                                                Vergemåltype.FORVALTNING_UTENFOR_VERGEMÅL -> VergemålType.forvaltningUtenforVergemaal
+                                                Vergemåltype.STADFESTET_FREMTIDSFULLMAKT -> VergemålType.stadfestetFremtidsfullmakt
+                                            },
+                                    )
+                                }.partition {
+                                    it.type == VergemålType.stadfestetFremtidsfullmakt
+                                }
+                        val løsning =
+                            Resultat(
+                                vergemål = vergemål,
+                                fremtidsfullmakter = fremtidsfullmakter,
+                            )
                         packet["@løsning"] = mapOf(behov to løsning)
                         packet.toJson().let { løsningJson ->
                             context.publish(løsningJson)
@@ -92,21 +103,20 @@ internal class Vergemålløser(
         mindreaarig,
         midlertidigForMindreaarig,
         forvaltningUtenforVergemaal,
-        stadfestetFremtidsfullmakt;
+        stadfestetFremtidsfullmakt,
+        ;
 
         companion object {
-            fun gyldig(type: String): Boolean {
-                return enumValues<VergemålType>().any { it.name == type }
-            }
+            fun gyldig(type: String): Boolean = enumValues<VergemålType>().any { it.name == type }
         }
     }
 
     internal data class Vergemål(
-        val type: VergemålType
+        val type: VergemålType,
     )
 
     internal data class Resultat(
         val vergemål: List<Vergemål>,
-        val fremtidsfullmakter: List<Vergemål>
+        val fremtidsfullmakter: List<Vergemål>,
     )
 }

@@ -14,7 +14,7 @@ fun configurationFromEnvironment() =
         clientSecret = fromEnv("AZURE_APP_CLIENT_SECRET"),
         issuerUrl = fromEnv("AZURE_OPENID_CONFIG_ISSUER"),
         jwkProviderUri = fromEnv("AZURE_OPENID_CONFIG_JWKS_URI"),
-        appName = System.getenv("NAIS_APP_NAME") ?: "sparkel-aareg"
+        appName = System.getenv("NAIS_APP_NAME") ?: "sparkel-aareg",
     )
 
 private fun fromEnv(name: String) = System.getenv(name) ?: error("Mangler env var $name")
@@ -30,5 +30,5 @@ data class Configuration(
     val clientSecret: String,
     val issuerUrl: String,
     val jwkProviderUri: String,
-    val appName: String
+    val appName: String,
 )

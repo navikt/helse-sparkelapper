@@ -11,11 +11,11 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import java.time.YearMonth
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import org.slf4j.LoggerFactory
 import tools.jackson.databind.JsonNode
 import tools.jackson.module.kotlin.readValue
+import java.time.YearMonth
 
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
@@ -31,46 +31,56 @@ class InntektRestClient(
         tom: YearMonth,
         filter: String,
         callId: String,
-        orgnummer: String? = null
+        orgnummer: String? = null,
     ) = retry {
-        httpClient.preparePost("$baseUrl/api/v1/hentinntektliste") {
-            expectSuccess = true
-            header("Authorization", "Bearer ${tokenSupplier(inntektskomponentenOAuthScope)}")
-            header("Nav-Consumer-Id", "sparkel-inntekt")
-            header("Nav-Call-Id", callId)
-            contentType(ContentType.Application.Json)
-            accept(ContentType.Application.Json)
-            setBody(
-                mapOf(
-                    // om sender inn aktørid til inntektskomponenten så kan vi få aktørid tilbake noen steder.
-                    // Om vi sender inn fnr vil vi aldri få aktørid tilbake
-                    // !! Viktig at vi derfor kun sender FNR !!
-                    "ident" to mapOf(
-                        "identifikator" to fnr,
-                        "aktoerType" to "NATURLIG_IDENT"
+        httpClient
+            .preparePost("$baseUrl/api/v1/hentinntektliste") {
+                expectSuccess = true
+                header("Authorization", "Bearer ${tokenSupplier(inntektskomponentenOAuthScope)}")
+                header("Nav-Consumer-Id", "sparkel-inntekt")
+                header("Nav-Call-Id", callId)
+                contentType(ContentType.Application.Json)
+                accept(ContentType.Application.Json)
+                setBody(
+                    mapOf(
+                        // om sender inn aktørid til inntektskomponenten så kan vi få aktørid tilbake noen steder.
+                        // Om vi sender inn fnr vil vi aldri få aktørid tilbake
+                        // !! Viktig at vi derfor kun sender FNR !!
+                        "ident" to
+                            mapOf(
+                                "identifikator" to fnr,
+                                "aktoerType" to "NATURLIG_IDENT",
+                            ),
+                        "ainntektsfilter" to filter,
+                        "formaal" to "Sykepenger",
+                        "maanedFom" to fom,
+                        "maanedTom" to tom,
                     ),
-                    "ainntektsfilter" to filter,
-                    "formaal" to "Sykepenger",
-                    "maanedFom" to fom,
-                    "maanedTom" to tom
                 )
-            )
-        }.execute {
-            val content = it.bodyAsText()
-            sikkerlogg.info(
-                "inntektskomponenten svarte for filter=$filter med:\n\t$content",
-                keyValue("callId", callId),
-                keyValue("fødselsnummer", fnr)
-            )
-            tilMånedListe(objectMapper.readValue(content), orgnummer)
-        }
+            }.execute {
+                val content = it.bodyAsText()
+                sikkerlogg.info(
+                    "inntektskomponenten svarte for filter=$filter med:\n\t$content",
+                    keyValue("callId", callId),
+                    keyValue("fødselsnummer", fnr),
+                )
+                tilMånedListe(objectMapper.readValue(content), orgnummer)
+            }
     }
 }
 
-private fun tilMånedListe(node: JsonNode, orgnummer: String? = null) = node.path("arbeidsInntektMaaned").toList()
+private fun tilMånedListe(
+    node: JsonNode,
+    orgnummer: String? = null,
+) = node
+    .path("arbeidsInntektMaaned")
+    .toList()
     .map { tilMåned(it, orgnummer) }
 
-private fun tilInntekt(node: JsonNode, inntekterForOrgnummer: String? = null): Inntekt? {
+private fun tilInntekt(
+    node: JsonNode,
+    inntekterForOrgnummer: String? = null,
+): Inntekt? {
     check(identifikator(node, "AKTOER_ID") == null) {
         "Vi skal ikke få aktørID fra inntektskomponenten"
     }
@@ -82,30 +92,36 @@ private fun tilInntekt(node: JsonNode, inntekterForOrgnummer: String? = null): I
         orgnummer = orgnr,
         fødselsnummer = identifikator(node, "NATURLIG_IDENT"),
         beskrivelse = node["beskrivelse"].stringValue(),
-        fordel = node["fordel"].stringValue()
+        fordel = node["fordel"].stringValue(),
     )
 }
 
-private fun identifikator(node: JsonNode, type: String) =
-    node["virksomhet"].takeIf { it["aktoerType"].asString() == type }?.get("identifikator")?.asString()
+private fun identifikator(
+    node: JsonNode,
+    type: String,
+) = node["virksomhet"].takeIf { it["aktoerType"].asString() == type }?.get("identifikator")?.asString()
 
-private fun tilMåned(node: JsonNode, orgnummer: String?) = Måned(
+private fun tilMåned(
+    node: JsonNode,
+    orgnummer: String?,
+) = Måned(
     årMåned = YearMonth.parse(node["aarMaaned"].asString()),
-    inntektsliste = node.path("arbeidsInntektInformasjon").path("inntektListe").mapNotNull { tilInntekt(it, orgnummer) }
+    inntektsliste = node.path("arbeidsInntektInformasjon").path("inntektListe").mapNotNull { tilInntekt(it, orgnummer) },
 )
 
 data class Måned(
     @get:JsonProperty("årMåned")
     val årMåned: YearMonth,
-    val inntektsliste: List<Inntekt>
+    val inntektsliste: List<Inntekt>,
 )
+
 data class Inntekt(
     val beløp: Double,
     val inntektstype: Inntektstype,
     val orgnummer: String?,
     val fødselsnummer: String?,
     val beskrivelse: String?,
-    val fordel: String?
+    val fordel: String?,
 ) {
     init {
         check(orgnummer != null || fødselsnummer != null) {
@@ -118,5 +134,5 @@ enum class Inntektstype {
     LOENNSINNTEKT,
     NAERINGSINNTEKT,
     PENSJON_ELLER_TRYGD,
-    YTELSE_FRA_OFFENTLIGE
+    YTELSE_FRA_OFFENTLIGE,
 }

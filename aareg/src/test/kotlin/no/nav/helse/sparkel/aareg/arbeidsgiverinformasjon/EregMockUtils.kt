@@ -7,30 +7,32 @@ import io.mockk.every
 import io.mockk.mockk
 import org.intellij.lang.annotations.Language
 
-val mockGenerator = mockk<ResponseGenerator>(relaxed = true) {
-    every { organisasjonResponse() }.returns(defaultOrganisasjonResponse())
-}
+val mockGenerator =
+    mockk<ResponseGenerator>(relaxed = true) {
+        every { organisasjonResponse() }.returns(defaultOrganisasjonResponse())
+    }
 
 interface ResponseGenerator {
-    fun organisasjonResponse():String
+    fun organisasjonResponse(): String
 }
 
-fun eregMockClient(responseGenerator: ResponseGenerator) = HttpClient(MockEngine) {
-    engine {
-        addHandler { request ->
-            when {
-                request.url.fullPath.startsWith("/api/v1/organisasjon") -> {
-                    respond(responseGenerator.organisasjonResponse())
+fun eregMockClient(responseGenerator: ResponseGenerator) =
+    HttpClient(MockEngine) {
+        engine {
+            addHandler { request ->
+                when {
+                    request.url.fullPath.startsWith("/api/v1/organisasjon") -> {
+                        respond(responseGenerator.organisasjonResponse())
+                    }
+                    else -> error("Endepunktet finnes ikke ${request.url.fullPath}")
                 }
-                else -> error("Endepunktet finnes ikke ${request.url.fullPath}")
             }
         }
     }
-}
-
 
 @Language("JSON")
-fun defaultOrganisasjonResponse() = """{
+fun defaultOrganisasjonResponse() =
+    """{
     "navn": {
         "bruksperiode": {
             "fom": "2015-01-06T21:44:04.748",
@@ -325,7 +327,8 @@ fun defaultOrganisasjonResponse() = """{
 """
 
 @Language("JSON")
-fun organisasjonUtenNæringerResponse() = """{
+fun organisasjonUtenNæringerResponse() =
+    """{
     "navn": {
         "bruksperiode": {
             "fom": "2015-01-06T21:44:04.748",

@@ -2,9 +2,9 @@ package no.nav.helse.sparkel.arbeidsgiver.inntektsmelding_håndtert
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
+import no.nav.helse.sparkel.arbeidsgiver.Meldingstype
 import java.time.LocalDateTime
 import java.util.UUID
-import no.nav.helse.sparkel.arbeidsgiver.Meldingstype
 
 internal data class InntektsmeldingHåndtertDto(
     val fødselsnummer: String,
@@ -12,16 +12,17 @@ internal data class InntektsmeldingHåndtertDto(
     val vedtaksperiodeId: UUID,
     val dokumentId: UUID,
     val opprettet: LocalDateTime,
-    val vedtaksperioderMedSammeFørsteFraværsdag: List<UUID>
+    val vedtaksperioderMedSammeFørsteFraværsdag: List<UUID>,
 ) {
     val type: Meldingstype = Meldingstype.INNTEKTSMELDING_HÅNDTERT
 }
 
-internal fun JsonMessage.toInntektsmeldingHåndtertDto(dokumentId: UUID) = InntektsmeldingHåndtertDto(
-    fødselsnummer = this["fødselsnummer"].asString(),
-    organisasjonsnummer = this["organisasjonsnummer"].asString(),
-    vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asString()),
-    dokumentId = dokumentId,
-    opprettet = this["@opprettet"].asLocalDateTime(),
-    vedtaksperioderMedSammeFørsteFraværsdag = this["vedtaksperioderMedSammeFørsteFraværsdag"].asIterable().map { UUID.fromString(it.asString()) }
-)
+internal fun JsonMessage.toInntektsmeldingHåndtertDto(dokumentId: UUID) =
+    InntektsmeldingHåndtertDto(
+        fødselsnummer = this["fødselsnummer"].asString(),
+        organisasjonsnummer = this["organisasjonsnummer"].asString(),
+        vedtaksperiodeId = UUID.fromString(this["vedtaksperiodeId"].asString()),
+        dokumentId = dokumentId,
+        opprettet = this["@opprettet"].asLocalDateTime(),
+        vedtaksperioderMedSammeFørsteFraværsdag = this["vedtaksperioderMedSammeFørsteFraværsdag"].asIterable().map { UUID.fromString(it.asString()) },
+    )

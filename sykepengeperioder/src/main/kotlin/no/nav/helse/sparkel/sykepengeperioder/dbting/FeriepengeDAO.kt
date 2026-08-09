@@ -2,24 +2,28 @@ package no.nav.helse.sparkel.sykepengeperioder.dbting
 
 import kotliquery.queryOf
 import kotliquery.sessionOf
+import no.nav.helse.sparkel.infotrygd.Fnr
 import no.nav.helse.sparkel.sykepengeperioder.Sykepengehistorikk
 import org.intellij.lang.annotations.Language
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
-import no.nav.helse.sparkel.infotrygd.Fnr
 
 internal class FeriepengeDAO(
-    private val dataSource: () -> DataSource
+    private val dataSource: () -> DataSource,
 ) {
     internal companion object {
         private val log = LoggerFactory.getLogger(FeriepengeDAO::class.java)
         private val tjenestekallLog = LoggerFactory.getLogger("tjenestekall")
     }
 
-    internal fun feriepenger(fnr: Fnr, fom: LocalDate, tom: LocalDate): List<FeriepengeDTO> {
-        return sessionOf(dataSource()).use { session ->
+    internal fun feriepenger(
+        fnr: Fnr,
+        fom: LocalDate,
+        tom: LocalDate,
+    ): List<FeriepengeDTO> =
+        sessionOf(dataSource()).use { session ->
             @Language("Oracle")
             val statement = """
                 SELECT dy.BELOP,
@@ -38,20 +42,24 @@ internal class FeriepengeDAO(
                     AND dy.FOM between ? and ?
             """
             session.run(
-                queryOf(statement, fnr.toString(), fom.plusYears(1), tom.plusYears(1)).map { rs ->
-                    FeriepengeDTO(
-                        orgnummer = rs.string("ORGNR"),
-                        beløp = rs.double("BELOP"),
-                        fom = rs.localDate("FOM"),
-                        tom = rs.localDate("TOM")
-                    )
-                }.asList
+                queryOf(statement, fnr.toString(), fom.plusYears(1), tom.plusYears(1))
+                    .map { rs ->
+                        FeriepengeDTO(
+                            orgnummer = rs.string("ORGNR"),
+                            beløp = rs.double("BELOP"),
+                            fom = rs.localDate("FOM"),
+                            tom = rs.localDate("TOM"),
+                        )
+                    }.asList,
             )
         }
-    }
 
-    internal fun feriepengerSkalBeregnesManuelt(fnr: Fnr, fom: LocalDate, tom: LocalDate): Boolean {
-        return sessionOf(dataSource()).use { session ->
+    internal fun feriepengerSkalBeregnesManuelt(
+        fnr: Fnr,
+        fom: LocalDate,
+        tom: LocalDate,
+    ): Boolean =
+        sessionOf(dataSource()).use { session ->
             @Language("Oracle")
             val statement = """
                 SELECT count(*) as count
@@ -63,28 +71,27 @@ internal class FeriepengeDAO(
                     statement,
                     fnr.formatAsITFnr(),
                     fom.plusYears(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt(),
-                    tom.plusYears(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt()
-                ).map { rs -> rs.int("count") > 0 }.asSingle
-            )?: false
+                    tom.plusYears(1).format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt(),
+                ).map { rs -> rs.int("count") > 0 }.asSingle,
+            ) ?: false
         }
-    }
 
     internal data class FeriepengeDTO(
         var orgnummer: String,
         var beløp: Double,
         var fom: LocalDate,
-        var tom: LocalDate
+        var tom: LocalDate,
     ) {
         internal companion object {
-            internal fun tilFeriepenger(feriepenger: List<FeriepengeDTO>) =
-                feriepenger.map { it.tilFeriepenger() }
+            internal fun tilFeriepenger(feriepenger: List<FeriepengeDTO>) = feriepenger.map { it.tilFeriepenger() }
         }
 
-        private fun tilFeriepenger() = Sykepengehistorikk.Feriepenger(
-            orgnummer = orgnummer,
-            beløp = beløp,
-            fom = fom,
-            tom = tom
-        )
+        private fun tilFeriepenger() =
+            Sykepengehistorikk.Feriepenger(
+                orgnummer = orgnummer,
+                beløp = beløp,
+                fom = fom,
+                tom = tom,
+            )
     }
 }

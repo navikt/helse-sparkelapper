@@ -1,6 +1,8 @@
 package no.nav.helse.sparkel.infotrygd.api
 
-class Organisasjonsnummer private constructor(private val id: String) {
+class Organisasjonsnummer private constructor(
+    private val id: String,
+) {
     init {
         check(id.gyldig) { "Ugyldig organisasjonsnummer" }
     }

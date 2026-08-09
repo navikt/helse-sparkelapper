@@ -3,46 +3,57 @@ package no.nav.helse.sparkel.sykepengeperiodermock
 import com.github.navikt.tbd_libs.rapids_and_rivers.asOptionalLocalDate
 import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
-import java.time.LocalDate
-import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
+import java.time.LocalDate
+import java.util.UUID
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SparkelSykepengeperioderMockRiverTest {
-
     private val testrapid = TestRapid()
     private val fødselsnummer = "10101012345"
     private val orgnummer = "991024000"
 
     init {
-        SparkelSykepengeperioderMockRiver(testrapid, mutableMapOf(
-            fødselsnummer to listOf(Sykepengehistorikk(
-                inntektsopplysninger = listOf(Inntektsopplysning(
-                    sykepengerFom = LocalDate.of(2020, 6, 1),
-                    inntekt = 25000.0,
-                    orgnummer = orgnummer,
-                    refusjonTom = null,
-                    refusjonTilArbeidsgiver = true
-                )),
-                utbetalteSykepengeperioder = listOf(UtbetalteSykepengeperioder(
-                    fom = LocalDate.of(2020,6,1),
-                    tom = LocalDate.of(2020,6,30),
-                    utbetalingsGrad = "100",
-                    oppgjorsType = "",
-                    dagsats = 1234.0,
-                    utbetalt = LocalDate.of(2020,6,30),
-                    typeKode = "0",
-                    typeTekst = "Utbetaling",
-                    orgnummer = orgnummer
-                )),
-                maksDato = LocalDate.of(2021, 5,30)
-            ))
-        ))
+        SparkelSykepengeperioderMockRiver(
+            testrapid,
+            mutableMapOf(
+                fødselsnummer to
+                    listOf(
+                        Sykepengehistorikk(
+                            inntektsopplysninger =
+                                listOf(
+                                    Inntektsopplysning(
+                                        sykepengerFom = LocalDate.of(2020, 6, 1),
+                                        inntekt = 25000.0,
+                                        orgnummer = orgnummer,
+                                        refusjonTom = null,
+                                        refusjonTilArbeidsgiver = true,
+                                    ),
+                                ),
+                            utbetalteSykepengeperioder =
+                                listOf(
+                                    UtbetalteSykepengeperioder(
+                                        fom = LocalDate.of(2020, 6, 1),
+                                        tom = LocalDate.of(2020, 6, 30),
+                                        utbetalingsGrad = "100",
+                                        oppgjorsType = "",
+                                        dagsats = 1234.0,
+                                        utbetalt = LocalDate.of(2020, 6, 30),
+                                        typeKode = "0",
+                                        typeTekst = "Utbetaling",
+                                        orgnummer = orgnummer,
+                                    ),
+                                ),
+                            maksDato = LocalDate.of(2021, 5, 30),
+                        ),
+                    ),
+            ),
+        )
     }
 
     @Test
@@ -61,11 +72,13 @@ internal class SparkelSykepengeperioderMockRiverTest {
         assertEquals(1, løsning.size())
         assertEquals(1, løsning.first()["inntektsopplysninger"].size())
         assertEquals(1, løsning.first()["utbetalteSykepengeperioder"].size())
-        assertEquals(LocalDate.of(2021, 5,30), løsning.first()["maksDato"].asOptionalLocalDate())
+        assertEquals(LocalDate.of(2021, 5, 30), løsning.first()["maksDato"].asOptionalLocalDate())
     }
 
-    private fun enkeltBehov(fødselsnummer: String, behov: String = "Sykepengehistorikk") =
-        """
+    private fun enkeltBehov(
+        fødselsnummer: String,
+        behov: String = "Sykepengehistorikk",
+    ) = """
         {
             "@event_name" : "behov",
             "@behov" : [ "$behov" ],

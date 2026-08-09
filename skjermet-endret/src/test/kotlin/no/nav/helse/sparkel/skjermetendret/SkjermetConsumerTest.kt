@@ -5,8 +5,6 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.mockk.every
 import io.mockk.mockk
-import java.time.Duration
-import java.time.LocalDateTime
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -16,6 +14,8 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.time.Duration
+import java.time.LocalDateTime
 
 class SkjermetConsumerTest {
     private val rapidsConnection = mockk<RapidsConnection>(relaxed = true)
@@ -34,7 +34,8 @@ class SkjermetConsumerTest {
                 return@answers ConsumerRecords.empty()
             }
 
-            mutableRecords.removeAt(0)
+            mutableRecords
+                .removeAt(0)
                 ?.let {
                     val record = ConsumerRecord(SKJERMET_TOPIC, 0, 0, FNR, it)
                     ConsumerRecords(

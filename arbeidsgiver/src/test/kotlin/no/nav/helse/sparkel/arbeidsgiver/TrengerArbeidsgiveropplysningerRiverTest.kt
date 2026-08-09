@@ -6,9 +6,6 @@ import ch.qos.logback.core.read.ListAppender
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import io.mockk.mockk
 import io.mockk.verify
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.*
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerDto
 import no.nav.helse.sparkel.arbeidsgiver.arbeidsgiveropplysninger.TrengerArbeidsgiveropplysningerRiver
 import org.junit.jupiter.api.BeforeEach
@@ -16,6 +13,9 @@ import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
 import tools.jackson.databind.JsonNode
 import tools.jackson.module.kotlin.jacksonObjectMapper
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.*
 
 internal class TrengerArbeidsgiveropplysningerRiverTest {
     private val FNR = "fnr"
@@ -51,7 +51,6 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
         }
     }
 
-
     @Test
     fun `publiserer forespørsel om arbeidsgiveropplysninger - med inntekt, refusjon, og agp`() {
         val vedtaksperiodeId = UUID.randomUUID()
@@ -86,80 +85,90 @@ internal class TrengerArbeidsgiveropplysningerRiverTest {
     }
 
     private fun eventMeldingMedRefusjonOgArbeidsgiverperiode(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
-        objectMapper.valueToTree<JsonNode>(
-            mapOf(
-                "@id" to UUID.randomUUID(),
-                "@event_name" to "trenger_opplysninger_fra_arbeidsgiver",
-                "@opprettet" to LocalDateTime.MAX,
-                "fødselsnummer" to FNR,
-                "organisasjonsnummer" to ORGNUMMER,
-                "vedtaksperiodeId" to vedtaksperiodeId,
-                "skjæringstidspunkt" to LocalDate.MIN,
-                "førsteFraværsdager" to listOf(mapOf("organisasjonsnummer" to ORGNUMMER, "førsteFraværsdag" to LocalDate.MIN)),
-                "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
-                "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
-                "forespurteOpplysninger" to listOf(
-                    mapOf(
-                        "opplysningstype" to "Refusjon"
-                    ),
-                    mapOf(
-                        "opplysningstype" to "Arbeidsgiverperiode"
-                    )
-                )
-            )
-        ).toString()
+        objectMapper
+            .valueToTree<JsonNode>(
+                mapOf(
+                    "@id" to UUID.randomUUID(),
+                    "@event_name" to "trenger_opplysninger_fra_arbeidsgiver",
+                    "@opprettet" to LocalDateTime.MAX,
+                    "fødselsnummer" to FNR,
+                    "organisasjonsnummer" to ORGNUMMER,
+                    "vedtaksperiodeId" to vedtaksperiodeId,
+                    "skjæringstidspunkt" to LocalDate.MIN,
+                    "førsteFraværsdager" to listOf(mapOf("organisasjonsnummer" to ORGNUMMER, "førsteFraværsdag" to LocalDate.MIN)),
+                    "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
+                    "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
+                    "forespurteOpplysninger" to
+                        listOf(
+                            mapOf(
+                                "opplysningstype" to "Refusjon",
+                            ),
+                            mapOf(
+                                "opplysningstype" to "Arbeidsgiverperiode",
+                            ),
+                        ),
+                ),
+            ).toString()
 
     private fun eventMeldingMedForrigeInntekt(vedtaksperiodeId: UUID = UUID.randomUUID()): String =
-        objectMapper.valueToTree<JsonNode>(
-            mapOf(
-                "@id" to UUID.randomUUID(),
-                "@event_name" to "trenger_opplysninger_fra_arbeidsgiver",
-                "@opprettet" to LocalDateTime.MAX,
-                "fødselsnummer" to FNR,
-                "organisasjonsnummer" to ORGNUMMER,
-                "vedtaksperiodeId" to vedtaksperiodeId,
-                "skjæringstidspunkt" to LocalDate.MIN,
-                "førsteFraværsdager" to listOf(mapOf("organisasjonsnummer" to ORGNUMMER, "førsteFraværsdag" to LocalDate.MIN)),
-                "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
-                "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
-                "forespurteOpplysninger" to listOf(
-                    mapOf(
-                        "opplysningstype" to "Inntekt"
-                    ),
-                    mapOf(
-                        "opplysningstype" to "Refusjon"
-                    ),
-                    mapOf(
-                        "opplysningstype" to "Arbeidsgiverperiode"
-                    )
-                )
-            )
-        ).toString()
+        objectMapper
+            .valueToTree<JsonNode>(
+                mapOf(
+                    "@id" to UUID.randomUUID(),
+                    "@event_name" to "trenger_opplysninger_fra_arbeidsgiver",
+                    "@opprettet" to LocalDateTime.MAX,
+                    "fødselsnummer" to FNR,
+                    "organisasjonsnummer" to ORGNUMMER,
+                    "vedtaksperiodeId" to vedtaksperiodeId,
+                    "skjæringstidspunkt" to LocalDate.MIN,
+                    "førsteFraværsdager" to listOf(mapOf("organisasjonsnummer" to ORGNUMMER, "førsteFraværsdag" to LocalDate.MIN)),
+                    "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
+                    "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
+                    "forespurteOpplysninger" to
+                        listOf(
+                            mapOf(
+                                "opplysningstype" to "Inntekt",
+                            ),
+                            mapOf(
+                                "opplysningstype" to "Refusjon",
+                            ),
+                            mapOf(
+                                "opplysningstype" to "Arbeidsgiverperiode",
+                            ),
+                        ),
+                ),
+            ).toString()
 
-    private fun eventMeldingMedInntekt(eventName: String, vedtaksperiodeId: UUID = UUID.randomUUID(), organisasjonsnummer: String = ORGNUMMER): String =
-        objectMapper.valueToTree<JsonNode>(
-            mapOf(
-                "@id" to UUID.randomUUID(),
-                "@event_name" to eventName,
-                "@opprettet" to LocalDateTime.MAX,
-                "fødselsnummer" to FNR,
-                "organisasjonsnummer" to organisasjonsnummer,
-                "vedtaksperiodeId" to vedtaksperiodeId,
-                "skjæringstidspunkt" to LocalDate.MIN,
-                "førsteFraværsdager" to listOf(mapOf("organisasjonsnummer" to ORGNUMMER, "førsteFraværsdag" to LocalDate.MIN)),
-                "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
-                "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
-                "forespurteOpplysninger" to listOf(
-                    mapOf(
-                        "opplysningstype" to "Inntekt"
-                    ),
-                    mapOf(
-                        "opplysningstype" to "Refusjon"
-                    ),
-                    mapOf(
-                        "opplysningstype" to "Arbeidsgiverperiode"
-                    )
-                )
-            )
-        ).toString()
+    private fun eventMeldingMedInntekt(
+        eventName: String,
+        vedtaksperiodeId: UUID = UUID.randomUUID(),
+        organisasjonsnummer: String = ORGNUMMER,
+    ): String =
+        objectMapper
+            .valueToTree<JsonNode>(
+                mapOf(
+                    "@id" to UUID.randomUUID(),
+                    "@event_name" to eventName,
+                    "@opprettet" to LocalDateTime.MAX,
+                    "fødselsnummer" to FNR,
+                    "organisasjonsnummer" to organisasjonsnummer,
+                    "vedtaksperiodeId" to vedtaksperiodeId,
+                    "skjæringstidspunkt" to LocalDate.MIN,
+                    "førsteFraværsdager" to listOf(mapOf("organisasjonsnummer" to ORGNUMMER, "førsteFraværsdag" to LocalDate.MIN)),
+                    "sykmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN.plusDays(1), "tom" to LocalDate.MIN.plusDays(30))),
+                    "egenmeldingsperioder" to listOf(mapOf("fom" to LocalDate.MIN, "tom" to LocalDate.MIN)),
+                    "forespurteOpplysninger" to
+                        listOf(
+                            mapOf(
+                                "opplysningstype" to "Inntekt",
+                            ),
+                            mapOf(
+                                "opplysningstype" to "Refusjon",
+                            ),
+                            mapOf(
+                                "opplysningstype" to "Arbeidsgiverperiode",
+                            ),
+                        ),
+                ),
+            ).toString()
 }

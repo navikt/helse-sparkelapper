@@ -2,9 +2,6 @@ package no.nav.helse.sparkel.sykepengeperioder
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.UUID
 import no.nav.helse.sparkel.infotrygd.PeriodeDAO
 import no.nav.helse.sparkel.infotrygd.UtbetalingDAO
 import no.nav.helse.sparkel.sykepengeperioder.dbting.*
@@ -16,10 +13,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
 import tools.jackson.databind.JsonNode
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.UUID
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
-
     private lateinit var infotrygdService: InfotrygdService
     private val rapid = TestRapid()
 
@@ -27,13 +26,14 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
 
     @BeforeAll
     fun setup() {
-        infotrygdService = InfotrygdService(
-            PeriodeDAO { dataSource },
-            UtbetalingDAO { dataSource },
-            InntektDAO { dataSource },
-            StatslønnDAO { dataSource },
-            FeriepengeDAO { dataSource }
-        )
+        infotrygdService =
+            InfotrygdService(
+                PeriodeDAO { dataSource },
+                UtbetalingDAO { dataSource },
+                InntektDAO { dataSource },
+                StatslønnDAO { dataSource },
+                FeriepengeDAO { dataSource },
+            )
         rapid.apply {
             SykepengehistorikkForFeriepengerløser(this, infotrygdService)
         }
@@ -64,25 +64,27 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
     fun `mapper også ut inntekt og dagsats`() {
         opprettPeriode(
             seq = 1,
-            utbetalinger = listOf(
-                Utbetaling(5.september(2020), 25.september(2020), dagsats = 2176.0),
-                Utbetaling(4.september(2020), 4.september(2020))
-            ),
+            utbetalinger =
+                listOf(
+                    Utbetaling(5.september(2020), 25.september(2020), dagsats = 2176.0),
+                    Utbetaling(4.september(2020), 4.september(2020)),
+                ),
             inntekter = listOf(Inntekt(4.september(2020), lønn = 565700.0)),
-            statslønn = null
+            statslønn = null,
         )
         opprettPeriode(
             seq = 2,
-            utbetalinger = listOf(
-                Utbetaling(2.juni(2019), 20.juni(2019)),
-                Utbetaling(17.mai(2019), 1.juni(2019)),
-                Utbetaling(1.mai(2019), 16.mai(2019)),
-                Utbetaling(15.april(2019), 30.april(2019)),
-                Utbetaling(30.mars(2019), 14.april(2019)),
-                Utbetaling(4.februar(2019), 29.mars(2019))
-            ),
+            utbetalinger =
+                listOf(
+                    Utbetaling(2.juni(2019), 20.juni(2019)),
+                    Utbetaling(17.mai(2019), 1.juni(2019)),
+                    Utbetaling(1.mai(2019), 16.mai(2019)),
+                    Utbetaling(15.april(2019), 30.april(2019)),
+                    Utbetaling(30.mars(2019), 14.april(2019)),
+                    Utbetaling(4.februar(2019), 29.mars(2019)),
+                ),
             inntekter = listOf(Inntekt(4.februar(2019), lønn = 507680.0)),
-            statslønn = null
+            statslønn = null,
         )
         opprettFeriepenger()
 
@@ -97,36 +99,39 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         assertFalse(løsning.feriepengerSkalBeregnesManuelt)
         assertEquals(1, løsning.feriepengehistorikk.size)
 
-        assertEquals(listOf(
-            4.februar(2019)..29.mars(2019),
-            30.mars(2019)..14.april(2019),
-            15.april(2019)..30.april(2019),
-            1.mai(2019)..16.mai(2019),
-            17.mai(2019)..1.juni(2019),
-            2.juni(2019)..20.juni(2019),
-            4.september(2020)..4.september(2020),
-            5.september(2020)..25.september(2020),
-        ), løsning.utbetalinger.mapNotNull { u -> u.tom?.let { u.fom?.rangeTo(u.tom) } })
+        assertEquals(
+            listOf(
+                4.februar(2019)..29.mars(2019),
+                30.mars(2019)..14.april(2019),
+                15.april(2019)..30.april(2019),
+                1.mai(2019)..16.mai(2019),
+                17.mai(2019)..1.juni(2019),
+                2.juni(2019)..20.juni(2019),
+                4.september(2020)..4.september(2020),
+                5.september(2020)..25.september(2020),
+            ),
+            løsning.utbetalinger.mapNotNull { u -> u.tom?.let { u.fom?.rangeTo(u.tom) } },
+        )
         assertSykeperiode(
             sykeperiode = løsning.utbetalinger[7],
             fom = 5.september(2020),
             tom = 25.september(2020),
             grad = "100",
             orgnummer = orgnummer,
-            dagsats = 2176.0
+            dagsats = 2176.0,
         )
 
         assertInntektsopplysninger(
             inntektsopplysning = løsning.inntektshistorikk[0],
             dato = 4.februar(2019),
             inntektPerMåned = 507680 / 12,
-            orgnummer = orgnummer
+            orgnummer = orgnummer,
         )
         assertInntektsopplysninger(
             inntektsopplysning = løsning.inntektshistorikk[1],
             dato = 4.september(2020),
             inntektPerMåned = 565700 / 12,
-            orgnummer = orgnummer
+            orgnummer = orgnummer,
         )
     }
 
@@ -154,25 +159,27 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
     fun `arbeidskategori`() {
         opprettPeriode(
             seq = 1,
-            utbetalinger = listOf(
-                Utbetaling(5.september(2020), 25.september(2020), dagsats = 2176.0),
-                Utbetaling(4.september(2020), 4.september(2020))
-            ),
+            utbetalinger =
+                listOf(
+                    Utbetaling(5.september(2020), 25.september(2020), dagsats = 2176.0),
+                    Utbetaling(4.september(2020), 4.september(2020)),
+                ),
             inntekter = listOf(Inntekt(4.september(2020), lønn = 565700.0)),
-            arbeidskategori = "01"
+            arbeidskategori = "01",
         )
         opprettPeriode(
             seq = 2,
-            utbetalinger = listOf(
-                Utbetaling(2.juni(2019), 20.juni(2019)),
-                Utbetaling(17.mai(2019), 1.juni(2019)),
-                Utbetaling(1.mai(2019), 16.mai(2019)),
-                Utbetaling(15.april(2019), 30.april(2019)),
-                Utbetaling(30.mars(2019), 14.april(2019)),
-                Utbetaling(4.februar(2019), 29.mars(2019))
-            ),
+            utbetalinger =
+                listOf(
+                    Utbetaling(2.juni(2019), 20.juni(2019)),
+                    Utbetaling(17.mai(2019), 1.juni(2019)),
+                    Utbetaling(1.mai(2019), 16.mai(2019)),
+                    Utbetaling(15.april(2019), 30.april(2019)),
+                    Utbetaling(30.mars(2019), 14.april(2019)),
+                    Utbetaling(4.februar(2019), 29.mars(2019)),
+                ),
             inntekter = listOf(Inntekt(4.februar(2019), lønn = 507680.0)),
-            arbeidskategori = "00"
+            arbeidskategori = "00",
         )
 
         rapid.sendTestMessage(behov())
@@ -189,13 +196,13 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
             seq = 1,
             utbetalinger = listOf(Utbetaling()),
             inntekter = listOf(Inntekt(4.september(2020), lønn = 565700.0)),
-            arbeidskategori = "01"
+            arbeidskategori = "01",
         )
         opprettPeriode(
             seq = 2,
             utbetalinger = listOf(Utbetaling()),
             inntekter = listOf(Inntekt(4.februar(2019), lønn = 507680.0)),
-            arbeidskategori = "00"
+            arbeidskategori = "00",
         )
 
         rapid.sendTestMessage(behov())
@@ -225,7 +232,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         opprettPeriode()
         opprettFeriepenger(
             beløp = listOf(1000.0, 2000.0),
-            orgnumre = listOf("987654321", "654321987")
+            orgnumre = listOf("987654321", "654321987"),
         )
         rapid.sendTestMessage(behov())
         val løsning = sisteSendtMelding.løsning()
@@ -336,7 +343,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         opprettPeriode(
             sykmeldtFom = 1.mai(2020),
             sykmeldtTom = 31.mai(2020),
-            utbetalinger = listOf(Utbetaling(1.mai(2020), 31.mai(2020)))
+            utbetalinger = listOf(Utbetaling(1.mai(2020), 31.mai(2020))),
         )
         rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
         assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
@@ -347,7 +354,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         opprettPeriode(
             sykmeldtFom = 1.desember(2019),
             sykmeldtTom = 31.januar(2020),
-            utbetalinger = listOf(Utbetaling(1.desember(2019), 31.januar(2020)))
+            utbetalinger = listOf(Utbetaling(1.desember(2019), 31.januar(2020))),
         )
         rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
         val løsning = sisteSendtMelding.løsning()
@@ -359,7 +366,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         opprettPeriode(
             sykmeldtFom = 31.desember(2020),
             sykmeldtTom = 31.januar(2021),
-            utbetalinger = listOf(Utbetaling(31.desember(2020), 31.januar(2021)))
+            utbetalinger = listOf(Utbetaling(31.desember(2020), 31.januar(2021))),
         )
         rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
         assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
@@ -370,7 +377,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         opprettPeriode(
             sykmeldtFom = 31.desember(2019),
             sykmeldtTom = 31.januar(2021),
-            utbetalinger = listOf(Utbetaling(31.desember(2019), 31.januar(2021)))
+            utbetalinger = listOf(Utbetaling(31.desember(2019), 31.januar(2021))),
         )
         rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
         assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
@@ -381,7 +388,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         opprettPeriode(
             sykmeldtFom = 1.november(2019),
             sykmeldtTom = 1.desember(2019),
-            utbetalinger = listOf(Utbetaling(1.november(2019), 1.desember(2019)))
+            utbetalinger = listOf(Utbetaling(1.november(2019), 1.desember(2019))),
         )
         rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
         assertEquals(0, sisteSendtMelding.løsning().utbetalinger.size)
@@ -392,7 +399,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         opprettPeriode(
             sykmeldtFom = 1.desember(2019),
             sykmeldtTom = 31.desember(2019),
-            utbetalinger = listOf(Utbetaling(1.desember(2019), 31.desember(2019)))
+            utbetalinger = listOf(Utbetaling(1.desember(2019), 31.desember(2019))),
         )
         rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
         assertEquals(0, sisteSendtMelding.løsning().utbetalinger.size)
@@ -403,7 +410,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         opprettPeriode(
             sykmeldtFom = 1.februar(2021),
             sykmeldtTom = 28.februar(2021),
-            utbetalinger = listOf(Utbetaling(1.februar(2021), 28.februar(2021)))
+            utbetalinger = listOf(Utbetaling(1.februar(2021), 28.februar(2021))),
         )
         rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
         assertEquals(0, sisteSendtMelding.løsning().utbetalinger.size)
@@ -414,7 +421,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         opprettPeriode(
             sykmeldtFom = 1.januar(2021),
             sykmeldtTom = 31.januar(2021),
-            utbetalinger = listOf(Utbetaling(1.januar(2021), 31.januar(2021)))
+            utbetalinger = listOf(Utbetaling(1.januar(2021), 31.januar(2021))),
         )
         rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
         assertEquals(0, sisteSendtMelding.løsning().utbetalinger.size)
@@ -425,7 +432,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         opprettPeriode(
             sykmeldtFom = 1.januar(2020),
             sykmeldtTom = 31.desember(2020),
-            utbetalinger = listOf(Utbetaling(1.januar(2020), 31.desember(2020)))
+            utbetalinger = listOf(Utbetaling(1.januar(2020), 31.desember(2020))),
         )
         rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
         assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
@@ -436,7 +443,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         opprettPeriode(
             sykmeldtFom = 1.desember(2019),
             sykmeldtTom = 1.januar(2020),
-            utbetalinger = listOf(Utbetaling(1.desember(2019), 1.januar(2020)))
+            utbetalinger = listOf(Utbetaling(1.desember(2019), 1.januar(2020))),
         )
         rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
         assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
@@ -447,7 +454,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         opprettPeriode(
             sykmeldtFom = 31.desember(2020),
             sykmeldtTom = 31.januar(2021),
-            utbetalinger = listOf(Utbetaling(31.desember(2020), 31.januar(2021)))
+            utbetalinger = listOf(Utbetaling(31.desember(2020), 31.januar(2021))),
         )
         rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
         assertEquals(1, sisteSendtMelding.løsning().utbetalinger.size)
@@ -457,7 +464,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
     fun `Mapper ikke arbeidskategorikoder på tilbakeførte perioder`() {
         opprettPeriode(
             arbeidskategori = "01",
-            utbetalinger = listOf(Utbetaling(31.desember(2020), 31.januar(2021), periodetype="7"))
+            utbetalinger = listOf(Utbetaling(31.desember(2020), 31.januar(2021), periodetype = "7")),
         )
 
         rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
@@ -470,28 +477,58 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         opprettPeriode(
             seq = 1,
             arbeidskategori = "01",
-            utbetalinger = listOf(
-                Utbetaling(1.desember(2020), 11.desember(2020), periodetype="5"),
-                Utbetaling(30.desember(2020), 15.januar(2021), periodetype="7")
-            )
+            utbetalinger =
+                listOf(
+                    Utbetaling(1.desember(2020), 11.desember(2020), periodetype = "5"),
+                    Utbetaling(30.desember(2020), 15.januar(2021), periodetype = "7"),
+                ),
         )
         opprettPeriode(
             seq = 2,
             arbeidskategori = "01",
-            utbetalinger = listOf(
-                Utbetaling(31.desember(2020), 31.januar(2021), periodetype="5")
-            )
+            utbetalinger =
+                listOf(
+                    Utbetaling(31.desember(2020), 31.januar(2021), periodetype = "5"),
+                ),
         )
 
         rapid.sendTestMessage(behov(fom = 1.januar(2020), tom = 31.desember(2020)))
         assertEquals(3, sisteSendtMelding.løsning().utbetalinger.size)
         assertEquals(2, sisteSendtMelding.løsning().arbeidskategorikoder.size)
 
-        assertEquals(1.desember(2020), sisteSendtMelding.løsning().arbeidskategorikoder.first().fom)
-        assertEquals(11.desember(2020), sisteSendtMelding.løsning().arbeidskategorikoder.first().tom)
+        assertEquals(
+            1.desember(2020),
+            sisteSendtMelding
+                .løsning()
+                .arbeidskategorikoder
+                .first()
+                .fom,
+        )
+        assertEquals(
+            11.desember(2020),
+            sisteSendtMelding
+                .løsning()
+                .arbeidskategorikoder
+                .first()
+                .tom,
+        )
 
-        assertEquals(31.desember(2020), sisteSendtMelding.løsning().arbeidskategorikoder.last().fom)
-        assertEquals(31.januar(2021), sisteSendtMelding.løsning().arbeidskategorikoder.last().tom)
+        assertEquals(
+            31.desember(2020),
+            sisteSendtMelding
+                .løsning()
+                .arbeidskategorikoder
+                .last()
+                .fom,
+        )
+        assertEquals(
+            31.januar(2021),
+            sisteSendtMelding
+                .løsning()
+                .arbeidskategorikoder
+                .last()
+                .tom,
+        )
     }
 
     private fun JsonNode.løsning() =
@@ -499,7 +536,9 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
             Sykepengehistorikk(it)
         }
 
-    private class Sykepengehistorikk(json: JsonNode) {
+    private class Sykepengehistorikk(
+        json: JsonNode,
+    ) {
         val utbetalinger = json["utbetalinger"].toList().map(::UtbetalteSykeperiode)
         val inntektshistorikk = json["inntektshistorikk"].toList().map(::Inntektsopplysning)
         val feriepengehistorikk = json["feriepengehistorikk"].toList().map(::Feriepenger)
@@ -507,7 +546,9 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         val feriepengerSkalBeregnesManuelt = json["feriepengerSkalBeregnesManuelt"].asBoolean()
         val arbeidskategorikoder = json["arbeidskategorikoder"].toList().map(::Arbeidskategori)
 
-        class UtbetalteSykeperiode(json: JsonNode) {
+        class UtbetalteSykeperiode(
+            json: JsonNode,
+        ) {
             val fom = json["fom"].asOptionalLocalDate()
             val tom = json["tom"].asOptionalLocalDate()
             val utbetalingsGrad = json["utbetalingsGrad"].asString()
@@ -515,20 +556,26 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
             val dagsats = json["dagsats"].asDouble()
         }
 
-        class Inntektsopplysning(json: JsonNode) {
+        class Inntektsopplysning(
+            json: JsonNode,
+        ) {
             val sykepengerFom = json["sykepengerFom"].asLocalDate()
             val inntekt = json["inntekt"].asInt()
             val orgnummer = json["orgnummer"].asString()
         }
 
-        class Feriepenger(json: JsonNode) {
+        class Feriepenger(
+            json: JsonNode,
+        ) {
             val orgnummer = json["orgnummer"].asString()
             val beløp = json["beløp"].asDouble()
             val fom = json["fom"].asLocalDate()
             val tom = json["tom"].asLocalDate()
         }
 
-        class Arbeidskategori(json: JsonNode) {
+        class Arbeidskategori(
+            json: JsonNode,
+        ) {
             val kode = json["kode"].asString()
             val fom = json["fom"].asLocalDate()
             val tom = json["tom"].asLocalDate()
@@ -536,6 +583,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
 
         private companion object {
             fun JsonNode.asLocalDate() = LocalDate.parse(this.asString())
+
             fun JsonNode.asOptionalLocalDate() = takeUnless { this.isMissingOrNull() }?.asLocalDate()
         }
     }
@@ -546,7 +594,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         tom: LocalDate,
         grad: String,
         orgnummer: String,
-        dagsats: Double
+        dagsats: Double,
     ) {
         assertEquals(fom, sykeperiode.fom)
         assertEquals(tom, sykeperiode.tom)
@@ -559,7 +607,7 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
         inntektsopplysning: Sykepengehistorikk.Inntektsopplysning,
         dato: LocalDate,
         inntektPerMåned: Int,
-        orgnummer: String
+        orgnummer: String,
     ) {
         assertEquals(dato, inntektsopplysning.sykepengerFom)
         assertEquals(inntektPerMåned, inntektsopplysning.inntekt)
@@ -570,9 +618,8 @@ internal class SykepengehistorikkForFeriepengerløserTest : H2Database() {
     private fun behov(
         opprettet: LocalDateTime = LocalDateTime.now().minusMinutes(5),
         fom: LocalDate = 1.januar(2018),
-        tom: LocalDate = 1.januar(2022)
-    ) =
-        """
+        tom: LocalDate = 1.januar(2022),
+    ) = """
             {
             "@id": "${UUID.randomUUID()}", 
             "@opprettet":"$opprettet",

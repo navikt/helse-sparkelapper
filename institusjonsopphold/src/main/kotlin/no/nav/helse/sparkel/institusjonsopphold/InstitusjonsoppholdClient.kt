@@ -2,48 +2,48 @@ package no.nav.helse.sparkel.institusjonsopphold
 
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.getOrThrow
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
-import tools.jackson.databind.JsonNode
-import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class InstitusjonsoppholdClient(
     private val baseUrl: String,
     private val scope: String,
-    private val azureClient: AzureTokenProvider
+    private val azureClient: AzureTokenProvider,
 ) {
-
     companion object {
         private val objectMapper = jacksonObjectMapper()
     }
 
     internal fun hentInstitusjonsopphold(
-        fødselsnummer: String
+        fødselsnummer: String,
     ): JsonNode {
-        val url = "${baseUrl}/api/v1/person/institusjonsopphold/soek"
+        val url = "$baseUrl/api/v1/person/institusjonsopphold/soek"
 
-        val (responseCode, responseBody) = with(URI(url).toURL().openConnection() as HttpURLConnection) {
-            doOutput = true
-            requestMethod = "POST"
-            connectTimeout = 10000
-            readTimeout = 10000
+        val (responseCode, responseBody) =
+            with(URI(url).toURL().openConnection() as HttpURLConnection) {
+                doOutput = true
+                requestMethod = "POST"
+                connectTimeout = 10000
+                readTimeout = 10000
 
-            val bearerToken = azureClient.bearerToken(scope).getOrThrow()
-            setRequestProperty("Authorization", "Bearer ${bearerToken.token}")
-            setRequestProperty("Content-Type", "application/json")
-            setRequestProperty("Accept", "application/json")
-            setRequestProperty("Nav-Formaal", "Sykepenger")
-            System.getenv("NAIS_APP_NAME")?.also { setRequestProperty("Nav-Consumer-Id", it) }
+                val bearerToken = azureClient.bearerToken(scope).getOrThrow()
+                setRequestProperty("Authorization", "Bearer ${bearerToken.token}")
+                setRequestProperty("Content-Type", "application/json")
+                setRequestProperty("Accept", "application/json")
+                setRequestProperty("Nav-Formaal", "Sykepenger")
+                System.getenv("NAIS_APP_NAME")?.also { setRequestProperty("Nav-Consumer-Id", it) }
 
-            outputStream.use { os ->
-                val input = """{"personident":"$fødselsnummer"}""".toByteArray()
-                os.write(input, 0, input.size)
+                outputStream.use { os ->
+                    val input = """{"personident":"$fødselsnummer"}""".toByteArray()
+                    os.write(input, 0, input.size)
+                }
+
+                val stream: InputStream? = if (responseCode < 300) this.inputStream else this.errorStream
+                responseCode to stream?.bufferedReader()?.readText()
             }
-
-            val stream: InputStream? = if (responseCode < 300) this.inputStream else this.errorStream
-            responseCode to stream?.bufferedReader()?.readText()
-        }
 
         if (responseCode >= 300 || responseBody == null) {
             throw RuntimeException("unknown error (responseCode=$responseCode) from Inst2")

@@ -5,7 +5,7 @@ import java.time.LocalDate
 data class Sykepengehistorikk(
     val inntektsopplysninger: List<Inntektsopplysning>,
     val utbetalteSykepengeperioder: List<UtbetalteSykepengeperioder>,
-    val maksDato: LocalDate?
+    val maksDato: LocalDate?,
 )
 
 data class Inntektsopplysning(
@@ -13,7 +13,7 @@ data class Inntektsopplysning(
     val inntekt: Double,
     val orgnummer: String,
     val refusjonTom: LocalDate?,
-    val refusjonTilArbeidsgiver: Boolean
+    val refusjonTilArbeidsgiver: Boolean,
 )
 
 data class UtbetalteSykepengeperioder(
@@ -25,5 +25,5 @@ data class UtbetalteSykepengeperioder(
     val dagsats: Double,
     val typeKode: String,
     val typeTekst: String,
-    val orgnummer: String
+    val orgnummer: String,
 )

@@ -9,8 +9,9 @@ import java.time.Duration
 internal class PersonhendelseConsumer(
     private val rapidConnection: RapidsConnection,
     private val kafkaConsumer: KafkaConsumer<ByteArray, GenericRecord>,
-    private val personhendelseRiver: PersonhendelseRiver
-): AutoCloseable, Runnable {
+    private val personhendelseRiver: PersonhendelseRiver,
+) : AutoCloseable,
+    Runnable {
     private val log = LoggerFactory.getLogger("personhendelse-konsumer")
     private var konsumerer = true
 
