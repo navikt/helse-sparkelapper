@@ -46,7 +46,7 @@ spec:
         - id: loki
   resources:
     limits:
-      memory: 1Gi
+      memory: {{#if limits.memory }}{{ limits.memory }}{{else}}1Gi{{/if}}
     requests:
       cpu: {{#if requests.cpu }}{{ requests.cpu }}{{else}}50m{{/if}}
       memory: {{#if requests.memory }}{{ requests.memory }}{{else}}320Mi{{/if}}

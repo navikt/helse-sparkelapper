@@ -14,3 +14,8 @@ accessPolicy:
 env:
   - name: KAFKA_EXTRA_TOPIC
     value: tbd.arbeidsgiveropplysninger
+requests:
+  cpu: 100m
+  memory: 512Mi
+limits:
+  memory: 512Mi
