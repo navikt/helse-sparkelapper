@@ -16,6 +16,6 @@ env:
     value: tbd.arbeidsgiveropplysninger
 requests:
   cpu: 100m
-  memory: 512Mi
+  memory: 768Mi
 limits:
-  memory: 512Mi
+  memory: 768Mi
