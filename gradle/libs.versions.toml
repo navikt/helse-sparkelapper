@@ -1,7 +1,7 @@
 [versions]
 sasGradlePlugins = "20260807.0944"
 rapidsAndRivers = "2026071513121784113927"
-tbdLibs = "20260702.1010"
+tbdLibs = "20260811.1310"
 avro = "1.12.1"
 flyway = "13.2.0"
 h2 = "2.4.240"
