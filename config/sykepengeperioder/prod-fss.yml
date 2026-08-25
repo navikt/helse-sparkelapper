@@ -1,6 +1,5 @@
 app: sykepengeperioder
 replicas:
-  min: 24
   max: 24
 kafkaPool: nav-prod
 mountPaths:
