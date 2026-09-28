@@ -1,5 +1,5 @@
 [versions]
-sasGradlePlugins = "20260923.0907"
+sasGradlePlugins = "20260925.1602"
 rapidsAndRivers = "2026091610031789545782"
 tbdLibs = "20260820.1510"
 avro = "1.12.2"
