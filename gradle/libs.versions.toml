@@ -1,7 +1,7 @@
 [versions]
 sykepengerGradlePlugins = "20261001.1830"
 rapidsAndRivers = "2026091610031789545782"
-tbdLibs = "20260820.1510"
+tbdLibs = "20261001.2041"
 avro = "1.12.2"
 flyway = "13.7.0"
 h2 = "2.5.250"
