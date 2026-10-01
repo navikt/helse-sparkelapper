@@ -1,8 +1,8 @@
 plugins {
-    id("no.nav.helse.sas.sas-deployable")
+    id("no.nav.sykepenger.deployable")
 }
 
-sasDeployable {
+sykepengerDeployable {
     mainClass = "no.nav.helse.sparkel.medlemskapmock.AppKt"
     imageName = "helse-sparkelapper-medlemskap-mock"
 }

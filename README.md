@@ -7,7 +7,7 @@ Dette er for øvrig et skikkelig bra sted å skrive navnene på hver tjeneste og
 ## Legge til en ny gradle-modul
 
 1. Lag en mappe og sørg for at det finnes en `build.gradle.kts` der, som tar i bruk
-   `no.nav.helse.sas.sas-kotlin` (bibliotek) eller `no.nav.helse.sas.sas-deployable` (app)
+   `no.nav.sykepenger.kotlin` (bibliotek) eller `no.nav.sykepenger.deployable` (app)
 2. Legg modulen inn i `include(...)` i `settings.gradle.kts`
 3. Lag App.kt i `src/main/kotlin/no/nav/helse/sparkel/[app]`
 
@@ -17,9 +17,9 @@ Hver app har sin egen `main-[app].yml`-workflow som bygger, tester, lager image 
 deployer. Navnet på appen blir prefikset med `sparkel-` i `config/nais.yml`, så navnet på
 modulen skal være uten.
 
-1. Gjør 'Legge til en ny gradle-modul', med `no.nav.helse.sas.sas-deployable`.
+1. Gjør 'Legge til en ny gradle-modul', med `no.nav.sykepenger.deployable`.
    Mappenavnet korresponderer med appnavnet.
-2. Sett `mainClass` og `imageName = "helse-sparkelapper-[app]"` i `sasDeployable`-blokka.
+2. Sett `mainClass` og `imageName = "helse-sparkelapper-[app]"` i `sykepengerDeployable`-blokka.
 3. Lag `config/[app]/[cluster].yml` for de klustrene appen skal deployes til.
    Fila må inneholde `app: [app]`, siden `config/nais.yml` er en delt mal.
 4. Lag `.github/workflows/main-[app].yml` etter mønster fra en eksisterende app, og legg
