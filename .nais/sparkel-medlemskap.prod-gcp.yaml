@@ -1,0 +1,9 @@
+spec:
+  replicas:
+    min: 2
+    max: 8
+  kafka:
+    pool: nav-prod
+  env:
+    - name: MEDLEMSKAP_SCOPE
+      value: api://prod-gcp.medlemskap.medlemskap-sykepenger-listener/.default

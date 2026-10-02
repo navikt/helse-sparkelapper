@@ -1,5 +1,0 @@
-app: skjermet-endret
-kafkaPool: nav-dev
-replicas:
-  min: 1
-  max: 1

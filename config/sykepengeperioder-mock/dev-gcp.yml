@@ -1,5 +1,0 @@
-app: sykepengeperioder-mock
-kafkaPool: nav-dev
-replicas:
-  min: 1
-  max: 1

@@ -1,0 +1,6 @@
+spec:
+  kafka:
+    pool: nav-prod
+  env:
+    - name: KAFKA_RESET_POLICY
+      value: EARLIEST

@@ -1,0 +1,18 @@
+spec:
+  replicas:
+    min: 1
+    max: 1
+  kafka:
+    pool: nav-dev
+  azure:
+    application:
+      tenant: trygdeetaten.no
+  env:
+    - name: INNTEKTSKOMPONENTEN_BASE_URL
+      value: https://ikomp-q2.dev-fss-pub.nais.io/rs
+    - name: INNTEKTSKOMPONENTEN_OAUTH_SCOPE
+      value: api://dev-fss.team-inntekt.ikomp-q2/.default
+  accessPolicy:
+    outbound:
+      external:
+        - host: ikomp-q2.dev-fss-pub.nais.io

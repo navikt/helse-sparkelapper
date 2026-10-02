@@ -14,14 +14,15 @@ Dette er for øvrig et skikkelig bra sted å skrive navnene på hver tjeneste og
 ## Legge til ny app
 
 Hver app har sin egen `main-[app].yml`-workflow som bygger, tester, lager image med jib og
-deployer. Navnet på appen blir prefikset med `sparkel-` i `config/nais.yml`, så navnet på
+deployer med `nais apply`. Navnet på appen er prefikset med `sparkel-`, så navnet på
 modulen skal være uten.
 
 1. Gjør 'Legge til en ny gradle-modul', med `no.nav.sykepenger.deployable`.
    Mappenavnet korresponderer med appnavnet.
 2. Sett `mainClass` og `imageName = "helse-sparkelapper-[app]"` i `sykepengerDeployable`-blokka.
-3. Lag `config/[app]/[cluster].yml` for de klustrene appen skal deployes til.
-   Fila må inneholde `app: [app]`, siden `config/nais.yml` er en delt mal.
+3. Lag `.nais/sparkel-[app].yaml` med det som er likt i alle miljøer, og en mixin
+   `.nais/sparkel-[app].[miljø].yaml` (f.eks. `dev-gcp`, `prod-gcp`) med det som er spesifikt
+   for hvert miljø. Lister i mixinen legges til etter listene i basen, de erstatter dem ikke.
 4. Lag `.github/workflows/main-[app].yml` etter mønster fra en eksisterende app, og legg
    den nye appen inn i `paths`-ekskluderingene i de andre `main-*.yml`-workflowene.
 5. Push endringene

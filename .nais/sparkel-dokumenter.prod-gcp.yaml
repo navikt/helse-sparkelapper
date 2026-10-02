@@ -1,0 +1,23 @@
+spec:
+  replicas:
+    min: 2
+    max: 12
+  kafka:
+    pool: nav-prod
+  azure:
+    application:
+      tenant: nav.no
+  env:
+    - name: ACCESS_TOKEN_SCOPE
+      value: api://prod-gcp.flex.sykepengesoknad-backend/.default
+    - name: ACCESS_TOKEN_SCOPE_IM
+      value: api://prod-gcp.helsearbeidsgiver.spinosaurus/.default
+  accessPolicy:
+    outbound:
+      rules:
+        - application: sykepengesoknad-backend
+          namespace: flex
+          cluster: prod-gcp
+        - application: spinosaurus
+          namespace: helsearbeidsgiver
+          cluster: prod-gcp

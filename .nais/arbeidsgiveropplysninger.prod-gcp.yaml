@@ -1,0 +1,5 @@
+spec:
+  pool: nav-prod
+  config:
+    partitions: 3
+    retentionHours: 1440

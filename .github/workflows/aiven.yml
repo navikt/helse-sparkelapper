@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'config/arbeidsgiver/aiven-dev.yml'
-      - 'config/arbeidsgiver/aiven-prod.yml'
+      - '.nais/arbeidsgiveropplysninger.yaml'
+      - '.nais/arbeidsgiveropplysninger.*.yaml'
       - '.github/workflows/aiven.yml'
   workflow_dispatch:
 
@@ -20,47 +20,21 @@ permissions:
 
 jobs:
   deploy-dev:
-    name: apply kafka-topic i dev
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    name: Deploy til dev
+    uses: navikt/sykepenger-github-workflows/.github/workflows/deploy-v2.yml@77c349d62b631cf0fedc02278c68abd33bc8ea5b # v1.0.10
+    with:
+      manifest: .nais/arbeidsgiveropplysninger.yaml
+      environment: dev-gcp
     permissions:
       contents: read
       id-token: write # for nais login
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: NAIS login
-        uses: nais/login@40b72a35a18ddf2ad74b632461139ab838cc2a2f # v0
-        with:
-          team: tbd
-
-      - name: Deploy
-        uses: nais/deploy/actions/deploy@9850be311389ca754d9a9f2280615419d738c891 # v3
-        env:
-          CLUSTER: dev-gcp
-          RESOURCE: config/arbeidsgiver/aiven-dev.yml
 
   deploy-prod:
-    name: apply kafka-topic i prod
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    name: Deploy til prod
+    uses: navikt/sykepenger-github-workflows/.github/workflows/deploy-v2.yml@77c349d62b631cf0fedc02278c68abd33bc8ea5b # v1.0.10
+    with:
+      manifest: .nais/arbeidsgiveropplysninger.yaml
+      environment: prod-gcp
     permissions:
       contents: read
       id-token: write # for nais login
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: NAIS login
-        uses: nais/login@40b72a35a18ddf2ad74b632461139ab838cc2a2f # v0
-        with:
-          team: tbd
-
-      - name: Deploy
-        uses: nais/deploy/actions/deploy@9850be311389ca754d9a9f2280615419d738c891 # v3
-        env:
-          CLUSTER: prod-gcp
-          RESOURCE: config/arbeidsgiver/aiven-prod.yml

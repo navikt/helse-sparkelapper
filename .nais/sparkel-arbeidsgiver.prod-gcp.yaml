@@ -1,0 +1,8 @@
+spec:
+  resources:
+    limits:
+      memory: 1Gi
+    requests:
+      memory: 1Gi
+  kafka:
+    pool: nav-prod

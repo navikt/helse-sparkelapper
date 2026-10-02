@@ -1,0 +1,5 @@
+spec:
+  pool: nav-dev
+  config:
+    partitions: 1
+    retentionHours: 168
