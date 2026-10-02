@@ -31,8 +31,8 @@ spec:
       cpu: 50m
       memory: 320Mi
   replicas:
-    min: 2
-    max: 8
+    min: 0
+    max: 0
     cpuThresholdPercentage: 400
   strategy:
     rollingUpdate:
