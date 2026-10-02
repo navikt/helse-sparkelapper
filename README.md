@@ -22,7 +22,7 @@ modulen skal være uten.
 2. Sett `mainClass` og `imageName = "helse-sparkelapper-[app]"` i `sykepengerDeployable`-blokka.
 3. Lag `.nais/sparkel-[app].yaml` med det som er likt i alle miljøer, og en mixin
    `.nais/sparkel-[app].[miljø].yaml` (f.eks. `dev-gcp`, `prod-gcp`) med det som er spesifikt
-   for hvert miljø. Lister i mixinen legges til etter listene i basen, de erstatter dem ikke.
+   for hvert miljø.
 4. Lag `.github/workflows/main-[app].yml` etter mønster fra en eksisterende app, og legg
    den nye appen inn i `paths`-ekskluderingene i de andre `main-*.yml`-workflowene.
 5. Push endringene
