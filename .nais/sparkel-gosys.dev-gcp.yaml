@@ -1,0 +1,18 @@
+spec:
+  replicas:
+    min: 1
+    max: 1
+  kafka:
+    pool: nav-dev
+  azure:
+    application:
+      tenant: trygdeetaten.no
+  env:
+    - name: OPPGAVE_URL
+      value: https://oppgave.dev-fss-pub.nais.io
+    - name: OPPGAVE_SCOPE
+      value: api://dev-fss.oppgavehandtering.oppgave/.default
+  accessPolicy:
+    outbound:
+      external:
+        - host: oppgave.dev-fss-pub.nais.io

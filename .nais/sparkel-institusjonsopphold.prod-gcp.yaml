@@ -1,0 +1,15 @@
+spec:
+  replicas:
+    min: 2
+    max: 8
+  kafka:
+    pool: nav-prod
+  env:
+    - name: INSTITUSJONSOPPHOLD_URL
+      value: https://inst2.prod-fss-pub.nais.io
+    - name: INSTITUSJONSOPPHOLD_SCOPE
+      value: api://prod-fss.team-rocket.inst2/.default
+  accessPolicy:
+    outbound:
+      external:
+        - host: inst2.prod-fss-pub.nais.io

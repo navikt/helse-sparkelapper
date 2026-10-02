@@ -1,0 +1,20 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  name: arbeidsgiveropplysninger
+  namespace: tbd
+  labels:
+    team: tbd
+spec:
+  config:
+    cleanupPolicy: delete
+    minimumInSyncReplicas: 1
+    replication: 2
+    retentionBytes: -1
+  acl:
+    - team: tbd
+      application: sparkel-arbeidsgiver
+      access: readwrite
+    - team: helsearbeidsgiver
+      application: helsearbeidsgiver-bro-sykepenger
+      access: readwrite

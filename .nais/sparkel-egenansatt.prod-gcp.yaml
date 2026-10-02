@@ -1,0 +1,9 @@
+spec:
+  replicas:
+    min: 2
+    max: 8
+  kafka:
+    pool: nav-prod
+  env:
+    - name: SKJERMEDE_OAUTH_SCOPE
+      value: api://prod-gcp.nom.skjermede-personer-pip/.default

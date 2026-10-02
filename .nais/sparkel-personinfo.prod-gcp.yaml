@@ -1,0 +1,10 @@
+spec:
+  replicas:
+    min: 2
+    max: 12
+    cpuThresholdPercentage: 500
+  kafka:
+    pool: nav-prod
+  azure:
+    application:
+      tenant: nav.no

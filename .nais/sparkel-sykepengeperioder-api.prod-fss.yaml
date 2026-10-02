@@ -1,0 +1,27 @@
+spec:
+  ingresses:
+    - https://sykepengeperioder-api.prod-fss-pub.nais.io
+  replicas:
+    min: 2
+    max: 4
+  azure:
+    application:
+      tenant: nav.no
+  vault:
+    paths:
+      - mountPath: /var/run/secrets/nais.io/oracle/creds
+        kvPath: oracle/data/prod/creds/sp_infotrygd_p-user
+      - mountPath: /var/run/secrets/nais.io/oracle/config
+        kvPath: oracle/data/prod/config/infotrygd_spp
+  env:
+    - name: DATABASE_SCHEMA
+      value: INFOTRYGD_SPP
+  accessPolicy:
+    inbound:
+      rules:
+        - application: spesialist
+          namespace: tbd
+          cluster: prod-gcp
+        - application: spokelse
+          namespace: tbd
+          cluster: prod-gcp

@@ -1,0 +1,18 @@
+spec:
+  replicas:
+    min: 2
+    max: 2
+  kafka:
+    pool: nav-prod
+  azure:
+    application:
+      tenant: nav.no
+  env:
+    - name: REPR_API_SCOPE
+      value: api://prod-gcp.repr.repr-api/.default
+  accessPolicy:
+    outbound:
+      rules:
+        - application: repr-api
+          namespace: repr
+          cluster: prod-gcp

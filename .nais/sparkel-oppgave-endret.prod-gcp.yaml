@@ -1,0 +1,6 @@
+spec:
+  kafka:
+    pool: nav-prod
+  env:
+    - name: OPPGAVE_ENDRET_TOPIC
+      value: oppgavehandtering.oppgavehendelse-v1
