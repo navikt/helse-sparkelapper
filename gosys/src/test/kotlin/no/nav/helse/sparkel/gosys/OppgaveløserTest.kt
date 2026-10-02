@@ -7,6 +7,7 @@ import com.github.navikt.tbd_libs.result_object.Result
 import com.github.navikt.tbd_libs.result_object.ok
 import com.github.navikt.tbd_libs.speed.IdentResponse
 import com.github.navikt.tbd_libs.speed.SpeedClient
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import com.github.tomakehurst.wiremock.client.WireMock.configureFor
 import com.github.tomakehurst.wiremock.client.WireMock.create
@@ -97,17 +98,44 @@ internal class OppgaveløserTest {
 
         assertNull(sistSendteMelding.antall())
         assertTrue(sistSendteMelding.oppslagFeilet())
+        assertKalletBleGjortHvorMangeGanger(1, Scenarioer.behovIdForUautentisertKall)
+    }
+
+    @Test
+    fun `retryer 500 fra oppgavetjenesten`() {
+        rapid.sendTestMessage(behov(Scenarioer.behovIdForInternalServerError.first))
+
+        assertEquals(1, sistSendteMelding.antall())
+        assertFalse(sistSendteMelding.oppslagFeilet())
+        assertKalletBleGjortHvorMangeGanger(2, Scenarioer.behovIdForInternalServerError)
+    }
+
+    @Test
+    fun `retryer 503 fra oppgavetjenesten`() {
+        rapid.sendTestMessage(behov(Scenarioer.behovIdForServiceUnavailable.first))
+
+        assertEquals(1, sistSendteMelding.antall())
+        assertFalse(sistSendteMelding.oppslagFeilet())
+        assertKalletBleGjortHvorMangeGanger(2, Scenarioer.behovIdForServiceUnavailable)
     }
 
     @Test
     fun `retryer behov når responsen ikke er gyldig JSON`() {
         rapid.sendTestMessage(behov(Scenarioer.behovIdForUgyldigRespons.first))
+
         assertEquals(1, sistSendteMelding.antall())
         assertFalse(sistSendteMelding.oppslagFeilet())
+        assertKalletBleGjortHvorMangeGanger(2, Scenarioer.behovIdForUgyldigRespons)
+    }
+
+    private fun assertKalletBleGjortHvorMangeGanger(
+        antall: Int, scenario: Pair<UUID, ResponseDefinitionBuilder>
+    ) {
         verify(
-            2,
-            getRequestedFor(urlPathEqualTo(endepunkt))
-                .withHeader("X-Correlation-ID", equalTo(Scenarioer.behovIdForUgyldigRespons.first.toString())),
+            antall,
+            getRequestedFor(urlPathEqualTo(endepunkt)).withHeader(
+                "X-Correlation-ID", equalTo(scenario.first.toString())
+            ),
         )
     }
 
@@ -200,6 +228,16 @@ internal class OppgaveløserTest {
                     .withStatus(401)
                     .withHeader("Content-Type", "application/json")
 
+        val behovIdForInternalServerError =
+            UUID.randomUUID() to
+                aResponse()
+                    .withStatus(500)
+
+        val behovIdForServiceUnavailable =
+            UUID.randomUUID() to
+                aResponse()
+                    .withStatus(503)
+
         val behovIdForUgyldigRespons =
             UUID.randomUUID() to
                 aResponse()
@@ -226,18 +264,54 @@ internal class OppgaveløserTest {
             )
         }
 
-        Scenarioer.behovIdForUgyldigRespons.let { (behovId, respons) ->
-            val scenarioUgyldigRespons = "ugyldig respons"
+        Scenarioer.behovIdForInternalServerError.let { (behovId, respons) ->
+            val scenario = "InternalServerError"
             stubFor(
                 get(urlPathEqualTo(endepunkt))
-                    .inScenario(scenarioUgyldigRespons)
+                    .inScenario(scenario)
                     .withHeader("X-Correlation-ID", equalTo(behovId.toString()))
                     .willReturn(respons)
                     .willSetStateTo("har feilet"),
             )
             stubFor(
                 get(urlPathEqualTo(endepunkt))
-                    .inScenario(scenarioUgyldigRespons)
+                    .inScenario(scenario)
+                    .withHeader("X-Correlation-ID", equalTo(behovId.toString()))
+                    .whenScenarioStateIs("har feilet")
+                    .willReturn(Scenarioer.behovIdOk.second),
+            )
+        }
+
+        Scenarioer.behovIdForServiceUnavailable.let { (behovId, respons) ->
+            val scenario = "ServiceUnavailable"
+            stubFor(
+                get(urlPathEqualTo(endepunkt))
+                    .inScenario(scenario)
+                    .withHeader("X-Correlation-ID", equalTo(behovId.toString()))
+                    .willReturn(respons)
+                    .willSetStateTo("har feilet"),
+            )
+            stubFor(
+                get(urlPathEqualTo(endepunkt))
+                    .inScenario(scenario)
+                    .withHeader("X-Correlation-ID", equalTo(behovId.toString()))
+                    .whenScenarioStateIs("har feilet")
+                    .willReturn(Scenarioer.behovIdOk.second),
+            )
+        }
+
+        Scenarioer.behovIdForUgyldigRespons.let { (behovId, respons) ->
+            val scenario = "ugyldig respons"
+            stubFor(
+                get(urlPathEqualTo(endepunkt))
+                    .inScenario(scenario)
+                    .withHeader("X-Correlation-ID", equalTo(behovId.toString()))
+                    .willReturn(respons)
+                    .willSetStateTo("har feilet"),
+            )
+            stubFor(
+                get(urlPathEqualTo(endepunkt))
+                    .inScenario(scenario)
                     .withHeader("X-Correlation-ID", equalTo(behovId.toString()))
                     .whenScenarioStateIs("har feilet")
                     .willReturn(

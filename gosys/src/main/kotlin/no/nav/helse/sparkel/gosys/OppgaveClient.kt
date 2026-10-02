@@ -9,7 +9,6 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType.Application.Json
-import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson3.JacksonConverter
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import no.nav.helse.sparkel.retry
@@ -50,8 +49,9 @@ internal class OppgaveClient(
                 accept(Json)
             }
         val status = response.status
-        if (status >= HttpStatusCode.MultipleChoices) {
-            throw RuntimeException("Feil fra oppgavetjenesten, status: $status")
+        when {
+            status.value in 500..599 -> throw IOException("Feil fra oppgavetjenesten, kallet kan prøves på nytt, status: $status")
+            status.value >= 300 -> throw RuntimeException("Feil fra oppgavetjenesten, status: $status")
         }
 
         val body = response.bodyAsText()
