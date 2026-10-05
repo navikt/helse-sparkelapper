@@ -1,9 +1,5 @@
 package no.nav.helse.sparkel.arbeidsgiver
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import com.github.navikt.tbd_libs.kafka.AivenConfig
 import com.github.navikt.tbd_libs.kafka.ConsumerProducerFactory
@@ -24,6 +20,8 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.header.internals.RecordHeader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.http.HttpClient
 
 private val logger: Logger = LoggerFactory.getLogger("sparkel-arbeidsgiver")
@@ -31,19 +29,16 @@ private val logger: Logger = LoggerFactory.getLogger("sparkel-arbeidsgiver")
 fun main() {
     val env = System.getenv()
 
-    val objectMapperJackson2 =
-        jacksonObjectMapper()
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .registerModules(JavaTimeModule())
+    val objectMapper = jacksonObjectMapper()
 
     val consumerProducerFactory = ConsumerProducerFactory(AivenConfig.default)
-    val producer = ArbeidsgiveropplysningerProducer(consumerProducerFactory.createProducer(), objectMapperJackson2)
+    val producer = ArbeidsgiveropplysningerProducer(consumerProducerFactory.createProducer(), objectMapper)
 
     val azureClient = createAzureTokenClientFromEnvironment(env)
     val spedisjonClient =
         SpedisjonClient(
             httpClient = HttpClient.newHttpClient(),
-            objectMapper = objectMapperJackson2,
+            objectMapper = objectMapper,
             tokenProvider = azureClient,
         )
 

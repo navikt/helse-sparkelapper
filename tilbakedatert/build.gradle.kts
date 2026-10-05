@@ -10,7 +10,7 @@ sykepengerDeployable {
 dependencies {
     implementation(project(":felles"))
     implementation(libs.ktor.client.logging)
-    implementation(libs.ktor.serialization.jackson)
+    implementation(libs.ktor.serialization.jackson3)
 
     testImplementation(libs.rapids.and.rivers.test)
 }

@@ -19,7 +19,6 @@ avro = { module = "org.apache.avro:avro", version.ref = "avro" }
 flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
-jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
 jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin" }
 jsonassert = { module = "org.skyscreamer:jsonassert", version.ref = "jsonassert" }
 kotliquery = { module = "com.github.seratch:kotliquery", version.ref = "kotliquery" }
@@ -46,11 +45,9 @@ ktor-client-auth = { module = "io.ktor:ktor-client-auth-jvm" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation" }
 ktor-client-core = { module = "io.ktor:ktor-client-core" }
-ktor-client-jackson = { module = "io.ktor:ktor-client-jackson" }
 ktor-client-json = { module = "io.ktor:ktor-client-json-jvm" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock-jvm" }
-ktor-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson" }
 ktor-serialization-jackson3 = { module = "io.ktor:ktor-serialization-jackson3" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json" }
 ktor-server-auth = { module = "io.ktor:ktor-server-auth" }

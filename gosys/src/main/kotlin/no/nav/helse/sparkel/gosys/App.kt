@@ -1,13 +1,12 @@
 package no.nav.helse.sparkel.gosys
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.createAzureTokenClientFromEnvironment
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import com.github.navikt.tbd_libs.speed.SpeedClient
 import no.nav.helse.rapids_rivers.RapidApplication
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.http.HttpClient
 
 fun main() {
@@ -26,7 +25,7 @@ internal fun createApp(env: Map<String, String>): RapidsConnection {
     val speedClient =
         SpeedClient(
             httpClient = HttpClient.newHttpClient(),
-            objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),
+            objectMapper = jacksonObjectMapper(),
             tokenProvider = azureClient,
         )
     val oppgaveService = OppgaveService(oppgaveClient)
