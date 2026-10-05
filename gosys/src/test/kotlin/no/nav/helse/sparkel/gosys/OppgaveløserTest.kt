@@ -129,12 +129,14 @@ internal class OppgaveløserTest {
     }
 
     private fun assertKalletBleGjortHvorMangeGanger(
-        antall: Int, scenario: Pair<UUID, ResponseDefinitionBuilder>
+        antall: Int,
+        scenario: Pair<UUID, ResponseDefinitionBuilder>,
     ) {
         verify(
             antall,
             getRequestedFor(urlPathEqualTo(endepunkt)).withHeader(
-                "X-Correlation-ID", equalTo(scenario.first.toString())
+                "X-Correlation-ID",
+                equalTo(scenario.first.toString()),
             ),
         )
     }

@@ -13,7 +13,6 @@ dependencies {
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.apache)
-    implementation(libs.ktor.client.jackson)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.jackson3)
     implementation(libs.ktor.serialization.kotlinx.json)
