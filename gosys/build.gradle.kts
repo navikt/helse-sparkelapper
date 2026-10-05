@@ -14,7 +14,6 @@ dependencies {
     implementation(libs.tbd.libs.retry)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.cio)
-    implementation(libs.ktor.client.jackson)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.jackson3)
 

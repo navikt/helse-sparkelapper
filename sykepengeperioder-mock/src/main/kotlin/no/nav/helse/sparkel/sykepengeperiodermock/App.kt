@@ -1,8 +1,5 @@
 package no.nav.helse.sparkel.sykepengeperiodermock
 
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.naisful.naisApp
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
@@ -18,11 +15,9 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
 import no.nav.helse.rapids_rivers.RapidApplication
 import org.slf4j.LoggerFactory
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
-internal val objectMapper =
-    jacksonObjectMapper()
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        .registerModule(JavaTimeModule())
+internal val objectMapper = jacksonObjectMapper()
 
 fun main() {
     val env = System.getenv()

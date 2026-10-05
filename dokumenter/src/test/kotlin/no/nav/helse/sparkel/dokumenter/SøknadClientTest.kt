@@ -1,6 +1,5 @@
 package no.nav.helse.sparkel.dokumenter
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureToken
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.result_object.Result
@@ -21,6 +20,7 @@ import io.ktor.serialization.jackson3.jackson
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDateTime
 
 internal class SøknadClientTest {
