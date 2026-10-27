@@ -54,6 +54,34 @@ class MedlemskapTest {
     }
 
     @Test
+    fun `svarer likt på flere behov for samme person`() {
+        rapid.sendTestMessage(avklaring("UAVKLART_MED_BRUKERSPORSMAAL", """[{"regelId": "REGEL_3", "forklaringPaaUavklart": "Ikke registrert arbeidsforhold"}]"""))
+        rapid.sendTestMessage(behov())
+        rapid.sendTestMessage(behov())
+
+        assertEquals(2, rapid.inspektør.size)
+        repeat(2) { indeks ->
+            val løsning =
+                rapid.inspektør
+                    .message(indeks)
+                    .path("@løsning")
+                    .path("Medlemskap")
+                    .path("resultat")
+            assertEquals("UAVKLART_MED_BRUKERSPORSMAAL", løsning.path("svar").asString())
+            assertEquals("REGEL_3", løsning.path("aarsaker")[0].path("regelId").asString())
+        }
+    }
+
+    @Test
+    fun `ny avklaring overskriver forrige`() {
+        rapid.sendTestMessage(avklaring("NEI", null))
+        rapid.sendTestMessage(avklaring("JA", null))
+        rapid.sendTestMessage(behov())
+
+        assertEquals("JA", løsning().path("svar").asString())
+    }
+
+    @Test
     fun `godtar avklaring uten årsaker`() {
         rapid.sendTestMessage(avklaring("NEI", null))
         rapid.sendTestMessage(behov())

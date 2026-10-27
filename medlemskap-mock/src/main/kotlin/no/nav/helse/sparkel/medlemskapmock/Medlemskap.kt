@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory
 import tools.jackson.databind.JsonNode
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.ConcurrentHashMap
 
 internal class Medlemskap(
     rapidsConnection: RapidsConnection,
@@ -78,9 +79,10 @@ private class Medlemskapvurderinger : River.PacketListener {
         private val formatter = DateTimeFormatter.ofPattern("ddMMyy")
     }
 
-    private val vurderinger = mutableMapOf<String, Medlemskapvurdering>()
+    private val vurderinger = ConcurrentHashMap<String, Medlemskapvurdering>()
 
-    fun vurderMedlemskap(ident: String) = vurderinger.remove(ident) ?: gyldigFødselsnummer(ident)
+    // Beholdes til neste avklaring: både spleis og sp-medlemskap sender Medlemskap-behov for samme person enn så lenge
+    fun vurderMedlemskap(ident: String) = vurderinger[ident] ?: gyldigFødselsnummer(ident)
 
     private fun gyldigFødselsnummer(fødselsnummer: String): Medlemskapvurdering =
         try {
