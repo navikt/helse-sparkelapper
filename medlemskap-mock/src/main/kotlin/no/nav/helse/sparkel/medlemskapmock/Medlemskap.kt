@@ -30,6 +30,7 @@ internal class Medlemskap(
                 precondition { it.requireValue("@event_name", "mock_medlemskap_avklaring") }
                 validate {
                     it.requireKey("ident", "medlemskapVerdi")
+                    it.interestedIn("aarsaker")
                 }
             }.register(medlemskapvurderinger)
 
@@ -60,16 +61,8 @@ internal class Medlemskap(
         meterRegistry: MeterRegistry,
     ) {
         val fødselsnummer = packet["fødselsnummer"].asString()
-        packet["@løsning"] =
-            mapOf<String, Any>(
-                behov to
-                    mapOf(
-                        "resultat" to
-                            mapOf(
-                                "svar" to medlemskapvurderinger.vurderMedlemskap(fødselsnummer),
-                            ),
-                    ),
-            )
+        val vurdering = medlemskapvurderinger.vurderMedlemskap(fødselsnummer)
+        packet["@løsning"] = mapOf<String, Any>(behov to vurdering.somLøsning())
         context.publish(packet.toJson())
         sikkerlogg.info(
             "Sender hardkodet svar for behov {}:\n{}",
@@ -85,16 +78,16 @@ private class Medlemskapvurderinger : River.PacketListener {
         private val formatter = DateTimeFormatter.ofPattern("ddMMyy")
     }
 
-    private val vurderinger = mutableMapOf<String, String>()
+    private val vurderinger = mutableMapOf<String, Medlemskapvurdering>()
 
     fun vurderMedlemskap(ident: String) = vurderinger.remove(ident) ?: gyldigFødselsnummer(ident)
 
-    private fun gyldigFødselsnummer(fødselsnummer: String): String =
+    private fun gyldigFødselsnummer(fødselsnummer: String): Medlemskapvurdering =
         try {
             LocalDate.parse(fødselsnummer.substring(0, 6), formatter)
-            "JA"
+            Medlemskapvurdering("JA")
         } catch (_: Exception) {
-            "UAVKLART"
+            Medlemskapvurdering("UAVKLART")
         }
 
     override fun onError(
@@ -112,8 +105,42 @@ private class Medlemskapvurderinger : River.PacketListener {
         meterRegistry: MeterRegistry,
     ) {
         val ident = packet["ident"].asString()
-        val svar = packet["medlemskapVerdi"].asString()
-        sikkerlogg.info("forbereder medlemskapvurdering for $ident=$svar")
-        vurderinger[ident] = svar
+        val vurdering =
+            Medlemskapvurdering(
+                svar = packet["medlemskapVerdi"].asString(),
+                aarsaker =
+                    packet["aarsaker"].values().map {
+                        Årsak(
+                            regelId = it.path("regelId").asString(),
+                            forklaringPaaUavklart = it.path("forklaringPaaUavklart").asString(),
+                        )
+                    },
+            )
+        sikkerlogg.info("forbereder medlemskapvurdering for $ident=$vurdering")
+        vurderinger[ident] = vurdering
     }
 }
+
+private data class Medlemskapvurdering(
+    val svar: String,
+    val aarsaker: List<Årsak> = emptyList(),
+) {
+    fun somLøsning(): Map<String, Any> =
+        mapOf(
+            "resultat" to
+                buildMap {
+                    put("svar", svar)
+                    if (svar != "JA") {
+                        put(
+                            "aarsaker",
+                            aarsaker.map { mapOf("regelId" to it.regelId, "forklaringPaaUavklart" to it.forklaringPaaUavklart) },
+                        )
+                    }
+                },
+        )
+}
+
+private data class Årsak(
+    val regelId: String,
+    val forklaringPaaUavklart: String,
+)

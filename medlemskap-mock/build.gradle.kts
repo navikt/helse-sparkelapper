@@ -9,4 +9,6 @@ sykepengerDeployable {
 
 dependencies {
     implementation(project(":felles"))
+
+    testImplementation(libs.rapids.and.rivers.test)
 }
