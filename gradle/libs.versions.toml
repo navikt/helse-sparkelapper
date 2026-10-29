@@ -1,9 +1,9 @@
 [versions]
-sykepengerGradlePlugins = "20261026.1611"
+sykepengerGradlePlugins = "20261028.1441"
 rapidsAndRivers = "2026091610031789545782"
 tbdLibs = "20261013.1613"
 avro = "1.12.2"
-flyway = "13.10.3"
+flyway = "13.11.1"
 h2 = "2.5.252"
 hikaricp = "7.1.0"
 jsonassert = "1.5.3"
