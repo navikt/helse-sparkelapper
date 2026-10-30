@@ -63,8 +63,10 @@ class OppgaveEndretConsumerTest {
         }
 
         logger.info("Venter til meldingene er behandlet")
-        verify(atLeast = 4, timeout = Duration.ofSeconds(2).toMillis()) { kafkaConsumer.poll(any<Duration>()) }
-        verify(atLeast = 4, timeout = Duration.ofSeconds(5).toMillis()) { gosysOppgaveEndretProducer.onPacket(any()) }
+        // shipIt kalles når consumeren får en tom poll, etter at alle meldingene er behandlet
+        verify(timeout = Duration.ofSeconds(5).toMillis()) { gosysOppgaveEndretProducer.shipIt() }
+        verify(exactly = 4) { kafkaConsumer.poll(any<Duration>()) }
+        verify(exactly = 7) { gosysOppgaveEndretProducer.onPacket(any()) }
         verify(exactly = 1) { gosysOppgaveEndretProducer.shipIt() }
     }
 
@@ -104,6 +106,7 @@ class OppgaveEndretConsumerTest {
         }
 
         logger.info("Venter til meldingene er behandlet")
+        verify(timeout = Duration.ofSeconds(5).toMillis()) { gosysOppgaveEndretProducer.shipIt() }
         verify(exactly = 0) { gosysOppgaveEndretProducer.onPacket(any()) }
         verify(exactly = 1) { gosysOppgaveEndretProducer.shipIt() }
     }
