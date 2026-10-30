@@ -166,7 +166,8 @@ class OppgaveEndretConsumerTest {
         while (manipulerbarKlokke.count == 1) {
             Thread.sleep(100)
         }
-        verify(atLeast = 1) { kafkaConsumer.poll(any<Duration>()) }
+        // Klokka leses før poll, så vi må vente på at poll faktisk blir kalt
+        verify(atLeast = 1, timeout = Duration.ofSeconds(2).toMillis()) { kafkaConsumer.poll(any<Duration>()) }
     }
 
     private fun queueMessages(
@@ -240,6 +241,7 @@ class OppgaveEndretConsumerTest {
 class MutableClock(
     var instant: Instant,
 ) : Clock() {
+    @Volatile
     var count: Int = 0
 
     override fun instant() =
