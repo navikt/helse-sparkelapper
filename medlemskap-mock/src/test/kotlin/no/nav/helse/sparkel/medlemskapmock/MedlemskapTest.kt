@@ -92,6 +92,32 @@ class MedlemskapTest {
         assertTrue(løsning.path("aarsaker").isEmpty)
     }
 
+    @Test
+    fun `svarer ikke når personen ikke skal mockes`() {
+        rapid.sendTestMessage(ikkeMock())
+        rapid.sendTestMessage(behov())
+
+        assertEquals(0, rapid.inspektør.size)
+    }
+
+    @Test
+    fun `svarer igjen når personen får en ny avklaring etter at den ikke skulle mockes`() {
+        rapid.sendTestMessage(ikkeMock())
+        rapid.sendTestMessage(avklaring("NEI", null))
+        rapid.sendTestMessage(behov())
+
+        assertEquals("NEI", løsning().path("svar").asString())
+    }
+
+    @Test
+    fun `glemmer forrige avklaring når personen ikke skal mockes`() {
+        rapid.sendTestMessage(avklaring("NEI", null))
+        rapid.sendTestMessage(ikkeMock())
+        rapid.sendTestMessage(behov())
+
+        assertEquals(0, rapid.inspektør.size)
+    }
+
     private fun løsning() =
         rapid.inspektør
             .message(rapid.inspektør.size - 1)
@@ -107,6 +133,13 @@ class MedlemskapTest {
   "@event_name": "mock_medlemskap_avklaring",
   "ident": "$fødselsnummer",
   "medlemskapVerdi": "$svar"${aarsaker?.let { """, "aarsaker": $it""" } ?: ""}
+}"""
+
+    @Language("JSON")
+    private fun ikkeMock() = """{
+  "@event_name": "mock_medlemskap_avklaring",
+  "ident": "$fødselsnummer",
+  "skalMockes": false
 }"""
 
     @Language("JSON")

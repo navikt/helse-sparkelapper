@@ -30,8 +30,8 @@ internal class Medlemskap(
             .apply {
                 precondition { it.requireValue("@event_name", "mock_medlemskap_avklaring") }
                 validate {
-                    it.requireKey("ident", "medlemskapVerdi")
-                    it.interestedIn("aarsaker")
+                    it.requireKey("ident")
+                    it.interestedIn("medlemskapVerdi", "aarsaker", "skalMockes")
                 }
             }.register(medlemskapvurderinger)
 
@@ -62,7 +62,11 @@ internal class Medlemskap(
         meterRegistry: MeterRegistry,
     ) {
         val fødselsnummer = packet["fødselsnummer"].asString()
-        val vurdering = medlemskapvurderinger.vurderMedlemskap(fødselsnummer)
+        val vurdering =
+            medlemskapvurderinger.vurderMedlemskap(fødselsnummer) ?: return sikkerlogg.info(
+                "Svarer ikke på behov {} for $fødselsnummer, personen skal slås opp i LovMe",
+                keyValue("id", packet["@id"].asString()),
+            )
         packet["@løsning"] = mapOf<String, Any>(behov to vurdering.somLøsning())
         context.publish(packet.toJson())
         sikkerlogg.info(
@@ -80,9 +84,14 @@ private class Medlemskapvurderinger : River.PacketListener {
     }
 
     private val vurderinger = ConcurrentHashMap<String, Medlemskapvurdering>()
+    private val ikkeMockes = ConcurrentHashMap.newKeySet<String>()
 
-    // Beholdes til neste avklaring: både spleis og sp-medlemskap sender Medlemskap-behov for samme person enn så lenge
-    fun vurderMedlemskap(ident: String) = vurderinger[ident] ?: gyldigFødselsnummer(ident)
+    // Beholdes til neste avklaring: både spleis og sp-medlemskap sender Medlemskap-behov for samme person enn så lenge.
+    // null betyr at mocken ikke skal svare, slik at sparkel-medlemskap slår opp i LovMe.
+    fun vurderMedlemskap(ident: String): Medlemskapvurdering? {
+        if (ident in ikkeMockes) return null
+        return vurderinger[ident] ?: gyldigFødselsnummer(ident)
+    }
 
     private fun gyldigFødselsnummer(fødselsnummer: String): Medlemskapvurdering =
         try {
@@ -107,9 +116,21 @@ private class Medlemskapvurderinger : River.PacketListener {
         meterRegistry: MeterRegistry,
     ) {
         val ident = packet["ident"].asString()
+        if (packet["skalMockes"].let { it.isBoolean && !it.booleanValue() }) {
+            sikkerlogg.info("mocker ikke medlemskap for $ident")
+            vurderinger.remove(ident)
+            ikkeMockes.add(ident)
+            return
+        }
+        val svar = packet["medlemskapVerdi"].takeUnless { it.isMissingNode || it.isNull }?.asString()
+        if (svar == null) {
+            sikkerlogg.error("mock_medlemskap_avklaring for $ident mangler medlemskapVerdi:\n${packet.toJson()}")
+            return
+        }
+        ikkeMockes.remove(ident)
         val vurdering =
             Medlemskapvurdering(
-                svar = packet["medlemskapVerdi"].asString(),
+                svar = svar,
                 aarsaker =
                     packet["aarsaker"].values().map {
                         Årsak(
