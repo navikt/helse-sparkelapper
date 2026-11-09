@@ -39,12 +39,23 @@ internal class MedlemskapClient(
         fnr: String,
         fom: LocalDate,
         tom: LocalDate,
-    ): JsonNode {
-        val svar = Tolk(fnr, fom, tom, ::request).tolk()
-        return objectMapper.createObjectNode().set("resultat", objectMapper.createObjectNode().put("svar", svar))
-    }
+    ): JsonNode = tilLøsning(Tolk(fnr, fom, tom, ::request).tolk())
 
     internal companion object {
         private val objectMapper = jacksonObjectMapper()
+
+        internal fun tilLøsning(medlemskapSvar: MedlemskapSvar): JsonNode {
+            val resultat = objectMapper.createObjectNode().put("svar", medlemskapSvar.svar)
+            medlemskapSvar.aarsaker?.let { aarsaker ->
+                val aarsakerNode = resultat.putArray("aarsaker")
+                aarsaker.forEach { aarsak ->
+                    aarsakerNode
+                        .addObject()
+                        .put("regelId", aarsak.regelId)
+                        .put("forklaringPaaUavklart", aarsak.forklaringPaaUavklart)
+                }
+            }
+            return objectMapper.createObjectNode().set("resultat", resultat)
+        }
     }
 }

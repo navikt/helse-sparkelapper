@@ -10,6 +10,16 @@ import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.Duration.ofSeconds
 import java.time.LocalDate
 
+data class MedlemskapSvar(
+    val svar: String,
+    val aarsaker: List<Årsak>?,
+) {
+    data class Årsak(
+        val regelId: String,
+        val forklaringPaaUavklart: String,
+    )
+}
+
 data class Tolk(
     private val fødselsnummer: String,
     private val fom: LocalDate,
@@ -34,12 +44,15 @@ data class Tolk(
                 throw Medlemskapsfeil(Medlemskap.Ubesvart(exception))
             }
         val jsonBody = responseBody.safeJson()
-        if (jsonBody.path("speilSvar").isString) return Medlemskap.SpeilAvklart(jsonBody.path("speilSvar").asString(), jsonBody)
+        val aarsaker = jsonBody.path("aarsaker")
+        if (jsonBody.path("speilSvar").isString && aarsaker.erGyldigeAarsaker()) {
+            return Medlemskap.SpeilAvklart(jsonBody.path("speilSvar").asString(), aarsaker.tilAarsaker(), jsonBody)
+        }
         if (status >= 500 && responseBody.contains("GradertAdresse")) return Medlemskap.Gradert(responseBody)
         throw Medlemskapsfeil(Medlemskap.Uventet(status, responseBody))
     }
 
-    internal fun tolk(): String {
+    internal fun tolk(): MedlemskapSvar {
         val medlemskap =
             try {
                 retryBlocking(Medlemskapsutsettelser()) { hentSvar() }
@@ -50,8 +63,8 @@ data class Tolk(
         medlemskap.logg(this)
 
         return when (medlemskap) {
-            is Medlemskap.SpeilAvklart -> medlemskap.svar
-            is Medlemskap.Gradert -> "UAVKLART"
+            is Medlemskap.SpeilAvklart -> MedlemskapSvar(medlemskap.svar, medlemskap.aarsaker)
+            is Medlemskap.Gradert -> MedlemskapSvar("UAVKLART", null)
             is Medlemskap.Ubesvart -> error("Fikk ikke kontakt med medlemskapstjenesten på 3 forsøk. Se sikkerlogg for detaljer")
             is Medlemskap.Uventet -> error("Fikk uventet svar fra medlemskapstjenesten 3 ganger. Se sikkerlogg for detaljer")
         }
@@ -63,6 +76,7 @@ data class Tolk(
 
             data class SpeilAvklart(
                 val svar: String,
+                val aarsaker: List<MedlemskapSvar.Årsak>?,
                 private val responseBody: JsonNode,
             ) : Medlemskap {
                 override fun logg(tolk: Tolk) =
@@ -124,6 +138,20 @@ data class Tolk(
                 objectMapper.readTree(this)
             } catch (_: Exception) {
                 objectMapper.createObjectNode()
+            }
+
+        // aarsaker er bare med i nyere svar fra medlemskapstjenesten, så feltet kan mangle
+        private fun JsonNode.erGyldigeAarsaker() =
+            isMissingNode ||
+                isNull ||
+                (isArray && values().all { it.path("regelId").isString && it.path("forklaringPaaUavklart").isString })
+
+        private fun JsonNode.tilAarsaker() =
+            takeIf { it.isArray }?.values()?.map {
+                MedlemskapSvar.Årsak(
+                    regelId = it.path("regelId").asString(),
+                    forklaringPaaUavklart = it.path("forklaringPaaUavklart").asString(),
+                )
             }
 
         private fun JsonNode.KiB() = (objectMapper.writeValueAsBytes(this).size / 1024.0).let { kib -> "%.2f KiB".format(kib) }
