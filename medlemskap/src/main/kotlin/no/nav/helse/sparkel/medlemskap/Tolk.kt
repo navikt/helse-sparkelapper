@@ -34,7 +34,6 @@ data class Tolk(
                 throw Medlemskapsfeil(Medlemskap.Ubesvart(exception))
             }
         val jsonBody = responseBody.safeJson()
-        if (jsonBody.path("resultat").path("svar").isString) return Medlemskap.Avklart(jsonBody.path("resultat").path("svar").asString(), jsonBody)
         if (jsonBody.path("speilSvar").isString) return Medlemskap.SpeilAvklart(jsonBody.path("speilSvar").asString(), jsonBody)
         if (status >= 500 && responseBody.contains("GradertAdresse")) return Medlemskap.Gradert(responseBody)
         throw Medlemskapsfeil(Medlemskap.Uventet(status, responseBody))
@@ -51,7 +50,6 @@ data class Tolk(
         medlemskap.logg(this)
 
         return when (medlemskap) {
-            is Medlemskap.Avklart -> medlemskap.svar
             is Medlemskap.SpeilAvklart -> medlemskap.svar
             is Medlemskap.Gradert -> "UAVKLART"
             is Medlemskap.Ubesvart -> error("Fikk ikke kontakt med medlemskapstjenesten på 3 forsøk. Se sikkerlogg for detaljer")
@@ -62,19 +60,6 @@ data class Tolk(
     private companion object {
         private sealed interface Medlemskap {
             fun logg(tolk: Tolk)
-
-            data class Avklart(
-                val svar: String,
-                private val responseBody: JsonNode,
-            ) : Medlemskap {
-                override fun logg(tolk: Tolk) =
-                    sikkerlogg.info(
-                        "Medlemskap for {} på ${tolk.fom} avklart til {} fra {}. \nRequestBody:\n\t${tolk.requestBody.jsonOrRaw()} \nResponseBody(${responseBody.KiB()}):\n\t$responseBody",
-                        keyValue("fødselsnummer", tolk.fødselsnummer),
-                        keyValue("svar", svar),
-                        keyValue("kilde", "VanligSvar"),
-                    )
-            }
 
             data class SpeilAvklart(
                 val svar: String,
