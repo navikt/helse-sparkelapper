@@ -102,7 +102,8 @@ class ApiIntegrationTest {
                     "grad": 80,
                     "dagsats": 1000.0,
                     "type": "UTBETALING",
-                    "tags": []
+                    "tags": [],
+                    "maksdato": null
                 }]
             }
             """,
@@ -140,7 +141,8 @@ class ApiIntegrationTest {
                         "grad": 100,
                         "dagsats": 1000.0,
                         "type": "UTBETALING",
-                        "tags": ["UsikkerGrad"]
+                        "tags": ["UsikkerGrad"],
+                        "maksdato": null
                     },
                     {
                         "personidentifikator": "$fnr",
@@ -150,7 +152,8 @@ class ApiIntegrationTest {
                         "grad": 100,
                         "dagsats": 1000.0,
                         "type": "UTBETALING",
-                        "tags": ["UsikkerGrad"]
+                        "tags": ["UsikkerGrad"],
+                        "maksdato": null
                     }
                 ]
             }
@@ -190,7 +193,8 @@ class ApiIntegrationTest {
                         "grad": 100,
                         "dagsats": 1000.0,
                         "type": "UTBETALING",
-                        "tags": []
+                        "tags": [],
+                        "maksdato": null
                     },
                     {
                         "personidentifikator": "$fnr2",
@@ -200,7 +204,8 @@ class ApiIntegrationTest {
                         "grad": 50,
                         "dagsats": 1000.0,
                         "type": "UTBETALING",
-                        "tags": []
+                        "tags": [],
+                        "maksdato": null
                     }
                 ]
             }
@@ -248,7 +253,7 @@ class ApiIntegrationTest {
     fun `utbetalinger med periodeType som ikke er en utbetalingstype inkluderes når inkluderAllePeriodetyper er true`() =
         withServer {
             val fnr = randomFnr()
-            insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31))
+            insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), maksdato = LocalDate.of(2018, 12, 14))
             insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 80, orgnr = "123456789", periodeType = "2")
 
             val response =
@@ -270,12 +275,46 @@ class ApiIntegrationTest {
                     "grad": 80,
                     "dagsats": 1000.0,
                     "type": "ETTERBETALING_FORHØYET_LØNN",
-                    "tags": []
+                    "tags": [],
+                    "maksdato": "2018-12-14"
                 }]
             }
             """,
                 response.bodyAsText(),
                 JSONCompareMode.NON_EXTENSIBLE,
+            )
+        }
+
+    @Test
+    fun `utbetalingsperioder får maksdato fra sykmeldingsperioden de hører til`() =
+        withServer {
+            val fnr = randomFnr()
+            insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 2, 28), maksdato = LocalDate.of(2018, 12, 14))
+            insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 1, 31), grad = 100, orgnr = "123456789")
+            insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 2, 1), tom = LocalDate.of(2018, 2, 28), grad = 100, orgnr = "123456789")
+            insertPeriode(fnr, seq = 2, fom = LocalDate.of(2018, 6, 1), tom = LocalDate.of(2018, 6, 30), maksdato = LocalDate.of(2019, 5, 3))
+            insertUtbetaling(fnr, seq = 2, fom = LocalDate.of(2018, 6, 1), tom = LocalDate.of(2018, 6, 30), grad = 100, orgnr = "123456789")
+
+            val response =
+                post("/") {
+                    header(HttpHeaders.Authorization, "Bearer ${token()}")
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            JSONAssert.assertEquals(
+                """
+            {
+                "utbetaltePerioder": [
+                    { "fom": "2018-01-01", "tom": "2018-01-31", "maksdato": "2018-12-14" },
+                    { "fom": "2018-02-01", "tom": "2018-02-28", "maksdato": "2018-12-14" },
+                    { "fom": "2018-06-01", "tom": "2018-06-30", "maksdato": "2019-05-03" }
+                ]
+            }
+            """,
+                response.bodyAsText(),
+                JSONCompareMode.LENIENT,
             )
         }
 
@@ -313,6 +352,7 @@ class ApiIntegrationTest {
         seq: Int,
         fom: LocalDate,
         tom: LocalDate,
+        maksdato: LocalDate? = null,
     ) {
         val itFnr = Fnr(fnr).formatAsITFnr()
         sessionOf(dataSource).use { session ->
@@ -321,15 +361,16 @@ class ApiIntegrationTest {
                     """
                     INSERT INTO is_periode_10 (
                         is01_personkey, f_nr, tk_nr, is10_arbufoer_seq,
-                        is10_arbufoer, is10_arbufoer_tom,
+                        is10_arbufoer, is10_arbufoer_tom, is10_max,
                         is10_arbkat, is10_sanksjonsdager, is10_stoenads_type
-                    ) VALUES (:seq, :fnr, '0300', :seq, :fom, :tom, '01', 0, '  ')
+                    ) VALUES (:seq, :fnr, '0300', :seq, :fom, :tom, NULLIF(:maksdato, 0), '01', 0, '  ')
                     """,
                     mapOf(
                         "seq" to seq,
                         "fnr" to itFnr,
                         "fom" to fom.toInfotrygdInt(),
                         "tom" to tom.toInfotrygdInt(),
+                        "maksdato" to (maksdato?.toInfotrygdInt() ?: 0),
                     ),
                 ).asUpdate,
             )

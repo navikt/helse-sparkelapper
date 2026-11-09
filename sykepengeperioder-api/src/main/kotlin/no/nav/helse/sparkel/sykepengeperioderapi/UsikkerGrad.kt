@@ -4,7 +4,7 @@ import no.nav.helse.sparkel.infotrygd.api.Infotrygdperiode
 
 internal class InfotrygdperiodeMedSikkerGrad(
     infotrygdperiode: Infotrygdperiode,
-) : Infotrygdperiode(infotrygdperiode.personidentifikator, infotrygdperiode.organisasjonsnummer, infotrygdperiode.fom, infotrygdperiode.tom, infotrygdperiode.grad, infotrygdperiode.dagsats, infotrygdperiode.type) {
+) : Infotrygdperiode(infotrygdperiode.personidentifikator, infotrygdperiode.organisasjonsnummer, infotrygdperiode.fom, infotrygdperiode.tom, infotrygdperiode.grad, infotrygdperiode.dagsats, infotrygdperiode.type, infotrygdperiode.maksdato) {
     override fun equals(other: Any?) = other is InfotrygdperiodeMedSikkerGrad && super.equals(other)
 
     override fun toString() = "Sikker grad ${super.toString()}"
@@ -12,7 +12,7 @@ internal class InfotrygdperiodeMedSikkerGrad(
 
 internal class InfotrygdperiodeMedUsikkerGrad(
     infotrygdperiode: Infotrygdperiode,
-) : Infotrygdperiode(infotrygdperiode.personidentifikator, infotrygdperiode.organisasjonsnummer, infotrygdperiode.fom, infotrygdperiode.tom, infotrygdperiode.grad, infotrygdperiode.dagsats, infotrygdperiode.type) {
+) : Infotrygdperiode(infotrygdperiode.personidentifikator, infotrygdperiode.organisasjonsnummer, infotrygdperiode.fom, infotrygdperiode.tom, infotrygdperiode.grad, infotrygdperiode.dagsats, infotrygdperiode.type, infotrygdperiode.maksdato) {
     override fun equals(other: Any?) = other is InfotrygdperiodeMedUsikkerGrad && super.equals(other)
 
     override fun toString() = "Usikker grad ${super.toString()}"

@@ -34,6 +34,7 @@ internal class PeriodefilterTest {
             grad = 100,
             dagsats = BigDecimal.ZERO,
             type = Periodetype.UKJENT,
+            maksdato = null,
         )
 
         val Int.januar get() = LocalDate.of(2018, 1, this)

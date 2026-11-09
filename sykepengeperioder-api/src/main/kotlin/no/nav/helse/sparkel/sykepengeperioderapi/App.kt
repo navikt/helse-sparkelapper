@@ -97,6 +97,7 @@ private fun List<Infotrygdperiode>.toResponse() =
                     dagsats = periode.dagsats,
                     type = periode.type,
                     tags = periode.tags,
+                    maksdato = periode.maksdato,
                 )
             },
     )
@@ -121,6 +122,7 @@ private data class UtbetaltPeriodeDto(
     val dagsats: BigDecimal,
     val type: Periodetype,
     val tags: Set<String>,
+    val maksdato: LocalDate?,
 )
 
 internal fun Application.sykepengeperioderApi(

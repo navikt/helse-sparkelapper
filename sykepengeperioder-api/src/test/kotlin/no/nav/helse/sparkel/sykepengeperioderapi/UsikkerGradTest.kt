@@ -132,7 +132,7 @@ private fun periode(
     fom: LocalDate = LocalDate.now(),
     tom: LocalDate = LocalDate.now(),
     grad: Int = 100,
-) = Infotrygdperiode(Personidentifikator("12345612345"), orgnr?.organisasjosnummerOrNull, fom, tom, grad, BigDecimal.ZERO, Periodetype.UKJENT)
+) = Infotrygdperiode(Personidentifikator("12345612345"), orgnr?.organisasjosnummerOrNull, fom, tom, grad, BigDecimal.ZERO, Periodetype.UKJENT, null)
 
 fun Int.januar(year: Int = 2018) = LocalDate.of(year, 1, this)
 
