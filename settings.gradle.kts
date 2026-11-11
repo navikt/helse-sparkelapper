@@ -1,7 +1,9 @@
 rootProject.name = "sparkelapper"
 include(
+    "aap",
     "aareg",
     "arbeidsgiver",
+    "dagpenger",
     "dokumenter",
     "egenansatt",
     "felles",
