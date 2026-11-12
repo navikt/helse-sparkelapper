@@ -41,7 +41,7 @@ class RepresentasjonClient(
         return retry("fullmakt", legalExceptions = retryableExceptions) {
             val response =
                 httpClient
-                    .preparePost("$baseUrl/api/internbruker/fullmakt/fullmaktsgiver") {
+                    .preparePost("$baseUrl/api/v2/internbruker/kan-representeres-av") {
                         expectSuccess = true
                         contentType(ContentType.Application.Json)
                         accept(ContentType.Application.Json)
