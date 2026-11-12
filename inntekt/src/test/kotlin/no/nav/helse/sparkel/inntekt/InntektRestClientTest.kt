@@ -28,7 +28,7 @@ class InntektRestClientTest {
         runBlocking {
             every { responsMock.get() } returns tomRespons()
             val inntektsliste =
-                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId")
+                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30Sykepenger", "callId")
 
             assertNotNull(inntektsliste)
             assertEquals(0, inntektsliste.size)
@@ -39,7 +39,7 @@ class InntektRestClientTest {
         runBlocking {
             every { responsMock.get() } returns responsMedInntekt("orgnummer1", "ORGANISASJON")
             val inntektsliste =
-                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId")
+                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30Sykepenger", "callId")
             assertNotNull(inntektsliste)
             assertEquals(1, inntektsliste.size)
             assertEquals(
@@ -57,7 +57,7 @@ class InntektRestClientTest {
         runBlocking {
             every { responsMock.get() } returns responsMedInntekt("fødselsnummer1", "NATURLIG_IDENT")
             val inntektsliste =
-                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId")
+                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30Sykepenger", "callId")
             assertNotNull(inntektsliste)
             assertEquals(1, inntektsliste.size)
             assertEquals(
@@ -73,7 +73,7 @@ class InntektRestClientTest {
     @Test
     fun `person med inntektshistorikk fra aktørId`() {
         every { responsMock.get() } returns responsMedInntekt("aktørid1", "AKTOER_ID")
-        assertThrows<IllegalStateException> { runBlocking { inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId") } }
+        assertThrows<IllegalStateException> { runBlocking { inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30Sykepenger", "callId") } }
     }
 
     @Test
@@ -82,7 +82,7 @@ class InntektRestClientTest {
             every { responsMock.get() } returns "{}"
             every { responsMock.status() } returns HttpStatusCode.InternalServerError
             assertThrows<ServerResponseException> {
-                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId")
+                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30Sykepenger", "callId")
             }
         }
     }
@@ -93,7 +93,7 @@ class InntektRestClientTest {
             every { responsMock.get() } returns "{}"
             every { responsMock.status() } returns HttpStatusCode.NotFound
             assertThrows<ClientRequestException> {
-                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId")
+                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30Sykepenger", "callId")
             }
         }
     }
@@ -104,7 +104,7 @@ class InntektRestClientTest {
             every { responsMock.get() } returns "{}"
             every { responsMock.status() } returns HttpStatusCode.PermanentRedirect
             assertThrows<RedirectResponseException> {
-                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30", "callId")
+                inntektRestClient.hentInntektsliste("fnr", YearMonth.of(2019, 1), YearMonth.of(2019, 10), "8-30Sykepenger", "callId")
             }
         }
     }
