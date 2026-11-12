@@ -44,9 +44,9 @@ class Inntekter(
     enum class Type(
         val ainntektfilter: String,
     ) {
-        InntekterForSykepengegrunnlag("8-28"),
-        InntekterForSammenligningsgrunnlag("8-30"),
-        InntekterForOpptjeningsvurdering("8-30"),
+        InntekterForSykepengegrunnlag("8-28Sykepenger"),
+        InntekterForSammenligningsgrunnlag("8-30Sykepenger"),
+        InntekterForOpptjeningsvurdering("8-30Sykepenger"),
     }
 
     inner class Opptjeningsvurdering(

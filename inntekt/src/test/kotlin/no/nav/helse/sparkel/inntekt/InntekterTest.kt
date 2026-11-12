@@ -33,20 +33,20 @@ internal class InntekterTest {
                         if (request.url.fullPath.startsWith("/api/v1/hentinntektliste") &&
                             request.body
                                 .toByteArray()
-                                .getFilter() == Inntekter.Type.InntekterForSykepengegrunnlag.ainntektfilter
+                                .getFilter() == "8-28Sykepenger"
                         ) {
                             respond(sykepengegrunnlagResponse())
                         } else if (request.url.fullPath.startsWith("/api/v1/hentinntektliste") &&
                             request.body
                                 .toByteArray()
-                                .getFilter() == Inntekter.Type.InntekterForOpptjeningsvurdering.ainntektfilter &&
+                                .getFilter() == "8-30Sykepenger" &&
                             request.body.toByteArray().getAntallMåneder() == 1
                         ) {
                             respond(opptjeningsvurderingResponse())
                         } else if (request.url.fullPath.startsWith("/api/v1/hentinntektliste") &&
                             request.body
                                 .toByteArray()
-                                .getFilter() == Inntekter.Type.InntekterForSammenligningsgrunnlag.ainntektfilter
+                                .getFilter() == "8-30Sykepenger"
                         ) {
                             respond(sammenligningsgrunnlagResponse())
                         } else {
