@@ -1,6 +1,6 @@
 spec:
   replicas:
-    min: 2
+    min: 24
     max: 24
   kafka:
     pool: nav-prod
