@@ -103,7 +103,8 @@ class ApiIntegrationTest {
                     "dagsats": 1000.0,
                     "type": "UTBETALING",
                     "tags": [],
-                    "maksdato": null
+                    "maksdato": null,
+                    "skjæringstidspunkt": "2018-01-01"
                 }]
             }
             """,
@@ -142,7 +143,8 @@ class ApiIntegrationTest {
                         "dagsats": 1000.0,
                         "type": "UTBETALING",
                         "tags": ["UsikkerGrad"],
-                        "maksdato": null
+                        "maksdato": null,
+                        "skjæringstidspunkt": "2018-01-01"
                     },
                     {
                         "personidentifikator": "$fnr",
@@ -153,7 +155,8 @@ class ApiIntegrationTest {
                         "dagsats": 1000.0,
                         "type": "UTBETALING",
                         "tags": ["UsikkerGrad"],
-                        "maksdato": null
+                        "maksdato": null,
+                        "skjæringstidspunkt": "2018-01-10"
                     }
                 ]
             }
@@ -194,7 +197,8 @@ class ApiIntegrationTest {
                         "dagsats": 1000.0,
                         "type": "UTBETALING",
                         "tags": [],
-                        "maksdato": null
+                        "maksdato": null,
+                        "skjæringstidspunkt": "2018-01-01"
                     },
                     {
                         "personidentifikator": "$fnr2",
@@ -205,7 +209,8 @@ class ApiIntegrationTest {
                         "dagsats": 1000.0,
                         "type": "UTBETALING",
                         "tags": [],
-                        "maksdato": null
+                        "maksdato": null,
+                        "skjæringstidspunkt": "2018-06-01"
                     }
                 ]
             }
@@ -276,7 +281,8 @@ class ApiIntegrationTest {
                     "dagsats": 1000.0,
                     "type": "ETTERBETALING_FORHØYET_LØNN",
                     "tags": [],
-                    "maksdato": "2018-12-14"
+                    "maksdato": "2018-12-14",
+                    "skjæringstidspunkt": "2018-01-01"
                 }]
             }
             """,
@@ -318,6 +324,59 @@ class ApiIntegrationTest {
             )
         }
 
+    @Test
+    fun `utbetalingsperioder får skjæringstidspunkt fra sykmeldingsperioden de hører til`() =
+        withServer {
+            val fnr = randomFnr()
+            insertPeriode(fnr, seq = 1, fom = LocalDate.of(2018, 1, 1), tom = LocalDate.of(2018, 2, 28))
+            insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 17), tom = LocalDate.of(2018, 2, 28), grad = 100, orgnr = "123456789")
+            insertPeriode(fnr, seq = 2, fom = LocalDate.of(2018, 6, 1), tom = LocalDate.of(2018, 6, 30))
+            insertUtbetaling(fnr, seq = 2, fom = LocalDate.of(2018, 6, 17), tom = LocalDate.of(2018, 6, 30), grad = 100, orgnr = "123456789")
+
+            val response =
+                post("/") {
+                    header(HttpHeaders.Authorization, "Bearer ${token()}")
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            JSONAssert.assertEquals(
+                """
+            {
+                "utbetaltePerioder": [
+                    { "fom": "2018-01-17", "tom": "2018-02-28", "skjæringstidspunkt": "2018-01-01" },
+                    { "fom": "2018-06-17", "tom": "2018-06-30", "skjæringstidspunkt": "2018-06-01" }
+                ]
+            }
+            """,
+                response.bodyAsText(),
+                JSONCompareMode.LENIENT,
+            )
+        }
+
+    @Test
+    fun `skjæringstidspunkt er null når sykmeldingsperioden mangler det`() =
+        withServer {
+            val fnr = randomFnr()
+            insertPeriode(fnr, seq = 1, fom = null, tom = LocalDate.of(2018, 1, 31))
+            insertUtbetaling(fnr, seq = 1, fom = LocalDate.of(2018, 1, 17), tom = LocalDate.of(2018, 1, 31), grad = 100, orgnr = "123456789")
+
+            val response =
+                post("/") {
+                    header(HttpHeaders.Authorization, "Bearer ${token()}")
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31"}""")
+                }
+
+            assertEquals(HttpStatusCode.OK, response.status)
+            JSONAssert.assertEquals(
+                """{ "utbetaltePerioder": [{ "fom": "2018-01-17", "skjæringstidspunkt": null }] }""",
+                response.bodyAsText(),
+                JSONCompareMode.LENIENT,
+            )
+        }
+
     // -------------------------------------------------------------------------
     // Infrastructure helpers
     // -------------------------------------------------------------------------
@@ -347,10 +406,11 @@ class ApiIntegrationTest {
     // Test data helpers
     // -------------------------------------------------------------------------
 
+    // fom er is10_arbufoer, og null lagres som 0, slik Infotrygd gjør når datoen mangler.
     private fun insertPeriode(
         fnr: String,
         seq: Int,
-        fom: LocalDate,
+        fom: LocalDate?,
         tom: LocalDate,
         maksdato: LocalDate? = null,
     ) {
@@ -368,7 +428,7 @@ class ApiIntegrationTest {
                     mapOf(
                         "seq" to seq,
                         "fnr" to itFnr,
-                        "fom" to fom.toInfotrygdInt(),
+                        "fom" to (fom?.toInfotrygdInt() ?: 0),
                         "tom" to tom.toInfotrygdInt(),
                         "maksdato" to (maksdato?.toInfotrygdInt() ?: 0),
                     ),

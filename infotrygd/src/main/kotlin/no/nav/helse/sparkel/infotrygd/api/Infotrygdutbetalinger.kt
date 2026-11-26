@@ -24,6 +24,7 @@ class Infotrygdutbetalinger(
             .flatMap { fnr ->
                 val perioder = periodeDAO.perioder(fnr, fom, tom)
                 val maksdatoPerSekvensId = perioder.associate { it.seq to it.slutt }
+                val skjæringstidspunktPerSekvensId = perioder.associate { it.seq to it.sykemeldtFom }
                 val sekvensIdeer = perioder.map { it.seq }.toIntArray()
                 utbetalingDAO
                     .utbetalinger(fnr, *sekvensIdeer)
@@ -38,6 +39,7 @@ class Infotrygdutbetalinger(
                             dagsats = utbetaling.dagsats.toBigDecimal(),
                             type = Periodetype.fraKode(utbetaling.periodeType),
                             maksdato = maksdatoPerSekvensId[utbetaling.sekvensId],
+                            skjæringstidspunkt = skjæringstidspunktPerSekvensId[utbetaling.sekvensId],
                         )
                     }
             }.filtrer(fom, tom)

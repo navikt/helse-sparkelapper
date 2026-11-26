@@ -98,9 +98,21 @@ private fun List<Infotrygdperiode>.toResponse() =
                     type = periode.type,
                     tags = periode.tags,
                     maksdato = periode.maksdato,
+                    skjæringstidspunkt = periode.skjæringstidspunkt,
                 )
             },
     )
+
+// Spøkelse feiler oppslaget for Modia når skjæringstidspunktet mangler, men andre konsumenter skal ikke påvirkes.
+private fun loggPerioderUtenSkjæringstidspunkt(perioder: List<Infotrygdperiode>) {
+    val utenSkjæringstidspunkt = perioder.filter { it.skjæringstidspunkt == null }
+    if (utenSkjæringstidspunkt.isEmpty()) return
+    logg.error("Fant ${utenSkjæringstidspunkt.size} utbetalte perioder uten skjæringstidspunkt (is10_arbufoer). Se sikker logg")
+    sikkerlogg.error(
+        "Fant utbetalte perioder uten skjæringstidspunkt (is10_arbufoer): {}",
+        utenSkjæringstidspunkt.joinToString { "${it.personidentifikator} $it" },
+    )
+}
 
 private data class RequestDto(
     val personidentifikatorer: List<String>,
@@ -123,6 +135,7 @@ private data class UtbetaltPeriodeDto(
     val type: Periodetype,
     val tags: Set<String>,
     val maksdato: LocalDate?,
+    val skjæringstidspunkt: LocalDate?,
 )
 
 internal fun Application.sykepengeperioderApi(
@@ -187,7 +200,9 @@ internal fun Application.sykepengeperioderApi(
                         .map { Personidentifikator(it) }
                         .toSet()
                         .takeUnless { it.isEmpty() } ?: throw IllegalArgumentException("Det må sendes med minst én personidentifikator")
-                val response = infotrygdutbetalinger.utbetalinger(personidentifikatorer, request.fom, request.tom, request.inkluderAllePeriodetyper).markerUsikkerGrad().toResponse()
+                val perioder = infotrygdutbetalinger.utbetalinger(personidentifikatorer, request.fom, request.tom, request.inkluderAllePeriodetyper)
+                loggPerioderUtenSkjæringstidspunkt(perioder)
+                val response = perioder.markerUsikkerGrad().toResponse()
                 sikkerlogg.info("Sender perioder:\n\t${objectMapper.writeValueAsString(response)}")
                 call.respond(response)
             }
