@@ -38,7 +38,7 @@ internal class RepresentasjonClientTest {
             ) = bearerToken(scope)
         }
 
-    private val endepunkt = "/api/internbruker/fullmakt/fullmaktsgiver"
+    private val endepunkt = "/api/v2/internbruker/kan-representeres-av"
 
     @BeforeEach
     fun setup() {
