@@ -12,7 +12,7 @@ open class Infotrygdperiode(
     val dagsats: BigDecimal,
     val type: Periodetype,
     val maksdato: LocalDate?,
-    val skjæringstidspunkt: LocalDate?,
+    val skjæringstidspunkt: LocalDate,
 ) {
     override fun equals(other: Any?) =
         other is Infotrygdperiode &&

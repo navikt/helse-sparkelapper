@@ -356,7 +356,7 @@ class ApiIntegrationTest {
         }
 
     @Test
-    fun `skjæringstidspunkt er null når sykmeldingsperioden mangler det`() =
+    fun `utbetalt periode uten skjæringstidspunkt i sykmeldingsperioden gir 500`() =
         withServer {
             val fnr = randomFnr()
             insertPeriode(fnr, seq = 1, fom = null, tom = LocalDate.of(2018, 1, 31))
@@ -369,12 +369,7 @@ class ApiIntegrationTest {
                     setBody("""{"personidentifikatorer":["$fnr"],"fom":"2018-01-01","tom":"2018-12-31"}""")
                 }
 
-            assertEquals(HttpStatusCode.OK, response.status)
-            JSONAssert.assertEquals(
-                """{ "utbetaltePerioder": [{ "fom": "2018-01-17", "skjæringstidspunkt": null }] }""",
-                response.bodyAsText(),
-                JSONCompareMode.LENIENT,
-            )
+            assertEquals(HttpStatusCode.InternalServerError, response.status)
         }
 
     // -------------------------------------------------------------------------

@@ -39,7 +39,10 @@ class Infotrygdutbetalinger(
                             dagsats = utbetaling.dagsats.toBigDecimal(),
                             type = Periodetype.fraKode(utbetaling.periodeType),
                             maksdato = maksdatoPerSekvensId[utbetaling.sekvensId],
-                            skjæringstidspunkt = skjæringstidspunktPerSekvensId[utbetaling.sekvensId],
+                            skjæringstidspunkt =
+                                checkNotNull(skjæringstidspunktPerSekvensId[utbetaling.sekvensId]) {
+                                    "Sykmeldingsperioden med is10_arbufoer_seq ${utbetaling.sekvensId} mangler skjæringstidspunkt (is10_arbufoer)"
+                                },
                         )
                     }
             }.filtrer(fom, tom)
